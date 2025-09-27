@@ -55,17 +55,21 @@ jobs:
 
     - name: Create deployment package
       run: |
-        tar -czf deployment.tar.gz \
-          --exclude=node_modules \
-          --exclude=frontend/node_modules \
-          --exclude=.git \
-          --exclude=.github \
-          --exclude=frontend/src \
-          --exclude=frontend/public \
-          --exclude=*.log \
-          --exclude=.env.local \
-          --exclude=.DS_Store \
-          .
+        # Create a clean build directory
+        mkdir -p deploy-temp
+
+        # Copy necessary files for deployment
+        cp -r src deploy-temp/
+        cp -r frontend/dist deploy-temp/frontend/
+        cp package*.json deploy-temp/
+        cp ecosystem.config.js deploy-temp/
+        cp .env.production deploy-temp/
+
+        # Create logs directory
+        mkdir -p deploy-temp/logs
+
+        # Create deployment archive
+        tar -czf deployment.tar.gz -C deploy-temp .
 
     - name: Copy files to Azure VM
       uses: appleboy/scp-action@v0.1.4
