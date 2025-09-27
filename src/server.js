@@ -6,7 +6,7 @@ require('dotenv').config();
 connectDB();
 
 const PORT = process.env.PORT || 4000;
-const HOST = process.env.HOST || 'locahost';
+const HOST = process.env.HOST || 'localhost';
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`=� Server running on ${HOST}:${PORT}`);
