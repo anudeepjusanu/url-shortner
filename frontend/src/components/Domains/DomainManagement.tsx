@@ -7,20 +7,13 @@ import {
   Clock,
   X,
   Copy,
-  Edit,
   Trash2,
   Shield,
-  Calendar,
   Activity,
-  ExternalLink,
   RefreshCw,
-  Upload,
-  Settings,
   Eye,
-  ChevronRight,
   AlertCircle,
-  Star,
-  Zap
+  Star
 } from 'lucide-react';
 import { domainsAPI, Domain, CreateDomainData } from '../../services/api';
 
@@ -30,11 +23,7 @@ interface DomainManagementProps {
   getTranslation: (key: string) => string;
 }
 
-export const DomainManagement: React.FC<DomainManagementProps> = ({
-  userRole,
-  language,
-  getTranslation
-}) => {
+export const DomainManagement: React.FC<DomainManagementProps> = () => {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Shield, Eye, Lock, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Mail, Phone, MapPin } from 'lucide-react';
 
 interface PrivacyPolicyProps {
   onBack: () => void;

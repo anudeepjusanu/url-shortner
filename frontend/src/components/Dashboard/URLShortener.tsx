@@ -27,7 +27,7 @@ const URLShortener: React.FC = () => {
       const domains = response.data.data.domains || [];
       setAvailableDomains(domains);
 
-      const defaultDomain = domains.find(d => d.isDefault);
+      const defaultDomain = domains.find((d: Domain) => d.isDefault);
       if (defaultDomain) {
         setSelectedDomainId(defaultDomain.id);
       }
@@ -52,7 +52,7 @@ const URLShortener: React.FC = () => {
         domainId: selectedDomainId || undefined,
       });
 
-      const selectedDomain = availableDomains.find(d => d.id === selectedDomainId);
+      const selectedDomain = availableDomains.find((d: Domain) => d.id === selectedDomainId);
       const baseUrl = selectedDomain?.shortUrl || window.location.origin.replace(':3000', ':3015');
       setShortenedUrl(`${baseUrl}/${response.data.data.url.shortCode}`);
     } catch (err: any) {
@@ -80,7 +80,7 @@ const URLShortener: React.FC = () => {
     setError('');
     setCopied(false);
 
-    const defaultDomain = availableDomains.find(d => d.isDefault);
+    const defaultDomain = availableDomains.find((d: Domain) => d.isDefault);
     if (defaultDomain) {
       setSelectedDomainId(defaultDomain.id);
     }
@@ -144,7 +144,7 @@ const URLShortener: React.FC = () => {
             </div>
             {selectedDomainId && (
               <p className="text-xs text-gray-500 mt-1">
-                Short URL will be: {availableDomains.find(d => d.id === selectedDomainId)?.shortUrl}/your-code
+                Short URL will be: {availableDomains.find((d: Domain) => d.id === selectedDomainId)?.shortUrl}/your-code
               </p>
             )}
           </div>
