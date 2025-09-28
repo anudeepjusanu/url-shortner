@@ -53,7 +53,7 @@ const URLShortener: React.FC = () => {
       });
 
       const selectedDomain = availableDomains.find((d: Domain) => d.id === selectedDomainId);
-      const baseUrl = selectedDomain?.shortUrl || window.location.origin.replace(':3000', ':3015');
+      const baseUrl = selectedDomain?.shortUrl || window.location.origin;
       setShortenedUrl(`${baseUrl}/${response.data.data.url.shortCode}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to shorten URL');
