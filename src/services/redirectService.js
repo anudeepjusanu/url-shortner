@@ -13,15 +13,16 @@ class RedirectService {
         referer,
         language,
         screenResolution,
-        password
+        password,
+        domain
       } = requestData;
       
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
         throw new Error(`IP blocked: ${blocked.reason}`);
       }
-      
-      const url = await this.getUrlByShortCode(shortCode);
+
+      const url = await this.getUrlByShortCode(shortCode, domain);
       if (!url) {
         throw new Error('URL not found');
       }
@@ -81,16 +82,24 @@ class RedirectService {
     }
   }
   
-  async getUrlByShortCode(shortCode) {
+  async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
       let url = await cacheGet(`url:${shortCode}`);
-      
+
       if (!url) {
-        url = await Url.findOne({
+        const query = {
           $or: [{ shortCode }, { customCode: shortCode }]
-        }).populate('creator', 'firstName lastName email')
+        };
+
+        // If a custom domain is being used, ensure the URL belongs to that domain
+        if (requestDomain && !this.isMainDomain(requestDomain)) {
+          query.domain = requestDomain;
+        }
+
+        url = await Url.findOne(query)
+          .populate('creator', 'firstName lastName email')
           .populate('organization', 'name slug');
-        
+
         if (url && url.isActive) {
           try {
             await cacheSet(`url:${shortCode}`, url, config.CACHE_TTL.URL_CACHE);
@@ -99,12 +108,23 @@ class RedirectService {
           }
         }
       }
-      
+
       return url;
     } catch (error) {
       console.error('Error fetching URL:', error);
       return null;
     }
+  }
+
+  isMainDomain(domain) {
+    const mainDomains = [
+      process.env.APP_URL?.replace(/https?:\/\//, ''),
+      '20.193.155.139',
+      'localhost:3015',
+      'localhost'
+    ].filter(Boolean);
+
+    return mainDomains.includes(domain);
   }
   
   async validateRedirect(url, requestData) {

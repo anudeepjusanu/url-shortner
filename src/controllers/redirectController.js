@@ -4,14 +4,16 @@ const geoLocation = require('../utils/geoLocation');
 const redirectToOriginalUrl = async (req, res) => {
   try {
     const { shortCode } = req.params;
-    
+    const requestDomain = req.get('host');
+
     const requestData = {
       ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
       userAgent: req.get('User-Agent') || '',
       referer: req.get('Referer') || '',
       language: req.get('Accept-Language') || '',
       screenResolution: req.query.sr || '',
-      password: req.query.password || req.body?.password
+      password: req.query.password || req.body?.password,
+      domain: requestDomain
     };
 
     try {
