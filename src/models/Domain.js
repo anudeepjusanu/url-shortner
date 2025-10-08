@@ -49,7 +49,7 @@ const domainSchema = new mongoose.Schema({
   cnameTarget: {
     type: String,
     required: true,
-    default: 'cname.shortener.sa'
+    default: 'cname.shortener.laghhu.link'
   },
   verificationRecord: {
     type: {

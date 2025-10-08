@@ -311,11 +311,17 @@ const deleteDomain = async (req, res) => {
     }
 
     // Check access permissions
+    console.log('Delete domain access check:');
+    console.log('Domain owner:', domain.owner.toString());
+    console.log('Current user ID:', req.user.id);
+    console.log('Domain organization:', domain.organization?.toString());
+    console.log('User organization:', req.user.organization?.toString());
+
     if (domain.owner.toString() !== req.user.id &&
         (!req.user.organization || domain.organization?.toString() !== req.user.organization.toString())) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: 'Access denied - You can only delete domains that you own'
       });
     }
 
