@@ -84,6 +84,12 @@ class RedirectService {
   
   async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
+      console.log('getUrlByShortCode debug:', {
+        shortCode,
+        requestDomain,
+        isMainDomain: this.isMainDomain(requestDomain)
+      });
+
       let url = await cacheGet(`url:${shortCode}`);
 
       if (!url) {
@@ -94,11 +100,16 @@ class RedirectService {
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (requestDomain && !this.isMainDomain(requestDomain)) {
           query.domain = requestDomain;
+          console.log('Custom domain query:', query);
+        } else {
+          console.log('Main domain or no domain specified, query:', query);
         }
 
         url = await Url.findOne(query)
           .populate('creator', 'firstName lastName email')
           .populate('organization', 'name slug');
+
+        console.log('Found URL:', url ? { shortCode: url.shortCode, domain: url.domain, originalUrl: url.originalUrl } : 'null');
 
         if (url && url.isActive) {
           try {
@@ -119,11 +130,15 @@ class RedirectService {
   isMainDomain(domain) {
     const mainDomains = [
       process.env.APP_URL?.replace(/https?:\/\//, ''),
+      'laghhu.link',
+      'www.laghhu.link',
+      'shortener.laghhu.link',
       '20.193.155.139',
       'localhost:3015',
       'localhost'
     ].filter(Boolean);
 
+    console.log('isMainDomain check:', { domain, mainDomains, isMain: mainDomains.includes(domain) });
     return mainDomains.includes(domain);
   }
   
