@@ -27,6 +27,7 @@ export interface URL {
   customCode?: string;
   title?: string;
   description?: string;
+  domain?: string;
   expiresAt?: string;
   createdAt: string;
   updatedAt: string;

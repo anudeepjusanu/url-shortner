@@ -16,7 +16,8 @@ const URLList: React.FC = () => {
   const fetchUrls = async () => {
     try {
       const response = await urlsAPI.getUrls({ page: 1, limit: 10 });
-      setUrls(response.data.urls || []);
+      console.log('URL fetch response:', response.data); // Debug log
+      setUrls(response.data.data?.urls || response.data.urls || []);
     } catch (error) {
       console.error('Failed to fetch URLs:', error);
     } finally {
@@ -26,8 +27,16 @@ const URLList: React.FC = () => {
 
   const copyToClipboard = async (url: URL) => {
     try {
-      const baseUrl = window.location.origin.replace(':3000', ':3015');
-      const shortUrl = `${baseUrl}/${url.shortCode}`;
+      // Use the correct domain for the URL
+      let shortUrl;
+      if (url.domain && url.domain !== 'laghhu.link') {
+        // Custom domain URL (HTTP for now, HTTPS requires SSL setup)
+        shortUrl = `http://${url.domain}/${url.shortCode}`;
+      } else {
+        // Main domain URL (HTTPS)
+        shortUrl = `https://laghhu.link/${url.shortCode}`;
+      }
+
       await navigator.clipboard.writeText(shortUrl);
       setCopiedId(url.id);
       setTimeout(() => setCopiedId(''), 2000);
