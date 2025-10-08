@@ -453,9 +453,9 @@ export const DomainManagement: React.FC<DomainManagementProps> = () => {
                       <div>
                         <span className="font-medium text-gray-600">Value:</span>
                         <div className="flex items-center gap-2">
-                          <p className="font-mono">cname.shortener.laghhu.link</p>
+                          <p className="font-mono">laghhu.link</p>
                           <button
-                            onClick={() => copyToClipboard('cname.shortener.laghhu.link')}
+                            onClick={() => copyToClipboard('laghhu.link')}
                             className="text-blue-600 hover:text-blue-700"
                           >
                             <Copy className="w-4 h-4" />
