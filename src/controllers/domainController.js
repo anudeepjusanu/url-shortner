@@ -4,6 +4,41 @@ const domainService = require('../services/domainService');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const config = require('../config/environment');
 
+// Helper function to check domain access
+const checkDomainAccess = (domain, user) => {
+  const domainOwnerId = domain.owner.toString();
+  const userId = user.id.toString();
+  const userOrgId = user.organization?.toString();
+  const domainOrgId = domain.organization?.toString();
+
+  console.log('Domain access check:', {
+    domainOwnerId,
+    userId,
+    userOrgId,
+    domainOrgId,
+    isOwner: domainOwnerId === userId,
+    isSameOrg: userOrgId && domainOrgId && userOrgId === domainOrgId,
+    isAdmin: user.role === 'admin'
+  });
+
+  // User owns the domain
+  if (domainOwnerId === userId) {
+    return true;
+  }
+
+  // User's organization owns the domain
+  if (userOrgId && domainOrgId && userOrgId === domainOrgId) {
+    return true;
+  }
+
+  // Admin users can access all domains
+  if (user.role === 'admin') {
+    return true;
+  }
+
+  return false;
+};
+
 const addDomain = async (req, res) => {
   try {
     const { domain, subdomain, isDefault = false } = req.body;
@@ -242,11 +277,10 @@ const updateDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (domain.owner.toString() !== req.user.id &&
-        (!req.user.organization || domain.organization?.toString() !== req.user.organization.toString())) {
+    if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: 'Access denied - You do not have permission to access this domain'
       });
     }
 
@@ -311,14 +345,8 @@ const deleteDomain = async (req, res) => {
     }
 
     // Check access permissions
-    console.log('Delete domain access check:');
-    console.log('Domain owner:', domain.owner.toString());
-    console.log('Current user ID:', req.user.id);
-    console.log('Domain organization:', domain.organization?.toString());
-    console.log('User organization:', req.user.organization?.toString());
-
-    if (domain.owner.toString() !== req.user.id &&
-        (!req.user.organization || domain.organization?.toString() !== req.user.organization.toString())) {
+    // Check access permissions
+    if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Access denied - You can only delete domains that you own'
@@ -368,20 +396,10 @@ const verifyDomain = async (req, res) => {
     }
 
     // Check access permissions
-    console.log('Domain verification debug:', {
-      domainId: id,
-      domainOwner: domain.owner.toString(),
-      requestUserId: req.user.id,
-      userOrganization: req.user.organization,
-      domainOrganization: domain.organization?.toString()
-    });
-
-    if (domain.owner.toString() !== req.user.id &&
-        (!req.user.organization || domain.organization?.toString() !== req.user.organization.toString())) {
-      console.log('Access denied - ownership mismatch');
+    if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: 'Access denied - You do not have permission to verify this domain'
       });
     }
 
@@ -432,11 +450,10 @@ const setDefaultDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (domain.owner.toString() !== req.user.id &&
-        (!req.user.organization || domain.organization?.toString() !== req.user.organization.toString())) {
+    if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: 'Access denied - You do not have permission to access this domain'
       });
     }
 

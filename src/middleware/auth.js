@@ -44,12 +44,25 @@ const authenticate = async (req, res, next) => {
     //   });
     // }
 
+    // Ensure consistent user ID format
+    const userId = user._id ? user._id.toString() : user.id?.toString();
+    const orgId = user.organization?._id ? user.organization._id.toString() : user.organization?.toString();
+
     req.user = {
-      id: user._id || user.id,
+      id: userId,
       email: user.email,
       role: user.role,
-      organization: user.organization?._id || user.organization
+      organization: orgId,
+      isActive: user.isActive
     };
+
+    console.log('Authenticated user:', {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      organization: req.user.organization,
+      isActive: req.user.isActive
+    });
     
     next();
   } catch (error) {
@@ -171,12 +184,17 @@ const apiKeyAuth = async (req, res, next) => {
     apiKeyObj.lastUsed = new Date();
     await user.save();
     
+    // Ensure consistent user ID format for API key auth
+    const userId = user._id.toString();
+    const orgId = user.organization?._id ? user.organization._id.toString() : null;
+
     req.user = {
-      id: user._id,
+      id: userId,
       email: user.email,
       role: user.role,
-      organization: user.organization?._id,
-      apiKey: true
+      organization: orgId,
+      apiKey: true,
+      isActive: user.isActive
     };
     
     next();
