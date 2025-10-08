@@ -3,7 +3,7 @@ const Domain = require('../models/Domain');
 
 class DomainService {
   constructor() {
-    this.cnameTarget = process.env.CNAME_TARGET || 'cname.shortener.laghhu.link';
+    this.cnameTarget = process.env.CNAME_TARGET || 'laghhu.link';
     this.verificationTimeout = 10000; // 10 seconds timeout for DNS queries
   }
 

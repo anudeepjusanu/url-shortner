@@ -60,6 +60,11 @@ const createUrl = async (req, res) => {
     } else {
       // Get user's default domain if no domain is specified
       selectedDomain = await Domain.getDefaultDomain(req.user.id, req.user.organization);
+
+      // If no default domain is set, create URLs without a specific domain (main domain)
+      if (!selectedDomain) {
+        console.log('No default domain found, creating URL for main domain');
+      }
     }
     
     let shortCode = customCode;
