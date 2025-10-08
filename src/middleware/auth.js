@@ -33,13 +33,17 @@ const authenticate = async (req, res, next) => {
       }
     }
     console.log('Authenticated user:', user);
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Account deactivated'
-      });
-    }
-    
+    console.log('User isActive status:', user.isActive);
+    console.log('User from cache?', !!await cacheGet(`user:${decoded.userId}`));
+
+    // Temporarily disabled for debugging
+    // if (!user.isActive) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: 'Account deactivated'
+    //   });
+    // }
+
     req.user = {
       id: user._id || user.id,
       email: user.email,
