@@ -60,6 +60,7 @@ jobs:
 
         # Copy necessary files for deployment
         cp -r src deploy-temp/
+        cp -r scripts deploy-temp/
         mkdir -p deploy-temp/frontend
         cp -r frontend/dist deploy-temp/frontend/
         cp package*.json deploy-temp/
@@ -114,8 +115,11 @@ jobs:
           # Copy environment file
           sudo cp /var/www/url-shortener/.env.production /var/www/url-shortener/.env || echo "No .env.production file found"
 
-          # Start the application
+          # Initialize database plans (only if they don't exist)
           cd /var/www/url-shortener
+          node scripts/init-plans.js || echo "Plans initialization completed or failed gracefully"
+
+          # Start the application
           pm2 start ecosystem.config.js --env production || pm2 restart url-shortener
 
           # Save PM2 configuration
