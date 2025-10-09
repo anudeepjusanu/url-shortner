@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, BarChart3, Globe, Check, Star, Users } from 'lucide-react';
+import { ArrowRight, Zap, Shield, BarChart3, Globe, Check, Star } from 'lucide-react';
 import Button from '../UI/Button';
 
 const LandingPage: React.FC = () => {

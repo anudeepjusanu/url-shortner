@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Zap, Users, BarChart3, Shield, Globe, Infinity } from 'lucide-react';
+import { Check, X, Zap } from 'lucide-react';
 
 interface PlanFeature {
   name: string;
