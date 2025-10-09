@@ -29,8 +29,51 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'premium'],
+    enum: ['user', 'admin', 'super_admin'],
     default: 'user'
+  },
+  plan: {
+    type: String,
+    enum: ['free', 'pro', 'enterprise'],
+    default: 'free'
+  },
+  subscription: {
+    stripeCustomerId: String,
+    stripeSubscriptionId: String,
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing'],
+      default: 'inactive'
+    },
+    currentPeriodStart: Date,
+    currentPeriodEnd: Date,
+    cancelAtPeriodEnd: {
+      type: Boolean,
+      default: false
+    },
+    trialEnd: Date
+  },
+  usage: {
+    urlsCreatedThisMonth: {
+      type: Number,
+      default: 0
+    },
+    urlsCreatedTotal: {
+      type: Number,
+      default: 0
+    },
+    customDomainsCount: {
+      type: Number,
+      default: 0
+    },
+    apiCallsThisMonth: {
+      type: Number,
+      default: 0
+    },
+    lastResetDate: {
+      type: Date,
+      default: Date.now
+    }
   },
   organization: {
     type: mongoose.Schema.Types.ObjectId,

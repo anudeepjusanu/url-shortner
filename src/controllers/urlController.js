@@ -4,6 +4,7 @@ const Domain = require('../models/Domain');
 const { generateShortCode } = require('../utils/shortCodeGenerator');
 const { validateUrl } = require('../utils/urlValidator');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
 
 const createUrl = async (req, res) => {
@@ -21,7 +22,22 @@ const createUrl = async (req, res) => {
       redirectType,
       domainId
     } = req.body;
-    
+
+    // Check usage limits before creating URL
+    const usageCheck = await UsageTracker.canPerformAction(req.user.id, 'createUrl');
+    if (!usageCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: usageCheck.reason,
+        code: 'USAGE_LIMIT_EXCEEDED',
+        data: {
+          limit: usageCheck.limit,
+          current: usageCheck.current,
+          action: 'createUrl'
+        }
+      });
+    }
+
     const urlValidation = validateUrl(originalUrl);
     if (!urlValidation.isValid) {
       return res.status(400).json({
@@ -110,6 +126,9 @@ const createUrl = async (req, res) => {
     
     const url = new Url(urlData);
     await url.save();
+
+    // Track usage after successful URL creation
+    await UsageTracker.trackUsage(req.user.id, 'createUrl');
 
     // Update domain statistics if using custom domain
     if (selectedDomain) {

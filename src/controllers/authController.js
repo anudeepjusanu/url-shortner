@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const config = require('../config/environment');
 const { cacheSet, cacheDel } = require('../config/redis');
+const emailService = require('../services/emailService');
+const { UsageTracker } = require('../middleware/usageTracker');
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
@@ -36,9 +38,23 @@ const register = async (req, res) => {
       lastName,
       emailVerificationToken: crypto.randomBytes(32).toString('hex')
     });
-    
+
     await user.save();
-    
+
+    // Send welcome email to user
+    try {
+      await emailService.sendWelcomeEmail(user);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+    }
+
+    // Send admin notification
+    try {
+      await emailService.sendAdminNotification(user);
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
+    }
+
     const { accessToken, refreshToken } = generateTokens(user._id);
     
     res.status(201).json({
