@@ -97,7 +97,8 @@ jobs:
           sudo mkdir -p /var/www/url-shortener
 
           # Stop the application
-          sudo pm2 stop url-shortener || echo "App not running"
+          pm2 stop url-shortener || echo "App not running"
+          pm2 delete url-shortener || echo "App not in PM2"
 
           # Backup current deployment
           sudo cp -r /var/www/url-shortener /var/www/url-shortener-backup-$(date +%Y%m%d-%H%M%S) || echo "No previous deployment"
@@ -120,7 +121,7 @@ jobs:
           node scripts/init-plans.js || echo "Plans initialization completed or failed gracefully"
 
           # Start the application
-          pm2 start ecosystem.config.js --env production || pm2 restart url-shortener
+          pm2 start ecosystem.config.js --env production
 
           # Save PM2 configuration
           pm2 save

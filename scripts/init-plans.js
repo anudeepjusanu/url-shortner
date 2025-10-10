@@ -19,7 +19,7 @@ const plans = [
       apiAccess: false,
       bulkOperations: false,
       exportData: false,
-      support: 'email'
+      support: 'community'
     },
     isActive: true
   },
@@ -82,9 +82,12 @@ async function initializePlans() {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/url-shortener');
     console.log('Connected to MongoDB');
 
-    // Clear existing plans
-    await Plan.deleteMany({});
-    console.log('Cleared existing plans');
+    // Check if plans already exist
+    const existingPlans = await Plan.countDocuments();
+    if (existingPlans > 0) {
+      console.log(`Found ${existingPlans} existing plans. Skipping initialization.`);
+      return;
+    }
 
     // Insert new plans
     const createdPlans = await Plan.insertMany(plans);
@@ -97,6 +100,7 @@ async function initializePlans() {
     console.log('Plans initialized successfully!');
   } catch (error) {
     console.error('Error initializing plans:', error);
+    throw error;
   } finally {
     await mongoose.connection.close();
     console.log('Database connection closed');
