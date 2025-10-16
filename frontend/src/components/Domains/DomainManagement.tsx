@@ -293,7 +293,7 @@ export const DomainManagement: React.FC<DomainManagementProps> = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(domain.dateAdded).toLocaleDateString()}
+                    {new Date(domain.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {domain.owner.email}
@@ -621,14 +621,14 @@ export const DomainManagement: React.FC<DomainManagementProps> = () => {
                     </div>
                     <div>
                       <span className="font-medium text-gray-600">Name:</span>
-                      <p className="font-mono">{selectedDomain.domain}</p>
+                      <p className="font-mono">{selectedDomain.fullDomain}</p>
                     </div>
                     <div>
                       <span className="font-medium text-gray-600">Value:</span>
                       <div className="flex items-center gap-2">
-                        <p className="font-mono">cname.shortener.sa</p>
+                        <p className="font-mono">{selectedDomain.cnameTarget}</p>
                         <button
-                          onClick={() => copyToClipboard('cname.shortener.sa')}
+                          onClick={() => copyToClipboard(selectedDomain.cnameTarget)}
                           className="text-blue-600 hover:text-blue-700"
                         >
                           <Copy className="w-4 h-4" />

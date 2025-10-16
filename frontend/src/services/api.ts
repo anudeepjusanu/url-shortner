@@ -40,11 +40,13 @@ export interface Domain {
   id: string;
   domain: string;
   subdomain?: string;
+  cnameTarget: string;
   fullDomain: string;
   status: 'pending' | 'active' | 'inactive' | 'ssl_failed' | 'verification_failed';
   verificationStatus: 'pending' | 'verified' | 'failed';
   isDefault: boolean;
   dateAdded: string;
+  createdAt: string;
   addedBy: string;
   owner: {
     firstName: string;
