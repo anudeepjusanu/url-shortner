@@ -4,6 +4,18 @@ const domainService = require('../services/domainService');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const config = require('../config/environment');
 
+// Helper function to clear domain cache for a user
+const clearDomainCache = async (userId) => {
+  try {
+    // Clear various cache patterns
+    await cacheDel(`domains:user:${userId}`);
+    // Note: Redis pattern deletion would require a different approach
+    // For now, we'll just clear the main cache key
+  } catch (error) {
+    console.error('Cache clear error:', error);
+  }
+};
+
 // Helper function to check domain access
 const checkDomainAccess = (domain, user) => {
   const domainOwnerId = domain.owner.toString();
@@ -61,12 +73,18 @@ const addDomain = async (req, res) => {
 
     const fullDomain = subdomain ? `${subdomain}.${domain}` : domain;
 
-    // Check if domain already exists
-    const existingDomain = await Domain.findOne({ fullDomain: fullDomain.toLowerCase() });
+    // Check if domain already exists (multiple checks for comprehensive coverage)
+    const existingDomain = await Domain.findOne({
+      $or: [
+        { fullDomain: fullDomain.toLowerCase() },
+        { domain: domain.toLowerCase() }
+      ]
+    });
+
     if (existingDomain) {
       return res.status(400).json({
         success: false,
-        message: 'Domain already exists'
+        message: 'Domain is already registered in the system'
       });
     }
 
@@ -95,13 +113,19 @@ const addDomain = async (req, res) => {
     const newDomain = new Domain(domainData);
     await newDomain.save();
 
+    console.log('Domain saved successfully:', {
+      id: newDomain._id,
+      fullDomain: newDomain.fullDomain,
+      owner: newDomain.owner
+    });
+
     const populatedDomain = await Domain.findById(newDomain._id)
       .populate('owner', 'firstName lastName email')
       .populate('organization', 'name slug')
       .populate('metadata.addedBy', 'firstName lastName email');
 
     // Clear user domains cache
-    await cacheDel(`domains:user:${req.user.id}`);
+    await clearDomainCache(req.user.id);
 
     res.status(201).json({
       success: true,
@@ -113,6 +137,19 @@ const addDomain = async (req, res) => {
     });
   } catch (error) {
     console.error('Add domain error:', error);
+
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      let field = 'domain';
+      if (error.keyValue) {
+        field = Object.keys(error.keyValue)[0];
+      }
+      return res.status(400).json({
+        success: false,
+        message: `This ${field} is already registered in the system`
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Failed to add domain',
@@ -133,15 +170,16 @@ const getDomains = async (req, res) => {
       sortOrder = 'desc'
     } = req.query;
 
-    const cacheKey = `domains:user:${req.user.id}:${JSON.stringify(req.query)}`;
-    const cached = await cacheGet(cacheKey);
+    // Temporarily disable caching for debugging
+    // const cacheKey = `domains:user:${req.user.id}:${JSON.stringify(req.query)}`;
+    // const cached = await cacheGet(cacheKey);
 
-    if (cached) {
-      return res.json({
-        success: true,
-        data: cached
-      });
-    }
+    // if (cached) {
+    //   return res.json({
+    //     success: true,
+    //     data: cached
+    //   });
+    // }
 
     const skip = (page - 1) * limit;
 
@@ -155,6 +193,10 @@ const getDomains = async (req, res) => {
         { organization: req.user.organization }
       ];
     }
+
+    console.log('getDomains filter:', filter);
+    console.log('User ID:', req.user.id);
+    console.log('User org:', req.user.organization);
 
     if (search) {
       filter.$or = [
@@ -187,6 +229,12 @@ const getDomains = async (req, res) => {
       Domain.countDocuments(filter)
     ]);
 
+    console.log('getDomains result:', {
+      totalFound: total,
+      domainsCount: domains.length,
+      domains: domains.map(d => ({ id: d._id, fullDomain: d.fullDomain, owner: d.owner }))
+    });
+
     const result = {
       domains,
       pagination: {
@@ -197,7 +245,8 @@ const getDomains = async (req, res) => {
       }
     };
 
-    await cacheSet(cacheKey, result, config.CACHE_TTL.DOMAIN_CACHE || 300);
+    // Temporarily disable caching for debugging
+    // await cacheSet(cacheKey, result, config.CACHE_TTL.DOMAIN_CACHE || 300);
 
     res.json({
       success: true,
