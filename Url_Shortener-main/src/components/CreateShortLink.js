@@ -1,23 +1,70 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CreateLinkSidebar from './CreateLinkSidebar';
 import CreateLinkHeader from './CreateLinkHeader';
+import { urlsAPI } from '../services/api';
 import './CreateShortLink.css';
 
 const CreateShortLink = () => {
+  const navigate = useNavigate();
   const [longUrl, setLongUrl] = useState('');
   const [customName, setCustomName] = useState('');
   const [generateQR, setGenerateQR] = useState(true);
   const [showUTMModal, setShowUTMModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Creating short link...', { longUrl, customName, generateQR });
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      // Prepare the data for API
+      const linkData = {
+        originalUrl: longUrl,
+      };
+
+      // Add custom code if provided
+      if (customName.trim()) {
+        linkData.customCode = customName.trim();
+      }
+
+      // Create the short link
+      const response = await urlsAPI.create(linkData);
+
+      // Show success message
+      setSuccessMessage('Short link created successfully!');
+
+      // Clear form
+      setLongUrl('');
+      setCustomName('');
+
+      // Redirect to My Links page after 1.5 seconds
+      setTimeout(() => {
+        navigate('/my-links');
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to create short link:', err);
+      setError(err.message || 'Failed to create short link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveDraft = () => {
-    // Handle save as draft
-    console.log('Saving as draft...', { longUrl, customName, generateQR });
+    // Save to local storage as draft
+    const draftData = {
+      longUrl,
+      customName,
+      generateQR,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('linkDraft', JSON.stringify(draftData));
+    setSuccessMessage('Draft saved successfully!');
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   return (
@@ -50,6 +97,46 @@ const CreateShortLink = () => {
               Transform your long URLs into short, trackable links with custom UTM parameters
             </p>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div style={{
+              padding: '1rem',
+              background: '#ECFDF5',
+              border: '1px solid #6EE7B7',
+              borderRadius: '0.5rem',
+              marginBottom: '1.5rem',
+              color: '#065F46',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#10B981"/>
+              </svg>
+              {successMessage}
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div style={{
+              padding: '1rem',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '0.5rem',
+              marginBottom: '1.5rem',
+              color: '#991B1B',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="#EF4444"/>
+              </svg>
+              {error}
+            </div>
+          )}
 
           {/* Main Form */}
           <div className="create-link-form">
@@ -158,11 +245,27 @@ const CreateShortLink = () => {
 
               {/* Action Buttons */}
               <div className="action-buttons">
-                <button type="submit" className="create-link-btn">
-                  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Create Short Link
+                <button type="submit" className="create-link-btn" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <div style={{
+                        width: '1rem',
+                        height: '1rem',
+                        border: '2px solid white',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 0.8s linear infinite'
+                      }}></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Create Short Link
+                    </>
+                  )}
                 </button>
                 <button type="button" onClick={handleSaveDraft} className="save-draft-btn">
                   <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">

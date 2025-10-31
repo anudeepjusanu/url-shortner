@@ -10,8 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CustomDomains from './components/CustomDomains';
 import CreateShortLink from './components/CreateShortLink';
 import Analytics from './components/Analytics';
+import MyLinks from './components/MyLinks';
 // Import placeholder components for now - we'll create them later
-const MyLinks = () => <div>My Links Page</div>;
 const QRCodes = () => <div>QR Codes Page</div>;
 const UTMBuilder = () => <div>UTM Builder Page</div>;
 const CreateLink = () => <div>Create Link Page</div>;
