@@ -1,0 +1,198 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Production builds
+frontend/dist/
+frontend/build/
+build/
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vite build tool
+.vite
+
+# Rollup.js default build output
+dist/
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Redis dump files
+dump.rdb
+
+# MongoDB data
+data/
+mongodb-data/
+
+# PM2 logs
+.pm2/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# Backup files
+*.backup
+*.bak
+*.old
+*~
+
+# Test files
+test-results/
+coverage/
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Deployment artifacts
+deployment.tar.gz
+*.tar.gz
+
+# Local development
+.local
+.cache
+
+# Frontend specific
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/dist
+frontend/build
+
+# TypeScript
+*.d.ts
+
+# ESLint
+.eslintrc.*
+
+# Prettier
+.prettierrc*
+.prettierignore
+
+# Jest
+jest.config.*
+coverage/
+
+# Webpack
+webpack.config.*
+
+# Babel
+.babelrc*
+babel.config.*
+
+# PostCSS
+postcss.config.*
+
+# Tailwind
+tailwind.config.*
+
+# Package lock files (choose one)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local configuration files
+config/local.js
+config/local.json
