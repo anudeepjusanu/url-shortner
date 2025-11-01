@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3015/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://laghhu.link/api';
 
 // API endpoints
 const endpoints = {
@@ -128,7 +128,7 @@ class ApiClient {
       }
     });
 
-    return this.request(url.pathname + url.search, {
+    return this.request(endpoint + url.search, {
       method: 'GET',
     });
   }
@@ -233,6 +233,12 @@ export const urlsAPI = {
   update: (id, data) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
   delete: (id) => apiClient.delete(`${endpoints.urls.delete}/${id}`),
   getStats: () => apiClient.get(endpoints.urls.stats),
+
+  // Alternative method names for compatibility with frontend
+  getUrls: (params) => apiClient.get(endpoints.urls.list, params),
+  deleteUrl: (id) => apiClient.delete(`${endpoints.urls.delete}/${id}`),
+  createUrl: (urlData) => apiClient.post(endpoints.urls.create, urlData),
+  updateUrl: (id, data) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
 };
 
 // Domains API methods
@@ -241,6 +247,13 @@ export const domainsAPI = {
   add: (domainData) => apiClient.post(endpoints.domains.add, domainData),
   verify: (id) => apiClient.post(`${endpoints.domains.verify}/${id}/verify`),
   delete: (id) => apiClient.delete(`${endpoints.domains.delete}/${id}`),
+  setDefaultDomain: (id) => apiClient.put(`${endpoints.domains.list}/${id}/default`),
+
+  // Alternative method names for compatibility with frontend
+  getDomains: (params) => apiClient.get(endpoints.domains.list, params),
+  createDomain: (domainData) => apiClient.post(endpoints.domains.add, domainData),
+  verifyDomain: (id) => apiClient.post(`${endpoints.domains.verify}/${id}/verify`),
+  deleteDomain: (id) => apiClient.delete(`${endpoints.domains.delete}/${id}`),
 };
 
 // Analytics API methods
