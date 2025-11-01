@@ -1,38 +1,20 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import MainHeader from './MainHeader';
 import { domainsAPI } from '../services/api';
 import './CustomDomains.css';
-import './Analytics.css';
 
 const CustomDomains = () => {
-  const navigate = useNavigate();
-    const [domainName, setDomainName] = useState('');
-
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [toastMessage, setToastMessage] = useState(null);
-
-  // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  // Wizard states
   const [wizardStep, setWizardStep] = useState(1);
   const [newDomainName, setNewDomainName] = useState('');
   const [newSubdomain, setNewSubdomain] = useState('');
-
-  // Action states
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState('idle');
-  const [verifyingDomain, setVerifyingDomain] = useState(null);
-  const [deletingDomain, setDeletingDomain] = useState(null);
-
-  
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     fetchDomains();
@@ -42,14 +24,15 @@ const CustomDomains = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await domainsAPI.list();
+      const response = await domainsAPI.getDomains();
 
       // Handle different response structures
-      const domainsData = response.data?.domains || response.data?.data?.domains || [];
+      const domainsData = response.data?.data?.domains || response.data?.domains || response.domains || [];
       setDomains(domainsData);
+      setError(null);
     } catch (err) {
-      console.error('Failed to fetch domains:', err);
-      setError(err.message || 'Failed to fetch domains. Please try again.');
+      console.error('Error fetching domains:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to fetch domains');
     } finally {
       setLoading(false);
     }
@@ -62,39 +45,36 @@ const CustomDomains = () => {
       case 'active':
       case 'verified':
         return (
-          <span className={`${baseClasses} bg-green-100 text-green-800`}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <span className={`${baseClasses} status-verified`}>
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
             {type === 'verification' ? 'Verified' : 'Active'}
           </span>
         );
       case 'pending':
         return (
-          <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M6 3V6L8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <span className={`${baseClasses} status-pending`}>
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
             </svg>
             Pending
           </span>
         );
       case 'failed':
         return (
-          <span className={`${baseClasses} bg-red-100 text-red-800`}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="m8 4-4 4m0-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <span className={`${baseClasses} status-failed`}>
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             Failed
           </span>
         );
       case 'inactive':
         return (
-          <span className={`${baseClasses} bg-gray-100 text-gray-800`}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="m8 4-4 4m0-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <span className={`${baseClasses} status-inactive`}>
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
             Inactive
           </span>
@@ -104,14 +84,25 @@ const CustomDomains = () => {
     }
   };
 
-  const showToast = (message) => {
-    setToastMessage(message);
+  const showToast = (message, type = 'success') => {
+    setToastMessage({ message, type });
     setTimeout(() => setToastMessage(null), 3000);
   };
 
   const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    showToast('Copied to clipboard!');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      showToast('Copied to clipboard!');
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showToast('Copied to clipboard!');
+    }
   };
 
   const handleAddDomain = async () => {
@@ -123,13 +114,14 @@ const CustomDomains = () => {
         isDefault: false
       };
 
-      await domainsAPI.add(domainData);
+      await domainsAPI.createDomain(domainData);
       await fetchDomains();
 
       setWizardStep(2);
       showToast('Domain added successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to add domain');
+      console.error('Error adding domain:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to add domain');
     } finally {
       setIsAddingDomain(false);
     }
@@ -141,11 +133,10 @@ const CustomDomains = () => {
 
     try {
       setVerificationStatus('checking');
-      setVerifyingDomain(targetId);
 
-      const response = await domainsAPI.verify(targetId);
+      const response = await domainsAPI.verifyDomain(targetId);
 
-      if (response.success || response.data?.success) {
+      if (response.data?.success || response.success) {
         setVerificationStatus('success');
         await fetchDomains();
         showToast('Domain verified successfully!');
@@ -155,7 +146,7 @@ const CustomDomains = () => {
         }
       } else {
         setVerificationStatus('failed');
-        setError(response.message || response.data?.message || 'DNS verification failed');
+        setError(response.data?.message || response.message || 'DNS verification failed');
       }
     } catch (err) {
       console.error('Domain verification error:', err);
@@ -166,10 +157,8 @@ const CustomDomains = () => {
       } else if (err.response?.status === 401) {
         setError('Authentication failed. Please login again.');
       } else {
-        setError(err.message || 'DNS verification failed');
+        setError(err.response?.data?.message || err.message || 'DNS verification failed');
       }
-    } finally {
-      setVerifyingDomain(null);
     }
   };
 
@@ -179,30 +168,21 @@ const CustomDomains = () => {
       await fetchDomains();
       showToast('Default domain updated!');
     } catch (err) {
-      setError(err.message || 'Failed to set default domain');
+      console.error('Error setting default domain:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to set default domain');
     }
   };
 
-  const handleDomainSettings = (domain) => {
-    setSelectedDomain(domain);
-    setShowDetailModal(true);
-  };
-
-  const handleRemoveDomain = async (domainId, domainName) => {
-    if (!window.confirm(`Are you sure you want to remove ${domainName}? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteDomain = async (domainId) => {
+    if (!window.confirm('Are you sure you want to delete this domain?')) return;
 
     try {
-      setDeletingDomain(domainId);
-      await domainsAPI.delete(domainId);
+      await domainsAPI.deleteDomain(domainId);
       await fetchDomains();
-      showToast('Domain removed successfully!');
+      showToast('Domain deleted successfully!');
     } catch (err) {
-      console.error('Failed to remove domain:', err);
-      setError(err.message || 'Failed to remove domain. Please try again.');
-    } finally {
-      setDeletingDomain(null);
+      console.error('Error deleting domain:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to delete domain');
     }
   };
 
@@ -215,154 +195,161 @@ const CustomDomains = () => {
     setError(null);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   const renderDomainTable = () => (
     <div className="domains-table-container">
       <div className="domains-table-header">
-        <div>
-          <h3 className="section-title">Connected Domains</h3>
-          <p className="section-description">Manage your branded domains and SSL certificates</p>
+        <div className="header-content">
+          <div>
+            <h3 className="table-title">Connected Domains</h3>
+            <p className="table-subtitle">Manage your branded domains and SSL certificates</p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn btn-primary add-domain-btn"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add New Domain
+          </button>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="add-domain-btn-new"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 3.33334V12.6667M3.33334 8H12.6667" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Add New Domain
-        </button>
       </div>
 
-      <div className="domains-table">
-        <div className="table-header">
-          <div className="table-col">Domain Name</div>
-          <div className="table-col">Status</div>
-          <div className="table-col">Verification</div>
-          <div className="table-col">Default</div>
-          <div className="table-col">Date Added</div>
-          <div className="table-col">Actions</div>
-        </div>
-
-        <div className="table-body">
-          {loading ? (
-            <div className="table-loading">
-              <div className="loading-spinner"></div>
-              <p>Loading domains...</p>
-            </div>
-          ) : domains.length === 0 ? (
-            <div className="table-empty">
-              <div className="empty-icon">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="24" cy="24" r="20" fill="#F3F4F6"/>
-                  <path d="M24 16V32M16 24H32" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <h4>No domains found</h4>
-              <p>Add your first domain to get started with branded short links.</p>
-            </div>
-          ) : (
-            domains.map((domain) => {
-              const domainId = domain.id || domain._id;
-              const isVerified = domain.verificationStatus === 'verified';
-              const isPending = domain.verificationStatus === 'pending';
-
-              return (
-                <div key={domainId} className="table-row">
-                  <div className="table-col">
-                    <div className="domain-name-cell">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 1L14.5 4.5V11.5C14.5 12.8807 11.7614 14 8 14C4.23858 14 1.5 12.8807 1.5 11.5V4.5L8 1Z" stroke="#6B7280" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <div>
-                        <span className="domain-name">{domain.fullDomain || domain.domain}</span>
-                        {domain.isDefault && (
-                          <span className="default-badge">Default</span>
-                        )}
+      <div className="table-wrapper">
+        <table className="domains-table">
+          <thead>
+            <tr>
+              <th>Domain Name</th>
+              <th>Status</th>
+              <th>Verification</th>
+              <th>Default</th>
+              <th>Date Added</th>
+              <th>Added By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="loading-cell">
+                  <div className="loading-content">
+                    <div className="loading-spinner"></div>
+                    Loading domains...
+                  </div>
+                </td>
+              </tr>
+            ) : domains.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="empty-cell">
+                  No domains found. Add your first domain to get started.
+                </td>
+              </tr>
+            ) : (
+              domains.map((domain) => (
+                <tr key={domain.id || domain._id} className="domain-row">
+                  <td>
+                    <div className="domain-cell">
+                      <div className="domain-info">
+                        <svg className="w-4 h-4 domain-icon" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clipRule="evenodd" />
+                        </svg>
+                        <div>
+                          <p className="domain-name">{domain.fullDomain || domain.domain}</p>
+                          {domain.isDefault && (
+                            <div className="default-badge">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              Default Domain
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="table-col">
-                    {getStatusBadge(domain.status || 'active', 'domain')}
-                  </div>
-                  <div className="table-col">
-                    {getStatusBadge(domain.verificationStatus || 'pending', 'verification')}
-                  </div>
-                  <div className="table-col">
-                    {domain.isDefault ? (
-                      <span className="default-indicator">
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 1L7.854 4.708L12 5.354L9 8.292L9.708 12.5L6 10.646L2.292 12.5L3 8.292L0 5.354L4.146 4.708L6 1Z" fill="#3B82F6"/>
-                        </svg>
-                        Yes
-                      </span>
-                    ) : isVerified ? (
+                  </td>
+                  <td>
+                    <div className="status-cell">
+                      {getStatusBadge(domain.status, 'domain')}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="status-cell">
+                      {getStatusBadge(domain.verificationStatus || domain.verified ? 'verified' : 'pending', 'verification')}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="default-cell">
+                      {domain.isDefault ? (
+                        <span className="default-yes">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          Yes
+                        </span>
+                      ) : (domain.verificationStatus === 'verified' || domain.verified) && domain.status === 'active' ? (
+                        <button
+                          onClick={() => handleSetDefault(domain.id || domain._id)}
+                          className="set-default-btn"
+                        >
+                          Set as Default
+                        </button>
+                      ) : (
+                        <span className="default-no">-</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="date-cell">
+                      {new Date(domain.createdAt || domain.dateAdded).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="owner-cell">
+                      {domain.owner?.email || domain.addedBy || 'Unknown'}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="actions-cell">
                       <button
-                        onClick={() => handleSetDefault(domainId)}
-                        className="set-default-btn"
-                      >
-                        Set as Default
-                      </button>
-                    ) : (
-                      <span className="not-available">-</span>
-                    )}
-                  </div>
-                  <div className="table-col">
-                    <span className="date-text">{formatDate(domain.createdAt || domain.dateAdded)}</span>
-                  </div>
-                  <div className="table-col">
-                    <div className="action-buttons">
-                      <button
-                        onClick={() => handleDomainSettings(domain)}
+                        onClick={() => {
+                          setSelectedDomain(domain);
+                          setShowDetailModal(true);
+                        }}
                         className="action-btn view-btn"
                         title="View Details"
                       >
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1 7s2-4 6-4 6 4 6 4-2 4-6 4-6-4-6-4z" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-                      {isPending && (
+                      {(domain.verificationStatus === 'pending' || domain.verificationStatus === 'failed' || !domain.verified) && (
                         <button
-                          onClick={() => handleVerifyDomain(domainId)}
-                          disabled={verifyingDomain === domainId}
+                          onClick={() => handleVerifyDomain(domain.id || domain._id)}
                           className="action-btn verify-btn"
                           title="Verify DNS"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12.833 7A5.833 5.833 0 1 1 7 1.167" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M12.833 2.333L7 8.167L5.25 6.417" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                           </svg>
                         </button>
                       )}
                       <button
-                        onClick={() => handleRemoveDomain(domainId, domain.fullDomain || domain.domain)}
-                        disabled={deletingDomain === domainId}
+                        onClick={() => handleDeleteDomain(domain.id || domain._id)}
                         className="action-btn delete-btn"
                         title="Delete"
                       >
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1.75 3.5H2.91667H12.25" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M11.0833 3.5V11.6667C11.0833 12.0203 10.9428 12.3594 10.6927 12.6095C10.4426 12.8595 10.1036 13 9.75 13H4.25C3.89638 13 3.55724 12.8595 3.30719 12.6095C3.05714 12.3594 2.91667 12.0203 2.91667 11.6667V3.5M4.66667 3.5V2.33333C4.66667 1.97971 4.80714 1.64057 5.05719 1.39052C5.30724 1.14048 5.64638 1 6 1H8C8.35362 1 8.69276 1.14048 8.94281 1.39052C9.19286 1.64057 9.33333 1.97971 9.33333 2.33333V3.5" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M6 6.41667V10.5" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M8 6.41667V10.5" stroke="currentColor" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -371,71 +358,85 @@ const CustomDomains = () => {
     <div className="modal-overlay">
       <div className="modal-container">
         <div className="modal-header">
-          <div>
+          <div className="modal-title-section">
             <h3 className="modal-title">Add New Domain</h3>
             <p className="modal-subtitle">Step {wizardStep} of 3</p>
           </div>
-          <button onClick={resetModal} className="modal-close">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <button
+            onClick={resetModal}
+            className="modal-close"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
+        {/* Progress Bar */}
         <div className="wizard-progress">
           <div className="progress-bar">
-            <div className={`progress-step ${wizardStep >= 1 ? 'active' : ''}`}>1</div>
-            <div className={`progress-line ${wizardStep > 1 ? 'active' : ''}`}></div>
-            <div className={`progress-step ${wizardStep >= 2 ? 'active' : ''}`}>2</div>
-            <div className={`progress-line ${wizardStep > 2 ? 'active' : ''}`}></div>
+            <div className={`progress-step ${wizardStep >= 1 ? 'active' : ''} ${wizardStep > 1 ? 'completed' : ''}`}>1</div>
+            <div className={`progress-line ${wizardStep > 1 ? 'completed' : ''}`}></div>
+            <div className={`progress-step ${wizardStep >= 2 ? 'active' : ''} ${wizardStep > 2 ? 'completed' : ''}`}>2</div>
+            <div className={`progress-line ${wizardStep > 2 ? 'completed' : ''}`}></div>
             <div className={`progress-step ${wizardStep >= 3 ? 'active' : ''}`}>3</div>
           </div>
         </div>
 
-        <div className="modal-content">
+        <div className="modal-body">
           {wizardStep === 1 && (
             <div className="wizard-step">
-              <h4>Enter Domain Information</h4>
-              <div className="form-fields">
+              <h4 className="step-title">Enter Domain Information</h4>
+              <div className="step-content">
                 <div className="form-field">
-                  <label>Base Domain</label>
+                  <label className="form-label">Base Domain</label>
                   <input
                     type="text"
                     value={newDomainName}
                     onChange={(e) => setNewDomainName(e.target.value)}
                     placeholder="company.sa"
-                    className="domain-input"
+                    className="form-input"
                   />
-                  <p className="field-hint">Enter your base domain (e.g., company.sa, ministry.gov.sa)</p>
+                  <p className="form-help">
+                    Enter your base domain (e.g., company.sa, ministry.gov.sa)
+                  </p>
                 </div>
 
                 <div className="form-field">
-                  <label>Subdomain (Optional)</label>
+                  <label className="form-label">Subdomain (Optional)</label>
                   <input
                     type="text"
                     value={newSubdomain}
                     onChange={(e) => setNewSubdomain(e.target.value)}
                     placeholder="links"
-                    className="domain-input"
+                    className="form-input"
                   />
-                  <p className="field-hint">Optional: Add a subdomain for your short links (e.g., "links" for links.company.sa)</p>
+                  <p className="form-help">
+                    Optional: Add a subdomain for your short links (e.g., "links" for links.company.sa)
+                  </p>
                 </div>
 
                 {(newDomainName || newSubdomain) && (
                   <div className="domain-preview">
-                    <p>Full domain: <strong>
-                      {newSubdomain ? `${newSubdomain}.${newDomainName}` : newDomainName}
-                    </strong></p>
+                    <p className="preview-text">
+                      Full domain: <span className="preview-domain">
+                        {newSubdomain ? `${newSubdomain}.${newDomainName}` : newDomainName}
+                      </span>
+                    </p>
                   </div>
                 )}
 
                 <div className="info-box">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z" fill="#3B82F6"/>
-                  </svg>
-                  <div>
-                    <h5>Custom Domain Setup</h5>
-                    <p>Your domain will be configured with DNS verification and SSL certificate management.</p>
+                  <div className="info-content">
+                    <svg className="w-5 h-5 info-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <h5 className="info-title">Custom Domain Setup</h5>
+                      <p className="info-description">
+                        Your domain will be configured with DNS verification and SSL certificate management.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -444,28 +445,30 @@ const CustomDomains = () => {
 
           {wizardStep === 2 && (
             <div className="wizard-step">
-              <h4>DNS Configuration</h4>
-              <div className="dns-config">
-                <div className="dns-instructions">
-                  <h5>Please create the following DNS record:</h5>
-                  <div className="dns-record-table">
-                    <div className="dns-record-row">
-                      <div className="dns-col">
+              <h4 className="step-title">DNS Configuration</h4>
+              <div className="step-content">
+                <div className="dns-config">
+                  <h5 className="dns-title">Please create the following DNS record:</h5>
+                  <div className="dns-record">
+                    <div className="dns-record-content">
+                      <div className="dns-field">
                         <span className="dns-label">Type:</span>
-                        <span className="dns-value">CNAME</span>
+                        <p className="dns-value">CNAME</p>
                       </div>
-                      <div className="dns-col">
+                      <div className="dns-field">
                         <span className="dns-label">Name:</span>
-                        <span className="dns-value">{newSubdomain ? `${newSubdomain}.${newDomainName}` : newDomainName || 'links.company.sa'}</span>
+                        <p className="dns-value">{newSubdomain ? `${newSubdomain}.${newDomainName}` : newDomainName || 'links.company.sa'}</p>
                       </div>
-                      <div className="dns-col">
+                      <div className="dns-field">
                         <span className="dns-label">Value:</span>
                         <div className="dns-value-with-copy">
-                          <span className="dns-value">laghhu.link</span>
-                          <button onClick={() => copyToClipboard('laghhu.link')} className="copy-btn">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M11.6667 5.25H6.41667C5.86438 5.25 5.41667 5.69772 5.41667 6.25V11.5C5.41667 12.0523 5.86438 12.5 6.41667 12.5H11.6667C12.219 12.5 12.6667 12.0523 12.6667 11.5V6.25C12.6667 5.69772 12.219 5.25 11.6667 5.25Z" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M2.75 8.75H2.33333C1.96514 8.75 1.66667 8.45152 1.66667 8.08333V2.33333C1.66667 1.96514 1.96514 1.66667 2.33333 1.66667H8.08333C8.45152 1.66667 8.75 1.96514 8.75 2.33333V2.75" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
+                          <p className="dns-value">laghhu.link</p>
+                          <button
+                            onClick={() => copyToClipboard('laghhu.link')}
+                            className="copy-btn"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                           </button>
                         </div>
@@ -475,53 +478,50 @@ const CustomDomains = () => {
                 </div>
 
                 <div className="warning-box">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 0L18.66 18H1.34L10 0ZM11 14H9V16H11V14ZM11 8H9V12H11V8Z" fill="#F59E0B"/>
-                  </svg>
-                  <div>
-                    <h5>DNS Propagation</h5>
-                    <p>DNS changes can take up to 24 hours to propagate globally. We'll automatically verify your domain once the DNS record is detected.</p>
+                  <div className="warning-content">
+                    <svg className="w-5 h-5 warning-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <h5 className="warning-title">DNS Propagation</h5>
+                      <p className="warning-description">
+                        DNS changes can take up to 24 hours to propagate globally. We'll automatically verify your domain once the DNS record is detected.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="verify-actions">
+                <div className="verify-section">
                   <button
                     onClick={() => handleVerifyDomain()}
                     disabled={verificationStatus === 'checking'}
-                    className="verify-btn"
+                    className="btn btn-primary verify-now-btn"
                   >
                     {verificationStatus === 'checking' ? (
-                      <>
-                        <div className="spinner-small"></div>
-                        Checking DNS...
-                      </>
+                      <div className="loading-spinner"></div>
                     ) : (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M14 8A6 6 0 1 1 8 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M14 2L8 8L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Check DNS Now
-                      </>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
                     )}
+                    {verificationStatus === 'checking' ? 'Checking DNS...' : 'Check DNS Now'}
                   </button>
 
                   {verificationStatus === 'success' && (
-                    <div className="status-message success">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <div className="success-message">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                      DNS record verified!
+                      <span>DNS record verified!</span>
                     </div>
                   )}
 
                   {verificationStatus === 'failed' && (
-                    <div className="status-message error">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <div className="error-message">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      DNS record not found. Please check your configuration.
+                      <span>DNS record not found. Please check your configuration.</span>
                     </div>
                   )}
                 </div>
@@ -530,37 +530,40 @@ const CustomDomains = () => {
           )}
 
           {wizardStep === 3 && verificationStatus === 'success' && (
-            <div className="wizard-step success-step">
-              <div className="success-icon">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="24" cy="24" r="20" fill="#10B981"/>
-                  <path d="M32 18L21 29L16 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h4>Domain Successfully Added!</h4>
-              <p>
-                {newDomainName || 'Your domain'} is now active and ready to use for creating branded short links.
-              </p>
-
-              <div className="domain-summary">
-                <div className="summary-details">
-                  <span className="summary-domain">{newDomainName || 'links.company.sa'}</span>
-                  <span className="summary-status">DNS Verified • Ready for Use</span>
-                </div>
-                <div className="summary-icon">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16.5 8.5L7.5 17.5L3.5 13.5" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <div className="wizard-step">
+              <div className="success-content">
+                <div className="success-icon">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Active
                 </div>
-              </div>
+                <h4 className="success-title">Domain Successfully Added!</h4>
+                <p className="success-description">
+                  {newDomainName || 'Your domain'} is now active and ready to use for creating branded short links.
+                </p>
 
-              <button className="set-default-btn-modal">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 1L10.472 5.944L16 6.764L12 10.652L12.944 16.236L8 13.944L3.056 16.236L4 10.652L0 6.764L5.528 5.944L8 1Z" fill="currentColor"/>
-                </svg>
-                Set as Default Domain
-              </button>
+                <div className="domain-summary">
+                  <div className="summary-content">
+                    <div className="summary-info">
+                      <p className="summary-domain">{newDomainName || 'links.company.sa'}</p>
+                      <p className="summary-status">DNS Verified • Ready for Use</p>
+                    </div>
+                    <div className="summary-badge">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span>Active</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="btn btn-primary set-default-btn-large">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  Set as Default Domain
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -573,7 +576,7 @@ const CustomDomains = () => {
               }
             }}
             disabled={wizardStep === 1}
-            className="btn-secondary"
+            className="btn btn-secondary"
           >
             Previous
           </button>
@@ -594,7 +597,7 @@ const CustomDomains = () => {
               (wizardStep === 1 && (!newDomainName.trim() || isAddingDomain)) ||
               (wizardStep === 2 && verificationStatus !== 'success')
             }
-            className="btn-primary"
+            className="btn btn-primary"
           >
             {isAddingDomain ? 'Adding...' :
              wizardStep === 1 ? 'Add Domain' :
@@ -610,80 +613,90 @@ const CustomDomains = () => {
 
     return (
       <div className="modal-overlay">
-        <div className="modal-container large">
+        <div className="modal-container detail-modal">
           <div className="modal-header">
-            <div>
+            <div className="modal-title-section">
               <h3 className="modal-title">{selectedDomain.domain}</h3>
               <p className="modal-subtitle">Domain configuration and activity</p>
             </div>
-            <button onClick={() => setShowDetailModal(false)} className="modal-close">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <button
+              onClick={() => setShowDetailModal(false)}
+              className="modal-close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <div className="modal-content">
+          <div className="modal-body detail-body">
+            {/* DNS Validation Section */}
             <div className="detail-section">
-              <h4>DNS Validation</h4>
-              <div className="dns-validation">
-                <div className="validation-status">
-                  <span>Verification Status</span>
-                  {getStatusBadge(selectedDomain.verificationStatus, 'verification')}
+              <h4 className="detail-section-title">DNS Validation</h4>
+              <div className="detail-section-content">
+                <div className="detail-row">
+                  <span className="detail-label">Verification Status</span>
+                  {getStatusBadge(selectedDomain.verificationStatus || (selectedDomain.verified ? 'verified' : 'pending'), 'verification')}
                 </div>
-                <div className="dns-record-display">
-                  <div className="dns-record-row">
-                    <div>
-                      <span className="dns-label">Type:</span>
-                      <span className="dns-value">CNAME</span>
-                    </div>
-                    <div>
-                      <span className="dns-label">Name:</span>
-                      <span className="dns-value">{selectedDomain.fullDomain}</span>
-                    </div>
-                    <div>
-                      <span className="dns-label">Value:</span>
-                      <div className="dns-value-with-copy">
-                        <span className="dns-value">{selectedDomain.cnameTarget || 'laghhu.link'}</span>
-                        <button onClick={() => copyToClipboard(selectedDomain.cnameTarget || 'laghhu.link')} className="copy-btn">
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.6667 5.25H6.41667C5.86438 5.25 5.41667 5.69772 5.41667 6.25V11.5C5.41667 12.0523 5.86438 12.5 6.41667 12.5H11.6667C12.219 12.5 12.6667 12.0523 12.6667 11.5V6.25C12.6667 5.69772 12.219 5.25 11.6667 5.25Z" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M2.75 8.75H2.33333C1.96514 8.75 1.66667 8.45152 1.66667 8.08333V2.33333C1.66667 1.96514 1.96514 1.66667 2.33333 1.66667H8.08333C8.45152 1.66667 8.75 1.96514 8.75 2.33333V2.75" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
+                <div className="dns-config">
+                  <div className="dns-record">
+                    <div className="dns-record-content">
+                      <div className="dns-field">
+                        <span className="dns-label">Type:</span>
+                        <p className="dns-value">CNAME</p>
+                      </div>
+                      <div className="dns-field">
+                        <span className="dns-label">Name:</span>
+                        <p className="dns-value">{selectedDomain.fullDomain || selectedDomain.domain}</p>
+                      </div>
+                      <div className="dns-field">
+                        <span className="dns-label">Value:</span>
+                        <div className="dns-value-with-copy">
+                          <p className="dns-value">{selectedDomain.cnameTarget || 'laghhu.link'}</p>
+                          <button
+                            onClick={() => copyToClipboard(selectedDomain.cnameTarget || 'laghhu.link')}
+                            className="copy-btn"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <button className="recheck-btn">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14 8A6 6 0 1 1 8 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M14 2L8 8L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <button className="btn btn-primary recheck-btn">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Re-check DNS
                 </button>
               </div>
             </div>
 
+            {/* Activity Log Section */}
             <div className="detail-section">
-              <h4>Activity Log</h4>
-              <div className="activity-log">
-                <div className="activity-item success">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <div>
-                    <p>Domain Verified</p>
-                    <span>{formatDate(selectedDomain.createdAt || selectedDomain.dateAdded)} • DNS configuration confirmed</span>
+              <h4 className="detail-section-title">Activity Log</h4>
+              <div className="detail-section-content">
+                <div className="activity-log">
+                  <div className="activity-item success">
+                    <svg className="w-5 h-5 activity-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd" />
+                    </svg>
+                    <div className="activity-content">
+                      <p className="activity-title">Domain Verified</p>
+                      <p className="activity-description">{selectedDomain.dateAdded || selectedDomain.createdAt} • DNS configuration confirmed</p>
+                    </div>
                   </div>
-                </div>
-                <div className="activity-item">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 3.33334V12.6667M3.33334 8H12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <div>
-                    <p>Domain Added</p>
-                    <span>{formatDate(selectedDomain.createdAt || selectedDomain.dateAdded)} • Added by {selectedDomain.owner?.email || 'User'}</span>
+                  <div className="activity-item">
+                    <svg className="w-5 h-5 activity-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <div className="activity-content">
+                      <p className="activity-title">Domain Added</p>
+                      <p className="activity-description">{selectedDomain.dateAdded || selectedDomain.createdAt} • Added by {selectedDomain.addedBy || selectedDomain.owner?.email || 'Unknown'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -695,185 +708,85 @@ const CustomDomains = () => {
   };
 
   return (
-    <div className="analytics-container">
-      <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-
-        {/* Main Content */}
-        <div className="analytics-main">
-        <main className="main-content">
-          {/* Breadcrumb */}
-          <div className="breadcrumb">
-            <span className="breadcrumb-item" onClick={() => navigate('/dashboard')}>Dashboard</span>
-            <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L5 5L1 9" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="breadcrumb-item active">Custom Domains</span>
-          </div>
-
-          {/* Page Description */}
-          <div className="page-description">
-            <p>Add your own branded domains to create professional short links that match your brand.</p>
-          </div>
-
-          {/* Add New Domain Section */}
-          <div className="add-domain-section">
-            <h3>Add New Domain</h3>
-            <div className="add-domain-form">
-              <div className="form-group">
-                <label htmlFor="domainName">Domain Name</label>
-                <input
-                  type="text"
-                  id="domainName"
-                  placeholder="brand.sa"
-                  value={domainName}
-                  onChange={(e) => setDomainName(e.target.value)}
-                  className="domain-input"
-                />
-              </div>
-              <button className="add-domain-btn" onClick={handleAddDomain}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 3.33334V12.6667M3.33334 8H12.6667" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Add Domain
-              </button>
-            </div>
-          </div>
-
-          {/* DNS Configuration Section */}
-          <div className="dns-configuration">
-            <div className="dns-header">
-              <h3>DNS Configuration</h3>
-              <div className="dns-warning">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7.00003 1.16666L12.8334 12.8333H1.16669L7.00003 1.16666Z" stroke="#F59E0B" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M7 5.25V7.58334" stroke="#F59E0B" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M7 9.91666H7.00584" stroke="#F59E0B" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Configure DNS records to verify domain ownership
-              </div>
-            </div>
-            
-            <div className="dns-record">
-              <h4>One CNAME Record (Required for link redirection) needs to be added</h4>
-              <div className="dns-table">
-                <div className="dns-table-header">
-                  <div className="dns-col">Type</div>
-                  <div className="dns-col">Name</div>
-                  <div className="dns-col">Value</div>
-                </div>
-                <div className="dns-table-row">
-                  <div className="dns-col">
-                    <span className="dns-type">CNAME</span>
-                    <button className="copy-btn" title="Copy">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.6667 5.25H6.41667C5.86438 5.25 5.41667 5.69772 5.41667 6.25V11.5C5.41667 12.0523 5.86438 12.5 6.41667 12.5H11.6667C12.219 12.5 12.6667 12.0523 12.6667 11.5V6.25C12.6667 5.69772 12.219 5.25 11.6667 5.25Z" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2.75 8.75H2.33333C1.96514 8.75 1.66667 8.45152 1.66667 8.08333V2.33333C1.66667 1.96514 1.96514 1.66667 2.33333 1.66667H8.08333C8.45152 1.66667 8.75 1.96514 8.75 2.33333V2.75" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="dns-col">
-                    <span className="dns-name">Marketing.sa</span>
-                    <button className="copy-btn" title="Copy">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.6667 5.25H6.41667C5.86438 5.25 5.41667 5.69772 5.41667 6.25V11.5C5.41667 12.0523 5.86438 12.5 6.41667 12.5H11.6667C12.219 12.5 12.6667 12.0523 12.6667 11.5V6.25C12.6667 5.69772 12.219 5.25 11.6667 5.25Z" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2.75 8.75H2.33333C1.96514 8.75 1.66667 8.45152 1.66667 8.08333V2.33333C1.66667 1.96514 1.96514 1.66667 2.33333 1.66667H8.08333C8.45152 1.66667 8.75 1.96514 8.75 2.33333V2.75" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="dns-col">
-                    <span className="dns-value">redirect.linksa.com</span>
-                    <button className="copy-btn" title="Copy">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.6667 5.25H6.41667C5.86438 5.25 5.41667 5.69772 5.41667 6.25V11.5C5.41667 12.0523 5.86438 12.5 6.41667 12.5H11.6667C12.219 12.5 12.6667 12.0523 12.6667 11.5V6.25C12.6667 5.69772 12.219 5.25 11.6667 5.25Z" stroke="#3B82F6" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2.75 8.75H2.33333C1.96514 8.75 1.66667 8.45152 1.66667 8.08333V2.33333C1.66667 1.96514 1.96514 1.66667 2.33333 1.66667H8.08333C8.45152 1.66667 8.75 1.96514 8.75 2.33333V2.75" stroke="#3B82F6" strokeWidth="1.16667" strokeLineCap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="dns-instructions">
-              <h4>How to add DNS records:</h4>
-              <ul>
-                <li>Log in to your domain registrar or DNS provider</li>
-                <li>Navigate to DNS management or DNS settings</li>
-                <li>Add the CNAME record for link redirection</li>
-                <li>Save changes and wait for DNS propagation (up to 24 hours)</li>
-                <li>Click "Verify Domain" button below</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Your Domains Section */}
-          <div className="domains-section">
-            <h3>Your Domains</h3>
-            <div className="domains-list">
-              {/* Verified Domain */}
-              <div className="domain-item verified">
-                <div className="domain-info">
-                  <div className="domain-status">
-                    <div className="status-icon verified-icon">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <div className="domain-details">
-                      <span className="domain-name">brand.sa</span>
-                      <div className="domain-meta">
-                        <span className="status-badge verified-badge">Verified</span>
-                        <span className="domain-date">Added 3 days ago</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="domain-actions">
-                  <button className=" settings-btn" onClick={() => handleDomainSettings('brand.sa')}>
-                    Settings
-                  </button>
-                  <button className="remove-btn" onClick={() => handleRemoveDomain('brand.sa')}>
-                    Remove
-                  </button>
-                </div>
-              </div>
-
-              {/* Pending Domain */}
-              <div className="domain-item pending">
-                <div className="domain-info">
-                  <div className="domain-status">
-                    <div className="status-icon pending-icon">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="6" cy="6" r="5" stroke="white" strokeWidth="1.5"/>
-                        <path d="M6 3V6L8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <div className="domain-details">
-                      <span className="domain-name">marketing.sa</span>
-                      <div className="domain-meta">
-                        <span className="status-badge pending-badge">Pending</span>
-                        <span className="domain-date">Added 1 hour ago</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="domain-actions">
-                  <button className="settings-btn" onClick={() => handleDomainSettings('marketing.sa')}>
-                    Settings
-                  </button>
-
-                  <button className="verify-btn" onClick={() => handleVerifyDomain('marketing.sa')}>
-                    Verify Domain
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </main>
+    <div className="custom-domains-page">
+      <div className="page-header">
+        <div className="header-info">
+          <h1 className="page-title">Domain Management</h1>
+          <p className="page-subtitle">Manage your branded domains and SSL certificates</p>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="error-alert">
+          <div className="error-content">
+            <svg className="w-5 h-5 error-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="error-text">
+              <h4 className="error-title">Error</h4>
+              <p className="error-message">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="error-close"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`toast ${toastMessage.type}`}>
+          <div className="toast-content">
+            <svg className={`w-5 h-5 toast-icon ${toastMessage.type}`} fill="currentColor" viewBox="0 0 20 20">
+              {toastMessage.type === 'success' ? (
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              ) : (
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              )}
+            </svg>
+            <p className="toast-message">{toastMessage.message}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Warning Banners for Pending Domains */}
+      {domains.some(d => d.verificationStatus === 'pending' || (!d.verified && d.status !== 'active')) && (
+        <div className="pending-warnings">
+          {domains
+            .filter(d => d.verificationStatus === 'pending' || (!d.verified && d.status !== 'active'))
+            .map(domain => (
+              <div key={domain.id || domain._id} className="warning-banner">
+                <div className="warning-content">
+                  <svg className="w-5 h-5 warning-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                  <div className="warning-text">
+                    <h4 className="warning-title">Domain Verification Pending</h4>
+                    <p className="warning-description">
+                      <strong>{domain.fullDomain || domain.domain}</strong> is waiting for DNS verification.
+                      <button
+                        onClick={() => handleVerifyDomain(domain.id || domain._id)}
+                        className="warning-link"
+                      >
+                        Check DNS configuration
+                      </button>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {renderDomainTable()}
+      {showAddModal && renderAddDomainWizard()}
+      {showDetailModal && renderDomainDetailModal()}
     </div>
   );
 };

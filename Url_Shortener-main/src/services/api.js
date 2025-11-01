@@ -243,17 +243,38 @@ export const urlsAPI = {
 
 // Domains API methods
 export const domainsAPI = {
+  // Get all user domains
+  getDomains: (params = {}) => apiClient.get(endpoints.domains.list, params),
+
+  // Get single domain
+  getDomain: (id) => apiClient.get(`${endpoints.domains.list}/${id}`),
+
+  // Create new domain
+  createDomain: (domainData) => apiClient.post(endpoints.domains.add, domainData),
+
+  // Update domain
+  updateDomain: (id, data) => apiClient.put(`${endpoints.domains.list}/${id}`, data),
+
+  // Delete domain
+  deleteDomain: (id) => apiClient.delete(`${endpoints.domains.delete}/${id}`),
+
+  // Verify domain DNS
+  verifyDomain: (id) => apiClient.post(`${endpoints.domains.verify}/${id}/verify`),
+
+  // Set domain as default
+  setDefaultDomain: (id) => apiClient.post(`${endpoints.domains.list}/${id}/set-default`),
+
+  // Get domain statistics
+  getDomainStats: () => apiClient.get(`${endpoints.domains.list}/stats`),
+
+  // Get domain info (for DNS lookup)
+  getDomainInfo: (domain) => apiClient.get(`${endpoints.domains.list}/info/${domain}`),
+
+  // Legacy method names for backward compatibility
   list: (params) => apiClient.get(endpoints.domains.list, params),
   add: (domainData) => apiClient.post(endpoints.domains.add, domainData),
   verify: (id) => apiClient.post(`${endpoints.domains.verify}/${id}/verify`),
   delete: (id) => apiClient.delete(`${endpoints.domains.delete}/${id}`),
-  setDefaultDomain: (id) => apiClient.put(`${endpoints.domains.list}/${id}/default`),
-
-  // Alternative method names for compatibility with frontend
-  getDomains: (params) => apiClient.get(endpoints.domains.list, params),
-  createDomain: (domainData) => apiClient.post(endpoints.domains.add, domainData),
-  verifyDomain: (id) => apiClient.post(`${endpoints.domains.verify}/${id}/verify`),
-  deleteDomain: (id) => apiClient.delete(`${endpoints.domains.delete}/${id}`),
 };
 
 // Analytics API methods
