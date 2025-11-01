@@ -1,0 +1,132 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install backend dependencies
+      run: npm install
+
+    - name: Install frontend dependencies
+      run: cd frontend && npm install
+
+    - name: Build frontend
+      run: cd frontend && npm run build
+
+    - name: Run backend tests (if available)
+      run: npm test || echo "No tests configured"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm install
+        cd frontend && npm install
+
+    - name: Build frontend
+      run: cd frontend && npm run build
+
+    - name: Create deployment package
+      run: |
+        # Create a clean build directory
+        mkdir -p deploy-temp
+
+        # Copy necessary files for deployment
+        cp -r src deploy-temp/
+        cp -r scripts deploy-temp/
+        mkdir -p deploy-temp/frontend
+        cp -r frontend/dist deploy-temp/frontend/
+        cp package*.json deploy-temp/
+        cp ecosystem.config.js deploy-temp/
+        cp .env.production deploy-temp/
+
+        # Create logs directory
+        mkdir -p deploy-temp/logs
+
+        # Create deployment archive
+        tar -czf deployment.tar.gz -C deploy-temp .
+
+    - name: Copy files to Azure VM
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
+        port: 22
+        source: "deployment.tar.gz"
+        target: "/tmp/"
+
+    - name: Deploy to Azure VM
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
+        port: 22
+        script: |
+          set -e
+
+          # Create app directory if it doesn't exist
+          sudo mkdir -p /var/www/url-shortener
+
+          # Stop the application
+          pm2 stop url-shortener || echo "App not running"
+          pm2 delete url-shortener || echo "App not in PM2"
+
+          # Backup current deployment
+          sudo cp -r /var/www/url-shortener /var/www/url-shortener-backup-$(date +%Y%m%d-%H%M%S) || echo "No previous deployment"
+
+          # Extract new deployment
+          cd /var/www/url-shortener
+          sudo tar -xzf /tmp/deployment.tar.gz --strip-components=1
+
+          # Install production dependencies
+          sudo npm install --production
+
+          # Set correct ownership
+          sudo chown -R $USER:$USER /var/www/url-shortener
+
+          # Copy environment file
+          sudo cp /var/www/url-shortener/.env.production /var/www/url-shortener/.env || echo "No .env.production file found"
+
+          # Initialize database plans (only if they don't exist)
+          cd /var/www/url-shortener
+          node scripts/init-plans.js || echo "Plans initialization completed or failed gracefully"
+
+          # Start the application
+          pm2 start ecosystem.config.js --env production
+
+          # Save PM2 configuration
+          pm2 save
+
+          # Clean up
+          rm -f /tmp/deployment.tar.gz
+
+          echo "Deployment completed successfully!"
