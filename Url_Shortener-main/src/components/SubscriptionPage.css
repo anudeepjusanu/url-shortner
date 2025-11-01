@@ -1,0 +1,364 @@
+/* Root layout */
+.subscription-root {
+  min-height: 100vh;
+  background: #F9FAFB;
+}
+
+.subscription-main-layout {
+  display: flex;
+  margin-top: 64px;
+}
+
+.subscription-main-content {
+  flex: 1;
+  margin-left: 220px;
+  padding: 40px 0 40px 0;
+  min-height: calc(100vh - 64px);
+  background: #F9FAFB;
+  width: calc(100% - 220px);
+}
+
+.subscription-content-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.subscription-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.subscription-desc {
+  color: #6B7280;
+  font-size: 16px;
+  margin-bottom: 32px;
+}
+
+/* Current Plan Card */
+.current-plan-section {
+  margin-bottom: 32px;
+}
+.current-plan-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 28px 32px 24px 32px;
+  box-shadow: 0 2px 8px 0 rgba(16,30,54,0.03);
+}
+.plan-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.plan-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+.plan-status.active {
+  background: #22C55E;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin-left: 4px;
+}
+.plan-price {
+  margin-left: auto;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2563EB;
+}
+.plan-price-unit {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 400;
+}
+.plan-subheader {
+  color: #2563EB;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.plan-next-billing {
+  color: #6B7280;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.plan-stats-row {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 18px;
+}
+.plan-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563EB;
+}
+.stat-label {
+  color: #6B7280;
+  font-size: 13px;
+  text-align: center;
+}
+.stat-sub {
+  color: #9CA3AF;
+  font-size: 12px;
+}
+.plan-features-row {
+  display: flex;
+  gap: 32px;
+  margin-top: 10px;
+}
+.plan-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #22C55E;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+.plan-features-list li {
+  margin-bottom: 2px;
+}
+
+/* Available Plans */
+.available-plans-section {
+  margin-bottom: 32px;
+}
+.plans-row {
+  display: flex;
+  gap: 24px;
+}
+.plan-card {
+  background: #fff;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  flex: 1;
+  padding: 24px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 1px 4px 0 rgba(16,30,54,0.02);
+}
+.plan-card.current {
+  border: 2px solid #2563EB;
+  box-shadow: 0 2px 8px 0 rgba(37,99,235,0.08);
+}
+.plan-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+.plan-card-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2563EB;
+  margin-bottom: 10px;
+}
+.plan-card-price span {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 400;
+}
+.plan-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  color: #22C55E;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.7;
+  text-align: left;
+}
+.plan-card-btn {
+  width: 100%;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.plan-card-btn.downgrade {
+  background: #F3F4F6;
+  color: #374151;
+}
+.plan-card-btn.current {
+  background: #DBEAFE;
+  color: #2563EB;
+  cursor: default;
+}
+.plan-card-btn.upgrade {
+  background: #2563EB;
+  color: #fff;
+}
+
+/* Billing Info */
+.billing-section {
+  margin-bottom: 32px;
+}
+.billing-info-row {
+  display: flex;
+  gap: 24px;
+}
+.billing-info-box {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  flex: 1;
+  padding: 18px 20px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.billing-label {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.billing-value {
+  font-size: 15px;
+  color: #111827;
+  font-weight: 600;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.visa-icon {
+  background: #2563EB;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-right: 6px;
+}
+.card-number {
+  letter-spacing: 1px;
+}
+.card-expiry {
+  color: #6B7280;
+  font-size: 13px;
+  margin-left: 8px;
+}
+.billing-link {
+  color: #2563EB;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+/* Cancel Subscription */
+.cancel-section {
+  margin-bottom: 32px;
+}
+.cancel-box {
+  background: #FEF2F2;
+  border: 1.5px solid #FCA5A5;
+  border-radius: 10px;
+  padding: 22px 24px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cancel-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #B91C1C;
+  margin-bottom: 2px;
+}
+.cancel-desc {
+  color: #B91C1C;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.cancel-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #FEE2E2;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #B91C1C;
+  font-size: 14px;
+}
+.warning-icon {
+  font-size: 20px;
+  margin-top: 2px;
+}
+.cancel-warning ul {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
+  color: #B91C1C;
+  font-size: 14px;
+}
+.cancel-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+.pause-btn {
+  background: #F3F4F6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cancel-btn {
+  background: #DC2626;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .subscription-content-wrapper {
+    max-width: 100%;
+  }
+  .plans-row, .billing-info-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+@media (max-width: 800px) {
+  .subscription-main-content {
+    margin-left: 0;
+    padding: 32px 0 32px 0;
+  }
+  .subscription-main-layout {
+    flex-direction: column;
+  }
+  .subscription-sidebar {
+    position: static;
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-top: 0;
+  }
+}

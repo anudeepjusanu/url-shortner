@@ -1,6 +1,8 @@
+
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Sidebar.css";
+import "./CreateLinkHeader.css"
 
 const Sidebar = ({ activeItem }) => {
   const navigate = useNavigate();
@@ -20,32 +22,32 @@ const Sidebar = ({ activeItem }) => {
   return (
     <aside className="sidebar">
       {/* Logo Section */}
-      <div className="sidebar-header">
-        <div className="logo">
-          <div className="logo-icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="14"
-              viewBox="0 0 18 14"
-              fill="none"
-            >
-              <g clip-path="url(#clip0_775_439)">
-                <path
-                  d="M15.8539 7.31992C17.3988 5.775 17.3988 3.27305 15.8539 1.72813C14.4867 0.360939 12.332 0.183204 10.7598 1.30703L10.716 1.33711C10.3223 1.61875 10.232 2.16563 10.5137 2.55664C10.7953 2.94766 11.3422 3.04063 11.7332 2.75899L11.777 2.72891C12.6547 2.10274 13.8551 2.20117 14.6152 2.96406C15.4766 3.82539 15.4766 5.21992 14.6152 6.08125L11.5473 9.15469C10.6859 10.016 9.2914 10.016 8.43008 9.15469C7.66719 8.3918 7.56875 7.19141 8.19492 6.31641L8.225 6.27266C8.50664 5.87891 8.41367 5.33203 8.02266 5.05313C7.63164 4.77422 7.08203 4.86445 6.80312 5.25547L6.77305 5.29922C5.64648 6.86875 5.82422 9.02344 7.19141 10.3906C8.73633 11.9355 11.2383 11.9355 12.7832 10.3906L15.8539 7.31992ZM1.64609 6.68008C0.101171 8.225 0.101171 10.727 1.64609 12.2719C3.01328 13.6391 5.16797 13.8168 6.74023 12.693L6.78398 12.6629C7.17773 12.3813 7.26797 11.8344 6.98633 11.4434C6.70469 11.0523 6.15781 10.9594 5.7668 11.241L5.72305 11.2711C4.84531 11.8973 3.64492 11.7988 2.88477 11.0359C2.02344 10.1719 2.02344 8.77734 2.88477 7.91602L5.95273 4.84531C6.81406 3.98399 8.20859 3.98399 9.06992 4.84531C9.83281 5.6082 9.93125 6.8086 9.30508 7.68633L9.275 7.73008C8.99336 8.12383 9.08633 8.6707 9.47734 8.94961C9.86836 9.22852 10.418 9.13828 10.6969 8.74727L10.727 8.70352C11.8535 7.13125 11.6758 4.97656 10.3086 3.60938C8.76367 2.06445 6.26172 2.06445 4.7168 3.60938L1.64609 6.68008Z"
-                  fill="white"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0_775_439">
-                  <path d="M0 0H17.5V14H0V0Z" fill="white" />
-                </clipPath>
-              </defs>
-            </svg>{" "}
+        <div className="create-link-header-left" style={{alignItems: "center", display: "flex", justifyContent: "center"}}>
+          <div className="create-link-logo-section">
+            <div className="create-link-logo-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="16"
+                viewBox="0 0 20 16"
+                fill="none"
+              >
+                <g clip-path="url(#clip0_775_195)">
+                  <path
+                    d="M18.1188 8.36562C19.8845 6.6 19.8845 3.74062 18.1188 1.975C16.5563 0.412497 14.0938 0.209372 12.297 1.49375L12.247 1.52812C11.797 1.85 11.6938 2.475 12.0157 2.92187C12.3376 3.36875 12.9626 3.475 13.4095 3.15312L13.4595 3.11875C14.4626 2.40312 15.8345 2.51562 16.7032 3.3875C17.6876 4.37187 17.6876 5.96562 16.7032 6.95L13.197 10.4625C12.2126 11.4469 10.6188 11.4469 9.63447 10.4625C8.7626 9.59062 8.6501 8.21875 9.36572 7.21875L9.4001 7.16875C9.72197 6.71875 9.61572 6.09375 9.16885 5.775C8.72197 5.45625 8.09385 5.55937 7.7751 6.00625L7.74072 6.05625C6.45322 7.85 6.65635 10.3125 8.21885 11.875C9.98447 13.6406 12.8438 13.6406 14.6095 11.875L18.1188 8.36562ZM1.88135 7.63437C0.115723 9.4 0.115723 12.2594 1.88135 14.025C3.44385 15.5875 5.90635 15.7906 7.70322 14.5062L7.75322 14.4719C8.20322 14.15 8.30635 13.525 7.98447 13.0781C7.6626 12.6312 7.0376 12.525 6.59072 12.8469L6.54072 12.8812C5.5376 13.5969 4.16572 13.4844 3.29697 12.6125C2.3126 11.625 2.3126 10.0312 3.29697 9.04687L6.80322 5.5375C7.7876 4.55312 9.38135 4.55312 10.3657 5.5375C11.2376 6.40937 11.3501 7.78125 10.6345 8.78437L10.6001 8.83437C10.2782 9.28437 10.3845 9.90937 10.8313 10.2281C11.2782 10.5469 11.9063 10.4437 12.2251 9.99687L12.2595 9.94687C13.547 8.15 13.3438 5.6875 11.7813 4.125C10.0157 2.35937 7.15635 2.35937 5.39072 4.125L1.88135 7.63437Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_775_195">
+                    <path d="M0 0H20V16H0V0Z" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </div>
+            <span className="create-link-logo-text">LinkSA</span>
           </div>
-          <h1 className="logo-text">LinkSa</h1>
         </div>
-      </div>
 
       {/* Navigation */}
       <nav className="sidebar-nav">
@@ -67,7 +69,7 @@ const Sidebar = ({ activeItem }) => {
                 <g clip-path="url(#clip0_775_404)">
                   <path
                     d="M17.9937 7.98438C17.9937 8.54688 17.525 8.9875 16.9937 8.9875H15.9937L16.0156 13.9937C16.0156 14.0781 16.0094 14.1625 16 14.2469V14.75C16 15.4406 15.4406 16 14.75 16H14.25C14.2156 16 14.1813 16 14.1469 15.9969C14.1031 16 14.0594 16 14.0156 16H13H12.25C11.5594 16 11 15.4406 11 14.75V14V12C11 11.4469 10.5531 11 10 11H8C7.44688 11 7 11.4469 7 12V14V14.75C7 15.4406 6.44063 16 5.75 16H5H4.00313C3.95625 16 3.90937 15.9969 3.8625 15.9937C3.825 15.9969 3.7875 16 3.75 16H3.25C2.55938 16 2 15.4406 2 14.75V11.25C2 11.2219 2 11.1906 2.00312 11.1625V8.9875H1C0.4375 8.9875 0 8.55 0 7.98438C0 7.70312 0.09375 7.45312 0.3125 7.23438L8.325 0.25C8.54375 0.03125 8.79375 0 9.0125 0C9.23125 0 9.48125 0.0625 9.66875 0.21875L17.65 7.23438C17.9 7.45312 18.025 7.70312 17.9937 7.98438Z"
-                    fill="white"
+                    fill="gray"
                   />
                 </g>
                 <defs>
@@ -79,7 +81,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>Dashboard</span>
           </div>
-          <div
+          {/* <div
             className={`nav-item ${
               isActive("/create-short-link") || activeItem === "create-link"
                 ? "active"
@@ -103,7 +105,7 @@ const Sidebar = ({ activeItem }) => {
               </svg>{" "}
             </div>
             <span>Create Link</span>
-          </div>
+          </div> */}
           <div
             className={`nav-item ${isActive("/my-links") ? "active" : ""}`}
             onClick={() => handleNavigation("/my-links")}
@@ -152,7 +154,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>Analytics</span>
           </div>
-          <div
+          {/* <div
             className={`nav-item ${isActive("/qr-codes") ? "active" : ""}`}
             onClick={() => handleNavigation("/qr-codes")}
           >
@@ -172,7 +174,7 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>QR Codes</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Settings Section */}
@@ -210,7 +212,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>Custom Domains</span>
           </div>
-          <div
+          {/* <div
             className={`nav-item ${isActive("/utm-builder") ? "active" : ""}`}
             onClick={() => handleNavigation("/utm-builder")}
           >
@@ -230,8 +232,10 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>UTM Builder</span>
-          </div>
-          <div className="nav-item">
+          </div> */}
+          <div             className={`nav-item ${isActive("/content-filter") ? "active" : ""}`}
+            onClick={() => handleNavigation("/content-filter")}
+>
             <div className="nav-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

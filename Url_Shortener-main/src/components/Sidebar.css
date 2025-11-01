@@ -3,7 +3,8 @@
   height: 100vh;
 border-right: 1px solid #E5E7EB;
 background: #FFF;
-box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.10), 0 10px 15px 0 rgba(0, 0, 0, 0.10);  padding: 20px 0;
+box-shadow: 0 4px 6px 0 rgba(188, 184, 184, 0.1), 0 10px 15px 0 rgba(0, 0, 0, 0.10);
+  padding: 20px 0;
   position: fixed;
   left: 0;
   top: 0;
@@ -103,7 +104,7 @@ color: #6B7280;
 
 .upgrade-card {
   margin: 20px;
-  background: #374151;
+  background: #EFF6FF;
   border-radius: 12px;
   padding: 16px;
 }
@@ -120,7 +121,7 @@ color: #6B7280;
 }
 
 .plan-name {
-  color: white;
+  color: #9CA3AF;
   font-size: 14px;
   font-weight: 600;
 }

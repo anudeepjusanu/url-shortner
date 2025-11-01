@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import AnalyticsSidebar from "./AnalyticsSidebar";
-import AnalyticsHeader from "./AnalyticsHeader";
+import Sidebar from "./Sidebar";
+import MainHeader from "./MainHeader";
 import "./Analytics.css";
 
 const Analytics = () => {
@@ -8,15 +8,9 @@ const Analytics = () => {
 
   return (
     <div className="analytics-container">
-      {/* Header takes full width */}
-      <AnalyticsHeader />
-
-      {/* Main layout with sidebar and content */}
+      <MainHeader />
       <div className="analytics-layout">
-        {/* Sidebar */}
-        <AnalyticsSidebar />
-
-        {/* Main Content Area */}
+        <Sidebar />
         <div className="analytics-main">
           <div className="analytics-content">
             {/* Page Header */}

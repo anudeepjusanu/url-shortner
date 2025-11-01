@@ -19,7 +19,7 @@
 .analytics-main {
   flex: 1;
   margin-left: 250px;
-  margin-top: 65px;
+  /* margin-top: 65px; */
   background: #f9fafb;
   overflow-y: auto;
   overflow-x: hidden;
@@ -38,6 +38,7 @@
 /* Page Header */
 .page-header {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;

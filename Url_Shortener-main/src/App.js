@@ -11,13 +11,17 @@ import CustomDomains from './components/CustomDomains';
 import CreateShortLink from './components/CreateShortLink';
 import Analytics from './components/Analytics';
 import MyLinks from './components/MyLinks';
+import UTMBuilder from './components/UtmBuilder';
+import QRCodes from './components/QRCodes';
+import ContentFilter from './components/ContentFilter';
+import Subscription from './components/SubscriptionPage';
 // Import placeholder components for now - we'll create them later
-const QRCodes = () => <div>QR Codes Page</div>;
-const UTMBuilder = () => <div>UTM Builder Page</div>;
+// const QRCodes = () => <div>QR Codes Page</div>;
+// const UTMBuilder = () => <div>UTM Builder Page</div>;
 const CreateLink = () => <div>Create Link Page</div>;
 const TeamMembers = () => <div>Team Members Page</div>;
 const BillingHistory = () => <div>Billing History Page</div>;
-const Subscription = () => <div>Subscription Page</div>;
+// const Subscription = () => <div>Subscription Page</div>;
 const BillingPayment = () => <div>Billing Payment Page</div>;
 
 function App() {
@@ -94,6 +98,11 @@ function App() {
             <Route path="/billing-payment" element={
               <ProtectedRoute>
                 <BillingPayment />
+              </ProtectedRoute>
+            } />
+            <Route path="/content-filter" element={
+              <ProtectedRoute>
+                <ContentFilter />
               </ProtectedRoute>
             } />
 

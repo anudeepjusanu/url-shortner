@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import { useNavigate } from 'react-router-dom';import Sidebar from './Sidebar';
+import MainHeader from './MainHeader';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [longUrl, setLongUrl] = useState('');
   const [customBackhalf, setCustomBackhalf] = useState('');
@@ -27,160 +28,116 @@ const Dashboard = () => {
     // Handle advanced settings modal/dropdown
   };
 
+
   return (
-    <div className="dashboard-container">
-      {/* Reusable Sidebar Component */}
-      <Sidebar />
-
-      {/* Main Content Area */}
-      <div className="main-area">
-        {/* Header */}
-        <header className="header">
-          <div className="header-content">
-            <div className="header-left">
-              <h1 className="page-title">Dashboard</h1>
-              <div className="language-toggle">
-                <button className="lang-btn active">EN</button>
-                <button className="lang-btn">العربية</button>
+    <div className="analytics-container">
+      {/* Full-width header at the top */}
+      <MainHeader />
+      <div className="analytics-layout">
+        {/* Sidebar on the left */}
+        <Sidebar />
+        <div className="analytics-main">
+          <div className="analytics-content">
+            {/* Welcome Banner */}
+            <div className="welcome-banner">
+              <div className="welcome-content">
+                <h2>Welcome back, Ahmed!</h2>
+                <p>Ready to create and track your links today?</p>
               </div>
             </div>
-            <div className="header-right">
-              <div className="search-container">
-                <div className="search-icon">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="7" cy="7" r="6" stroke="#9CA3AF" strokeWidth="2"/>
-                    <path d="m13 13 4 4" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+
+            {/* Action Cards */}
+            <div className="action-cards">
+              <div className="action-card blue-card">
+                <div className="card-header">
+                  <div className="card-icon blue-icon">
+                    <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2 10L10 2l8 8M10 2v16" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h3>Create Short Link</h3>
                 </div>
-                <input 
-                  type="text" 
-                  placeholder="Search links..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <p>Transform your long URLs into short, trackable links</p>
+                <button className="card-btn blue-btn">Get Started</button>
               </div>
-              <div className="notification-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" viewBox="0 0 16 18" fill="none">
-                  <g clipPath="url(#clip0_775_451)">
-                    <path d="M7.87495 0C7.25268 0 6.74995 0.502734 6.74995 1.125V1.7543C4.20112 2.15859 2.24995 4.36641 2.24995 7.03125V8.20547C2.24995 9.80156 1.70502 11.352 0.710103 12.5965L0.186274 13.2539C-0.0176318 13.507 -0.0563037 13.8551 0.0843213 14.1469C0.224946 14.4387 0.520259 14.625 0.843696 14.625H14.9062C15.2296 14.625 15.5249 14.4387 15.6656 14.1469C15.8062 13.8551 15.7675 13.507 15.5636 13.2539L15.0398 12.6C14.0449 11.352 13.4999 9.80156 13.4999 8.20547V7.03125C13.4999 4.36641 11.5488 2.15859 8.99995 1.7543V1.125C8.99995 0.502734 8.49721 0 7.87495 0ZM7.87495 3.375H8.1562C10.1742 3.375 11.8124 5.01328 11.8124 7.03125V8.20547C11.8124 9.88945 12.3011 11.5312 13.2081 12.9375H2.54174C3.44877 11.5312 3.93745 9.88945 3.93745 8.20547V7.03125C3.93745 5.01328 5.57573 3.375 7.5937 3.375H7.87495ZM10.1249 15.75H7.87495H5.62495C5.62495 16.3477 5.86049 16.9207 6.28237 17.3426C6.70424 17.7645 7.27729 18 7.87495 18C8.4726 18 9.04565 17.7645 9.46752 17.3426C9.8894 16.9207 10.1249 16.3477 10.1249 15.75Z" fill="#6B7280"/>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_775_451">
-                      <path d="M0 0H15.75V18H0V0Z" fill="white"/>
-                    </clipPath>
-                  </defs>
-                </svg>
-                <div className="notification-dot"></div>
-              </div>
-              <div className="user-avatar">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format" alt="User" />
-              </div>
-            </div>
-          </div>
-        </header>
 
-        {/* Main Content */}
-        <main className="main-content">
-          {/* Welcome Banner */}
-          <div className="welcome-banner">
-            <div className="welcome-content">
-              <h2>Welcome back, Ahmed!</h2>
-              <p>Ready to create and track your links today?</p>
-            </div>
-          </div>
-
-          {/* Action Cards */}
-          <div className="action-cards">
-            <div className="action-card blue-card">
-              <div className="card-header">
-                <div className="card-icon blue-icon">
-                  <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2 10L10 2l8 8M10 2v16" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+              <div className="action-card green-card">
+                <div className="card-header">
+                  <div className="card-icon green-icon">
+                    <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="1" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
+                      <rect x="10.5" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
+                      <rect x="1" y="12" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
+                      <rect x="10.5" y="12" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
+                    </svg>
+                  </div>
+                  <h3>Generate QR Code</h3>
                 </div>
-                <h3>Create Short Link</h3>
+                <p>Create QR codes for offline marketing campaigns</p>
+                <button className="card-btn green-btn">Create QR</button>
               </div>
-              <p>Transform your long URLs into short, trackable links</p>
-              <button className="card-btn blue-btn">Get Started</button>
-            </div>
 
-            <div className="action-card green-card">
-              <div className="card-header">
-                <div className="card-icon green-icon">
-                  <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
-                    <rect x="10.5" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
-                    <rect x="1" y="12" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
-                    <rect x="10.5" y="12" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
-                  </svg>
+              <div className="action-card purple-card">
+                <div className="card-header">
+                  <div className="card-icon purple-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="10" cy="10" r="8" stroke="#7C3AED" strokeWidth="2"/>
+                      <path d="M2 10h16M10 2c2 0 4 3.5 4 8s-2 8-4 8-4-3.5-4-8 2-8 4-8z" stroke="#7C3AED" strokeWidth="2"/>
+                    </svg>
+                  </div>
+                  <h3>Add Custom Domain</h3>
                 </div>
-                <h3>Generate QR Code</h3>
+                <p>Use your own .sa domain for branded links</p>
+                <button className="card-btn purple-btn">Setup Domain</button>
               </div>
-              <p>Create QR codes for offline marketing campaigns</p>
-              <button className="card-btn green-btn">Create QR</button>
             </div>
 
-            <div className="action-card purple-card">
-              <div className="card-header">
-                <div className="card-icon purple-icon">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="10" cy="10" r="8" stroke="#7C3AED" strokeWidth="2"/>
-                    <path d="M2 10h16M10 2c2 0 4 3.5 4 8s-2 8-4 8-4-3.5-4-8 2-8 4-8z" stroke="#7C3AED" strokeWidth="2"/>
-                  </svg>
+            {/* URL Shortener Section */}
+            <div className="url-shortener-section">
+              <h2>Shorten Your URL</h2>
+              <form className="shortener-form" onSubmit={handleShortenUrl}>
+                <div className="form-group full-width">
+                  <label htmlFor="longUrl">Long URL</label>
+                  <input 
+                    type="url" 
+                    id="longUrl" 
+                    value={longUrl}
+                    onChange={(e) => setLongUrl(e.target.value)}
+                    placeholder="https://example.com/very-long-url-that-needs-shortening"
+                    required
+                  />
                 </div>
-                <h3>Add Custom Domain</h3>
-              </div>
-              <p>Use your own .sa domain for branded links</p>
-              <button className="card-btn purple-btn">Setup Domain</button>
-            </div>
-          </div>
-
-          {/* URL Shortener Section */}
-          <div className="url-shortener-section">
-            <h2>Shorten Your URL</h2>
-            <form className="shortener-form" onSubmit={handleShortenUrl}>
-              <div className="form-group full-width">
-                <label htmlFor="longUrl">Long URL</label>
-                <input 
-                  type="url" 
-                  id="longUrl" 
-                  value={longUrl}
-                  onChange={(e) => setLongUrl(e.target.value)}
-                  placeholder="https://example.com/very-long-url-that-needs-shortening"
-                  required
-                />
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="customBackhalf">Custom Back-half (Optional)</label>
-                  <div className="custom-url-input">
-                    <span className="url-prefix">linksa.co/</span>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="customBackhalf">Custom Back-half (Optional)</label>
+                    <div className="custom-url-input">
+                      <span className="url-prefix">linksa.co/</span>
+                      <input 
+                        type="text" 
+                        id="customBackhalf" 
+                        value={customBackhalf}
+                        onChange={(e) => setCustomBackhalf(e.target.value)}
+                        placeholder="my-campaign"
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="campaign">Campaign (Optional)</label>
                     <input 
                       type="text" 
-                      id="customBackhalf" 
-                      value={customBackhalf}
-                      onChange={(e) => setCustomBackhalf(e.target.value)}
-                      placeholder="my-campaign"
+                      id="campaign" 
+                      value={campaign}
+                      onChange={(e) => setCampaign(e.target.value)}
+                      placeholder="summer-sale-2024"
                     />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="campaign">Campaign (Optional)</label>
-                  <input 
-                    type="text" 
-                    id="campaign" 
-                    value={campaign}
-                    onChange={(e) => setCampaign(e.target.value)}
-                    placeholder="summer-sale-2024"
-                  />
-                </div>
-              </div>
-              
-              <div className="form-actions">
-                <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="8" cy="2" r="1" fill="#3B82F6"/>
+                
+                <div className="form-actions">
+                  <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="8" cy="2" r="1" fill="#3B82F6"/>
                     <circle cx="8" cy="8" r="1" fill="#3B82F6"/>
                     <circle cx="8" cy="14" r="1" fill="#3B82F6"/>
                   </svg>
@@ -405,7 +362,8 @@ const Dashboard = () => {
               </svg>
             </div>
           </div>
-        </main>
+        </div>
+      </div>
       </div>
     </div>
   );
