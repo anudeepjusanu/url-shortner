@@ -40,7 +40,7 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       {/* Header */}
-      <Header isLanding={true} onGetStarted={() => navigate("/register")} />
+      <Header isLanding={true} onGetStarted={() => navigate("/login")} />
 
       {/* Hero Section */}
       <section className="hero-section">
