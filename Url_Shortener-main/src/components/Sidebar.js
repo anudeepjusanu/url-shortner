@@ -154,7 +154,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>Analytics</span>
           </div>
-          {/* <div
+          <div
             className={`nav-item ${isActive("/qr-codes") ? "active" : ""}`}
             onClick={() => handleNavigation("/qr-codes")}
           >
@@ -174,7 +174,7 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>QR Codes</span>
-          </div> */}
+          </div>
         </div>
 
         {/* Settings Section */}
@@ -264,7 +264,10 @@ const Sidebar = ({ activeItem }) => {
         {/* Account Section */}
         <div className="nav-section">
           <div className="nav-label">ACCOUNT</div>
-          <div className="nav-item">
+          <div
+            className={`nav-item ${isActive("/profile") ? "active" : ""}`}
+            onClick={() => handleNavigation("/profile")}
+          >
             <div className="nav-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

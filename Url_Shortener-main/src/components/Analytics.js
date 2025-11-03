@@ -167,21 +167,82 @@ const Analytics = () => {
   }
 
   return (
-    <div className="analytics-container">
-      <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-        <div className="analytics-main">
-          <div className="analytics-content">
-            {/* Page Header */}
-            <div className="page-header">
-              <div className="header-info">
-                <h1 className="page-title">{id ? 'Link Analytics' : 'Analytics Dashboard'}</h1>
-                <p className="page-subtitle">
-                  {id ? 'Track performance of your shortened link' : 'Overview of all your links performance'}
-                </p>
-              </div>
-              <button className="export-btn" onClick={exportData}>
+    <>
+      <style>{`
+        .stats-card {
+          transition: all 0.2s ease;
+        }
+        .stats-card:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(-2px);
+        }
+        .link-info-card {
+          transition: all 0.2s ease;
+        }
+        .link-info-card:hover {
+          border-color: #3B82F6 !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .action-btn:hover {
+          background-color: #E5E7EB !important;
+          transform: translateY(-1px);
+        }
+        .action-btn {
+          transition: all 0.2s ease;
+        }
+        .export-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+        }
+        .export-btn {
+          transition: all 0.2s ease;
+        }
+        .chart-card, .section-card {
+          transition: all 0.2s ease;
+        }
+        .chart-card:hover, .section-card:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+      `}</style>
+      <div className="analytics-container">
+        <MainHeader />
+        <div className="analytics-layout">
+          <Sidebar />
+          <div className="analytics-main">
+            <div className="analytics-content" style={{
+              padding: '24px',
+              maxWidth: '1400px',
+              margin: '0 auto'
+            }}>
+              {/* Page Header */}
+              <div className="page-header" style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '20px'
+              }}>
+                <div className="header-info" style={{ margin: 0 }}>
+                  <h1 className="page-title" style={{ marginBottom: '4px' }}>
+                    {id ? 'Link Analytics' : 'Analytics Dashboard'}
+                  </h1>
+                  <p className="page-subtitle" style={{ margin: 0 }}>
+                    {id ? 'Track performance of your shortened link' : 'Overview of all your links performance'}
+                  </p>
+                </div>
+              <button className="export-btn" onClick={exportData} style={{
+                padding: '10px 16px',
+                backgroundColor: '#3B82F6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
                 <svg
                   width="16"
                   height="16"
@@ -215,6 +276,194 @@ const Analytics = () => {
               </button>
             </div>
 
+            {/* Link Info Card */}
+            <div className="link-info-card" style={{
+              backgroundColor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: '8px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div className="link-info-content" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flex: 1,
+                minWidth: 0
+              }}>
+                <div className="link-icon" style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#EFF6FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <svg
+                    width="25"
+                    height="20"
+                    viewBox="0 0 25 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 6H14M10 6C8.34315 6 7 7.34315 7 9C7 10.6569 8.34315 12 10 12H12M10 6C8.34315 6 7 4.65685 7 3C7 1.34315 8.34315 0 10 0H12M14 6C15.6569 6 17 7.34315 17 9C17 10.6569 15.6569 12 14 12H12M14 6C15.6569 6 17 4.65685 17 3C17 1.34315 15.6569 0 14 0H12M12 0V12"
+                      stroke="#3b82f6"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div className="link-details" style={{ minWidth: 0, flex: 1 }}>
+                  <h3 className="short-link" style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    marginBottom: '4px',
+                    margin: 0
+                  }}>linksa.co/abc123</h3>
+                  <p className="original-link" style={{
+                    fontSize: '13px',
+                    color: '#6B7280',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    https://www.example.com/very-long-url-that-was-shortened
+                  </p>
+                </div>
+              </div>
+              <div className="link-actions" style={{
+                display: 'flex',
+                gap: '8px',
+                marginLeft: '16px'
+              }}>
+                <button className="action-btn copy-btn" style={{
+                  width: '36px',
+                  height: '36px',
+                  padding: '8px',
+                  backgroundColor: '#F3F4F6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6B7280'
+                }}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      x="4"
+                      y="4"
+                      width="8"
+                      height="8"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button className="action-btn share-btn" style={{
+                  width: '36px',
+                  height: '36px',
+                  padding: '8px',
+                  backgroundColor: '#F3F4F6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6B7280'
+                }}>
+                  <svg
+                    width="14"
+                    height="16"
+                    viewBox="0 0 14 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 6L6 2L2 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M6 2V12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M14 12V13C14 13.5304 13.7893 14.0391 13.4142 14.4142C13.0391 14.7893 12.5304 15 12 15H2C1.46957 15 0.960859 14.7893 0.585786 14.4142C0.210714 14.0391 0 13.5304 0 13V12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button className="action-btn edit-btn" style={{
+                  width: '36px',
+                  height: '36px',
+                  padding: '8px',
+                  backgroundColor: '#F3F4F6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6B7280'
+                }}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7.33333 2.66669H2.66667C2.31304 2.66669 1.97391 2.80716 1.72386 3.05721C1.47381 3.30726 1.33333 3.64640 1.33333 4.00002V13.3334C1.33333 13.687 1.47381 14.0261 1.72386 14.2762C1.97391 14.5262 2.31304 14.6667 2.66667 14.6667H12C12.3536 14.6667 12.6928 14.5262 12.9428 14.2762C13.1929 14.0261 13.3333 13.687 13.3333 13.3334V8.66669"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12.3333 1.66669C12.5985 1.40148 12.9583 1.25244 13.3333 1.25244C13.7083 1.25244 14.0681 1.40148 14.3333 1.66669C14.5985 1.9319 14.7476 2.29171 14.7476 2.66669C14.7476 3.04167 14.5985 3.40148 14.3333 3.66669L8 10L5.33333 10.6667L6 8.00002L12.3333 1.66669Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
             {/* Link Info Card - Only show for individual URL analytics */}
             {linkData && (
               <div className="link-info-card">
@@ -341,14 +590,45 @@ const Analytics = () => {
             )}
 
             {/* Stats Cards */}
-            <div className="stats-grid">
-              <div className="stats-card">
-                <div className="stats-content">
+            <div className="stats-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '16px',
+              marginBottom: '20px'
+            }}>
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <div className="stats-content" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
+                }}>
                   <div className="stats-info">
-                    <p className="stats-label">Total Clicks</p>
-                    <h3 className="stats-value">{analyticsData?.totalClicks || 0}</h3>
+                    <p className="stats-label" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      fontWeight: '400',
+                      margin: 0
+                    }}>Total Clicks</p>
+                    <h3 className="stats-value" style={{
+                      fontSize: '28px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      margin: '8px 0'
+                    }}>{analyticsData?.totalClicks || 0}</h3>
                     {analyticsData?.totalClicksChange && (
-                      <div className={`stats-change ${analyticsData.totalClicksChange >= 0 ? 'positive' : 'negative'}`}>
+                      <div className={`stats-change ${analyticsData.totalClicksChange >= 0 ? 'positive' : 'negative'}`} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: '#10B981'
+                    }}>
                         <svg
                           width="11"
                           height="14"
@@ -364,11 +644,20 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.totalClicksChange >= 0 ? '+' : ''}{analyticsData.totalClicksChange}% vs last period</span>
+                        <span style={{ margin: 0 }}>{analyticsData.totalClicksChange >= 0 ? '+' : ''}{analyticsData.totalClicksChange}% vs last period</span>
                       </div>
                     )}
                   </div>
-                  <div className="stats-icon blue">
+                  <div className="stats-icon blue" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    backgroundColor: '#EFF6FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#3B82F6'
+                  }}>
                     <svg
                       width="13"
                       height="20"
@@ -388,13 +677,39 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="stats-card">
-                <div className="stats-content">
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <div className="stats-content" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
+                }}>
                   <div className="stats-info">
-                    <p className="stats-label">Unique Clicks</p>
-                    <h3 className="stats-value">{analyticsData?.uniqueClicks || 0}</h3>
+                    <p className="stats-label" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      fontWeight: '400',
+                      margin: 0
+                    }}>Unique Clicks</p>
+                    <h3 className="stats-value" style={{
+                      fontSize: '28px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      margin: '8px 0'
+                    }}>{analyticsData?.uniqueClicks || 0}</h3>
                     {analyticsData?.uniqueClicksChange && (
-                      <div className={`stats-change ${analyticsData.uniqueClicksChange >= 0 ? 'positive' : 'negative'}`}>
+                      <div className={`stats-change ${analyticsData.uniqueClicksChange >= 0 ? 'positive' : 'negative'}`} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: '#10B981'
+                    }}>
                         <svg
                           width="11"
                           height="14"
@@ -410,11 +725,20 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.uniqueClicksChange >= 0 ? '+' : ''}{analyticsData.uniqueClicksChange}% vs last period</span>
+                        <span style={{ margin: 0 }}>{analyticsData.uniqueClicksChange >= 0 ? '+' : ''}{analyticsData.uniqueClicksChange}% vs last period</span>
                       </div>
                     )}
                   </div>
-                  <div className="stats-icon green">
+                  <div className="stats-icon green" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    backgroundColor: '#D1FAE5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#10B981'
+                  }}>
                     <svg
                       width="25"
                       height="20"
@@ -557,9 +881,25 @@ const Analytics = () => {
             </div>
 
             {/* Click Activity Chart */}
-            <div className="chart-card">
-              <div className="chart-header">
-                <h3 className="chart-title">Click Activity</h3>
+            <div className="chart-card" style={{
+              backgroundColor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '20px'
+            }}>
+              <div className="chart-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h3 className="chart-title" style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  margin: 0
+                }}>Click Activity</h3>
                 <div className="chart-controls">
                   <div className="filter-tabs">
                     {[
@@ -582,6 +922,16 @@ const Analytics = () => {
                     className="time-filter-select"
                     value={timeFilter}
                     onChange={(e) => handleTimeFilterChange(e.target.value)}
+                    style={{
+                      padding: '8px 32px 8px 12px',
+                      fontSize: '13px',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '6px',
+                      backgroundColor: 'white',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
                   >
                     <option value="24h">Last 24 hours</option>
                     <option value="7d">Last 7 days</option>
@@ -592,12 +942,13 @@ const Analytics = () => {
                   </select>
                 </div>
               </div>
-              <div className="chart-container">
+              <div className="chart-container" style={{ overflow: 'hidden' }}>
                 <svg
                   width="100%"
-                  height="320"
-                  viewBox="0 0 1070 320"
+                  height="280"
+                  viewBox="0 0 1070 280"
                   className="analytics-chart"
+                  style={{ display: 'block' }}
                 >
                   {/* Chart Grid Lines */}
                   <defs>
@@ -775,8 +1126,140 @@ const Analytics = () => {
             </div>
 
             {/* Bottom Section - Country and Device Stats */}
-            <div className="bottom-section">
+            <div className="bottom-section" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '16px'
+            }}>
               {/* Clicks by Country */}
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>Clicks by Country</h3>
+                <div className="country-stats" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div className="country-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px'
+                  }}>
+                    <div className="country-info" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      minWidth: '140px'
+                    }}>
+                      <span className="country-flag" style={{ fontSize: '18px' }}>🇸🇦</span>
+                      <span className="country-name" style={{
+                        fontSize: '13px',
+                        color: '#374151',
+                        fontWeight: '500'
+                      }}>Saudi Arabia</span>
+                    </div>
+                    <div className="country-data" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      flex: 1
+                    }}>
+                      <div className="progress-bar" style={{
+                        flex: 1,
+                        height: '6px',
+                        backgroundColor: '#E5E7EB',
+                        borderRadius: '3px',
+                        overflow: 'hidden'
+                      }}>
+                        <div
+                          className="progress-fill"
+                          style={{
+                            width: "65%",
+                            height: '100%',
+                            backgroundColor: '#3B82F6',
+                            borderRadius: '3px'
+                          }}
+                        ></div>
+                      </div>
+                      <span className="country-value" style={{
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        minWidth: '45px',
+                        textAlign: 'right'
+                      }}>1,247</span>
+                    </div>
+                  </div>
+
+                  {[
+                    { flag: '🇦🇪', name: 'UAE', value: '421', width: '22%' },
+                    { flag: '🇺🇸', name: 'United States', value: '318', width: '17%' },
+                    { flag: '🇬🇧', name: 'United Kingdom', value: '142', width: '7%' },
+                    { flag: '🇩🇪', name: 'Germany', value: '98', width: '5%' }
+                  ].map((country, index) => (
+                    <div key={index} className="country-item" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}>
+                      <div className="country-info" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        minWidth: '140px'
+                      }}>
+                        <span className="country-flag" style={{ fontSize: '18px' }}>{country.flag}</span>
+                        <span className="country-name" style={{
+                          fontSize: '13px',
+                          color: '#374151',
+                          fontWeight: '500'
+                        }}>{country.name}</span>
+                      </div>
+                      <div className="country-data" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        flex: 1
+                      }}>
+                        <div className="progress-bar" style={{
+                          flex: 1,
+                          height: '6px',
+                          backgroundColor: '#E5E7EB',
+                          borderRadius: '3px',
+                          overflow: 'hidden'
+                        }}>
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: country.width,
+                              height: '100%',
+                              backgroundColor: '#3B82F6',
+                              borderRadius: '3px'
+                            }}
+                          ></div>
+                        </div>
+                        <span className="country-value" style={{
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: '#1F2937',
+                          minWidth: '45px',
+                          textAlign: 'right'
+                        }}>{country.value}</span>
+                      </div>
+                    </div>
+                  ))}
               <div className="section-card">
                 <h3 className="section-title">Clicks by Country</h3>
                 <div className="country-stats">
@@ -810,9 +1293,24 @@ const Analytics = () => {
               </div>
 
               {/* Clicks by Device Type */}
-              <div className="section-card">
-                <h3 className="section-title">Clicks by Device Type</h3>
-                <div className="device-chart">
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>Clicks by Device Type</h3>
+                <div className="device-chart" style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginBottom: '20px'
+                }}>
                   <svg width="100%" height="256" viewBox="0 0 256 256">
                     <defs>
                       <linearGradient
@@ -869,7 +1367,11 @@ const Analytics = () => {
                     <circle cx="128" cy="128" r="60" fill="white" />
                   </svg>
                 </div>
-                <div className="device-stats">
+                <div className="device-stats" style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '24px'
+                }}>
                   {analyticsData?.clicksByDevice ? (
                     Object.entries(analyticsData.clicksByDevice).map(([device, clicks]) => {
                       const deviceClass = device.toLowerCase();
@@ -885,25 +1387,79 @@ const Analytics = () => {
                     })
                   ) : (
                     <>
-                      <div className="device-item">
-                        <div className="device-indicator mobile"></div>
+                      <div className="device-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                        <div className="device-indicator mobile" style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      backgroundColor: '#3B82F6'
+                    }}></div>
                         <div className="device-info">
-                          <p className="device-label">Mobile</p>
-                          <h4 className="device-value">0</h4>
+                          <p className="device-label" style={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        margin: '0 0 2px 0'
+                      }}>Mobile</p>
+                          <h4 className="device-value" style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        margin: 0
+                      }}>0</h4>
                         </div>
                       </div>
-                      <div className="device-item">
-                        <div className="device-indicator desktop"></div>
+                      <div className="device-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                        <div className="device-indicator desktop" style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      backgroundColor: '#10B981'
+                    }}></div>
                         <div className="device-info">
-                          <p className="device-label">Desktop</p>
-                          <h4 className="device-value">0</h4>
+                          <p className="device-label" style={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        margin: '0 0 2px 0'
+                      }}>Desktop</p>
+                          <h4 className="device-value" style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        margin: 0
+                      }}>0</h4>
                         </div>
                       </div>
-                      <div className="device-item">
-                        <div className="device-indicator tablet"></div>
+                      <div className="device-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                        <div className="device-indicator tablet" style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      backgroundColor: '#F59E0B'
+                    }}></div>
                         <div className="device-info">
-                          <p className="device-label">Tablet</p>
-                          <h4 className="device-value">0</h4>
+                          <p className="device-label" style={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        margin: '0 0 2px 0'
+                      }}>Tablet</p>
+                          <h4 className="device-value" style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        margin: 0
+                      }}>0</h4>
                         </div>
                       </div>
                     </>
@@ -915,7 +1471,12 @@ const Analytics = () => {
         </div>
       </div>
     </div>
+    </div>
+    </div>
+    </>
   );
 };
+
+
 
 export default Analytics;
