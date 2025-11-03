@@ -25,8 +25,8 @@ const endpoints = {
     delete: '/domains'
   },
   analytics: {
-    overview: '/analytics',
-    urls: '/analytics/urls'
+    overview: '/analytics/dashboard',
+    urls: '/analytics'
   }
 };
 
