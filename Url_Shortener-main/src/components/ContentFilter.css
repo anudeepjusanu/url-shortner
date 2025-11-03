@@ -1,0 +1,273 @@
+/* Content Filter Page Styles */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tab Navigation */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.filter-tab {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #6B7280;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+  color: #3B82F6;
+}
+
+.filter-tab.active {
+  color: #3B82F6;
+  border-bottom-color: #3B82F6;
+}
+
+/* Checkbox Styling */
+input[type="checkbox"] {
+  accent-color: #3B82F6;
+  cursor: pointer;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.filter-checkbox-label:hover {
+  opacity: 0.8;
+}
+
+/* Domain/Keyword Cards */
+.filter-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.filter-item-card:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+/* Whitelist Cards */
+.whitelist-card {
+  border: 1px solid #D1FAE5;
+  background: #ECFDF5;
+}
+
+.whitelist-card:hover {
+  background: #D1FAE5;
+}
+
+/* Log Entry */
+.log-entry {
+  padding: 16px 24px;
+  border-bottom: 1px solid #E5E7EB;
+  transition: background 0.2s;
+}
+
+.log-entry:hover {
+  background: #F9FAFB;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+/* Badge Colors */
+.badge-malicious {
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+}
+
+.badge-phishing {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+}
+
+.badge-spam {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
+}
+
+.badge-keyword {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.badge-adult {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+/* Button Hover Effects */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Stats Cards Hover */
+.stats-card {
+  transition: all 0.2s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Input Focus States */
+input[type="text"]:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Alert Messages */
+.alert-success {
+  background: #D1FAE5;
+  border: 1px solid #10B981;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: #065F46;
+  font-size: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+.alert-error {
+  background: #FEE2E2;
+  border: 1px solid #DC2626;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: #991B1B;
+  font-size: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  color: #6B7280;
+  font-size: 14px;
+}
+
+/* Loading State */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #E5E7EB;
+  border-top-color: #3B82F6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+/* Scrollbar Styling */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-content {
+    padding: 16px !important;
+  }
+
+  .filter-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"],
+  div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Monospace Font for Domains */
+.domain-text {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.5px;
+}

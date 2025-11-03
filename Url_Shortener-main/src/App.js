@@ -15,6 +15,7 @@ import UTMBuilder from './components/UtmBuilder';
 import QRCodes from './components/QRCodes';
 import ContentFilter from './components/ContentFilter';
 import Subscription from './components/SubscriptionPage';
+import Profile from './components/Profile';
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
@@ -80,6 +81,11 @@ function App() {
             } />
 
             {/* Account & Settings routes - Protected */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
             <Route path="/team-members" element={
               <ProtectedRoute>
                 <TeamMembers />

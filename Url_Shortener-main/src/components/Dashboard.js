@@ -37,33 +37,131 @@ const Dashboard = () => {
         {/* Sidebar on the left */}
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content">
+          <div className="analytics-content" style={{
+            padding: '24px',
+            maxWidth: '1400px',
+            margin: '0 auto'
+          }}>
             {/* Welcome Banner */}
-            <div className="welcome-banner">
+            <div className="welcome-banner" style={{
+              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+              borderRadius: '12px',
+              padding: '24px 28px',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
               <div className="welcome-content">
-                <h2>Welcome back, Ahmed!</h2>
-                <p>Ready to create and track your links today?</p>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: 'white',
+                  margin: '0 0 6px 0'
+                }}>Welcome back, Ahmed!</h2>
+                <p style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  margin: 0
+                }}>Ready to create and track your links today?</p>
+              </div>
+              <div className="welcome-avatar" style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '12px',
+                backgroundColor: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                👋
               </div>
             </div>
 
             {/* Action Cards */}
-            <div className="action-cards">
-              <div className="action-card blue-card">
-                <div className="card-header">
-                  <div className="card-icon blue-icon">
+            <div className="action-cards" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              <div className="action-card blue-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <div className="card-header" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <div className="card-icon blue-icon" style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    backgroundColor: '#EFF6FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M2 10L10 2l8 8M10 2v16" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h3>Create Short Link</h3>
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    margin: 0
+                  }}>Create Short Link</h3>
                 </div>
-                <p>Transform your long URLs into short, trackable links</p>
-                <button className="card-btn blue-btn">Get Started</button>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#6B7280',
+                  margin: '0 0 16px 0',
+                  flex: 1
+                }}>Transform your long URLs into short, trackable links</p>
+                <button className="card-btn blue-btn" style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}>Get Started</button>
               </div>
 
-              <div className="action-card green-card">
-                <div className="card-header">
-                  <div className="card-icon green-icon">
+              <div className="action-card green-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <div className="card-header" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <div className="card-icon green-icon" style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    backgroundColor: '#D1FAE5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <svg width="17.5" height="20" viewBox="0 0 17.5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="1" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
                       <rect x="10.5" y="1" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
@@ -71,71 +169,217 @@ const Dashboard = () => {
                       <rect x="10.5" y="12" width="6" height="6" rx="1" stroke="#10B981" strokeWidth="2"/>
                     </svg>
                   </div>
-                  <h3>Generate QR Code</h3>
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    margin: 0
+                  }}>Generate QR Code</h3>
                 </div>
-                <p>Create QR codes for offline marketing campaigns</p>
-                <button className="card-btn green-btn">Create QR</button>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#6B7280',
+                  margin: '0 0 16px 0',
+                  flex: 1
+                }}>Create QR codes for offline marketing campaigns</p>
+                <button className="card-btn green-btn" style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: '#10B981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}>Create QR</button>
               </div>
 
-              <div className="action-card purple-card">
-                <div className="card-header">
-                  <div className="card-icon purple-icon">
+              <div className="action-card purple-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <div className="card-header" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <div className="card-icon purple-icon" style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    backgroundColor: '#EDE9FE',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="10" cy="10" r="8" stroke="#7C3AED" strokeWidth="2"/>
                       <path d="M2 10h16M10 2c2 0 4 3.5 4 8s-2 8-4 8-4-3.5-4-8 2-8 4-8z" stroke="#7C3AED" strokeWidth="2"/>
                     </svg>
                   </div>
-                  <h3>Add Custom Domain</h3>
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    margin: 0
+                  }}>Add Custom Domain</h3>
                 </div>
-                <p>Use your own .sa domain for branded links</p>
-                <button className="card-btn purple-btn">Setup Domain</button>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#6B7280',
+                  margin: '0 0 16px 0',
+                  flex: 1
+                }}>Use your own .sa domain for branded links</p>
+                <button className="card-btn purple-btn" style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: '#7C3AED',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}>Setup Domain</button>
               </div>
             </div>
 
             {/* URL Shortener Section */}
-            <div className="url-shortener-section">
-              <h2>Shorten Your URL</h2>
-              <form className="shortener-form" onSubmit={handleShortenUrl}>
-                <div className="form-group full-width">
-                  <label htmlFor="longUrl">Long URL</label>
-                  <input 
-                    type="url" 
-                    id="longUrl" 
+            <div className="url-shortener-section" style={{
+              backgroundColor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '24px'
+            }}>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#1F2937',
+                margin: '0 0 20px 0'
+              }}>Shorten Your URL</h2>
+              <form className="shortener-form" onSubmit={handleShortenUrl} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
+                <div className="form-group full-width" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label htmlFor="longUrl" style={{
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#374151'
+                  }}>Long URL</label>
+                  <input
+                    type="url"
+                    id="longUrl"
                     value={longUrl}
                     onChange={(e) => setLongUrl(e.target.value)}
                     placeholder="https://example.com/very-long-url-that-needs-shortening"
                     required
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #D1D5DB',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
                   />
                 </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="customBackhalf">Custom Back-half (Optional)</label>
-                    <div className="custom-url-input">
-                      <span className="url-prefix">linksa.co/</span>
-                      <input 
-                        type="text" 
-                        id="customBackhalf" 
+
+                <div className="form-row" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '16px'
+                }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label htmlFor="customBackhalf" style={{
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: '#374151'
+                    }}>Custom Back-half (Optional)</label>
+                    <div className="custom-url-input" style={{
+                      display: 'flex',
+                      border: '1px solid #D1D5DB',
+                      borderRadius: '8px',
+                      overflow: 'hidden'
+                    }}>
+                      <span className="url-prefix" style={{
+                        padding: '10px 12px',
+                        backgroundColor: '#F9FAFB',
+                        fontSize: '14px',
+                        color: '#6B7280',
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRight: '1px solid #D1D5DB'
+                      }}>linksa.co/</span>
+                      <input
+                        type="text"
+                        id="customBackhalf"
                         value={customBackhalf}
                         onChange={(e) => setCustomBackhalf(e.target.value)}
                         placeholder="my-campaign"
+                        style={{
+                          flex: 1,
+                          padding: '10px 12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
                       />
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="campaign">Campaign (Optional)</label>
-                    <input 
-                      type="text" 
-                      id="campaign" 
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label htmlFor="campaign" style={{
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: '#374151'
+                    }}>Campaign (Optional)</label>
+                    <input
+                      type="text"
+                      id="campaign"
                       value={campaign}
                       onChange={(e) => setCampaign(e.target.value)}
                       placeholder="summer-sale-2024"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
                     />
                   </div>
                 </div>
-                
-                <div className="form-actions">
-                  <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings}>
+
+                <div className="form-actions" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '8px'
+                }}>
+                  <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings} style={{
+                    padding: '10px 16px',
+                    backgroundColor: 'transparent',
+                    color: '#3B82F6',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="8" cy="2" r="1" fill="#3B82F6"/>
                     <circle cx="8" cy="8" r="1" fill="#3B82F6"/>
@@ -143,38 +387,66 @@ const Dashboard = () => {
                   </svg>
                   Advanced Settings
                 </button>
-                <button type="submit" className="shorten-btn">Shorten URL</button>
+                <button type="submit" className="shorten-btn" style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}>Shorten URL</button>
               </div>
             </form>
           </div>
 
           {/* Analytics & Stats Section */}
-          <div className="analytics-stats-section">
+          <div className="analytics-stats-section" style={{
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr',
+            gap: '16px',
+            marginBottom: '24px'
+          }}>
             {/* Analytics Overview */}
-            <div className="analytics-overview">
-              {/* <div className="analytics-header">
-                <h2>Analytics Overview</h2>
-                <div className="analytics-filters">
-                  <select 
-                    value={analyticsFilter} 
-                    onChange={(e) => setAnalyticsFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="All Links">All Links</option>
-                    <option value="Active Links">Active Links</option>
-                    <option value="Expired Links">Expired Links</option>
-                  </select>
-                  <select 
-                    value={timeFilter} 
-                    onChange={(e) => setTimeFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="Last 7 days">Last 7 days</option>
-                    <option value="Last 30 days">Last 30 days</option>
-                    <option value="Last 90 days">Last 90 days</option>
-                  </select>
-                </div>
-              </div> */}
+            <div className="analytics-overview" style={{
+              backgroundColor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: '12px',
+              padding: '24px'
+            }}>
+              <div className="analytics-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h2 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  margin: 0
+                }}>Analytics Overview</h2>
+                <select
+                  value={timeFilter}
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="filter-select"
+                  style={{
+                    padding: '8px 32px 8px 12px',
+                    fontSize: '13px',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '6px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    outline: 'none'
+                  }}
+                >
+                  <option value="Last 7 days">Last 7 days</option>
+                  <option value="Last 30 days">Last 30 days</option>
+                  <option value="Last 90 days">Last 90 days</option>
+                </select>
+              </div>
               <div className="chart-container">
                 <svg width="100%" height="240" viewBox="0 0 600 240" className="analytics-chart">
                   <defs>
@@ -220,40 +492,140 @@ const Dashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="stats-cards">
-              <div className="stats-card">
+            <div className="stats-cards" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
+              }}>
                 <div className="stats-content">
-                  <div className="stats-label">Total Clicks</div>
-                  <div className="stats-number">2,847</div>
-                  <div className="stats-change positive">+8% from last week</div>
+                  <div className="stats-label" style={{
+                    fontSize: '13px',
+                    color: '#6B7280',
+                    marginBottom: '8px'
+                  }}>Total Clicks</div>
+                  <div className="stats-number" style={{
+                    fontSize: '28px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    marginBottom: '6px'
+                  }}>2,847</div>
+                  <div className="stats-change positive" style={{
+                    fontSize: '12px',
+                    color: '#10B981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>↑ +8% from last week</div>
                 </div>
-                <div className="stats-icon green">
+                <div className="stats-icon green" style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#D1FAE5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#10B981'
+                }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M8 4v8M4 8h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </div>
               </div>
 
-              <div className="stats-card">
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
+              }}>
                 <div className="stats-content">
-                  <div className="stats-label">Unique Visitors</div>
-                  <div className="stats-number">1,924</div>
-                  <div className="stats-change positive">+12% from last week</div>
+                  <div className="stats-label" style={{
+                    fontSize: '13px',
+                    color: '#6B7280',
+                    marginBottom: '8px'
+                  }}>Unique Visitors</div>
+                  <div className="stats-number" style={{
+                    fontSize: '28px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    marginBottom: '6px'
+                  }}>1,924</div>
+                  <div className="stats-change positive" style={{
+                    fontSize: '12px',
+                    color: '#10B981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>↑ +12% from last week</div>
                 </div>
-                <div className="stats-icon blue">
+                <div className="stats-icon blue" style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#DBEAFE',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#3B82F6'
+                }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.5 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" fill="currentColor"/>
                   </svg>
                 </div>
               </div>
 
-              <div className="stats-card">
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
+              }}>
                 <div className="stats-content">
-                  <div className="stats-label">Click Rate</div>
-                  <div className="stats-number">67.5%</div>
-                  <div className="stats-change negative">-2% from last week</div>
+                  <div className="stats-label" style={{
+                    fontSize: '13px',
+                    color: '#6B7280',
+                    marginBottom: '8px'
+                  }}>Click Rate</div>
+                  <div className="stats-number" style={{
+                    fontSize: '28px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    marginBottom: '6px'
+                  }}>67.5%</div>
+                  <div className="stats-change negative" style={{
+                    fontSize: '12px',
+                    color: '#EF4444',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>↓ -2% from last week</div>
                 </div>
-                <div className="stats-icon yellow">
+                <div className="stats-icon yellow" style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#FEF3C7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#F59E0B'
+                }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4l2-4z" fill="currentColor"/>
                   </svg>
@@ -263,72 +635,160 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Links Section */}
-          <div className="recent-links">
-            <div className="recent-links-header">
-              <h2>Recent Links</h2>
-              <button className="view-all-btn" onClick={() => handleNavigation('/my-links')}>View All</button>
+          <div className="recent-links" style={{
+            backgroundColor: 'white',
+            border: '1px solid #E5E7EB',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '24px'
+          }}>
+            <div className="recent-links-header" style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#1F2937',
+                margin: 0
+              }}>Recent Links</h2>
+              <button className="view-all-btn" onClick={() => handleNavigation('/my-links')} style={{
+                padding: '8px 16px',
+                backgroundColor: 'transparent',
+                color: '#3B82F6',
+                border: '1px solid #3B82F6',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}>View All</button>
             </div>
-            <div className="links-list">
-              <div className="link-item">
-                <div className="link-info">
-                  <a href="#" className="short-url">linksa.co/summer-sale</a>
-                  <a href="#" className="original-url">https://mystore.com/summer-collection-2024-discount-offer</a>
-                  <div className="link-meta">
-                    <span>245 clicks</span>
-                    <span>Created 2 days ago</span>
+            <div className="links-list" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
+              {[
+                {
+                  short: 'linksa.co/summer-sale',
+                  long: 'https://mystore.com/summer-collection-2024-discount-offer',
+                  clicks: '245 clicks',
+                  created: 'Created 2 days ago'
+                },
+                {
+                  short: 'linksa.co/product-launch',
+                  long: 'https://company.com/new-product-announcement-2024',
+                  clicks: '189 clicks',
+                  created: 'Created 5 days ago'
+                },
+                {
+                  short: 'linksa.co/event-2024',
+                  long: 'https://events.com/riyadh-tech-conference-2024',
+                  clicks: '567 clicks',
+                  created: 'Created 1 month ago'
+                }
+              ].map((link, index) => (
+                <div key={index} className="link-item" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  backgroundColor: '#FAFAFA'
+                }}>
+                  <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
+                    <a href="#" className="short-url" style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#3B82F6',
+                      textDecoration: 'none',
+                      display: 'block',
+                      marginBottom: '4px'
+                    }}>{link.short}</a>
+                    <a href="#" className="original-url" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      textDecoration: 'none',
+                      display: 'block',
+                      marginBottom: '8px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>{link.long}</a>
+                    <div className="link-meta" style={{
+                      display: 'flex',
+                      gap: '16px',
+                      fontSize: '12px',
+                      color: '#9CA3AF'
+                    }}>
+                      <span>{link.clicks}</span>
+                      <span>{link.created}</span>
+                    </div>
+                  </div>
+                  <div className="link-actions" style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginLeft: '16px'
+                  }}>
+                    {['Copy', 'Edit', 'Delete'].map((action, idx) => (
+                      <button key={idx} className={`action-btn ${action.toLowerCase()}-btn`} style={{
+                        padding: '8px 12px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        backgroundColor: action === 'Delete' ? '#FEE2E2' : '#F3F4F6',
+                        color: action === 'Delete' ? '#EF4444' : '#374151',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}>{action}</button>
+                    ))}
                   </div>
                 </div>
-                <div className="link-actions">
-                  <button className="action-btn copy-btn">Copy</button>
-                  <button className="action-btn edit-btn">Edit</button>
-                  <button className="action-btn delete-btn">Delete</button>
-                </div>
-              </div>
-
-              <div className="link-item">
-                <div className="link-info">
-                  <a href="#" className="short-url">linksa.co/product-launch</a>
-                  <a href="#" className="original-url">https://company.com/new-product-announcement-2024</a>
-                  <div className="link-meta">
-                    <span>189 clicks</span>
-                    <span>Created 5 days ago</span>
-                  </div>
-                </div>
-                <div className="link-actions">
-                  <button className="action-btn copy-btn">Copy</button>
-                  <button className="action-btn edit-btn">Edit</button>
-                  <button className="action-btn delete-btn">Delete</button>
-                </div>
-              </div>
-
-              <div className="link-item">
-                <div className="link-info">
-                  <a href="#" className="short-url">linksa.co/event-2024</a>
-                  <a href="#" className="original-url">https://events.com/riyadh-tech-conference-2024</a>
-                  <div className="link-meta">
-                    <span>567 clicks</span>
-                    <span>Created 1 month ago</span>
-                  </div>
-                </div>
-                <div className="link-actions">
-                  <button className="action-btn copy-btn">Copy</button>
-                  <button className="action-btn edit-btn">Edit</button>
-                  <button className="action-btn delete-btn">Delete</button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Upgrade Promotion */}
-          <div className="upgrade-promotion">
-            <div className="promotion-content">
-              <h2>Ready to unlock more features?</h2>
-              <p>Get advanced analytics, bulk operations, API access, and more with our Pro plan.</p>
-              <button className="upgrade-promo-btn" onClick={() => handleNavigation('/subscription')}>
+          <div className="upgrade-promotion" style={{
+            background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+            borderRadius: '12px',
+            padding: '32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px'
+          }}>
+            <div className="promotion-content" style={{ flex: 1 }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'white',
+                marginBottom: '12px',
+                margin: '0 0 12px 0'
+              }}>Ready to unlock more features?</h2>
+              <p style={{
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                marginBottom: '20px',
+                margin: '0 0 20px 0'
+              }}>Get advanced analytics, bulk operations, API access, and more with our Pro plan.</p>
+              <button className="upgrade-promo-btn" onClick={() => handleNavigation('/subscription')} style={{
+                padding: '12px 24px',
+                backgroundColor: 'white',
+                color: '#7C3AED',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}>
                 Upgrade to Pro
               </button>
             </div>
-            <div className="promotion-image">
+            <div className="promotion-image" style={{ marginLeft: '40px' }}>
               <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Background */}
                 <rect width="120" height="120" rx="8" fill="#F4F3FF"/>

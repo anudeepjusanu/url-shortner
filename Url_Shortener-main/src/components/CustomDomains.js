@@ -12,6 +12,11 @@ const CustomDomains = () => {
   const [newDomainName, setNewDomainName] = useState('');
   const [newSubdomain, setNewSubdomain] = useState('');
   const [isAddingDomain, setIsAddingDomain] = useState(false);
+
+  // Wizard state
+  const [currentStep, setCurrentStep] = useState(1);
+  const [baseDomain, setBaseDomain] = useState('');
+  const [subdomain, setSubdomain] = useState('');
   const [wizardStep, setWizardStep] = useState(1);
   const [verificationStatus, setVerificationStatus] = useState('idle');
   const [addedDomain, setAddedDomain] = useState(null);
@@ -38,14 +43,41 @@ const CustomDomains = () => {
     }
   };
 
+  // Reset wizard state
+  // const resetWizard = () => {
+  //   setCurrentStep(1);
+  //   setBaseDomain('');
+  //   setSubdomain('');
+  //   setNewDomainName('');
+  // };
+
+  // Wizard navigation
+  const handleNext = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleAddDomain = async () => {
-    if (!newDomainName.trim() || !newSubdomain.trim()) return;
+
+    // Construct full domain from subdomain and base domain
+    const fullDomain = subdomain.trim()
+      ? `${subdomain.toLowerCase().trim()}.${baseDomain.toLowerCase().trim()}`
+      : baseDomain.toLowerCase().trim();
+
+    if (!baseDomain.trim() || !newSubdomain.trim()) return;
 
     try {
       setIsAddingDomain(true);
       const fullDomain = `${newSubdomain}.${newDomainName}`;
       const domainData = {
-        domain: newDomainName.toLowerCase().trim(),
+        domain: fullDomain,
         subdomain: newSubdomain.toLowerCase().trim(),
         fullDomain: fullDomain.toLowerCase().trim(),
         isDefault: false
@@ -54,6 +86,8 @@ const CustomDomains = () => {
       const response = await domainsAPI.createDomain(domainData);
       setAddedDomain(response.data || { ...domainData, id: Date.now() });
       await fetchDomains();
+      setShowAddModal(false);
+      resetWizard();
       setWizardStep(2);
       setError(null);
     } catch (err) {
@@ -126,6 +160,223 @@ const CustomDomains = () => {
     }
   };
 
+  // Step indicator component
+  const renderStepIndicator = () => (
+    <div style={{ marginBottom: '2rem' }}>
+      <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+        Step {currentStep} of 3
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {[1, 2, 3].map((step) => (
+          <React.Fragment key={step}>
+            <div
+              style={{
+                width: '2rem',
+                height: '2rem',
+                borderRadius: '50%',
+                backgroundColor: currentStep >= step ? '#3B82F6' : '#E5E7EB',
+                color: currentStep >= step ? 'white' : '#9CA3AF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '600',
+                fontSize: '0.875rem'
+              }}
+            >
+              {step}
+            </div>
+            {step < 3 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: '2px',
+                  backgroundColor: currentStep > step ? '#3B82F6' : '#E5E7EB'
+                }}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Step 1: Enter Domain Information
+  const renderStep1 = () => (
+    <div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+        Enter Domain Information
+      </h3>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+          Base Domain
+        </label>
+        <input
+          type="text"
+          value={baseDomain}
+          onChange={(e) => setBaseDomain(e.target.value)}
+          placeholder="company.sa"
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '1rem',
+            boxSizing: 'border-box'
+          }}
+          required
+        />
+        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+          Enter your base domain (e.g., company.sa, ministry.gov.sa)
+        </p>
+      </div>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+          Subdomain (Optional)
+        </label>
+        <input
+          type="text"
+          value={subdomain}
+          onChange={(e) => setSubdomain(e.target.value)}
+          placeholder="links"
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '1rem',
+            boxSizing: 'border-box'
+          }}
+        />
+        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+          Optional: Add a subdomain for your short links (e.g., "links" for links.company.sa)
+        </p>
+      </div>
+
+      <div style={{
+        backgroundColor: '#EFF6FF',
+        border: '1px solid #BFDBFE',
+        borderRadius: '6px',
+        padding: '1rem',
+        display: 'flex',
+        gap: '0.75rem'
+      }}>
+        <div style={{ flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: '#3B82F6' }}>
+            <path
+              d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+        <div>
+          <p style={{ fontWeight: '600', fontSize: '0.875rem', color: '#1E40AF', marginBottom: '0.25rem' }}>
+            Custom Domain Setup
+          </p>
+          <p style={{ fontSize: '0.875rem', color: '#1E40AF', margin: 0 }}>
+            Your domain will be configured with DNS verification and SSL certificate management.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Step 2: DNS Configuration
+  const renderStep2 = () => (
+    <div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+        DNS Configuration
+      </h3>
+
+      <div style={{
+        backgroundColor: '#FEF3C7',
+        border: '1px solid #FDE68A',
+        borderRadius: '6px',
+        padding: '1rem',
+        marginBottom: '1.5rem'
+      }}>
+        <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
+          You will need to add DNS records to verify domain ownership. Instructions will be provided after creation.
+        </p>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <p style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
+          Your domain will be:
+        </p>
+        <div style={{
+          padding: '0.75rem',
+          backgroundColor: '#F9FAFB',
+          border: '1px solid #E5E7EB',
+          borderRadius: '4px',
+          fontFamily: 'monospace',
+          fontSize: '1rem',
+          color: '#1F2937'
+        }}>
+          {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || 'your-domain.com'}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Step 3: Review and Confirm
+  const renderStep3 = () => (
+    <div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+        Review and Confirm
+      </h3>
+
+      <div style={{
+        backgroundColor: '#F9FAFB',
+        border: '1px solid #E5E7EB',
+        borderRadius: '6px',
+        padding: '1.5rem'
+      }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+            Full Domain
+          </p>
+          <p style={{ fontSize: '1rem', fontWeight: '600', color: '#1F2937' }}>
+            {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || 'Not specified'}
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+            Base Domain
+          </p>
+          <p style={{ fontSize: '1rem', fontWeight: '500', color: '#1F2937' }}>
+            {baseDomain || 'Not specified'}
+          </p>
+        </div>
+
+        {subdomain.trim() && (
+          <div>
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+              Subdomain
+            </p>
+            <p style={{ fontSize: '1rem', fontWeight: '500', color: '#1F2937' }}>
+              {subdomain}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div style={{
+        backgroundColor: '#DCFCE7',
+        border: '1px solid #BBF7D0',
+        borderRadius: '6px',
+        padding: '1rem',
+        marginTop: '1.5rem'
+      }}>
+        <p style={{ fontSize: '0.875rem', color: '#166534', margin: 0 }}>
+          After clicking "Add Domain", you'll receive DNS configuration instructions to verify your domain ownership.
+        </p>
+      </div>
+    </div>
+  );
+
   const renderAddDomainModal = () => (
     <div className="modal-overlay" style={{
       position: 'fixed',
@@ -139,439 +390,258 @@ const CustomDomains = () => {
       justifyContent: 'center',
       zIndex: 1000
     }}>
-      <div className="modal-container" style={{
+      <div style={{
         backgroundColor: 'white',
-        borderRadius: '12px',
+        padding: '2rem',
+        borderRadius: '8px',
         width: '90%',
         maxWidth: '600px',
         maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        overflow: 'auto'
       }}>
-        {/* Modal Header */}
-        <div className="modal-header" style={{
-          padding: '24px 24px 0 24px',
-          borderBottom: '1px solid #E5E7EB',
-          marginBottom: '24px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600', color: '#111827' }}>
-                Add New Domain
-              </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem', color: '#6B7280' }}>
-                Step {wizardStep} of 3
-              </p>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Add New Domain</h3>
+          <button
+            onClick={() => {
+              setShowAddModal(false);
+              resetWizard();
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '0.25rem',
+              color: '#6b7280'
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {renderStepIndicator()}
+
+        <form onSubmit={handleAddDomain}>
+          {currentStep === 1 && renderStep1()}
+          {currentStep === 2 && renderStep2()}
+          {currentStep === 3 && renderStep3()}
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between', marginTop: '2rem' }}>
             <button
-              onClick={resetWizard}
+              type="button"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
               style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: '0.25rem',
-                color: '#6B7280'
+                padding: '0.5rem 1.5rem',
+                border: '1px solid #d1d5db',
+                backgroundColor: 'white',
+                borderRadius: '4px',
+                cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+                opacity: currentStep === 1 ? 0.5 : 1,
+                fontSize: '0.875rem'
               }}
             >
-              ×
+              Previous
             </button>
+
+            {currentStep < 3 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={currentStep === 1 && !baseDomain.trim()}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (currentStep === 1 && !baseDomain.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: (currentStep === 1 && !baseDomain.trim()) ? 0.6 : 1,
+                  fontSize: '0.875rem'
+                }}
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isAddingDomain || !baseDomain.trim()}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (isAddingDomain || !baseDomain.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: (isAddingDomain || !baseDomain.trim()) ? 0.6 : 1,
+                  fontSize: '0.875rem'
+                }}
+              >
+                {isAddingDomain ? 'Adding...' : 'Add Domain'}
+              </button>
+            )}
           </div>
-
-          {/* Progress Bar */}
-          <div className="progress-bar" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            padding: '24px 0 16px 0'
-          }}>
-            <div className={`progress-step ${wizardStep >= 1 ? 'active' : ''} ${wizardStep > 1 ? 'completed' : ''}`} style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: wizardStep >= 1 ? (wizardStep > 1 ? '#10B981' : '#3B82F6') : '#F3F4F6',
-              color: wizardStep >= 1 ? 'white' : '#6B7280',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              {wizardStep > 1 ? '✓' : '1'}
-            </div>
-            <div style={{
-              width: '40px',
-              height: '2px',
-              background: wizardStep > 1 ? '#10B981' : '#E5E7EB',
-              borderRadius: '1px'
-            }}></div>
-            <div className={`progress-step ${wizardStep >= 2 ? 'active' : ''} ${wizardStep > 2 ? 'completed' : ''}`} style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: wizardStep >= 2 ? (wizardStep > 2 ? '#10B981' : '#3B82F6') : '#F3F4F6',
-              color: wizardStep >= 2 ? 'white' : '#6B7280',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              {wizardStep > 2 ? '✓' : '2'}
-            </div>
-            <div style={{
-              width: '40px',
-              height: '2px',
-              background: wizardStep > 2 ? '#10B981' : '#E5E7EB',
-              borderRadius: '1px'
-            }}></div>
-            <div className={`progress-step ${wizardStep >= 3 ? 'active' : ''}`} style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: wizardStep >= 3 ? '#3B82F6' : '#F3F4F6',
-              color: wizardStep >= 3 ? 'white' : '#6B7280',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              3
-            </div>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div className="modal-body" style={{ padding: '0 24px 24px 24px' }}>
-          {wizardStep === 1 && (
-            <div className="wizard-step">
-              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>
-                Enter Domain Information
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
-                    Base Domain
-                  </label>
-                  <input
-                    type="text"
-                    value={newDomainName}
-                    onChange={(e) => setNewDomainName(e.target.value)}
-                    placeholder="company.com"
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '6px',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>
-                    Enter your base domain (e.g., company.com, example.org)
-                  </p>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
-                    Subdomain <span style={{ color: '#DC2626' }}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newSubdomain}
-                    onChange={(e) => setNewSubdomain(e.target.value)}
-                    placeholder="links"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '6px',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>
-                    Add a subdomain for your short links (e.g., "links" for links.company.com)
-                  </p>
-                </div>
-
-                {(newDomainName && newSubdomain) && (
-                  <div style={{
-                    padding: '12px',
-                    background: '#F3F4F6',
-                    borderRadius: '6px',
-                    border: '1px solid #E5E7EB'
-                  }}>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#374151' }}>
-                      Full domain: <strong>
-                        {newSubdomain}.{newDomainName}
-                      </strong>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {wizardStep === 2 && (
-            <div className="wizard-step">
-              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>
-                DNS Configuration
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <p style={{ margin: 0, fontSize: '14px', color: '#374151' }}>
-                  Please create the following DNS record in your domain's DNS settings:
-                </p>
-
-                <div style={{
-                  padding: '16px',
-                  background: '#F9FAFB',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '500', color: '#374151' }}>Type:</span>
-                      <span style={{ fontFamily: 'monospace', color: '#111827' }}>CNAME</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '500', color: '#374151' }}>Name:</span>
-                      <span style={{ fontFamily: 'monospace', color: '#111827' }}>
-                        {newSubdomain}.{newDomainName}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '500', color: '#374151' }}>Value:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontFamily: 'monospace', color: '#111827' }}>laghhu.link</span>
-                        <button
-                          onClick={() => copyToClipboard('laghhu.link')}
-                          style={{
-                            padding: '4px 8px',
-                            background: '#3B82F6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Copy
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '12px',
-                  background: '#FEF3CD',
-                  border: '1px solid #F59E0B',
-                  borderRadius: '6px'
-                }}>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#92400E' }}>
-                    <strong>Note:</strong> DNS changes can take up to 24 hours to propagate globally.
-                    We'll automatically verify your domain once the DNS record is detected.
-                  </p>
-                </div>
-
-                <div style={{ textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleVerifyDomain()}
-                    disabled={verificationStatus === 'checking'}
-                    style={{
-                      padding: '12px 24px',
-                      background: verificationStatus === 'checking' ? '#9CA3AF' : '#3B82F6',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      cursor: verificationStatus === 'checking' ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    {verificationStatus === 'checking' ? 'Checking DNS...' : 'Verify DNS Now'}
-                  </button>
-
-                  {verificationStatus === 'failed' && (
-                    <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#DC2626' }}>
-                      DNS record not found. Please check your configuration and try again.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {wizardStep === 3 && verificationStatus === 'success' && (
-            <div className="wizard-step" style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                background: '#10B981',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px auto'
-              }}>
-                <span style={{ fontSize: '32px', color: 'white' }}>✓</span>
-              </div>
-              <h4 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', marginBottom: '8px' }}>
-                Domain Successfully Added!
-              </h4>
-              <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: '#6B7280' }}>
-                {newSubdomain}.{newDomainName} is now active and ready to use for creating branded short links.
-              </p>
-
-              <div style={{
-                padding: '16px',
-                background: '#F0FDF4',
-                border: '1px solid #10B981',
-                borderRadius: '8px',
-                marginBottom: '24px'
-              }}>
-                <p style={{ margin: 0, fontSize: '14px', color: '#059669', textAlign: 'center' }}>
-                  <strong>{newSubdomain}.{newDomainName}</strong>
-                  <br />
-                  DNS Verified • Ready for Use
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="modal-footer" style={{
-          padding: '16px 24px',
-          borderTop: '1px solid #E5E7EB',
-          display: 'flex',
-          justifyContent: 'space-between'
-        }}>
-          <button
-            onClick={() => {
-              if (wizardStep > 1) {
-                setWizardStep(wizardStep - 1);
-              } else {
-                resetWizard();
-              }
-            }}
-            style={{
-              padding: '8px 16px',
-              background: 'white',
-              border: '1px solid #D1D5DB',
-              borderRadius: '6px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              color: '#374151'
-            }}
-          >
-            {wizardStep === 1 ? 'Cancel' : 'Previous'}
-          </button>
-
-          <button
-            onClick={() => {
-              if (wizardStep === 1) {
-                if (!newDomainName.trim() || !newSubdomain.trim()) return;
-                handleAddDomain();
-              } else if (wizardStep === 2) {
-                if (verificationStatus !== 'success') return;
-                setWizardStep(3);
-              } else if (wizardStep === 3) {
-                resetWizard();
-              }
-            }}
-            disabled={
-              (wizardStep === 1 && (!newDomainName.trim() || !newSubdomain.trim() || isAddingDomain)) ||
-              (wizardStep === 2 && verificationStatus !== 'success')
-            }
-            style={{
-              padding: '8px 16px',
-              background: '#3B82F6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              opacity: (wizardStep === 1 && (!newDomainName.trim() || !newSubdomain.trim() || isAddingDomain)) ||
-                       (wizardStep === 2 && verificationStatus !== 'success') ? 0.6 : 1
-            }}
-          >
-            {isAddingDomain ? 'Adding...' :
-             wizardStep === 1 ? 'Add Domain' :
-             wizardStep === 2 ? 'Next' : 'Finish'}
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );
 
 
   return (
-    <div className="analytics-container">
-      <MainHeader />
+    <>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .link-card {
+          transition: all 0.2s ease;
+        }
+        .link-card:hover {
+          border-color: #3B82F6 !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .create-link-btn:hover,
+        .create-first-link-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+        }
+        .create-link-btn,
+        .create-first-link-btn {
+          transition: all 0.2s ease;
+        }
+      `}</style>
+      <div className="analytics-container">
+        <MainHeader />
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content">
-            <div className="page-header">
+          <div className="analytics-content" style={{
+            padding: '24px',
+            maxWidth: '1400px',
+            margin: '0 auto'
+          }}>
+            <div className="page-header" style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              // alignItems: 'flex-start',
+              marginBottom: '20px'
+            }}>
+              <div className="header-info" style={{ margin: 0 }}>
+                <h1 className="page-title" style={{ marginBottom: '4px' }}>Custom Domains</h1>
+                <p className="page-subtitle" style={{ margin: 0 }}>Manage your branded domains for short links</p>
+              </div>
               <button
-                className="create-link-btn"
+                // className="create-link-btn"
                 onClick={() => setShowAddModal(true)}
                 style={{
-                  marginLeft: 'auto',
-                  minWidth: 180,
+                  // minWidth: 180,
                   color: "white",
-                  padding: "8px 16px",
+                  padding: "10px 16px",
                   background: "#3B82F6",
                   border: "none",
-                  borderRadius: "5px"
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500"
                 }}
               >
                 Add New Domain
               </button>
-              <div className="header-info">
-                <h1 className="page-title">Custom Domains</h1>
-                <p className="page-subtitle">Manage your branded domains for short links</p>
-              </div>
             </div>
 
             {error && (
-              <div className="error-message">
-                <span>{error}</span>
-                <button onClick={() => setError(null)}>&times;</button>
+              <div className="error-message" style={{
+                backgroundColor: '#FEE2E2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ color: '#991B1B', fontSize: '14px' }}>{error}</span>
+                <button onClick={() => setError(null)} style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#991B1B',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  padding: '0 4px'
+                }}>&times;</button>
               </div>
             )}
 
-            <div className="links-container">
+            <div className="links-container" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
               {loading ? (
-                <div className="loading-state">
-                  <div className="spinner"></div>
-                  <p>Loading domains...</p>
+                <div className="loading-state" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  color: '#6B7280'
+                }}>
+                  <div className="spinner" style={{
+                    display: 'inline-block',
+                    width: '24px',
+                    height: '24px',
+                    border: '3px solid #E5E7EB',
+                    borderTopColor: '#3B82F6',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <p style={{ marginTop: '12px', marginBottom: 0 }}>Loading domains...</p>
                 </div>
               ) : domains.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon">
-                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                <div className="empty-state" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  padding: '48px 24px',
+                  textAlign: 'center'
+                }}>
+                  <div className="empty-icon" style={{ margin: '0 auto 16px' }}>
+                    <svg className="w-12 h-12" width="48" height="48" fill="none" stroke="#9CA3AF" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
                   </div>
-                  <h3>No domains found</h3>
-                  <p>Add your first custom domain to start creating branded short links</p>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>No domains found</h3>
+                  <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '20px' }}>Add your first custom domain to start creating branded short links</p>
                   <button
                     onClick={() => setShowAddModal(true)}
                     className="create-first-link-btn"
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#3B82F6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     Add Your First Domain
                   </button>
                 </div>
               ) : (
-                <div className="links-list">
+                <div className="links-list" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
                   {domains.map((domain) => {
                     const domainId = domain.id || domain._id;
                     return (
@@ -651,6 +721,7 @@ const CustomDomains = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

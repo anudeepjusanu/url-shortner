@@ -106,28 +106,81 @@ function MyLinks() {
   };
 
   return (
-    <div className="analytics-container">
-      <MainHeader />
+    <>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .link-card {
+          transition: all 0.2s ease;
+        }
+        .link-card:hover {
+          border-color: #3B82F6 !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .stats-card {
+          transition: all 0.2s ease;
+        }
+        .stats-card:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(-2px);
+        }
+        .link-actions button:hover {
+          opacity: 0.85;
+          transform: translateY(-1px);
+        }
+        .link-actions button:active {
+          transform: translateY(0);
+        }
+        .create-short-link-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+        }
+        .create-short-link-btn:active {
+          transform: translateY(0);
+        }
+      `}</style>
+      <div className="analytics-container">
+        <MainHeader />
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content">
-            <div className="page-header" >
-                            <button
+          <div className="analytics-content" style={{
+            padding: '24px',
+            maxWidth: '1400px',
+            margin: '0 auto'
+          }}>
+            <div className="page-header" style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: showCreateShortLink ? '24px' : '20px',
+              paddingBottom: '0'
+            }}>
+              {!showCreateShortLink && (
+                <div className="header-info" style={{ margin: 0 }}>
+                  <h1 className="page-title" style={{ marginBottom: '4px' }}>My Links</h1>
+                  <p className="page-subtitle" style={{ margin: 0 }}>Manage and track all your shortened links in one place</p>
+                </div>
+              )}
+              <button
                 className="create-short-link-btn"
                 onClick={() => setShowCreateShortLink((prev) => !prev)}
-                style={{ marginLeft: 'auto', minWidth: 180 , color: "white", padding: "8px 6px", background: "#3B82F6", border: "none", borderRadius: "5px" }}
+                style={{
+                  minWidth: 180,
+                  color: "white",
+                  padding: "10px 16px",
+                  background: "#3B82F6",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  marginLeft: showCreateShortLink ? '0' : 'auto'
+                }}
               >
-                {showCreateShortLink ? 'Go Back to My Links' : 'Create Short Link'}
+                {showCreateShortLink ? '← Back to My Links' : 'Create Short Link'}
               </button>
-                              {showCreateShortLink ? null : (
-
-              <div className="header-info">
-                <h1 className="page-title">My Links</h1>
-                <p className="page-subtitle">Manage and track all your shortened links in one place</p>
-                
-              </div>
-                              )}
             </div>
             {showCreateShortLink ? (
               <div className="create-short-link-content">
@@ -268,50 +321,258 @@ function MyLinks() {
               </div>
             ) : (
               <>
-                <div className="stats-grid" style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
-                  <div className="stats-card" style={{ flex: 1 }}>
+                <div className="stats-grid" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '16px',
+                  marginBottom: '20px'
+                }}>
+                  <div className="stats-card" style={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    padding: '20px'
+                  }}>
                     <div className="stats-content">
-                      <p className="stats-label">Total Links</p>
-                      <h3 className="stats-value">{links.length}</h3>
+                      <p className="stats-label" style={{
+                        fontSize: '13px',
+                        color: '#6B7280',
+                        marginBottom: '8px',
+                        fontWeight: '400'
+                      }}>Total Links</p>
+                      <h3 className="stats-value" style={{
+                        fontSize: '28px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        margin: 0
+                      }}>{links.length}</h3>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#10B981',
+                        marginTop: '6px',
+                        marginBottom: 0
+                      }}>↑ {links.length > 0 ? '100%' : '0%'} vs last period</p>
                     </div>
                   </div>
-                  <div className="stats-card" style={{ flex: 1 }}>
+                  <div className="stats-card" style={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    padding: '20px'
+                  }}>
                     <div className="stats-content">
-                      <p className="stats-label">Total Clicks</p>
-                      <h3 className="stats-value">{links.reduce((sum, link) => sum + (link.clickCount || 0), 0)}</h3>
+                      <p className="stats-label" style={{
+                        fontSize: '13px',
+                        color: '#6B7280',
+                        marginBottom: '8px',
+                        fontWeight: '400'
+                      }}>Total Clicks</p>
+                      <h3 className="stats-value" style={{
+                        fontSize: '28px',
+                        fontWeight: '600',
+                        color: '#1F2937',
+                        margin: 0
+                      }}>{links.reduce((sum, link) => sum + (link.clickCount || 0), 0).toLocaleString()}</h3>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#10B981',
+                        marginTop: '6px',
+                        marginBottom: 0
+                      }}>↑ +32.1% vs last period</p>
                     </div>
                   </div>
                 </div>
                 {error && (
-                  <div className="error-message">
-                    <span>{error}</span>
-                    <button onClick={() => setError(null)}>&times;</button>
+                  <div className="error-message" style={{
+                    backgroundColor: '#FEE2E2',
+                    border: '1px solid #FCA5A5',
+                    borderRadius: '6px',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ color: '#991B1B', fontSize: '14px' }}>{error}</span>
+                    <button onClick={() => setError(null)} style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#991B1B',
+                      fontSize: '20px',
+                      cursor: 'pointer',
+                      padding: '0 4px'
+                    }}>&times;</button>
                   </div>
                 )}
-                <div className="links-list">
+                <div className="links-list" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
                   {loading ? (
-                    <div>Loading...</div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      padding: '40px',
+                      textAlign: 'center',
+                      color: '#6B7280'
+                    }}>
+                      <div style={{
+                        display: 'inline-block',
+                        width: '24px',
+                        height: '24px',
+                        border: '3px solid #E5E7EB',
+                        borderTopColor: '#3B82F6',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                      <p style={{ marginTop: '12px', marginBottom: 0 }}>Loading links...</p>
+                    </div>
                   ) : filteredLinks.length === 0 ? (
-                    <div>No links found.</div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      padding: '48px 24px',
+                      textAlign: 'center'
+                    }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}>
+                        <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>No links found</h3>
+                      <p style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>Create your first short link to get started</p>
+                    </div>
                   ) : (
                     filteredLinks.map((link) => {
                       const linkId = link.id || link._id;
                       return (
-                        <div key={linkId} className="link-card">
-                          <div className="link-info">
-                            <div className="link-title">{link.title || 'Untitled Link'}</div>
-                            <div className="link-urls">
-                              <span className="short-url">{link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}</span>
-                              <span className="original-url">{link.originalUrl}</span>
+                        <div key={linkId} className="link-card" style={{
+                          backgroundColor: 'white',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '8px',
+                          padding: '16px 20px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'all 0.2s',
+                          cursor: 'pointer'
+                        }}>
+                          <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
+                            <div className="link-title" style={{
+                              fontSize: '15px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              marginBottom: '8px'
+                            }}>{link.title || 'Untitled Link'}</div>
+                            <div className="link-urls" style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                              marginBottom: '8px'
+                            }}>
+                              <span className="short-url" style={{
+                                fontSize: '14px',
+                                color: '#3B82F6',
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
+                              </span>
+                              <span className="original-url" style={{
+                                fontSize: '13px',
+                                color: '#6B7280',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>{link.originalUrl}</span>
                             </div>
-                            <div className="link-meta">
-                              <span>{formatDate(link.createdAt)}</span>
-                              <span>{link.clickCount || 0} clicks</span>
+                            <div className="link-meta" style={{
+                              display: 'flex',
+                              gap: '16px',
+                              fontSize: '12px',
+                              color: '#9CA3AF'
+                            }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                  <line x1="16" y1="2" x2="16" y2="6"/>
+                                  <line x1="8" y1="2" x2="8" y2="6"/>
+                                  <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                {formatDate(link.createdAt)}
+                              </span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
+                                </svg>
+                                {link.clickCount || 0} clicks
+                              </span>
                             </div>
                           </div>
-                          <div className="link-actions">
-                            <button onClick={() => handleCopyLink(link)}>{copiedId === linkId ? 'Copied' : 'Copy'}</button>
-                            <button onClick={() => handleDeleteLink(linkId)} disabled={deleteLoading === linkId}>Delete</button>
+                          <div className="link-actions" style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginLeft: '16px'
+                          }}>
+                            <button onClick={() => handleCopyLink(link)} style={{
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: copiedId === linkId ? '#10B981' : '#3B82F6',
+                              backgroundColor: copiedId === linkId ? '#D1FAE5' : '#EFF6FF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}>
+                              {copiedId === linkId ? (
+                                <>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                  </svg>
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                  </svg>
+                                  Copy
+                                </>
+                              )}
+                            </button>
+                            <button onClick={() => handleDeleteLink(linkId)} disabled={deleteLoading === linkId} style={{
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: '#EF4444',
+                              backgroundColor: '#FEE2E2',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: deleteLoading === linkId ? 'not-allowed' : 'pointer',
+                              opacity: deleteLoading === linkId ? 0.6 : 1,
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              </svg>
+                              {deleteLoading === linkId ? 'Deleting...' : 'Delete'}
+                            </button>
                           </div>
                         </div>
                       );
@@ -324,6 +585,7 @@ function MyLinks() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
