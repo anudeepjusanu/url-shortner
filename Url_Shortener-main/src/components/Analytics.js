@@ -1,10 +1,170 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
+import { analyticsAPI } from "../services/api";
 import "./Analytics.css";
 
 const Analytics = () => {
-  const [timeFilter, setTimeFilter] = useState("Last 7 days");
+  const { id } = useParams(); // Get URL ID from route params
+  const [timeFilter, setTimeFilter] = useState("7d");
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [linkData, setLinkData] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      fetchAnalyticsData();
+    } else {
+      fetchDashboardAnalytics();
+    }
+  }, [id, timeFilter]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch URL-specific analytics
+      const response = await analyticsAPI.getUrlAnalytics(id, {
+        period: timeFilter,
+        groupBy: timeFilter === '7d' ? 'hour' : 'day'
+      });
+
+      setAnalyticsData(response.data);
+
+      // If we have analytics data, extract the link info from it
+      if (response.data?.url) {
+        setLinkData(response.data.url);
+      }
+    } catch (err) {
+      console.error('Error fetching analytics data:', err);
+      setError(err.message || 'Failed to fetch analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboardAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch dashboard overview analytics
+      const response = await analyticsAPI.getOverview({
+        period: timeFilter
+      });
+
+      setAnalyticsData(response.data);
+    } catch (err) {
+      console.error('Error fetching dashboard analytics:', err);
+      setError(err.message || 'Failed to fetch analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTimeFilterChange = (newFilter) => {
+    setTimeFilter(newFilter);
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const exportData = async () => {
+    try {
+      // For now, create a simple CSV export from the current data
+      let csvContent = '';
+
+      if (id && analyticsData) {
+        // Export URL-specific data
+        csvContent = 'Metric,Value\n';
+        csvContent += `Total Clicks,${analyticsData.totalClicks || 0}\n`;
+        csvContent += `Unique Clicks,${analyticsData.uniqueClicks || 0}\n`;
+        csvContent += `Click-through Rate,${analyticsData.clickThroughRate || '0%'}\n`;
+        csvContent += `Average Time,${analyticsData.averageTime || '0s'}\n`;
+
+        if (analyticsData.clicksByCountry) {
+          csvContent += '\nCountry,Clicks\n';
+          analyticsData.clicksByCountry.forEach(country => {
+            csvContent += `${country.country || country.name},${country.clicks}\n`;
+          });
+        }
+
+        if (analyticsData.clicksByDevice) {
+          csvContent += '\nDevice,Clicks\n';
+          Object.entries(analyticsData.clicksByDevice).forEach(([device, clicks]) => {
+            csvContent += `${device},${clicks}\n`;
+          });
+        }
+      } else if (analyticsData) {
+        // Export dashboard overview data
+        csvContent = 'Metric,Value\n';
+        csvContent += `Total Clicks,${analyticsData.totalClicks || 0}\n`;
+        csvContent += `Unique Clicks,${analyticsData.uniqueClicks || 0}\n`;
+      }
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `analytics_${id || 'dashboard'}_${timeFilter}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error exporting data:', err);
+      alert('Failed to export data');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="analytics-container">
+        <MainHeader />
+        <div className="analytics-layout">
+          <Sidebar />
+          <div className="analytics-main">
+            <div className="analytics-content">
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading analytics...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="analytics-container">
+        <MainHeader />
+        <div className="analytics-layout">
+          <Sidebar />
+          <div className="analytics-main">
+            <div className="analytics-content">
+              <div className="error-state">
+                <p>Error: {error}</p>
+                <button onClick={() => window.location.reload()}>Retry</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="analytics-container">
@@ -16,12 +176,12 @@ const Analytics = () => {
             {/* Page Header */}
             <div className="page-header">
               <div className="header-info">
-                <h1 className="page-title">Link Analytics</h1>
+                <h1 className="page-title">{id ? 'Link Analytics' : 'Analytics Dashboard'}</h1>
                 <p className="page-subtitle">
-                  Track performance of your shortened link
+                  {id ? 'Track performance of your shortened link' : 'Overview of all your links performance'}
                 </p>
               </div>
-              <button className="export-btn">
+              <button className="export-btn" onClick={exportData}>
                 <svg
                   width="16"
                   height="16"
@@ -55,117 +215,130 @@ const Analytics = () => {
               </button>
             </div>
 
-            {/* Link Info Card */}
-            <div className="link-info-card">
-              <div className="link-info-content">
-                <div className="link-icon">
-                  <svg
-                    width="25"
-                    height="20"
-                    viewBox="0 0 25 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 6H14M10 6C8.34315 6 7 7.34315 7 9C7 10.6569 8.34315 12 10 12H12M10 6C8.34315 6 7 4.65685 7 3C7 1.34315 8.34315 0 10 0H12M14 6C15.6569 6 17 7.34315 17 9C17 10.6569 15.6569 12 14 12H12M14 6C15.6569 6 17 4.65685 17 3C17 1.34315 15.6569 0 14 0H12M12 0V12"
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+            {/* Link Info Card - Only show for individual URL analytics */}
+            {linkData && (
+              <div className="link-info-card">
+                <div className="link-info-content">
+                  <div className="link-icon">
+                    <svg
+                      width="25"
+                      height="20"
+                      viewBox="0 0 25 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10 6H14M10 6C8.34315 6 7 7.34315 7 9C7 10.6569 8.34315 12 10 12H12M10 6C8.34315 6 7 4.65685 7 3C7 1.34315 8.34315 0 10 0H12M14 6C15.6569 6 17 7.34315 17 9C17 10.6569 15.6569 12 14 12H12M14 6C15.6569 6 17 4.65685 17 3C17 1.34315 15.6569 0 14 0H12M12 0V12"
+                        stroke="#3b82f6"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div className="link-details">
+                    <h3 className="short-link">
+                      {linkData.domain && linkData.domain !== 'laghhu.link'
+                        ? `${linkData.domain}/${linkData.shortCode}`
+                        : `laghhu.link/${linkData.shortCode}`}
+                    </h3>
+                    <p className="original-link">
+                      {linkData.originalUrl}
+                    </p>
+                  </div>
                 </div>
-                <div className="link-details">
-                  <h3 className="short-link">linksa.co/abc123</h3>
-                  <p className="original-link">
-                    https://www.example.com/very-long-url-that-was-shortened
-                  </p>
+                <div className="link-actions">
+                  <button
+                    className="action-btn copy-btn"
+                    onClick={() => copyToClipboard(
+                      linkData.domain && linkData.domain !== 'laghhu.link'
+                        ? `https://${linkData.domain}/${linkData.shortCode}`
+                        : `https://laghhu.link/${linkData.shortCode}`
+                    )}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="4"
+                        y="4"
+                        width="8"
+                        height="8"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button className="action-btn share-btn">
+                    <svg
+                      width="14"
+                      height="16"
+                      viewBox="0 0 14 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10 6L6 2L2 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 2V12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M14 12V13C14 13.5304 13.7893 14.0391 13.4142 14.4142C13.0391 14.7893 12.5304 15 12 15H2C1.46957 15 0.960859 14.7893 0.585786 14.4142C0.210714 14.0391 0 13.5304 0 13V12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button className="action-btn edit-btn">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7.33333 2.66669H2.66667C2.31304 2.66669 1.97391 2.80716 1.72386 3.05721C1.47381 3.30726 1.33333 3.64640 1.33333 4.00002V13.3334C1.33333 13.687 1.47381 14.0261 1.72386 14.2762C1.97391 14.5262 2.31304 14.6667 2.66667 14.6667H12C12.3536 14.6667 12.6928 14.5262 12.9428 14.2762C13.1929 14.0261 13.3333 13.687 13.3333 13.3334V8.66669"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12.3333 1.66669C12.5985 1.40148 12.9583 1.25244 13.3333 1.25244C13.7083 1.25244 14.0681 1.40148 14.3333 1.66669C14.5985 1.9319 14.7476 2.29171 14.7476 2.66669C14.7476 3.04167 14.5985 3.40148 14.3333 3.66669L8 10L5.33333 10.6667L6 8.00002L12.3333 1.66669Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <div className="link-actions">
-                <button className="action-btn copy-btn">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      x="4"
-                      y="4"
-                      width="8"
-                      height="8"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button className="action-btn share-btn">
-                  <svg
-                    width="14"
-                    height="16"
-                    viewBox="0 0 14 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 6L6 2L2 6"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M6 2V12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14 12V13C14 13.5304 13.7893 14.0391 13.4142 14.4142C13.0391 14.7893 12.5304 15 12 15H2C1.46957 15 0.960859 14.7893 0.585786 14.4142C0.210714 14.0391 0 13.5304 0 13V12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button className="action-btn edit-btn">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.33333 2.66669H2.66667C2.31304 2.66669 1.97391 2.80716 1.72386 3.05721C1.47381 3.30726 1.33333 3.64640 1.33333 4.00002V13.3334C1.33333 13.687 1.47381 14.0261 1.72386 14.2762C1.97391 14.5262 2.31304 14.6667 2.66667 14.6667H12C12.3536 14.6667 12.6928 14.5262 12.9428 14.2762C13.1929 14.0261 13.3333 13.687 13.3333 13.3334V8.66669"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12.3333 1.66669C12.5985 1.40148 12.9583 1.25244 13.3333 1.25244C13.7083 1.25244 14.0681 1.40148 14.3333 1.66669C14.5985 1.9319 14.7476 2.29171 14.7476 2.66669C14.7476 3.04167 14.5985 3.40148 14.3333 3.66669L8 10L5.33333 10.6667L6 8.00002L12.3333 1.66669Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Stats Cards */}
             <div className="stats-grid">
@@ -173,22 +346,27 @@ const Analytics = () => {
                 <div className="stats-content">
                   <div className="stats-info">
                     <p className="stats-label">Total Clicks</p>
-                    <h3 className="stats-value">2,847</h3>
-                    <div className="stats-change positive">
-                      <svg
-                        width="11"
-                        height="14"
-                        viewBox="0 0 11 14"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                      <span>+12.5% vs last period</span>
-                    </div>
+                    <h3 className="stats-value">{analyticsData?.totalClicks || 0}</h3>
+                    {analyticsData?.totalClicksChange && (
+                      <div className={`stats-change ${analyticsData.totalClicksChange >= 0 ? 'positive' : 'negative'}`}>
+                        <svg
+                          width="11"
+                          height="14"
+                          viewBox="0 0 11 14"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
+                            fill="currentColor"
+                            style={{
+                              transform: analyticsData.totalClicksChange < 0 ? 'rotate(180deg)' : 'none'
+                            }}
+                          />
+                        </svg>
+                        <span>{analyticsData.totalClicksChange >= 0 ? '+' : ''}{analyticsData.totalClicksChange}% vs last period</span>
+                      </div>
+                    )}
                   </div>
                   <div className="stats-icon blue">
                     <svg
@@ -214,22 +392,27 @@ const Analytics = () => {
                 <div className="stats-content">
                   <div className="stats-info">
                     <p className="stats-label">Unique Clicks</p>
-                    <h3 className="stats-value">1,924</h3>
-                    <div className="stats-change positive">
-                      <svg
-                        width="11"
-                        height="14"
-                        viewBox="0 0 11 14"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                      <span>+8.3% vs last period</span>
-                    </div>
+                    <h3 className="stats-value">{analyticsData?.uniqueClicks || 0}</h3>
+                    {analyticsData?.uniqueClicksChange && (
+                      <div className={`stats-change ${analyticsData.uniqueClicksChange >= 0 ? 'positive' : 'negative'}`}>
+                        <svg
+                          width="11"
+                          height="14"
+                          viewBox="0 0 11 14"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
+                            fill="currentColor"
+                            style={{
+                              transform: analyticsData.uniqueClicksChange < 0 ? 'rotate(180deg)' : 'none'
+                            }}
+                          />
+                        </svg>
+                        <span>{analyticsData.uniqueClicksChange >= 0 ? '+' : ''}{analyticsData.uniqueClicksChange}% vs last period</span>
+                      </div>
+                    )}
                   </div>
                   <div className="stats-icon green">
                     <svg
@@ -271,6 +454,106 @@ const Analytics = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Additional stats cards for comprehensive analytics */}
+              <div className="stats-card">
+                <div className="stats-content">
+                  <div className="stats-info">
+                    <p className="stats-label">Click-through Rate</p>
+                    <h3 className="stats-value">{analyticsData?.clickThroughRate || '0%'}</h3>
+                    {analyticsData?.clickThroughRateChange && (
+                      <div className={`stats-change ${analyticsData.clickThroughRateChange >= 0 ? 'positive' : 'negative'}`}>
+                        <svg
+                          width="11"
+                          height="14"
+                          viewBox="0 0 11 14"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
+                            fill="currentColor"
+                            style={{
+                              transform: analyticsData.clickThroughRateChange < 0 ? 'rotate(180deg)' : 'none'
+                            }}
+                          />
+                        </svg>
+                        <span>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}% vs last period</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="stats-icon orange">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10 1L13 7L19 7L14.5 11L16 17L10 14L4 17L5.5 11L1 7L7 7L10 1Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stats-card">
+                <div className="stats-content">
+                  <div className="stats-info">
+                    <p className="stats-label">Average Time</p>
+                    <h3 className="stats-value">{analyticsData?.averageTime || '0s'}</h3>
+                    {analyticsData?.averageTimeChange && (
+                      <div className={`stats-change ${analyticsData.averageTimeChange >= 0 ? 'positive' : 'negative'}`}>
+                        <svg
+                          width="11"
+                          height="14"
+                          viewBox="0 0 11 14"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
+                            fill="currentColor"
+                            style={{
+                              transform: analyticsData.averageTimeChange < 0 ? 'rotate(180deg)' : 'none'
+                            }}
+                          />
+                        </svg>
+                        <span>{analyticsData.averageTimeChange >= 0 ? '+' : ''}{analyticsData.averageTimeChange}% vs last period</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="stats-icon purple">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="10"
+                        cy="10"
+                        r="8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M10 6V10L14 14"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Click Activity Chart */}
@@ -278,14 +561,34 @@ const Analytics = () => {
               <div className="chart-header">
                 <h3 className="chart-title">Click Activity</h3>
                 <div className="chart-controls">
+                  <div className="filter-tabs">
+                    {[
+                      { value: '24h', label: '24h' },
+                      { value: '7d', label: '7d' },
+                      { value: '30d', label: '30d' },
+                      { value: '90d', label: '90d' },
+                      { value: '1y', label: '1y' }
+                    ].map((filter) => (
+                      <button
+                        key={filter.value}
+                        className={`filter-tab ${timeFilter === filter.value ? 'active' : ''}`}
+                        onClick={() => handleTimeFilterChange(filter.value)}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
                   <select
                     className="time-filter-select"
                     value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value)}
+                    onChange={(e) => handleTimeFilterChange(e.target.value)}
                   >
-                    <option value="Last 7 days">Last 7 days</option>
-                    <option value="Last 30 days">Last 30 days</option>
-                    <option value="Last 90 days">Last 90 days</option>
+                    <option value="24h">Last 24 hours</option>
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d">Last 30 days</option>
+                    <option value="90d">Last 90 days</option>
+                    <option value="1y">Last year</option>
+                    <option value="custom">Custom range</option>
                   </select>
                 </div>
               </div>
@@ -329,49 +632,78 @@ const Analytics = () => {
                     <line x1="70" y1="250" x2="1020" y2="250" />
                   </g>
 
-                  {/* Total Clicks Line */}
-                  <polyline
-                    points="100,220 200,200 300,180 400,160 500,140 600,120 700,100 800,90 900,80"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
+                  {/* Dynamic chart lines based on analytics data */}
+                  {analyticsData?.clickActivity ? (
+                    <>
+                      {/* Total Clicks Line */}
+                      <polyline
+                        points={analyticsData.clickActivity.map((point, index) => {
+                          const x = 100 + (index * 100);
+                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
+                          const y = maxClicks > 0 ? 250 - ((point.totalClicks || 0) / maxClicks) * 200 : 250;
+                          return `${x},${y}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke="#3b82f6"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
 
-                  {/* Unique Clicks Line */}
-                  <polyline
-                    points="100,240 200,235 300,210 400,190 500,170 600,150 700,130 800,120 900,110"
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
+                      {/* Unique Clicks Line */}
+                      <polyline
+                        points={analyticsData.clickActivity.map((point, index) => {
+                          const x = 100 + (index * 100);
+                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
+                          const y = maxClicks > 0 ? 250 - ((point.uniqueClicks || 0) / maxClicks) * 200 : 250;
+                          return `${x},${y}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
 
-                  {/* Data points - Total Clicks */}
-                  <g fill="#3b82f6">
-                    <circle cx="100" cy="220" r="4" />
-                    <circle cx="200" cy="200" r="4" />
-                    <circle cx="300" cy="180" r="4" />
-                    <circle cx="400" cy="160" r="4" />
-                    <circle cx="500" cy="140" r="4" />
-                    <circle cx="600" cy="120" r="4" />
-                    <circle cx="700" cy="100" r="4" />
-                    <circle cx="800" cy="90" r="4" />
-                    <circle cx="900" cy="80" r="4" />
-                  </g>
+                      {/* Data points - Total Clicks */}
+                      <g fill="#3b82f6">
+                        {analyticsData.clickActivity.map((point, index) => {
+                          const x = 100 + (index * 100);
+                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
+                          const y = maxClicks > 0 ? 250 - ((point.totalClicks || 0) / maxClicks) * 200 : 250;
+                          return <circle key={`total-${index}`} cx={x} cy={y} r="4" />;
+                        })}
+                      </g>
 
-                  {/* Data points - Unique Clicks */}
-                  <g fill="#10b981">
-                    <circle cx="100" cy="240" r="4" />
-                    <circle cx="200" cy="235" r="4" />
-                    <circle cx="300" cy="210" r="4" />
-                    <circle cx="400" cy="190" r="4" />
-                    <circle cx="500" cy="170" r="4" />
-                    <circle cx="600" cy="150" r="4" />
-                    <circle cx="700" cy="130" r="4" />
-                    <circle cx="800" cy="120" r="4" />
-                    <circle cx="900" cy="110" r="4" />
-                  </g>
+                      {/* Data points - Unique Clicks */}
+                      <g fill="#10b981">
+                        {analyticsData.clickActivity.map((point, index) => {
+                          const x = 100 + (index * 100);
+                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
+                          const y = maxClicks > 0 ? 250 - ((point.uniqueClicks || 0) / maxClicks) * 200 : 250;
+                          return <circle key={`unique-${index}`} cx={x} cy={y} r="4" />;
+                        })}
+                      </g>
+                    </>
+                  ) : (
+                    <>
+                      {/* Fallback static chart when no data */}
+                      <polyline
+                        points="100,250 200,250 300,250 400,250 500,250 600,250 700,250"
+                        fill="none"
+                        stroke="#e5e7eb"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                      <g fill="#e5e7eb">
+                        <circle cx="100" cy="250" r="4" />
+                        <circle cx="200" cy="250" r="4" />
+                        <circle cx="300" cy="250" r="4" />
+                        <circle cx="400" cy="250" r="4" />
+                        <circle cx="500" cy="250" r="4" />
+                        <circle cx="600" cy="250" r="4" />
+                        <circle cx="700" cy="250" r="4" />
+                      </g>
+                    </>
+                  )}
 
                   {/* X-axis labels */}
                   <g
@@ -380,27 +712,21 @@ const Analytics = () => {
                     textAnchor="middle"
                     fontFamily="Inter"
                   >
-                    <text x="100" y="285">
-                      Mon
-                    </text>
-                    <text x="200" y="285">
-                      Tue
-                    </text>
-                    <text x="300" y="285">
-                      Wed
-                    </text>
-                    <text x="400" y="285">
-                      Thu
-                    </text>
-                    <text x="500" y="285">
-                      Fri
-                    </text>
-                    <text x="600" y="285">
-                      Sat
-                    </text>
-                    <text x="700" y="285">
-                      Sun
-                    </text>
+                    {analyticsData?.clickActivity ? (
+                      analyticsData.clickActivity.map((point, index) => {
+                        const x = 100 + (index * 100);
+                        const label = point.label || point.date || `Day ${index + 1}`;
+                        return (
+                          <text key={index} x={x} y="285">
+                            {label}
+                          </text>
+                        );
+                      })
+                    ) : (
+                      <>
+                        <text x="100" y="285">No Data</text>
+                      </>
+                    )}
                   </g>
 
                   {/* Y-axis labels */}
@@ -410,24 +736,27 @@ const Analytics = () => {
                     textAnchor="end"
                     fontFamily="Inter"
                   >
-                    <text x="60" y="255">
-                      0
-                    </text>
-                    <text x="60" y="205">
-                      100
-                    </text>
-                    <text x="60" y="155">
-                      200
-                    </text>
-                    <text x="60" y="105">
-                      300
-                    </text>
-                    <text x="60" y="55">
-                      400
-                    </text>
-                    <text x="60" y="35">
-                      500
-                    </text>
+                    {analyticsData?.clickActivity ? (() => {
+                      const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
+                      const steps = Math.max(1, Math.ceil(maxClicks / 5));
+                      return Array.from({ length: 6 }, (_, i) => {
+                        const value = i * steps;
+                        const y = 255 - (i * 40);
+                        return (
+                          <text key={i} x="60" y={y}>
+                            {value}
+                          </text>
+                        );
+                      });
+                    })() : (
+                      <>
+                        <text x="60" y="255">0</text>
+                        <text x="60" y="205">0</text>
+                        <text x="60" y="155">0</text>
+                        <text x="60" y="105">0</text>
+                        <text x="60" y="55">0</text>
+                      </>
+                    )}
                   </g>
 
                   {/* Legend */}
@@ -451,85 +780,32 @@ const Analytics = () => {
               <div className="section-card">
                 <h3 className="section-title">Clicks by Country</h3>
                 <div className="country-stats">
-                  <div className="country-item">
-                    <div className="country-info">
-                      <span className="country-flag">🇸🇦</span>
-                      <span className="country-name">Saudi Arabia</span>
-                    </div>
-                    <div className="country-data">
-                      <span className="country-value">1,247</span>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: "65%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
+                  {analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0 ? (
+                    analyticsData.clicksByCountry.slice(0, 5).map((country, index) => {
+                      const maxClicks = analyticsData.clicksByCountry[0]?.clicks || 1;
+                      const percentage = Math.round((country.clicks / maxClicks) * 100);
 
-                  <div className="country-item">
-                    <div className="country-info">
-                      <span className="country-flag">🇦🇪</span>
-                      <span className="country-name">UAE</span>
-                    </div>
-                    <div className="country-data">
-                      <span className="country-value">421</span>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: "22%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="country-item">
-                    <div className="country-info">
-                      <span className="country-flag">🇺🇸</span>
-                      <span className="country-name">United States</span>
-                    </div>
-                    <div className="country-data">
-                      <span className="country-value">318</span>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: "17%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="country-item">
-                    <div className="country-info">
-                      <span className="country-flag">🇬🇧</span>
-                      <span className="country-name">United Kingdom</span>
-                    </div>
-                    <div className="country-data">
-                      <span className="country-value">142</span>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: "7%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="country-item">
-                    <div className="country-info">
-                      <span className="country-flag">🇩🇪</span>
-                      <span className="country-name">Germany</span>
-                    </div>
-                    <div className="country-data">
-                      <span className="country-value">98</span>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: "5%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
+                      return (
+                        <div key={index} className="country-item">
+                          <div className="country-info">
+                            <span className="country-flag">{country.flag || '🌍'}</span>
+                            <span className="country-name">{country.country || country.name}</span>
+                          </div>
+                          <div className="country-data">
+                            <span className="country-value">{country.clicks}</span>
+                            <div className="progress-bar">
+                              <div
+                                className="progress-fill"
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="no-data">No country data available</div>
+                  )}
                 </div>
               </div>
 
@@ -594,27 +870,44 @@ const Analytics = () => {
                   </svg>
                 </div>
                 <div className="device-stats">
-                  <div className="device-item">
-                    <div className="device-indicator mobile"></div>
-                    <div className="device-info">
-                      <p className="device-label">Mobile</p>
-                      <h4 className="device-value">1,687</h4>
-                    </div>
-                  </div>
-                  <div className="device-item">
-                    <div className="device-indicator desktop"></div>
-                    <div className="device-info">
-                      <p className="device-label">Desktop</p>
-                      <h4 className="device-value">892</h4>
-                    </div>
-                  </div>
-                  <div className="device-item">
-                    <div className="device-indicator tablet"></div>
-                    <div className="device-info">
-                      <p className="device-label">Tablet</p>
-                      <h4 className="device-value">268</h4>
-                    </div>
-                  </div>
+                  {analyticsData?.clicksByDevice ? (
+                    Object.entries(analyticsData.clicksByDevice).map(([device, clicks]) => {
+                      const deviceClass = device.toLowerCase();
+                      return (
+                        <div key={device} className="device-item">
+                          <div className={`device-indicator ${deviceClass}`}></div>
+                          <div className="device-info">
+                            <p className="device-label">{device}</p>
+                            <h4 className="device-value">{clicks}</h4>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <>
+                      <div className="device-item">
+                        <div className="device-indicator mobile"></div>
+                        <div className="device-info">
+                          <p className="device-label">Mobile</p>
+                          <h4 className="device-value">0</h4>
+                        </div>
+                      </div>
+                      <div className="device-item">
+                        <div className="device-indicator desktop"></div>
+                        <div className="device-info">
+                          <p className="device-label">Desktop</p>
+                          <h4 className="device-value">0</h4>
+                        </div>
+                      </div>
+                      <div className="device-item">
+                        <div className="device-indicator tablet"></div>
+                        <div className="device-info">
+                          <p className="device-label">Tablet</p>
+                          <h4 className="device-value">0</h4>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
