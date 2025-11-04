@@ -592,7 +592,7 @@ const Analytics = () => {
             {/* Stats Cards */}
             <div className="stats-grid" style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '16px',
               marginBottom: '20px'
             }}>
@@ -892,232 +892,193 @@ const Analytics = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '20px'
+                marginBottom: '16px'
               }}>
                 <h3 className="chart-title" style={{
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   color: '#1F2937',
                   margin: 0
                 }}>Click Activity</h3>
-                <div className="chart-controls">
-                  <div className="filter-tabs">
-                    {[
-                      { value: '24h', label: '24h' },
-                      { value: '7d', label: '7d' },
-                      { value: '30d', label: '30d' },
-                      { value: '90d', label: '90d' },
-                      { value: '1y', label: '1y' }
-                    ].map((filter) => (
-                      <button
-                        key={filter.value}
-                        className={`filter-tab ${timeFilter === filter.value ? 'active' : ''}`}
-                        onClick={() => handleTimeFilterChange(filter.value)}
-                      >
-                        {filter.label}
-                      </button>
-                    ))}
-                  </div>
-                  <select
-                    className="time-filter-select"
-                    value={timeFilter}
-                    onChange={(e) => handleTimeFilterChange(e.target.value)}
-                    style={{
-                      padding: '8px 32px 8px 12px',
-                      fontSize: '13px',
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '6px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      cursor: 'pointer',
-                      outline: 'none'
-                    }}
-                  >
-                    <option value="24h">Last 24 hours</option>
-                    <option value="7d">Last 7 days</option>
-                    <option value="30d">Last 30 days</option>
-                    <option value="90d">Last 90 days</option>
-                    <option value="1y">Last year</option>
-                    <option value="custom">Custom range</option>
-                  </select>
-                </div>
+                <select
+                  className="time-filter-select"
+                  value={timeFilter}
+                  onChange={(e) => handleTimeFilterChange(e.target.value)}
+                  style={{
+                    padding: '6px 28px 6px 10px',
+                    fontSize: '13px',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '6px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    outline: 'none'
+                  }}
+                >
+                  <option value="24h">Last 24 hours</option>
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="1y">Last year</option>
+                </select>
               </div>
-              <div className="chart-container" style={{ overflow: 'hidden' }}>
+              <div className="chart-container" style={{ width: '100%', height: '280px' }}>
                 <svg
                   width="100%"
                   height="280"
-                  viewBox="0 0 1070 280"
-                  className="analytics-chart"
+                  viewBox="0 0 800 280"
+                  preserveAspectRatio="xMidYMid meet"
                   style={{ display: 'block' }}
                 >
-                  {/* Chart Grid Lines */}
-                  <defs>
-                    <linearGradient
-                      id="totalClicksGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient
-                      id="uniqueClicksGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
                   {/* Y-axis grid lines */}
-                  <g stroke="#f3f4f6" strokeWidth="1">
-                    <line x1="70" y1="50" x2="1020" y2="50" />
-                    <line x1="70" y1="100" x2="1020" y2="100" />
-                    <line x1="70" y1="150" x2="1020" y2="150" />
-                    <line x1="70" y1="200" x2="1020" y2="200" />
-                    <line x1="70" y1="250" x2="1020" y2="250" />
+                  <g stroke="#F3F4F6" strokeWidth="1">
+                    <line x1="50" y1="30" x2="750" y2="30" />
+                    <line x1="50" y1="80" x2="750" y2="80" />
+                    <line x1="50" y1="130" x2="750" y2="130" />
+                    <line x1="50" y1="180" x2="750" y2="180" />
+                    <line x1="50" y1="230" x2="750" y2="230" />
                   </g>
 
                   {/* Dynamic chart lines based on analytics data */}
-                  {analyticsData?.clickActivity ? (
-                    <>
-                      {/* Total Clicks Line */}
-                      <polyline
-                        points={analyticsData.clickActivity.map((point, index) => {
-                          const x = 100 + (index * 100);
-                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
-                          const y = maxClicks > 0 ? 250 - ((point.totalClicks || 0) / maxClicks) * 200 : 250;
-                          return `${x},${y}`;
-                        }).join(' ')}
-                        fill="none"
-                        stroke="#3b82f6"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
+                  {(() => {
+                    // Use API data or fallback to dummy data
+                    const dummyData = [
+                      { label: 'Mon', totalClicks: 130, uniqueClicks: 90 },
+                      { label: 'Tue', totalClicks: 190, uniqueClicks: 150 },
+                      { label: 'Wed', totalClicks: 240, uniqueClicks: 190 },
+                      { label: 'Thu', totalClicks: 320, uniqueClicks: 230 },
+                      { label: 'Fri', totalClicks: 280, uniqueClicks: 200 },
+                      { label: 'Sat', totalClicks: 450, uniqueClicks: 320 },
+                      { label: 'Sun', totalClicks: 380, uniqueClicks: 280 }
+                    ];
 
-                      {/* Unique Clicks Line */}
-                      <polyline
-                        points={analyticsData.clickActivity.map((point, index) => {
-                          const x = 100 + (index * 100);
-                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
-                          const y = maxClicks > 0 ? 250 - ((point.uniqueClicks || 0) / maxClicks) * 200 : 250;
-                          return `${x},${y}`;
-                        }).join(' ')}
-                        fill="none"
-                        stroke="#10b981"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
+                    const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
+                      ? analyticsData.clickActivity
+                      : dummyData;
 
-                      {/* Data points - Total Clicks */}
-                      <g fill="#3b82f6">
-                        {analyticsData.clickActivity.map((point, index) => {
-                          const x = 100 + (index * 100);
-                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
-                          const y = maxClicks > 0 ? 250 - ((point.totalClicks || 0) / maxClicks) * 200 : 250;
-                          return <circle key={`total-${index}`} cx={x} cy={y} r="4" />;
+                    const maxClicks = Math.max(...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)), 1);
+                    const spacing = 700 / Math.max(1, chartData.length - 1);
+
+                    return (
+                      <>
+                        {/* Total Clicks Line */}
+                        <polyline
+                          points={chartData.map((point, index) => {
+                            const x = 50 + (index * spacing);
+                            const y = 230 - ((point.totalClicks || 0) / maxClicks) * 200;
+                            return `${x},${y}`;
+                          }).join(' ')}
+                          fill="none"
+                          stroke="#3B82F6"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Unique Clicks Line */}
+                        <polyline
+                          points={chartData.map((point, index) => {
+                            const x = 50 + (index * spacing);
+                            const y = 230 - ((point.uniqueClicks || 0) / maxClicks) * 200;
+                            return `${x},${y}`;
+                          }).join(' ')}
+                          fill="none"
+                          stroke="#10B981"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Data points - Total Clicks */}
+                        {chartData.map((point, index) => {
+                          const x = 50 + (index * spacing);
+                          const y = 230 - ((point.totalClicks || 0) / maxClicks) * 200;
+                          return <circle key={`total-${index}`} cx={x} cy={y} r="4" fill="#3B82F6" />;
                         })}
-                      </g>
 
-                      {/* Data points - Unique Clicks */}
-                      <g fill="#10b981">
-                        {analyticsData.clickActivity.map((point, index) => {
-                          const x = 100 + (index * 100);
-                          const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
-                          const y = maxClicks > 0 ? 250 - ((point.uniqueClicks || 0) / maxClicks) * 200 : 250;
-                          return <circle key={`unique-${index}`} cx={x} cy={y} r="4" />;
+                        {/* Data points - Unique Clicks */}
+                        {chartData.map((point, index) => {
+                          const x = 50 + (index * spacing);
+                          const y = 230 - ((point.uniqueClicks || 0) / maxClicks) * 200;
+                          return <circle key={`unique-${index}`} cx={x} cy={y} r="4" fill="#10B981" />;
                         })}
-                      </g>
-                    </>
-                  ) : (
-                    <>
-                      {/* Fallback static chart when no data */}
-                      <polyline
-                        points="100,250 200,250 300,250 400,250 500,250 600,250 700,250"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                      <g fill="#e5e7eb">
-                        <circle cx="100" cy="250" r="4" />
-                        <circle cx="200" cy="250" r="4" />
-                        <circle cx="300" cy="250" r="4" />
-                        <circle cx="400" cy="250" r="4" />
-                        <circle cx="500" cy="250" r="4" />
-                        <circle cx="600" cy="250" r="4" />
-                        <circle cx="700" cy="250" r="4" />
-                      </g>
-                    </>
-                  )}
+                      </>
+                    );
+                  })()}
 
                   {/* X-axis labels */}
                   <g
-                    fill="#666666"
-                    fontSize="12.8"
+                    fill="#9CA3AF"
+                    fontSize="12"
                     textAnchor="middle"
-                    fontFamily="Inter"
+                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
                   >
-                    {analyticsData?.clickActivity ? (
-                      analyticsData.clickActivity.map((point, index) => {
-                        const x = 100 + (index * 100);
+                    {(() => {
+                      const dummyData = [
+                        { label: 'Mon' }, { label: 'Tue' }, { label: 'Wed' },
+                        { label: 'Thu' }, { label: 'Fri' }, { label: 'Sat' }, { label: 'Sun' }
+                      ];
+                      const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
+                        ? analyticsData.clickActivity
+                        : dummyData;
+
+                      const spacing = 700 / Math.max(1, chartData.length - 1);
+
+                      return chartData.map((point, index) => {
+                        const x = 50 + (index * spacing);
                         const label = point.label || point.date || `Day ${index + 1}`;
                         return (
-                          <text key={index} x={x} y="285">
+                          <text key={index} x={x} y="260">
                             {label}
                           </text>
                         );
-                      })
-                    ) : (
-                      <>
-                        <text x="100" y="285">No Data</text>
-                      </>
-                    )}
+                      });
+                    })()}
                   </g>
 
                   {/* Y-axis labels */}
                   <g
-                    fill="#666666"
-                    fontSize="12.8"
+                    fill="#9CA3AF"
+                    fontSize="12"
                     textAnchor="end"
-                    fontFamily="Inter"
+                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
                   >
-                    {analyticsData?.clickActivity ? (() => {
-                      const maxClicks = Math.max(...analyticsData.clickActivity.map(p => p.totalClicks || 0));
-                      const steps = Math.max(1, Math.ceil(maxClicks / 5));
-                      return Array.from({ length: 6 }, (_, i) => {
-                        const value = i * steps;
-                        const y = 255 - (i * 40);
+                    {(() => {
+                      const dummyData = [
+                        { totalClicks: 130, uniqueClicks: 90 },
+                        { totalClicks: 190, uniqueClicks: 150 },
+                        { totalClicks: 240, uniqueClicks: 190 },
+                        { totalClicks: 320, uniqueClicks: 230 },
+                        { totalClicks: 280, uniqueClicks: 200 },
+                        { totalClicks: 450, uniqueClicks: 320 },
+                        { totalClicks: 380, uniqueClicks: 280 }
+                      ];
+                      const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
+                        ? analyticsData.clickActivity
+                        : dummyData;
+
+                      const maxClicks = Math.max(...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)), 1);
+                      const step = Math.ceil(maxClicks / 5);
+                      return [0, 1, 2, 3, 4, 5].map((i) => {
+                        const value = i * step;
+                        const y = 235 - (i * 40);
                         return (
-                          <text key={i} x="60" y={y}>
+                          <text key={i} x="40" y={y}>
                             {value}
                           </text>
                         );
                       });
-                    })() : (
-                      <>
-                        <text x="60" y="255">0</text>
-                        <text x="60" y="205">0</text>
-                        <text x="60" y="155">0</text>
-                        <text x="60" y="105">0</text>
-                        <text x="60" y="55">0</text>
-                      </>
-                    )}
+                    })()}
                   </g>
 
                   {/* Legend */}
-                  <g fontSize="12.8" fontFamily="Inter">
-                    <circle cx="450" cy="305" r="6" fill="#3b82f6" />
-                    <text x="465" y="310" fill="#333333">
+                  <g fontSize="12" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif">
+                    <circle cx="300" cy="20" r="4" fill="#3B82F6" />
+                    <text x="310" y="24" fill="#6B7280">
                       Total Clicks
                     </text>
-                    <circle cx="570" cy="305" r="6" fill="#10b981" />
-                    <text x="585" y="310" fill="#333333">
+                    <circle cx="410" cy="20" r="4" fill="#10B981" />
+                    <text x="420" y="24" fill="#6B7280">
                       Unique Clicks
                     </text>
                   </g>
@@ -1139,7 +1100,7 @@ const Analytics = () => {
                 padding: '20px'
               }}>
                 <h3 className="section-title" style={{
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   color: '#1F2937',
                   marginBottom: '16px',
@@ -1148,147 +1109,100 @@ const Analytics = () => {
                 <div className="country-stats" style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '12px'
+                  gap: '10px'
                 }}>
-                  <div className="country-item" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '12px'
-                  }}>
-                    <div className="country-info" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      minWidth: '140px'
-                    }}>
-                      <span className="country-flag" style={{ fontSize: '18px' }}>🇸🇦</span>
-                      <span className="country-name" style={{
-                        fontSize: '13px',
-                        color: '#374151',
-                        fontWeight: '500'
-                      }}>Saudi Arabia</span>
-                    </div>
-                    <div className="country-data" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      flex: 1
-                    }}>
-                      <div className="progress-bar" style={{
-                        flex: 1,
-                        height: '6px',
-                        backgroundColor: '#E5E7EB',
-                        borderRadius: '3px',
-                        overflow: 'hidden'
-                      }}>
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: "65%",
-                            height: '100%',
-                            backgroundColor: '#3B82F6',
-                            borderRadius: '3px'
-                          }}
-                        ></div>
-                      </div>
-                      <span className="country-value" style={{
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        color: '#1F2937',
-                        minWidth: '45px',
-                        textAlign: 'right'
-                      }}>1,247</span>
-                    </div>
-                  </div>
+                  {(() => {
+                    // Dummy data for countries
+                    const dummyCountries = [
+                      { country: 'Saudi Arabia', clicks: 1247 },
+                      { country: 'UAE', clicks: 421 },
+                      { country: 'United States', clicks: 318 },
+                      { country: 'United Kingdom', clicks: 142 },
+                      { country: 'Germany', clicks: 98 }
+                    ];
 
-                  {[
-                    { flag: '🇦🇪', name: 'UAE', value: '421', width: '22%' },
-                    { flag: '🇺🇸', name: 'United States', value: '318', width: '17%' },
-                    { flag: '🇬🇧', name: 'United Kingdom', value: '142', width: '7%' },
-                    { flag: '🇩🇪', name: 'Germany', value: '98', width: '5%' }
-                  ].map((country, index) => (
-                    <div key={index} className="country-item" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px'
-                    }}>
-                      <div className="country-info" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        minWidth: '140px'
-                      }}>
-                        <span className="country-flag" style={{ fontSize: '18px' }}>{country.flag}</span>
-                        <span className="country-name" style={{
-                          fontSize: '13px',
-                          color: '#374151',
-                          fontWeight: '500'
-                        }}>{country.name}</span>
-                      </div>
-                      <div className="country-data" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        flex: 1
-                      }}>
-                        <div className="progress-bar" style={{
-                          flex: 1,
-                          height: '6px',
-                          backgroundColor: '#E5E7EB',
-                          borderRadius: '3px',
-                          overflow: 'hidden'
-                        }}>
-                          <div
-                            className="progress-fill"
-                            style={{
-                              width: country.width,
-                              height: '100%',
-                              backgroundColor: '#3B82F6',
-                              borderRadius: '3px'
-                            }}
-                          ></div>
-                        </div>
-                        <span className="country-value" style={{
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          color: '#1F2937',
-                          minWidth: '45px',
-                          textAlign: 'right'
-                        }}>{country.value}</span>
-                      </div>
-                    </div>
-                  ))}
-              <div className="section-card">
-                <h3 className="section-title">Clicks by Country</h3>
-                <div className="country-stats">
-                  {analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0 ? (
-                    analyticsData.clicksByCountry.slice(0, 5).map((country, index) => {
-                      const maxClicks = analyticsData.clicksByCountry[0]?.clicks || 1;
-                      const percentage = Math.round((country.clicks / maxClicks) * 100);
+                    const countryData = (analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0)
+                      ? analyticsData.clicksByCountry.slice(0, 5)
+                      : dummyCountries;
+
+                    const maxClicks = Math.max(...countryData.map(c => c.clicks || c.count || 0));
+                    const countryFlags = {
+                      'Saudi Arabia': '🇸🇦', 'SA': '🇸🇦',
+                      'UAE': '🇦🇪', 'AE': '🇦🇪', 'United Arab Emirates': '🇦🇪',
+                      'United States': '🇺🇸', 'US': '🇺🇸', 'USA': '🇺🇸',
+                      'United Kingdom': '🇬🇧', 'UK': '🇬🇧', 'GB': '🇬🇧',
+                      'Germany': '🇩🇪', 'DE': '🇩🇪',
+                      'India': '🇮🇳', 'IN': '🇮🇳',
+                      'Canada': '🇨🇦', 'CA': '🇨🇦',
+                      'Australia': '🇦🇺', 'AU': '🇦🇺',
+                      'France': '🇫🇷', 'FR': '🇫🇷',
+                      'Japan': '🇯🇵', 'JP': '🇯🇵',
+                      'China': '🇨🇳', 'CN': '🇨🇳',
+                    };
+
+                    return countryData.map((country, index) => {
+                      const countryName = country.country || country.name || 'Unknown';
+                      const clicks = country.clicks || country.count || 0;
+                      const percentage = maxClicks > 0 ? (clicks / maxClicks) * 100 : 0;
+                      const flag = countryFlags[countryName] || '🌍';
 
                       return (
-                        <div key={index} className="country-item">
-                          <div className="country-info">
-                            <span className="country-flag">{country.flag || '🌍'}</span>
-                            <span className="country-name">{country.country || country.name}</span>
+                        <div key={index} className="country-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}>
+                          <div className="country-info" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            minWidth: '130px',
+                            flex: '0 0 auto'
+                          }}>
+                            <span className="country-flag" style={{ fontSize: '16px' }}>{flag}</span>
+                            <span className="country-name" style={{
+                              fontSize: '13px',
+                              color: '#374151',
+                              fontWeight: '500'
+                            }}>{countryName}</span>
                           </div>
-                          <div className="country-data">
-                            <span className="country-value">{country.clicks}</span>
-                            <div className="progress-bar">
+                          <div className="country-data" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            flex: 1
+                          }}>
+                            <div className="progress-bar" style={{
+                              flex: 1,
+                              height: '3px',
+                              backgroundColor: '#E5E7EB',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
                               <div
                                 className="progress-fill"
-                                style={{ width: `${percentage}%` }}
+                                style={{
+                                  width: `${percentage}%`,
+                                  height: '100%',
+                                  backgroundColor: '#3B82F6',
+                                  borderRadius: '4px',
+                                  transition: 'width 0.3s ease'
+                                }}
                               ></div>
                             </div>
+                            <span className="country-value" style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              minWidth: '40px',
+                              textAlign: 'right'
+                            }}>{clicks.toLocaleString()}</span>
                           </div>
                         </div>
                       );
-                    })
-                  ) : (
-                    <div className="no-data">No country data available</div>
-                  )}
+                    });
+                  })()}
                 </div>
               </div>
 
@@ -1300,175 +1214,216 @@ const Analytics = () => {
                 padding: '20px'
               }}>
                 <h3 className="section-title" style={{
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   color: '#1F2937',
                   marginBottom: '16px',
                   margin: '0 0 16px 0'
                 }}>Clicks by Device Type</h3>
-                <div className="device-chart" style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  marginBottom: '20px'
-                }}>
-                  <svg width="100%" height="256" viewBox="0 0 256 256">
-                    <defs>
-                      <linearGradient
-                        id="mobileGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#3b82f6" />
-                        <stop offset="100%" stopColor="#2563eb" />
-                      </linearGradient>
-                      <linearGradient
-                        id="desktopGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#059669" />
-                      </linearGradient>
-                      <linearGradient
-                        id="tabletGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#d97706" />
-                      </linearGradient>
-                    </defs>
+                {(() => {
+                  // Dummy data for devices
+                  const dummyDeviceData = {
+                    mobile: 1687,
+                    desktop: 892,
+                    tablet: 268
+                  };
 
-                    {/* Mobile - 59.3% */}
-                    <path
-                      d="M 128 25 A 103 103 0 1 1 63.2 206.8 L 128 128 Z"
-                      fill="url(#mobileGradient)"
-                    />
+                  const deviceData = (analyticsData?.clicksByDevice && Object.keys(analyticsData.clicksByDevice).length > 0)
+                    ? analyticsData.clicksByDevice
+                    : dummyDeviceData;
 
-                    {/* Desktop - 31.4% */}
-                    <path
-                      d="M 63.2 206.8 A 103 103 0 0 1 48.7 49.2 L 128 128 Z"
-                      fill="url(#desktopGradient)"
-                    />
+                  const mobileClicks = deviceData.mobile || deviceData.Mobile || 0;
+                  const desktopClicks = deviceData.desktop || deviceData.Desktop || 0;
+                  const tabletClicks = deviceData.tablet || deviceData.Tablet || 0;
+                  const totalClicks = mobileClicks + desktopClicks + tabletClicks;
 
-                    {/* Tablet - 9.4% */}
-                    <path
-                      d="M 48.7 49.2 A 103 103 0 0 1 128 25 L 128 128 Z"
-                      fill="url(#tabletGradient)"
-                    />
+                  if (totalClicks === 0) {
+                    return (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '40px 20px',
+                        color: '#9CA3AF',
+                        fontSize: '14px'
+                      }}>
+                        No device data available
+                      </div>
+                    );
+                  }
 
-                    {/* Center circle for donut effect */}
-                    <circle cx="128" cy="128" r="60" fill="white" />
-                  </svg>
-                </div>
-                <div className="device-stats" style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '24px'
-                }}>
-                  {analyticsData?.clicksByDevice ? (
-                    Object.entries(analyticsData.clicksByDevice).map(([device, clicks]) => {
-                      const deviceClass = device.toLowerCase();
-                      return (
-                        <div key={device} className="device-item">
-                          <div className={`device-indicator ${deviceClass}`}></div>
-                          <div className="device-info">
-                            <p className="device-label">{device}</p>
-                            <h4 className="device-value">{clicks}</h4>
+                    const mobilePercent = (mobileClicks / totalClicks) * 100;
+                    const desktopPercent = (desktopClicks / totalClicks) * 100;
+                    const tabletPercent = (tabletClicks / totalClicks) * 100;
+
+                    // Calculate SVG paths for donut chart
+                    const radius = 90;
+                    const centerX = 128;
+                    const centerY = 128;
+                    const innerRadius = 55;
+
+                    const createArc = (startAngle, endAngle) => {
+                      const start = polarToCartesian(centerX, centerY, radius, endAngle);
+                      const end = polarToCartesian(centerX, centerY, radius, startAngle);
+                      const innerStart = polarToCartesian(centerX, centerY, innerRadius, endAngle);
+                      const innerEnd = polarToCartesian(centerX, centerY, innerRadius, startAngle);
+                      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+                      return [
+                        "M", start.x, start.y,
+                        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+                        "L", innerEnd.x, innerEnd.y,
+                        "A", innerRadius, innerRadius, 0, largeArcFlag, 1, innerStart.x, innerStart.y,
+                        "Z"
+                      ].join(" ");
+                    };
+
+                    const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+                      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+                      return {
+                        x: centerX + (radius * Math.cos(angleInRadians)),
+                        y: centerY + (radius * Math.sin(angleInRadians))
+                      };
+                    };
+
+                    let currentAngle = 0;
+                    const mobileAngle = (mobilePercent / 100) * 360;
+                    const desktopAngle = (desktopPercent / 100) * 360;
+                    const tabletAngle = (tabletPercent / 100) * 360;
+
+                    return (
+                      <>
+                        <div className="device-chart" style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          marginBottom: '20px'
+                        }}>
+                          <svg width="256" height="256" viewBox="0 0 256 256">
+                            <defs>
+                              <linearGradient id="mobileGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#3b82f6" />
+                                <stop offset="100%" stopColor="#2563eb" />
+                              </linearGradient>
+                              <linearGradient id="desktopGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#10b981" />
+                                <stop offset="100%" stopColor="#059669" />
+                              </linearGradient>
+                              <linearGradient id="tabletGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#f59e0b" />
+                                <stop offset="100%" stopColor="#d97706" />
+                              </linearGradient>
+                            </defs>
+
+                            {/* Mobile segment */}
+                            {mobileClicks > 0 && (
+                              <path
+                                d={createArc(currentAngle, currentAngle + mobileAngle)}
+                                fill="url(#mobileGradient)"
+                              />
+                            )}
+
+                            {/* Desktop segment */}
+                            {desktopClicks > 0 && (
+                              <path
+                                d={createArc(currentAngle + mobileAngle, currentAngle + mobileAngle + desktopAngle)}
+                                fill="url(#desktopGradient)"
+                              />
+                            )}
+
+                            {/* Tablet segment */}
+                            {tabletClicks > 0 && (
+                              <path
+                                d={createArc(currentAngle + mobileAngle + desktopAngle, 360)}
+                                fill="url(#tabletGradient)"
+                              />
+                            )}
+                          </svg>
+                        </div>
+                        <div className="device-stats" style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          gap: '20px',
+                          flexWrap: 'wrap'
+                        }}>
+                          <div className="device-item" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div className="device-indicator" style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: '#3B82F6'
+                            }}></div>
+                            <div className="device-info">
+                              <p className="device-label" style={{
+                                fontSize: '11px',
+                                color: '#6B7280',
+                                margin: '0 0 2px 0'
+                              }}>Mobile</p>
+                              <h4 className="device-value" style={{
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                color: '#1F2937',
+                                margin: 0
+                              }}>{mobileClicks.toLocaleString()}</h4>
+                            </div>
+                          </div>
+                          <div className="device-item" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div className="device-indicator" style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: '#10B981'
+                            }}></div>
+                            <div className="device-info">
+                              <p className="device-label" style={{
+                                fontSize: '11px',
+                                color: '#6B7280',
+                                margin: '0 0 2px 0'
+                              }}>Desktop</p>
+                              <h4 className="device-value" style={{
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                color: '#1F2937',
+                                margin: 0
+                              }}>{desktopClicks.toLocaleString()}</h4>
+                            </div>
+                          </div>
+                          <div className="device-item" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div className="device-indicator" style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: '#F59E0B'
+                            }}></div>
+                            <div className="device-info">
+                              <p className="device-label" style={{
+                                fontSize: '11px',
+                                color: '#6B7280',
+                                margin: '0 0 2px 0'
+                              }}>Tablet</p>
+                              <h4 className="device-value" style={{
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                color: '#1F2937',
+                                margin: 0
+                              }}>{tabletClicks.toLocaleString()}</h4>
+                            </div>
                           </div>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <>
-                      <div className="device-item" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                        <div className="device-indicator mobile" style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      backgroundColor: '#3B82F6'
-                    }}></div>
-                        <div className="device-info">
-                          <p className="device-label" style={{
-                        fontSize: '12px',
-                        color: '#6B7280',
-                        margin: '0 0 2px 0'
-                      }}>Mobile</p>
-                          <h4 className="device-value" style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#1F2937',
-                        margin: 0
-                      }}>0</h4>
-                        </div>
-                      </div>
-                      <div className="device-item" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                        <div className="device-indicator desktop" style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      backgroundColor: '#10B981'
-                    }}></div>
-                        <div className="device-info">
-                          <p className="device-label" style={{
-                        fontSize: '12px',
-                        color: '#6B7280',
-                        margin: '0 0 2px 0'
-                      }}>Desktop</p>
-                          <h4 className="device-value" style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#1F2937',
-                        margin: 0
-                      }}>0</h4>
-                        </div>
-                      </div>
-                      <div className="device-item" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                        <div className="device-indicator tablet" style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      backgroundColor: '#F59E0B'
-                    }}></div>
-                        <div className="device-info">
-                          <p className="device-label" style={{
-                        fontSize: '12px',
-                        color: '#6B7280',
-                        margin: '0 0 2px 0'
-                      }}>Tablet</p>
-                          <h4 className="device-value" style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#1F2937',
-                        margin: 0
-                      }}>0</h4>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                      </>
+                    );
+                  })()}
               </div>
             </div>
-          </div>
-        </div>
       </div>
     </div>
     </div>
