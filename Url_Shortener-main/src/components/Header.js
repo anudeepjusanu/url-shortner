@@ -1,11 +1,46 @@
 import React from 'react';
+import HamburgerMenu from './HamburgerMenu';
 
 const Header = ({ isLanding = false, onGetStarted }) => {
   if (isLanding) {
+    const landingNavItems = [
+      {
+        label: 'NAVIGATION',
+        items: [
+          { label: 'Features', path: '/#features', icon: null },
+          { label: 'Pricing', path: '/#pricing', icon: null },
+          { label: 'About', path: '/#about', icon: null },
+          { label: 'Contact', path: '/#contact', icon: null }
+        ]
+      }
+    ];
+
+    const landingHeaderItems = (
+      <>
+        <div className="language-toggle">
+          <button className="language-btn active">EN</button>
+          <button className="language-btn">عربي</button>
+        </div>
+        <button
+          className="sign-in-btn mobile-sign-in"
+          onClick={onGetStarted}
+          style={{ width: '100%', marginTop: '12px' }}
+        >
+          Sign In
+        </button>
+      </>
+    );
+
     return (
       <header className="landing-header">
         <div className="landing-header-container">
           <div className="header-left">
+            <div className="hamburger-wrapper hide-desktop">
+              <HamburgerMenu
+                sidebarItems={landingNavItems}
+                headerItems={landingHeaderItems}
+              />
+            </div>
             <div className="logo-section">
               <div className="logo-icon">
                 <svg width="23" height="18" viewBox="0 0 23 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,11 +66,11 @@ const Header = ({ isLanding = false, onGetStarted }) => {
             </nav>
           </div>
           <div className="header-right">
-            <div className="language-toggle landing">
+            <div className="language-toggle landing hide-mobile">
               <button className="language-btn active">EN</button>
               <button className="language-btn">عربي</button>
             </div>
-            <button className="sign-in-btn" onClick={onGetStarted}>
+            <button className="sign-in-btn hide-mobile" onClick={onGetStarted}>
               Sign In
             </button>
           </div>

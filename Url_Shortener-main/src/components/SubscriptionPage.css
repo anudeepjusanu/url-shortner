@@ -12,10 +12,12 @@
 .subscription-main-content {
   flex: 1;
   margin-left: 220px;
+  margin-top: 64px;
   padding: 40px 0 40px 0;
   min-height: calc(100vh - 64px);
   background: #F9FAFB;
   width: calc(100% - 220px);
+  overflow-y: auto;
 }
 
 .subscription-content-wrapper {
@@ -334,23 +336,289 @@
   cursor: pointer;
 }
 
-@media (max-width: 1100px) {
-  .subscription-content-wrapper {
-    max-width: 100%;
-  }
-  .plans-row, .billing-info-row {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-@media (max-width: 800px) {
+/* Responsive Design */
+@media (max-width: 1023px) {
   .subscription-main-content {
     margin-left: 0;
-    padding: 32px 0 32px 0;
+    margin-top: 64px;
+    width: 100%;
+    padding: 32px 0;
+    min-height: calc(100vh - 64px);
   }
+
+  .subscription-content-wrapper {
+    max-width: 100%;
+    padding: 0 20px;
+  }
+
+  .subscription-title {
+    font-size: 24px;
+  }
+
+  .subscription-desc {
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+
+  /* Plans Row - Stack on tablets */
+  .plans-row {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .plan-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Billing Info - Stack on tablets */
+  .billing-info-row {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .billing-info-box {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Current Plan Card */
+  .current-plan-card {
+    padding: 24px 28px 20px 28px;
+  }
+
+  .plan-stats-row {
+    gap: 24px;
+  }
+
+  .stat-number {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 768px) {
   .subscription-main-layout {
     flex-direction: column;
+    margin-top: 64px;
   }
+
+  .subscription-main-content {
+    margin-left: 0;
+    padding: 24px 0;
+    width: 100%;
+  }
+
+  .subscription-content-wrapper {
+    padding: 0 16px;
+  }
+
+  .subscription-title {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .subscription-desc {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  /* Current Plan Card */
+  .current-plan-section {
+    margin-bottom: 24px;
+  }
+
+  .current-plan-card {
+    padding: 20px 24px 18px 24px;
+  }
+
+  .plan-header-row {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .plan-title {
+    font-size: 16px;
+  }
+
+  .plan-status.active {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .plan-price {
+    font-size: 20px;
+    width: 100%;
+    margin-left: 0;
+    text-align: left;
+    margin-top: 4px;
+  }
+
+  .plan-price-unit {
+    font-size: 13px;
+  }
+
+  .plan-subheader {
+    font-size: 14px;
+  }
+
+  .plan-next-billing {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .plan-stats-row {
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .plan-stat {
+    min-width: calc(50% - 8px);
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+  }
+
+  .plan-features-row {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .plan-features-list {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Available Plans */
+  .available-plans-section {
+    margin-bottom: 24px;
+  }
+
+  .plans-row {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .plan-card {
+    padding: 20px 18px 18px 18px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .plan-card-title {
+    font-size: 16px;
+  }
+
+  .plan-card-price {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .plan-card-price span {
+    font-size: 13px;
+  }
+
+  .plan-card-features {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .plan-card-btn {
+    padding: 9px 0;
+    font-size: 14px;
+  }
+
+  /* Billing Info */
+  .billing-section {
+    margin-bottom: 24px;
+  }
+
+  .billing-info-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .billing-info-box {
+    padding: 16px 18px 14px 18px;
+  }
+
+  .billing-label {
+    font-size: 13px;
+  }
+
+  .billing-value {
+    font-size: 14px;
+  }
+
+  .visa-icon {
+    font-size: 12px;
+    padding: 2px 7px;
+  }
+
+  .card-expiry {
+    font-size: 12px;
+  }
+
+  .billing-link {
+    font-size: 12px;
+  }
+
+  /* Cancel Subscription */
+  .cancel-section {
+    margin-bottom: 24px;
+  }
+
+  .cancel-box {
+    padding: 18px 20px 16px 20px;
+  }
+
+  .cancel-title {
+    font-size: 16px;
+  }
+
+  .cancel-desc {
+    font-size: 13px;
+  }
+
+  .cancel-warning {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .warning-icon {
+    font-size: 18px;
+  }
+
+  .cancel-warning ul {
+    font-size: 13px;
+  }
+
+  .cancel-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .pause-btn,
+  .cancel-btn {
+    flex: 1;
+    min-width: calc(50% - 5px);
+    padding: 9px 16px;
+    font-size: 14px;
+  }
+
+  /* Sidebar (if any) */
   .subscription-sidebar {
     position: static;
     width: 100%;
@@ -360,5 +628,237 @@
     flex-direction: row;
     overflow-x: auto;
     padding-top: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-main-content {
+    padding: 20px 0;
+  }
+
+  .subscription-content-wrapper {
+    padding: 0 12px;
+  }
+
+  .subscription-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .subscription-desc {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* Current Plan Card */
+  .current-plan-section {
+    margin-bottom: 20px;
+  }
+
+  .current-plan-card {
+    padding: 16px 18px 14px 18px;
+  }
+
+  .plan-header-row {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .plan-title {
+    font-size: 15px;
+  }
+
+  .plan-status.active {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+
+  .plan-price {
+    font-size: 18px;
+  }
+
+  .plan-price-unit {
+    font-size: 12px;
+  }
+
+  .plan-subheader {
+    font-size: 13px;
+  }
+
+  .plan-next-billing {
+    font-size: 11px;
+    margin-bottom: 14px;
+  }
+
+  .plan-stats-row {
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-direction: column;
+  }
+
+  .plan-stat {
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .stat-number {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .stat-sub {
+    font-size: 10px;
+    display: block;
+  }
+
+  .plan-features-row {
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .plan-features-list {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* Available Plans */
+  .available-plans-section {
+    margin-bottom: 20px;
+  }
+
+  .plans-row {
+    flex-direction: column !important;
+    gap: 14px;
+  }
+
+  .plan-card {
+    padding: 18px 16px 16px 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .plan-card.current {
+    border-width: 2px;
+  }
+
+  .plan-card-title {
+    font-size: 15px;
+  }
+
+  .plan-card-price {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .plan-card-price span {
+    font-size: 12px;
+  }
+
+  .plan-card-features {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .plan-card-btn {
+    padding: 8px 0;
+    font-size: 13px;
+  }
+
+  /* Billing Info */
+  .billing-section {
+    margin-bottom: 20px;
+  }
+
+  .billing-info-row {
+    gap: 10px;
+  }
+
+  .billing-info-box {
+    padding: 14px 16px 12px 16px;
+    gap: 6px;
+  }
+
+  .billing-label {
+    font-size: 12px;
+  }
+
+  .billing-value {
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .visa-icon {
+    font-size: 11px;
+    padding: 1px 6px;
+    margin-right: 4px;
+  }
+
+  .card-number {
+    letter-spacing: 0.5px;
+  }
+
+  .card-expiry {
+    font-size: 11px;
+    margin-left: 6px;
+  }
+
+  .billing-link {
+    font-size: 11px;
+  }
+
+  /* Cancel Subscription */
+  .cancel-section {
+    margin-bottom: 20px;
+  }
+
+  .cancel-box {
+    padding: 16px 18px 14px 18px;
+    gap: 10px;
+  }
+
+  .cancel-title {
+    font-size: 15px;
+  }
+
+  .cancel-desc {
+    font-size: 12px;
+  }
+
+  .cancel-warning {
+    font-size: 12px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .warning-icon {
+    font-size: 16px;
+  }
+
+  .cancel-warning ul {
+    font-size: 12px;
+    padding-left: 16px;
+  }
+
+  .cancel-actions {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .pause-btn,
+  .cancel-btn {
+    width: 100%;
+    min-width: 100%;
+    padding: 8px 16px;
+    font-size: 13px;
   }
 }

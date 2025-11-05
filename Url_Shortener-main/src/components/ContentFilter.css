@@ -240,29 +240,335 @@ input[type="text"]:focus {
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
+  /* Stats Grid - 2 columns on tablets */
   div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
   }
 
+  /* Content Forms - Full width on tablets */
   div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
     grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Page Header */
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Tabs */
+  .filter-tabs {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .filter-tab {
+    padding: 10px 18px;
+    font-size: 13px;
   }
 }
 
 @media (max-width: 768px) {
+  /* Content Padding */
   .analytics-content {
     padding: 16px !important;
+    gap: 16px !important;
   }
 
-  .filter-tab {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-
+  /* Stats Grid - Single column on mobile */
   div[style*="gridTemplateColumns: repeat(4, 1fr)"],
   div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
     grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Page Title */
+  .page-header h1 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  .page-header p {
+    font-size: 13px !important;
+  }
+
+  /* Tabs Navigation */
+  .filter-tabs {
+    gap: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .filter-tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Stats Cards */
+  div[style*="padding: 20px"][style*="textAlign: center"] {
+    padding: 16px !important;
+  }
+
+  div[style*="padding: 20px"][style*="textAlign: center"] > div:first-child {
+    font-size: 24px !important;
+  }
+
+  div[style*="padding: 20px"][style*="textAlign: center"] > div:last-child {
+    font-size: 13px !important;
+  }
+
+  /* Card Sections */
+  section > div[style*="padding: 24px"] {
+    padding: 16px !important;
+  }
+
+  /* Checkbox Labels */
+  .filter-checkbox-label {
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .filter-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Filter Item Cards */
+  .filter-item-card {
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-item-card > div {
+    font-size: 13px !important;
+  }
+
+  .filter-item-card button {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Log Entries */
+  .log-entry {
+    padding: 12px 16px;
+  }
+
+  .log-entry > div {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .log-entry h3 {
+    font-size: 14px !important;
+  }
+
+  .log-entry p,
+  .log-entry span {
+    font-size: 12px !important;
+  }
+
+  /* Badges */
+  div[style*="padding: 4px 12px"][style*="borderRadius: 9999px"],
+  span[style*="padding: 4px 12px"][style*="borderRadius: 9999px"] {
+    padding: 3px 10px !important;
+    font-size: 11px !important;
+  }
+
+  /* Form Elements */
+  input[type="text"],
+  textarea {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+
+  button {
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-state-icon {
+    font-size: 40px;
+  }
+
+  .empty-state-title {
+    font-size: 16px;
+  }
+
+  .empty-state-description {
+    font-size: 13px;
+  }
+
+  /* Alert Messages */
+  .alert-success,
+  .alert-error {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Content Padding */
+  .analytics-content {
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* Page Title */
+  .page-header h1 {
+    font-size: 20px !important;
+    line-height: 26px !important;
+  }
+
+  .page-header p {
+    font-size: 12px !important;
+  }
+
+  /* Tabs Navigation */
+  .filter-tab {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  /* Stats Cards */
+  div[style*="padding: 20px"][style*="textAlign: center"],
+  div[style*="padding: 16px"][style*="textAlign: center"] {
+    padding: 14px !important;
+  }
+
+  div[style*="padding: 20px"][style*="textAlign: center"] > div:first-child,
+  div[style*="padding: 16px"][style*="textAlign: center"] > div:first-child {
+    font-size: 20px !important;
+  }
+
+  div[style*="padding: 20px"][style*="textAlign: center"] > div:last-child,
+  div[style*="padding: 16px"][style*="textAlign: center"] > div:last-child {
+    font-size: 12px !important;
+  }
+
+  /* Card Sections */
+  section > div[style*="padding: 24px"],
+  section > div[style*="padding: 16px"] {
+    padding: 12px !important;
+  }
+
+  /* Checkbox Labels */
+  .filter-checkbox-label {
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .filter-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Filter Item Cards */
+  .filter-item-card {
+    padding: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .filter-item-card > div {
+    font-size: 12px !important;
+    width: 100%;
+  }
+
+  .filter-item-card button {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+    width: 100%;
+  }
+
+  /* Log Entries */
+  .log-entry {
+    padding: 10px 12px;
+  }
+
+  .log-entry > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  .log-entry h3 {
+    font-size: 13px !important;
+  }
+
+  .log-entry p,
+  .log-entry span {
+    font-size: 11px !important;
+  }
+
+  /* Badges */
+  div[style*="padding: 4px 12px"][style*="borderRadius: 9999px"],
+  div[style*="padding: 3px 10px"][style*="borderRadius: 9999px"],
+  span[style*="padding: 4px 12px"][style*="borderRadius: 9999px"],
+  span[style*="padding: 3px 10px"][style*="borderRadius: 9999px"] {
+    padding: 2px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Form Elements */
+  input[type="text"],
+  textarea {
+    font-size: 13px !important;
+    padding: 8px 10px !important;
+  }
+
+  button {
+    font-size: 12px !important;
+    padding: 7px 14px !important;
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 30px 12px;
+  }
+
+  .empty-state-icon {
+    font-size: 32px;
+  }
+
+  .empty-state-title {
+    font-size: 15px;
+  }
+
+  .empty-state-description {
+    font-size: 12px;
+  }
+
+  /* Alert Messages */
+  .alert-success,
+  .alert-error {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Loading Spinner */
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+
+  /* Form Grids */
+  div[style*="display: grid"][style*="gap"] {
+    gap: 8px !important;
   }
 }
 

@@ -1169,11 +1169,12 @@ const Analytics = () => {
                           </div>
                           <div className="country-data" style={{
                             display: 'flex',
+                            flexDirection: 'row',
                             alignItems: 'center',
                             gap: '10px',
-                            flex: 1
+                            // flex: 1
                           }}>
-                            <div className="progress-bar" style={{
+                            <div style={{
                               flex: 1,
                               height: '3px',
                               backgroundColor: '#E5E7EB',
