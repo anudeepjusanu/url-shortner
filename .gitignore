@@ -160,6 +160,15 @@ frontend/.env.production.local
 frontend/dist
 frontend/build
 
+# Url_Shortener-main frontend
+Url_Shortener-main/.env
+Url_Shortener-main/.env.local
+Url_Shortener-main/.env.development.local
+Url_Shortener-main/.env.test.local
+Url_Shortener-main/.env.production.local
+Url_Shortener-main/build
+Url_Shortener-main/dist
+
 # TypeScript
 *.d.ts
 
