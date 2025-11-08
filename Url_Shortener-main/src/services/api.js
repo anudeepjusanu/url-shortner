@@ -1,5 +1,27 @@
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://laghhu.link/api';
+// Auto-detect environment and use appropriate backend URL
+const getApiBaseUrl = () => {
+  // Check if REACT_APP_API_URL is explicitly set
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  // Auto-detect based on current hostname
+  const hostname = window.location.hostname;
+
+  // If running on localhost, use local backend
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3015/api';
+  }
+
+  // Otherwise use production URL
+  return 'https://laghhu.link/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Log the API URL being used (helpful for debugging)
+console.log(`🔗 API Base URL: ${API_BASE_URL}`);
 
 // API endpoints
 const endpoints = {
@@ -105,6 +127,14 @@ class ApiClient {
           throw new Error('Session expired. Please login again.');
         }
 
+        // Handle 404 - Not Found
+        if (response.status === 404) {
+          const errorMsg = data.message || data.error || 'The requested resource was not found on this server.';
+          console.error(`❌ 404 Error: ${url}`, errorMsg);
+          console.error(`💡 Tip: Make sure the backend server is running on ${this.baseURL}`);
+          throw new Error(errorMsg);
+        }
+
         // Throw error with API response message
         throw new Error(data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
       }
@@ -112,8 +142,12 @@ class ApiClient {
       return data;
     } catch (error) {
       // Network or other errors
-      if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        throw new Error('Network error. Please check your connection.');
+      if (error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+        console.error(`❌ Network Error: Cannot connect to ${this.baseURL}`);
+        console.error('💡 Tip: Make sure the backend server is running');
+        console.error('   Backend should be running on: http://localhost:3015');
+        console.error('   Start it with: npm run dev');
+        throw new Error(`Cannot connect to backend server at ${this.baseURL}. Please make sure the server is running.`);
       }
       throw error;
     }
