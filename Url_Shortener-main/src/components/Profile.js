@@ -6,7 +6,7 @@ import api from "../services/api";
 import "./Profile.css";
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { updateUser } = useAuth();
 
   // Personal Information State
   const [personalInfo, setPersonalInfo] = useState({

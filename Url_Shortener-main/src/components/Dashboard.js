@@ -6,11 +6,9 @@ import './Dashboard.css';
 
 const Dashboard = () => {
    const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [longUrl, setLongUrl] = useState('');
   const [customBackhalf, setCustomBackhalf] = useState('');
   const [campaign, setCampaign] = useState('');
-  const [analyticsFilter, setAnalyticsFilter] = useState('All Links');
   const [timeFilter, setTimeFilter] = useState('Last 7 days');
 
   const handleNavigation = (path) => {

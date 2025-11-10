@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI } from '../services/api';
@@ -7,17 +6,16 @@ import './MyLinks.css';
 
 
 function MyLinks() {
-  const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [showCreateShortLink, setShowCreateShortLink] = useState(false);
   // State for create short link form
   const [longUrl, setLongUrl] = useState('');
   const [customName, setCustomName] = useState('');
   const [generateQR, setGenerateQR] = useState(false);
-  const [showUTMModal, setShowUTMModal] = useState(false);
+  const [, setShowUTMModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
 

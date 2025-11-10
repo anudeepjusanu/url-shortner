@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import "./Analytics.css";
 
 const UTMBuilder = () => {
-  const [timeFilter, setTimeFilter] = useState("Last 7 days");
-
   return (
     <div className="analytics-container">
       <MainHeader />

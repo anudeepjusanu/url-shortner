@@ -484,10 +484,12 @@ const Registration = () => {
                 />
                 <label htmlFor="agreeToTerms">
                   I agree to the{" "}
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="text-link">
                     Terms of Service
                   </a>{" "}
                   and{" "}
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="text-link">
                     Privacy Policy
                   </a>
