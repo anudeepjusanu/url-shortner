@@ -44,6 +44,7 @@ const QRCodes = () => {
 
   useEffect(() => {
     filterLinks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, links]);
 
   const loadLinks = async () => {

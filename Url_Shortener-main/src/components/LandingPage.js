@@ -632,6 +632,7 @@ const LandingPage = () => {
                   The most trusted URL shortener in Saudi Arabia, built for
                   modern businesses.
                 </p>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <div className="social-links">
                   <a href="#" className="social-link">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

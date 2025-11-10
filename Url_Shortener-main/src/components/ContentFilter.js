@@ -48,7 +48,7 @@ const ContentFilter = () => {
   const [activeTab, setActiveTab] = useState('settings');
 
   // Loading & Messages
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");

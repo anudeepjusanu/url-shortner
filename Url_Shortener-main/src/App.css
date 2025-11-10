@@ -1,3 +1,6 @@
+/* Import Responsive Utilities */
+@import './responsive.css';
+
 /* Reset and Base Styles */
 * {
   margin: 0;
@@ -11,6 +14,12 @@ body {
   line-height: 1.5;
   color: #374151;
   background-color: #f9fafb;
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* App Layout */
@@ -55,11 +64,29 @@ body {
 .landing-header-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 104px;
+  padding: 0 20px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+  .landing-header-container {
+    padding: 0 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-header-container {
+    padding: 0 80px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .landing-header-container {
+    padding: 0 104px;
+  }
 }
 
 .header-content {
@@ -107,6 +134,20 @@ body {
   background: transparent;
 }
 
+.hamburger-wrapper {
+  margin-right: 12px;
+}
+
+.hamburger-wrapper .hamburger-menu {
+  color: #2f4f97;
+}
+
+@media (min-width: 1024px) {
+  .hamburger-wrapper {
+    display: none;
+  }
+}
+
 .logo-text {
   color: white;
   font-size: 24px;
@@ -119,9 +160,15 @@ body {
 }
 
 .landing-nav {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .landing-nav {
+    display: flex;
+  }
 }
 
 .landing-nav a {

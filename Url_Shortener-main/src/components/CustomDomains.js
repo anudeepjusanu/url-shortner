@@ -9,8 +9,6 @@ const CustomDomains = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newDomainName, setNewDomainName] = useState('');
-  const [newSubdomain, setNewSubdomain] = useState('');
   const [isAddingDomain, setIsAddingDomain] = useState(false);
 
   // Wizard state
@@ -18,7 +16,6 @@ const CustomDomains = () => {
   const [baseDomain, setBaseDomain] = useState('');
   const [subdomain, setSubdomain] = useState('');
   const [wizardStep, setWizardStep] = useState(1);
-  const [verificationStatus, setVerificationStatus] = useState('idle');
   const [addedDomain, setAddedDomain] = useState(null);
 
   useEffect(() => {
@@ -65,29 +62,31 @@ const CustomDomains = () => {
   };
 
   const handleAddDomain = async () => {
-
-    // Construct full domain from subdomain and base domain
-    const fullDomain = subdomain.trim()
-      ? `${subdomain.toLowerCase().trim()}.${baseDomain.toLowerCase().trim()}`
-      : baseDomain.toLowerCase().trim();
-
-    if (!baseDomain.trim() || !newSubdomain.trim()) return;
+    // Validate input
+    if (!baseDomain.trim()) {
+      setError('Please enter a base domain');
+      return;
+    }
 
     try {
       setIsAddingDomain(true);
-      const fullDomain = `${newSubdomain}.${newDomainName}`;
+
+      // Construct full domain from subdomain and base domain
+      const fullDomain = subdomain.trim()
+        ? `${subdomain.toLowerCase().trim()}.${baseDomain.toLowerCase().trim()}`
+        : baseDomain.toLowerCase().trim();
+
       const domainData = {
-        domain: fullDomain,
-        subdomain: newSubdomain.toLowerCase().trim(),
-        fullDomain: fullDomain.toLowerCase().trim(),
+        domain: baseDomain.toLowerCase().trim(),
+        subdomain: subdomain.trim() ? subdomain.toLowerCase().trim() : undefined,
+        fullDomain: fullDomain,
         isDefault: false
       };
 
       const response = await domainsAPI.createDomain(domainData);
-      setAddedDomain(response.data || { ...domainData, id: Date.now() });
+      const addedDomainData = response.data?.data || response.data || { ...domainData, id: Date.now() };
+      setAddedDomain(addedDomainData);
       await fetchDomains();
-      setShowAddModal(false);
-      resetWizard();
       setWizardStep(2);
       setError(null);
     } catch (err) {
@@ -103,22 +102,18 @@ const CustomDomains = () => {
     if (!targetId) return;
 
     try {
-      setVerificationStatus('checking');
       const response = await domainsAPI.verifyDomain(targetId);
 
       if (response.data?.success || response.success) {
-        setVerificationStatus('success');
         await fetchDomains();
         if (wizardStep === 2) {
           setWizardStep(3);
         }
       } else {
-        setVerificationStatus('failed');
         setError(response.data?.message || response.message || 'DNS verification failed');
       }
     } catch (err) {
       console.error('Domain verification error:', err);
-      setVerificationStatus('failed');
       setError(err.response?.data?.message || err.message || 'DNS verification failed');
     }
   };
@@ -126,26 +121,11 @@ const CustomDomains = () => {
   const resetWizard = () => {
     setShowAddModal(false);
     setWizardStep(1);
-    setNewDomainName('');
-    setNewSubdomain('');
-    setVerificationStatus('idle');
+    setCurrentStep(1);
+    setBaseDomain('');
+    setSubdomain('');
     setAddedDomain(null);
     setError(null);
-  };
-
-  const copyToClipboard = (text) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
-    } else {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Copied to clipboard!');
-    }
   };
 
   const handleDeleteDomain = async (domainId) => {
@@ -421,7 +401,12 @@ const CustomDomains = () => {
 
         {renderStepIndicator()}
 
-        <form onSubmit={handleAddDomain}>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStep === 3) {
+            handleAddDomain();
+          }
+        }}>
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}

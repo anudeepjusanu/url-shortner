@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import "./Analytics.css";
 import "./SubscriptionPage.css";
 
 const SubscriptionPage = () => {
-  const [timeFilter, setTimeFilter] = useState("Last 7 days");
-
   return (
     <div className="analytics-container">
       <MainHeader />
@@ -309,6 +307,7 @@ const SubscriptionPage = () => {
                       color: '#6B7280'
                     }}>Expires: 12/26</span>
                   </div>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="billing-link" style={{
                     fontSize: '14px',
                     color: '#2563EB',
@@ -336,6 +335,7 @@ const SubscriptionPage = () => {
                   }}>
                     Ahmed Al-Rashid<br />123 King Fahd Road<br />Riyadh, Saudi Arabia 12345
                   </div>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="billing-link" style={{
                     fontSize: '14px',
                     color: '#2563EB',

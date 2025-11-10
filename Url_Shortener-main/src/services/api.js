@@ -239,6 +239,9 @@ export const urlsAPI = {
   deleteUrl: (id) => apiClient.delete(`${endpoints.urls.delete}/${id}`),
   createUrl: (urlData) => apiClient.post(endpoints.urls.create, urlData),
   updateUrl: (id, data) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
+
+  // Get available domains for creating URLs
+  getAvailableDomains: () => apiClient.get('/urls/domains/available'),
 };
 
 // Domains API methods
