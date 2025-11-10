@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication status
   const checkAuthStatus = async () => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
 
     if (!token) {
       dispatch({ type: actionTypes.SET_LOADING, payload: false });
@@ -90,6 +90,7 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
       } else {
         // Invalid token, clear it
+        localStorage.removeItem('authToken');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         dispatch({ type: actionTypes.SET_LOADING, payload: false });
@@ -97,6 +98,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Auth check failed:', error);
       // Clear invalid tokens
+      localStorage.removeItem('authToken');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       dispatch({ type: actionTypes.SET_LOADING, payload: false });
