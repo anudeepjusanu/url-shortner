@@ -76,6 +76,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/urls', require('./routes/urls'));
 app.use('/api/domains', require('./routes/domains'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/qr-codes', require('./routes/qrCodes'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/super-admin', require('./routes/superAdmin'));
