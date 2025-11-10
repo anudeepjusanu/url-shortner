@@ -241,7 +241,7 @@ export const urlsAPI = {
   updateUrl: (id, data) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
 
   // Get available domains for creating URLs
-  getAvailableDomains: () => apiClient.get(endpoints.domains.list),
+  getAvailableDomains: () => apiClient.get('/urls/domains/available'),
 };
 
 // Domains API methods

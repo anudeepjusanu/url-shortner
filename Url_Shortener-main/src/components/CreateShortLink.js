@@ -25,13 +25,17 @@ const CreateShortLink = () => {
     try {
       setLoadingDomains(true);
       const response = await urlsAPI.getAvailableDomains();
-      const domains = response.data?.data?.domains || response.data?.domains || [];
+
+      console.log('Domains response:', response); // Debug log
+
+      // Response structure: { success: true, data: { domains: [...] } }
+      const domains = response.data?.domains || response.domains || [];
       setAvailableDomains(domains);
 
       // Set default domain
       const defaultDomain = domains.find(d => d.isDefault);
       if (defaultDomain) {
-        setSelectedDomainId(defaultDomain.id);
+        setSelectedDomainId(defaultDomain.id || defaultDomain._id);
       }
     } catch (err) {
       console.error('Failed to fetch domains:', err);
@@ -56,15 +60,25 @@ const CreateShortLink = () => {
         domainId: selectedDomainId || undefined,
       });
 
-      const selectedDomain = availableDomains.find(d => d.id === selectedDomainId);
-      const baseUrl = selectedDomain?.shortUrl || window.location.origin;
-      const shortUrl = `${baseUrl}/${response.data?.data?.url?.shortCode || response.data?.url?.shortCode}`;
+      console.log('API Response:', response); // Debug log
+
+      // Response structure: { success: true, data: { url: {...}, domain: {...} } }
+      if (!response.success || !response.data || !response.data.url) {
+        throw new Error('Invalid response from server');
+      }
+
+      const createdUrl = response.data.url;
+      const domainInfo = response.data.domain;
+
+      // Use the domain from response or selected domain
+      const baseUrl = domainInfo?.shortUrl || (availableDomains.find(d => d.id === selectedDomainId)?.shortUrl) || window.location.origin;
+      const shortUrl = `${baseUrl}/${createdUrl.shortCode}`;
 
       setShortenedUrl(shortUrl);
       setSuccessMessage('Your short link has been created successfully!');
     } catch (err) {
       console.error('Error creating short link:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to create short link');
+      setError(err.message || 'Failed to create short link');
     } finally {
       setLoading(false);
     }
