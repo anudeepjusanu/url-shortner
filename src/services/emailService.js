@@ -264,6 +264,336 @@ class EmailService {
       console.error('Failed to send upgrade confirmation:', error);
     }
   }
+
+  async sendPaymentReminder(user, daysUntilDue, amount) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: `Payment Reminder - Due in ${daysUntilDue} days`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #3B82F6; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .amount { font-size: 24px; font-weight: bold; color: #3B82F6; margin: 20px 0; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Payment Reminder</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>This is a friendly reminder that your LaghhuLink ${user.plan} plan payment is coming up.</p>
+              <div class="amount">Amount Due: $${amount.toFixed(2)}</div>
+              <p><strong>Due in ${daysUntilDue} days</strong></p>
+              <p>We'll automatically charge your payment method on file. No action needed!</p>
+              <a href="https://laghhu.link/billing" class="button">View Billing Details</a>
+              <p><small>Having trouble? Contact us at billing@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send payment reminder:', error);
+    }
+  }
+
+  async sendPaymentFailedNotification(user, amount) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Action Required - Payment Failed',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #EF4444; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #EF4444; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>⚠️ Payment Failed</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>We were unable to process your payment of <strong>$${amount.toFixed(2)}</strong> for your LaghhuLink subscription.</p>
+              <p>To continue using your ${user.plan} plan features, please update your payment method.</p>
+              <a href="https://laghhu.link/billing" class="button">Update Payment Method</a>
+              <p><strong>What happens next?</strong></p>
+              <ul>
+                <li>Your account will remain active for the next 7 days</li>
+                <li>After 7 days, your account will be downgraded to the free plan</li>
+                <li>Your data will be preserved</li>
+              </ul>
+              <p><small>Need help? Contact us at billing@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send payment failed notification:', error);
+    }
+  }
+
+  async sendSubscriptionPausedNotification(user) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Your Subscription Has Been Paused',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #F59E0B; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Subscription Paused</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>Your LaghhuLink ${user.plan} subscription has been paused.</p>
+              <p>While paused:</p>
+              <ul>
+                <li>You won't be charged</li>
+                <li>Your data is safe and preserved</li>
+                <li>Existing short links will continue to work</li>
+                <li>You can't create new links</li>
+              </ul>
+              <p>Ready to resume?</p>
+              <a href="https://laghhu.link/billing" class="button">Resume Subscription</a>
+              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send subscription paused notification:', error);
+    }
+  }
+
+  async sendSubscriptionResumedNotification(user) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Welcome Back! Subscription Resumed',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #10B981; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Welcome Back!</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>Great news! Your LaghhuLink ${user.plan} subscription has been resumed.</p>
+              <p>You now have full access to all features again:</p>
+              <ul>
+                <li>Create unlimited short links</li>
+                <li>Access advanced analytics</li>
+                <li>Use custom domains</li>
+                <li>All premium features enabled</li>
+              </ul>
+              <a href="https://laghhu.link/dashboard" class="button">Go to Dashboard</a>
+              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send subscription resumed notification:', error);
+    }
+  }
+
+  async sendOverageNotification(user, type, amount, chargeAmount) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const typeDisplay = type === 'urls' ? 'URL creations' : type === 'api_calls' ? 'API calls' : type;
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Usage Overage Notification',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #F59E0B; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+            .charge { font-size: 20px; font-weight: bold; color: #F59E0B; margin: 15px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Usage Overage Alert</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>You've exceeded your plan's included ${typeDisplay} limit.</p>
+              <p><strong>Overage details:</strong></p>
+              <ul>
+                <li>Type: ${typeDisplay}</li>
+                <li>Amount: ${amount} units</li>
+              </ul>
+              <div class="charge">Overage charge: $${chargeAmount.toFixed(2)}</div>
+              <p>This amount will be added to your next invoice.</p>
+              <p><strong>Want to avoid overage charges?</strong> Consider upgrading to a higher plan with more included usage.</p>
+              <a href="https://laghhu.link/pricing" class="button">View Plans</a>
+              <p><small>Questions? Contact us at billing@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send overage notification:', error);
+    }
+  }
+
+  async sendTrialEndingNotification(user, daysRemaining) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: user.email,
+      subject: `Your trial ends in ${daysRemaining} days`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #3B82F6; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+            .highlight { background: #FEF3C7; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Your Trial is Ending Soon</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName},</h2>
+              <p>Your ${user.plan} plan trial will end in <strong>${daysRemaining} days</strong>.</p>
+              <div class="highlight">
+                <p><strong>What happens next?</strong></p>
+                <ul>
+                  <li>Your trial ends on ${new Date(user.subscription.trialEnd).toLocaleDateString()}</li>
+                  <li>We'll charge your payment method on file</li>
+                  <li>You'll continue enjoying all ${user.plan} features</li>
+                </ul>
+              </div>
+              <p>No action needed - we'll handle everything automatically!</p>
+              <a href="https://laghhu.link/billing" class="button">View Billing Details</a>
+              <p>Want to cancel? No problem - you can cancel anytime before your trial ends with no charges.</p>
+              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send trial ending notification:', error);
+    }
+  }
 }
 
 module.exports = new EmailService();

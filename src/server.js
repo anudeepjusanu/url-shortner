@@ -1,5 +1,6 @@
 const app = require('./app');
 const connectDB = require('./config/database');
+const ScheduledTasks = require('./services/scheduledTasks');
 require('dotenv').config();
 
 // Connect to database
@@ -13,6 +14,11 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`<
  Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`=� Health check: http://${HOST}:${PORT}/health`);
+
+  // Initialize scheduled tasks (payment reminders, trial notifications, etc.)
+  if (process.env.NODE_ENV !== 'test') {
+    ScheduledTasks.initializeCronJobs();
+  }
 });
 
 const gracefulShutdown = (signal) => {
