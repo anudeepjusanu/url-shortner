@@ -91,15 +91,51 @@ function MyLinks() {
     );
   });
 
-  // Handlers for create short link form (dummy for now)
-  const handleSubmit = (e) => {
+  // Handlers for create short link form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Implement create short link logic here
-    alert('Short link created!');
-    setShowCreateShortLink(false);
+    setError(null);
+
+    if (!longUrl.trim()) {
+      setError('Please enter a URL');
+      return;
+    }
+
+    try {
+      const response = await urlsAPI.createUrl({
+        originalUrl: longUrl,
+        customCode: customName || undefined,
+        title: customName || undefined,
+      });
+
+      if (response.success && response.data && response.data.url) {
+        // Successfully created, refresh the list
+        await fetchLinks();
+
+        // Clear form and close modal
+        setLongUrl('');
+        setCustomName('');
+        setGenerateQR(false);
+        setShowCreateShortLink(false);
+        setError(null);
+      } else {
+        setError('Failed to create short link');
+      }
+    } catch (err) {
+      console.error('Error creating short link:', err);
+      setError(err.message || 'Failed to create short link');
+    }
   };
+
   const handleSaveDraft = () => {
-    // Implement save draft logic here
+    // Save form data to local storage for later
+    const draft = {
+      longUrl,
+      customName,
+      generateQR,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('linkDraft', JSON.stringify(draft));
     alert('Draft saved!');
   };
 
@@ -196,6 +232,42 @@ function MyLinks() {
                   </p>
                 </div>
                 <div className="create-link-form">
+                  {error && (
+                    <div style={{
+                      padding: '12px 16px',
+                      marginBottom: '20px',
+                      background: '#FEE2E2',
+                      border: '1px solid #FCA5A5',
+                      borderRadius: '8px',
+                      color: '#DC2626',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM7 4h2v5H7V4zm0 6h2v2H7v-2z"/>
+                      </svg>
+                      {error}
+                      <button
+                        type="button"
+                        onClick={() => setError(null)}
+                        style={{
+                          marginLeft: 'auto',
+                          background: 'none',
+                          border: 'none',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                          fontSize: '18px',
+                          padding: '0',
+                          width: '20px',
+                          height: '20px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
                   <form onSubmit={handleSubmit}>
                     {/* Long URL Input */}
                     <div className="form-section">
