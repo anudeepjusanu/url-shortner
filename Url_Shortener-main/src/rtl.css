@@ -449,22 +449,732 @@
   margin-right: 0;
 }
 
-/* Responsive Adjustments for RTL */
-@media (max-width: 768px) {
+/* ============================================
+   RESPONSIVE ADJUSTMENTS FOR RTL MODE
+   ============================================ */
+
+/* ============================================
+   MOBILE DEVICES (max-width: 767px)
+   ============================================ */
+@media (max-width: 767px) {
+  /* Sidebar - Hidden by default, slides from right */
   [dir="rtl"] .sidebar {
-    right: -250px;
+    right: -250px !important;
+    left: auto !important;
+    width: 250px !important;
+    transform: translateX(0) !important;
   }
 
   [dir="rtl"] .sidebar.open {
-    right: 0;
+    right: 0 !important;
+    transform: translateX(0) !important;
   }
 
-  [dir="rtl"] .dashboard-main {
-    margin-right: 0;
+  /* Main content - Full width on mobile */
+  [dir="rtl"] .dashboard-main,
+  [dir="rtl"] .main-content,
+  [dir="rtl"] .page-content,
+  [dir="rtl"] .content-wrapper,
+  [dir="rtl"] .dashboard-container,
+  [dir="rtl"] .app-container {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Layout containers - Full width on mobile */
+  [dir="rtl"] .analytics-main,
+  [dir="rtl"] .content-filter-main,
+  [dir="rtl"] .custom-domains-main,
+  [dir="rtl"] .qr-codes-main,
+  [dir="rtl"] .my-links-main,
+  [dir="rtl"] .profile-main {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  /* Header adjustments */
+  [dir="rtl"] .header-left,
+  [dir="rtl"] .header-right,
+  [dir="rtl"] .header-center {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  /* Language toggle - Mobile positioning */
+  [dir="rtl"] .language-toggle {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Hamburger menu - Right side for RTL */
+  [dir="rtl"] .hamburger-menu,
+  [dir="rtl"] .menu-toggle {
+    left: auto !important;
+    right: 16px !important;
+  }
+
+  [dir="rtl"] .hamburger-close {
+    right: auto !important;
+    left: 16px !important;
+  }
+
+  /* Sign in button - Mobile sizing */
+  [dir="rtl"] .sign-in-btn {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+    padding: 8px 16px !important;
+  }
+
+  /* Logo section - Mobile spacing */
+  [dir="rtl"] .logo-section {
+    margin-right: 0 !important;
+    margin-left: auto !important;
+  }
+
+  [dir="rtl"] .logo-text {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+    font-size: 18px !important;
+  }
+
+  /* Navigation - Stack vertically on mobile */
+  [dir="rtl"] .landing-nav {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+
+  [dir="rtl"] .landing-nav a {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 12px !important;
+    text-align: right !important;
+  }
+
+  /* Cards - Full width on mobile */
+  [dir="rtl"] .card,
+  [dir="rtl"] .stats-card,
+  [dir="rtl"] .pricing-card,
+  [dir="rtl"] .plan-card {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding: 16px !important;
+  }
+
+  /* Tables - Scroll horizontally */
+  [dir="rtl"] .table-container {
+    overflow-x: auto !important;
+    direction: rtl !important;
+  }
+
+  [dir="rtl"] table {
+    min-width: 600px !important;
+  }
+
+  [dir="rtl"] th,
+  [dir="rtl"] td {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Forms - Full width inputs on mobile */
+  [dir="rtl"] .form-group,
+  [dir="rtl"] .input-group {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  [dir="rtl"] input,
+  [dir="rtl"] textarea,
+  [dir="rtl"] select {
+    width: 100% !important;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  /* Buttons - Full width on mobile */
+  [dir="rtl"] .btn-primary,
+  [dir="rtl"] .btn-secondary {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Button groups - Stack vertically */
+  [dir="rtl"] .btn-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  [dir="rtl"] .btn-group > * {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Grid layouts - Single column on mobile */
+  [dir="rtl"] .grid,
+  [dir="rtl"] .grid-container {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Modal - Full width on mobile */
+  [dir="rtl"] .modal-content {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  [dir="rtl"] .modal-header,
+  [dir="rtl"] .modal-body,
+  [dir="rtl"] .modal-footer {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  /* Dropdown - Full width on mobile */
+  [dir="rtl"] .dropdown-menu {
+    right: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Links list - Mobile optimization */
+  [dir="rtl"] .links-table,
+  [dir="rtl"] .link-item {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  [dir="rtl"] .link-actions {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* QR Codes - Mobile grid */
+  [dir="rtl"] .qr-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Analytics - Mobile layout */
+  [dir="rtl"] .analytics-filters {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+
+  [dir="rtl"] .filter-item {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+  }
+
+  /* User profile - Mobile layout */
+  [dir="rtl"] .user-profile {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+
+  [dir="rtl"] .user-avatar {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Footer - Mobile layout */
+  [dir="rtl"] .footer-links {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+
+  [dir="rtl"] .footer-link {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Hero section - Mobile alignment */
+  [dir="rtl"] .hero-content {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  /* Profile form - Mobile optimization */
+  [dir="rtl"] .profile-form {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  [dir="rtl"] .profile-avatar {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Content padding reduction for mobile */
+  [dir="rtl"] .dashboard-content,
+  [dir="rtl"] .page-wrapper {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
   }
 }
 
-/* Smooth transitions for direction changes */
+/* ============================================
+   TABLET DEVICES (768px - 1023px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Sidebar - Collapsible on tablet */
+  [dir="rtl"] .sidebar {
+    right: 0 !important;
+    left: auto !important;
+    width: 200px !important;
+  }
+
+  [dir="rtl"] .sidebar.collapsed {
+    right: -200px !important;
+  }
+
+  /* Main content - Reduced margin for tablet */
+  [dir="rtl"] .dashboard-main,
+  [dir="rtl"] .main-content,
+  [dir="rtl"] .page-content,
+  [dir="rtl"] .content-wrapper,
+  [dir="rtl"] .dashboard-container,
+  [dir="rtl"] .app-container {
+    margin-right: 200px !important;
+    margin-left: 0 !important;
+  }
+
+  /* Layout containers - Tablet margins */
+  [dir="rtl"] .analytics-main,
+  [dir="rtl"] .content-filter-main,
+  [dir="rtl"] .custom-domains-main,
+  [dir="rtl"] .qr-codes-main,
+  [dir="rtl"] .my-links-main,
+  [dir="rtl"] .profile-main {
+    margin-right: 200px !important;
+    margin-left: 0 !important;
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  /* Sidebar items - Compact on tablet */
+  [dir="rtl"] .sidebar-item {
+    padding-right: 12px !important;
+    padding-left: 20px !important;
+  }
+
+  /* Header - Tablet spacing */
+  [dir="rtl"] .header-left,
+  [dir="rtl"] .header-right {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  /* Language toggle - Tablet sizing */
+  [dir="rtl"] .language-toggle {
+    margin-right: 16px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Cards - Two column grid on tablet */
+  [dir="rtl"] .grid,
+  [dir="rtl"] .grid-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  /* Tables - Tablet optimization */
+  [dir="rtl"] th,
+  [dir="rtl"] td {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  /* Forms - Tablet layout */
+  [dir="rtl"] .form-row {
+    flex-direction: row !important;
+    gap: 16px !important;
+  }
+
+  [dir="rtl"] .form-group {
+    flex: 1 !important;
+  }
+
+  /* Button groups - Horizontal on tablet */
+  [dir="rtl"] .btn-group {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+  }
+
+  [dir="rtl"] .btn-group > * {
+    margin-right: 0 !important;
+    margin-left: 12px !important;
+  }
+
+  [dir="rtl"] .btn-group > *:first-child {
+    margin-left: 0 !important;
+  }
+
+  /* Modal - Tablet sizing */
+  [dir="rtl"] .modal-content {
+    max-width: 600px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  /* QR Codes - Two column grid */
+  [dir="rtl"] .qr-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  /* Analytics - Tablet layout */
+  [dir="rtl"] .analytics-filters {
+    flex-direction: row-reverse !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+  }
+
+  [dir="rtl"] .filter-item {
+    margin-right: 0 !important;
+    margin-left: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Link actions - Horizontal on tablet */
+  [dir="rtl"] .link-actions {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Profile - Tablet layout */
+  [dir="rtl"] .profile-form {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  /* Navigation - Horizontal on tablet */
+  [dir="rtl"] .landing-nav {
+    flex-direction: row-reverse !important;
+  }
+
+  [dir="rtl"] .landing-nav a {
+    margin-right: 24px !important;
+    margin-left: 0 !important;
+  }
+
+  /* Content padding for tablet */
+  [dir="rtl"] .dashboard-content,
+  [dir="rtl"] .page-wrapper {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  /* Pricing cards - Two columns on tablet */
+  [dir="rtl"] .pricing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Domain list - Tablet optimization */
+  [dir="rtl"] .domain-item {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+}
+
+/* ============================================
+   DESKTOP AND LARGER (1024px+)
+   ============================================ */
+@media (min-width: 1024px) {
+  /* Sidebar - Full width on desktop */
+  [dir="rtl"] .sidebar {
+    right: 0 !important;
+    left: auto !important;
+    width: 250px !important;
+    position: fixed !important;
+  }
+
+  /* Main content - Full margin for desktop */
+  [dir="rtl"] .dashboard-main,
+  [dir="rtl"] .main-content,
+  [dir="rtl"] .page-content,
+  [dir="rtl"] .content-wrapper,
+  [dir="rtl"] .dashboard-container,
+  [dir="rtl"] .app-container {
+    margin-right: 250px !important;
+    margin-left: 0 !important;
+  }
+
+  /* Layout containers - Desktop margins */
+  [dir="rtl"] .analytics-main,
+  [dir="rtl"] .content-filter-main,
+  [dir="rtl"] .custom-domains-main,
+  [dir="rtl"] .qr-codes-main,
+  [dir="rtl"] .my-links-main,
+  [dir="rtl"] .profile-main {
+    margin-right: 250px !important;
+    margin-left: 0 !important;
+    padding-right: 24px !important;
+    padding-left: 24px !important;
+  }
+
+  /* Ensure no overlap */
+  [dir="rtl"] .analytics-content,
+  [dir="rtl"] .content-filter-content,
+  [dir="rtl"] .custom-domains-content,
+  [dir="rtl"] .qr-codes-content,
+  [dir="rtl"] .my-links-content,
+  [dir="rtl"] .profile-content {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Sidebar items - Full padding on desktop */
+  [dir="rtl"] .sidebar-item {
+    padding-right: 16px !important;
+    padding-left: 24px !important;
+  }
+
+  /* Header - Desktop spacing */
+  [dir="rtl"] .header-left {
+    padding-right: 24px !important;
+  }
+
+  [dir="rtl"] .header-right {
+    padding-left: 24px !important;
+  }
+
+  /* Language toggle - Desktop sizing */
+  [dir="rtl"] .language-toggle {
+    margin-right: 20px !important;
+    padding: 10px 16px !important;
+  }
+
+  /* Cards - Three or four column grid on desktop */
+  [dir="rtl"] .grid,
+  [dir="rtl"] .grid-container {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 24px !important;
+  }
+
+  /* Tables - Full padding on desktop */
+  [dir="rtl"] th:first-child,
+  [dir="rtl"] td:first-child {
+    padding-right: 24px !important;
+    padding-left: 12px !important;
+  }
+
+  [dir="rtl"] th:last-child,
+  [dir="rtl"] td:last-child {
+    padding-left: 24px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Forms - Desktop layout */
+  [dir="rtl"] .form-row {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    gap: 24px !important;
+  }
+
+  [dir="rtl"] .form-group {
+    flex: 1 !important;
+  }
+
+  /* Button groups - Horizontal with proper spacing */
+  [dir="rtl"] .btn-group {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+  }
+
+  [dir="rtl"] .btn-group > * {
+    margin-right: 0 !important;
+    margin-left: 16px !important;
+  }
+
+  [dir="rtl"] .btn-group > *:first-child {
+    margin-left: 0 !important;
+  }
+
+  /* Modal - Desktop sizing */
+  [dir="rtl"] .modal-content {
+    max-width: 800px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  /* QR Codes - Three or four column grid */
+  [dir="rtl"] .qr-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 24px !important;
+  }
+
+  /* Analytics - Desktop layout */
+  [dir="rtl"] .analytics-filters {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+  }
+
+  [dir="rtl"] .filter-item {
+    margin-right: 0 !important;
+    margin-left: 16px !important;
+  }
+
+  [dir="rtl"] .filter-item:first-child {
+    margin-left: 0 !important;
+  }
+
+  /* Link actions - Horizontal with spacing */
+  [dir="rtl"] .link-actions {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+  }
+
+  [dir="rtl"] .link-actions > * {
+    margin-right: 0 !important;
+    margin-left: 12px !important;
+  }
+
+  /* Profile - Desktop layout */
+  [dir="rtl"] .profile-form {
+    max-width: 800px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  [dir="rtl"] .profile-avatar {
+    margin-right: 0 !important;
+    margin-left: 24px !important;
+  }
+
+  /* Navigation - Full spacing on desktop */
+  [dir="rtl"] .landing-nav a {
+    margin-right: 32px !important;
+    margin-left: 0 !important;
+  }
+
+  [dir="rtl"] .landing-nav a:last-child {
+    margin-right: 0 !important;
+  }
+
+  /* Content padding for desktop */
+  [dir="rtl"] .dashboard-content,
+  [dir="rtl"] .page-wrapper {
+    padding-right: 40px !important;
+    padding-left: 24px !important;
+  }
+
+  /* Pricing cards - Three columns on desktop */
+  [dir="rtl"] .pricing-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 32px !important;
+  }
+
+  /* Domain list - Desktop optimization */
+  [dir="rtl"] .domain-item {
+    padding-right: 24px !important;
+    padding-left: 24px !important;
+  }
+
+  /* Footer - Desktop layout */
+  [dir="rtl"] .footer-links {
+    flex-direction: row-reverse !important;
+    justify-content: center !important;
+  }
+
+  [dir="rtl"] .footer-link {
+    margin-right: 0 !important;
+    margin-left: 24px !important;
+  }
+
+  [dir="rtl"] .footer-link:first-child {
+    margin-left: 0 !important;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (1440px+)
+   ============================================ */
+@media (min-width: 1440px) {
+  /* Wider content areas for large screens */
+  [dir="rtl"] .dashboard-content,
+  [dir="rtl"] .page-wrapper {
+    max-width: 1400px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+    padding-right: 48px !important;
+    padding-left: 48px !important;
+  }
+
+  /* Four column grids on large screens */
+  [dir="rtl"] .grid-4-col {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* QR Codes - Four columns on large screens */
+  [dir="rtl"] .qr-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Pricing - Four columns on large screens */
+  [dir="rtl"] .pricing-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ============================================
+   RTL-SPECIFIC FLEXBOX FIXES
+   ============================================ */
+@media (max-width: 767px) {
+  /* Reverse flex direction for RTL on mobile */
+  [dir="rtl"] .flex-row {
+    flex-direction: column-reverse !important;
+  }
+
+  [dir="rtl"] .flex-row-mobile {
+    flex-direction: row-reverse !important;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Proper flex direction for RTL on tablet+ */
+  [dir="rtl"] .flex-row {
+    flex-direction: row-reverse !important;
+  }
+}
+
+/* ============================================
+   RTL GRID TEMPLATE AREAS
+   ============================================ */
+[dir="rtl"] .grid-template-sidebar {
+  grid-template-areas: "content sidebar" !important;
+}
+
+[dir="rtl"] .grid-template-header {
+  grid-template-areas: "right center left" !important;
+}
+
+/* ============================================
+   SMOOTH TRANSITIONS FOR DIRECTION CHANGES
+   ============================================ */
 * {
   transition: margin 0.2s ease, padding 0.2s ease;
+}
+
+[dir="rtl"] .sidebar {
+  transition: right 0.3s ease, transform 0.3s ease !important;
+}
+
+[dir="rtl"] .dashboard-main,
+[dir="rtl"] .main-content {
+  transition: margin-right 0.3s ease !important;
 }
