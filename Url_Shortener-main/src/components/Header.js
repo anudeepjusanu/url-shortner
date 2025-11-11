@@ -20,7 +20,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
     ];
 
     const landingHeaderItems = (
-      <>
+      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
         <div className="language-toggle">
           <button
             className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
@@ -42,7 +42,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
         >
           {t('header.signIn')}
         </button>
-      </>
+      </div>
     );
 
     return (
