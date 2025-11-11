@@ -14,7 +14,8 @@ const {
 
 router.use(sanitizeInput);
 router.use(authenticate);
-router.use(apiLimiter);
+// TEMPORARILY DISABLED - Rate limiting paused until going live
+// router.use(apiLimiter);
 
 router.get('/dashboard', 
   validateAnalyticsQuery, 
