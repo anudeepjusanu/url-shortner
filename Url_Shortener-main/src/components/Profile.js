@@ -171,7 +171,7 @@ const Profile = () => {
     }
 
     if (passwordData.newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
+      setPasswordError(t('auth.register.errorPasswordLength'));
       setPasswordLoading(false);
       return;
     }
@@ -193,7 +193,7 @@ const Profile = () => {
 
   // Handle API Key Regeneration
   const handleRegenerateApiKey = async () => {
-    if (!window.confirm("Are you sure you want to regenerate your API key? The old key will no longer work.")) {
+    if (!window.confirm(t('profile.apiKeys.confirmRegenerate'))) {
       return;
     }
 
@@ -269,7 +269,7 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Account Overview</h2>
+              }}>{t('profile.accountOverview')}</h2>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -345,7 +345,7 @@ const Profile = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Current Plan</div>
+                  }}>{t('profile.currentPlan')}</div>
                 </div>
               </div>
             </section>
@@ -550,7 +550,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Job Title</label>
+                      }}>{t('profile.general.jobTitle')}</label>
                       <input
                         type="text"
                         value={personalInfo.jobTitle}
@@ -882,7 +882,7 @@ const Profile = () => {
                       cursor: 'pointer'
                     }}
                   >
-                    {showApiKey ? 'Hide' : 'Show'}
+                    {showApiKey ? t('common.hide') : t('common.show')}
                   </button>
                   <button
                     onClick={handleCopyApiKey}
@@ -916,7 +916,7 @@ const Profile = () => {
                     cursor: apiKeyLoading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {apiKeyLoading ? 'Regenerating...' : 'Regenerate API Key'}
+                  {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
                 </button>
               </div>
             </section>
@@ -943,7 +943,7 @@ const Profile = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Notifications</h3>
+                  }}>{t('profile.notifications.title')}</h3>
 
                   <div style={{ marginBottom: '20px' }}>
                     <label style={{
@@ -972,7 +972,7 @@ const Profile = () => {
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Receive email notifications for important updates</div>
+                        }}>{t('profile.preferences.emailNotificationsDesc')}</div>
                       </div>
                     </label>
 
@@ -1002,7 +1002,7 @@ const Profile = () => {
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Receive updates about new features and promotions</div>
+                        }}>{t('profile.preferences.marketingEmailsDesc')}</div>
                       </div>
                     </label>
 
@@ -1031,7 +1031,7 @@ const Profile = () => {
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Get weekly analytics reports sent to your email</div>
+                        }}>{t('profile.preferences.weeklyReportsDesc')}</div>
                       </div>
                     </label>
                   </div>
@@ -1041,7 +1041,7 @@ const Profile = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Regional Settings</h3>
+                  }}>{t('profile.regionalSettings')}</h3>
 
                   <div style={{
                     display: 'grid',

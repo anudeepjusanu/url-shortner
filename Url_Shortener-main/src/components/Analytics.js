@@ -1362,7 +1362,7 @@ const Analytics = () => {
                                 fontSize: '11px',
                                 color: '#6B7280',
                                 margin: '0 0 2px 0'
-                              }}>Mobile</p>
+                              }}>{t('analytics.devices.mobile')}</p>
                               <h4 className="device-value" style={{
                                 fontSize: '15px',
                                 fontWeight: '600',
@@ -1387,7 +1387,7 @@ const Analytics = () => {
                                 fontSize: '11px',
                                 color: '#6B7280',
                                 margin: '0 0 2px 0'
-                              }}>Desktop</p>
+                              }}>{t('analytics.devices.desktop')}</p>
                               <h4 className="device-value" style={{
                                 fontSize: '15px',
                                 fontWeight: '600',
@@ -1412,7 +1412,7 @@ const Analytics = () => {
                                 fontSize: '11px',
                                 color: '#6B7280',
                                 margin: '0 0 2px 0'
-                              }}>Tablet</p>
+                              }}>{t('analytics.devices.tablet')}</p>
                               <h4 className="device-value" style={{
                                 fontSize: '15px',
                                 fontWeight: '600',
