@@ -168,7 +168,7 @@ const ContentFilter = () => {
 
   const addBlockedDomain = async () => {
     if (!newDomain.trim()) {
-      alert("Please enter a domain");
+      alert(t('errors.enterDomain'));
       return;
     }
 
@@ -179,14 +179,14 @@ const ContentFilter = () => {
       loadBlockedDomains();
       loadStats();
     } catch (error) {
-      alert("Failed to add blocked domain: " + error.message);
+      alert(t('errors.failedToAddDomain', { error: error.message }));
     } finally {
       setAddingDomain(false);
     }
   };
 
   const removeBlockedDomain = async (domain) => {
-    if (!window.confirm(`Remove ${domain} from blocked list?`)) {
+    if (!window.confirm(t('contentFilter.blocked.confirmRemove', { domain }))) {
       return;
     }
 
@@ -195,13 +195,13 @@ const ContentFilter = () => {
       loadBlockedDomains();
       loadStats();
     } catch (error) {
-      alert("Failed to remove blocked domain: " + error.message);
+      alert(t('errors.failedToRemoveDomain', { error: error.message }));
     }
   };
 
   const addBlockedKeyword = async () => {
     if (!newKeyword.trim()) {
-      alert("Please enter a keyword");
+      alert(t('errors.enterKeyword'));
       return;
     }
 
@@ -212,14 +212,14 @@ const ContentFilter = () => {
       loadBlockedKeywords();
       loadStats();
     } catch (error) {
-      alert("Failed to add blocked keyword: " + error.message);
+      alert(t('errors.failedToAddKeyword', { error: error.message }));
     } finally {
       setAddingKeyword(false);
     }
   };
 
   const removeBlockedKeyword = async (keyword) => {
-    if (!window.confirm(`Remove "${keyword}" from blocked keywords?`)) {
+    if (!window.confirm(t('contentFilter.blocked.confirmRemoveKeyword', { keyword }))) {
       return;
     }
 
@@ -228,13 +228,13 @@ const ContentFilter = () => {
       loadBlockedKeywords();
       loadStats();
     } catch (error) {
-      alert("Failed to remove blocked keyword: " + error.message);
+      alert(t('errors.failedToRemoveKeyword', { error: error.message }));
     }
   };
 
   const addAllowedDomain = async () => {
     if (!newAllowedDomain.trim()) {
-      alert("Please enter a domain");
+      alert(t('errors.enterDomain'));
       return;
     }
 
@@ -244,14 +244,14 @@ const ContentFilter = () => {
       setNewAllowedDomain("");
       loadAllowedDomains();
     } catch (error) {
-      alert("Failed to add allowed domain: " + error.message);
+      alert(t('errors.failedToAddAllowedDomain', { error: error.message }));
     } finally {
       setAddingAllowedDomain(false);
     }
   };
 
   const removeAllowedDomain = async (domain) => {
-    if (!window.confirm(`Remove ${domain} from allowed list?`)) {
+    if (!window.confirm(t('contentFilter.whitelist.confirmRemove', { domain }))) {
       return;
     }
 
@@ -259,7 +259,7 @@ const ContentFilter = () => {
       await api.delete(`/content-filter/allowed-domains/${encodeURIComponent(domain)}`);
       loadAllowedDomains();
     } catch (error) {
-      alert("Failed to remove allowed domain: " + error.message);
+      alert(t('errors.failedToRemoveAllowedDomain', { error: error.message }));
     }
   };
 
@@ -1155,7 +1155,7 @@ const ContentFilter = () => {
                             fontSize: '13px',
                             color: '#6B7280'
                           }}>
-                            {log.message || 'URL was blocked by content filter'}
+                            {log.message || t('contentFilter.logs.defaultMessage')}
                           </div>
                         </div>
                       ))}
