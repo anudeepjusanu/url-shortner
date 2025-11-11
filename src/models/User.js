@@ -40,9 +40,10 @@ const userSchema = new mongoose.Schema({
   subscription: {
     stripeCustomerId: String,
     stripeSubscriptionId: String,
+    stripePriceId: String,
     status: {
       type: String,
-      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing'],
+      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing', 'paused'],
       default: 'inactive'
     },
     currentPeriodStart: Date,
@@ -51,7 +52,17 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    trialEnd: Date
+    trialEnd: Date,
+    trialStart: Date,
+    pausedAt: Date,
+    resumeAt: Date,
+    billingCycle: {
+      type: String,
+      enum: ['monthly', 'yearly'],
+      default: 'monthly'
+    },
+    discountCode: String,
+    discountPercentage: Number
   },
   usage: {
     urlsCreatedThisMonth: {
@@ -73,6 +84,10 @@ const userSchema = new mongoose.Schema({
     lastResetDate: {
       type: Date,
       default: Date.now
+    },
+    overageCharges: {
+      type: Number,
+      default: 0
     }
   },
   organization: {
@@ -113,19 +128,20 @@ const userSchema = new mongoose.Schema({
       type: String,
       enum: ['light', 'dark'],
       default: 'light'
-    }
-  },
-  subscription: {
-    plan: {
-      type: String,
-      enum: ['free', 'premium', 'enterprise'],
-      default: 'free'
     },
-    startDate: Date,
-    endDate: Date,
-    isActive: {
-      type: Boolean,
-      default: false
+    emailNotifications: {
+      paymentReminders: {
+        type: Boolean,
+        default: true
+      },
+      usageAlerts: {
+        type: Boolean,
+        default: true
+      },
+      newsletter: {
+        type: Boolean,
+        default: false
+      }
     }
   },
   limits: {

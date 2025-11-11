@@ -18,14 +18,12 @@ import QRCodes from './components/QRCodes';
 import ContentFilter from './components/ContentFilter';
 import Subscription from './components/SubscriptionPage';
 import Profile from './components/Profile';
+import BillingManagement from './components/BillingManagement';
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
 const CreateLink = () => <div>Create Link Page</div>;
 const TeamMembers = () => <div>Team Members Page</div>;
-const BillingHistory = () => <div>Billing History Page</div>;
-// const Subscription = () => <div>Subscription Page</div>;
-const BillingPayment = () => <div>Billing Payment Page</div>;
 
 function App() {
   return (
@@ -94,19 +92,14 @@ function App() {
                 <TeamMembers />
               </ProtectedRoute>
             } />
-            <Route path="/billing-history" element={
+            <Route path="/billing" element={
               <ProtectedRoute>
-                <BillingHistory />
+                <BillingManagement />
               </ProtectedRoute>
             } />
             <Route path="/subscription" element={
               <ProtectedRoute>
                 <Subscription />
-              </ProtectedRoute>
-            } />
-            <Route path="/billing-payment" element={
-              <ProtectedRoute>
-                <BillingPayment />
               </ProtectedRoute>
             } />
             <Route path="/content-filter" element={

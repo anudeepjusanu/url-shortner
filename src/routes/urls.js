@@ -16,11 +16,12 @@ const {
 
 router.use(sanitizeInput);
 
-router.post('/', 
-  authenticate, 
-  urlCreationLimiter, 
+router.post('/',
+  authenticate,
+  // TEMPORARILY DISABLED - Rate limiting paused until going live
+  // urlCreationLimiter,
   checkResourceLimits('urls'),
-  validateUrlCreation, 
+  validateUrlCreation,
   urlController.createUrl
 );
 

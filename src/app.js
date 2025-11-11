@@ -35,17 +35,18 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.RATE_LIMIT || 100,
-  message: {
-    error: 'Too many requests from this IP, please try again later.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// TEMPORARILY DISABLED - Rate limiting paused until going live
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: process.env.RATE_LIMIT || 100,
+//   message: {
+//     error: 'Too many requests from this IP, please try again later.'
+//   },
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
 app.use((req, res, next) => {
   res.set({
@@ -85,7 +86,8 @@ const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
 
 // Handle shortened URL redirects (e.g., /mbtw7f)
-app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl);
+// TEMPORARILY DISABLED - Rate limiting paused until going live
+app.get('/:shortCode', /* redirectLimiter, */ redirectController.redirectToOriginalUrl);
 
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)
 app.get('/preview/:shortCode', redirectController.getPreview);

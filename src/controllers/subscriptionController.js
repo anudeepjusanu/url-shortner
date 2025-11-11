@@ -5,7 +5,7 @@ const Plan = require('../models/Plan');
 
 const createSubscription = async (req, res) => {
   try {
-    const { planName, paymentMethodId } = req.body;
+    const { planName, paymentMethodId, billingCycle, couponCode, trialDays } = req.body;
     const userId = req.user.id;
 
     if (!planName || !paymentMethodId) {
@@ -15,10 +15,17 @@ const createSubscription = async (req, res) => {
       });
     }
 
+    const options = {
+      billingCycle: billingCycle || 'monthly',
+      couponCode: couponCode || null,
+      trialDays: trialDays !== undefined ? trialDays : 14
+    };
+
     const subscription = await paymentService.createSubscription(
       userId,
       planName,
-      paymentMethodId
+      paymentMethodId,
+      options
     );
 
     res.json({
@@ -197,6 +204,246 @@ const getAvailablePlans = async (req, res) => {
   }
 };
 
+// Payment method management
+const addPaymentMethod = async (req, res) => {
+  try {
+    const { paymentMethodId, setAsDefault } = req.body;
+    const userId = req.user.id;
+
+    if (!paymentMethodId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment method ID is required'
+      });
+    }
+
+    const paymentMethod = await paymentService.addPaymentMethod(
+      userId,
+      paymentMethodId,
+      setAsDefault || false
+    );
+
+    res.json({
+      success: true,
+      message: 'Payment method added successfully',
+      data: { paymentMethod }
+    });
+  } catch (error) {
+    console.error('Add payment method error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to add payment method'
+    });
+  }
+};
+
+const removePaymentMethod = async (req, res) => {
+  try {
+    const { paymentMethodId } = req.params;
+    const userId = req.user.id;
+
+    await paymentService.removePaymentMethod(userId, paymentMethodId);
+
+    res.json({
+      success: true,
+      message: 'Payment method removed successfully'
+    });
+  } catch (error) {
+    console.error('Remove payment method error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to remove payment method'
+    });
+  }
+};
+
+const setDefaultPaymentMethod = async (req, res) => {
+  try {
+    const { paymentMethodId } = req.params;
+    const userId = req.user.id;
+
+    const paymentMethod = await paymentService.setDefaultPaymentMethod(userId, paymentMethodId);
+
+    res.json({
+      success: true,
+      message: 'Default payment method updated',
+      data: { paymentMethod }
+    });
+  } catch (error) {
+    console.error('Set default payment method error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to set default payment method'
+    });
+  }
+};
+
+const getPaymentMethods = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const paymentMethods = await paymentService.getPaymentMethods(userId);
+
+    res.json({
+      success: true,
+      data: { paymentMethods }
+    });
+  } catch (error) {
+    console.error('Get payment methods error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch payment methods'
+    });
+  }
+};
+
+// Subscription pause/resume
+const pauseSubscription = async (req, res) => {
+  try {
+    const { resumeAt } = req.body;
+    const userId = req.user.id;
+
+    const subscription = await paymentService.pauseSubscription(
+      userId,
+      resumeAt ? new Date(resumeAt) : null
+    );
+
+    res.json({
+      success: true,
+      message: 'Subscription paused successfully',
+      data: { subscription }
+    });
+  } catch (error) {
+    console.error('Pause subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to pause subscription'
+    });
+  }
+};
+
+const resumeSubscription = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const subscription = await paymentService.resumeSubscription(userId);
+
+    res.json({
+      success: true,
+      message: 'Subscription resumed successfully',
+      data: { subscription }
+    });
+  } catch (error) {
+    console.error('Resume subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to resume subscription'
+    });
+  }
+};
+
+// Coupon validation
+const validateCoupon = async (req, res) => {
+  try {
+    const { couponCode, planName } = req.body;
+    const userId = req.user.id;
+
+    if (!couponCode || !planName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon code and plan name are required'
+      });
+    }
+
+    const coupon = await paymentService.validateCoupon(couponCode, userId, planName);
+
+    res.json({
+      success: true,
+      data: {
+        coupon: {
+          code: coupon.code,
+          description: coupon.description,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+          validUntil: coupon.validUntil
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Invalid coupon code'
+    });
+  }
+};
+
+const applyCoupon = async (req, res) => {
+  try {
+    const { couponCode } = req.body;
+    const userId = req.user.id;
+
+    if (!couponCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon code is required'
+      });
+    }
+
+    const subscription = await paymentService.applyCouponToSubscription(userId, couponCode);
+
+    res.json({
+      success: true,
+      message: 'Coupon applied successfully',
+      data: { subscription }
+    });
+  } catch (error) {
+    console.error('Apply coupon error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to apply coupon'
+    });
+  }
+};
+
+// Billing details
+const getBillingDetails = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const billingDetails = await paymentService.getBillingDetails(userId);
+
+    res.json({
+      success: true,
+      data: billingDetails
+    });
+  } catch (error) {
+    console.error('Get billing details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch billing details'
+    });
+  }
+};
+
+// Download invoice
+const downloadInvoice = async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const userId = req.user.id;
+
+    const invoice = await paymentService.downloadInvoice(userId, invoiceId);
+
+    res.json({
+      success: true,
+      data: invoice
+    });
+  } catch (error) {
+    console.error('Download invoice error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to download invoice'
+    });
+  }
+};
+
 module.exports = {
   createSubscription,
   cancelSubscription,
@@ -205,5 +452,19 @@ module.exports = {
   getPaymentHistory,
   createSetupIntent,
   handleWebhook,
-  getAvailablePlans
+  getAvailablePlans,
+  // Payment methods
+  addPaymentMethod,
+  removePaymentMethod,
+  setDefaultPaymentMethod,
+  getPaymentMethods,
+  // Pause/Resume
+  pauseSubscription,
+  resumeSubscription,
+  // Coupons
+  validateCoupon,
+  applyCoupon,
+  // Billing
+  getBillingDetails,
+  downloadInvoice
 };

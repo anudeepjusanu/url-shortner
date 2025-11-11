@@ -294,6 +294,44 @@ const Sidebar = ({ activeItem }) => {
             <span>{t('sidebar.profile')}</span>
           </div>
           <div
+            className={`nav-item ${isActive("/billing") ? "active" : ""}`}
+            onClick={() => handleNavigation("/billing")}
+          >
+            <div className="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M14 3H2C1.44772 3 1 3.44772 1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4C15 3.44772 14.5523 3 14 3Z"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <path
+                  d="M1 6.5H15"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 9.5H6"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <span>Billing & Payments</span>
+          </div>
+          <div
             className={`nav-item ${isActive("/subscription") ? "active" : ""}`}
             onClick={() => handleNavigation("/subscription")}
           >
