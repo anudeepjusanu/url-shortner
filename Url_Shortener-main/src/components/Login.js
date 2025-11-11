@@ -40,13 +40,13 @@ const Login = () => {
     const errors = {};
 
     if (!formData.email.trim()) {
-      errors.email = "Email is required";
+      errors.email = t('auth.login.errorEmailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = t('auth.login.errorEmailInvalid');
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = t('auth.login.errorPasswordRequired');
     }
 
     setFormErrors(errors);
@@ -120,8 +120,8 @@ const Login = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="brand-title">LinkSa</h1>
-            <p className="brand-subtitle">Welcome back to your dashboard</p>
+            <h1 className="brand-title">{t('common.brandName')}</h1>
+            <p className="brand-subtitle">{t('auth.login.brandSubtitle')}</p>
           </div>
 
           {/* Features List */}
@@ -149,8 +149,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Manage Your Links</h3>
-                <p>Access all your shortened URLs in one place</p>
+                <h3>{t('auth.login.feature1Title')}</h3>
+                <p>{t('auth.login.feature1Description')}</p>
               </div>
             </div>
 
@@ -177,8 +177,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Track Performance</h3>
-                <p>View detailed analytics and insights</p>
+                <h3>{t('auth.login.feature2Title')}</h3>
+                <p>{t('auth.login.feature2Description')}</p>
               </div>
             </div>
 
@@ -205,8 +205,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Secure & Reliable</h3>
-                <p>Your data is protected with enterprise security</p>
+                <h3>{t('auth.login.feature3Title')}</h3>
+                <p>{t('auth.login.feature3Description')}</p>
               </div>
             </div>
           </div>
@@ -274,12 +274,12 @@ const Login = () => {
                   fill="#EB4335"
                 />
               </svg>
-              Sign in with Google
+              {t('auth.login.googleButton')}
             </button>
 
             <div className="divider">
               <hr />
-              <span>Or sign in with email</span>
+              <span>{t('auth.login.dividerText')}</span>
             </div>
           </div>
 

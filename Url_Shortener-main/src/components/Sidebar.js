@@ -47,7 +47,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span className="create-link-logo-text">LinkSA</span>
+            <span className="create-link-logo-text">{t('common.brandName')}</span>
           </div>
         </div>
 

@@ -91,7 +91,7 @@ const MainHeader = () => {
                 </defs>
               </svg>
             </div>
-            <span className="create-link-logo-text hide-mobile">LinkSA</span>
+            <span className="create-link-logo-text hide-mobile">{t('common.brandName')}</span>
           </div>
         </div>
         <div className="create-link-header-right">
