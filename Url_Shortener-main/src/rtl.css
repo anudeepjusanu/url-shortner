@@ -1,0 +1,423 @@
+/* RTL (Right-to-Left) Support Styles */
+/* These styles automatically apply when html[dir="rtl"] is set */
+
+/* Global RTL Adjustments */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Flexbox Direction Fixes */
+[dir="rtl"] .header-left,
+[dir="rtl"] .header-right,
+[dir="rtl"] .header-center,
+[dir="rtl"] .header-actions,
+[dir="rtl"] .logo-section,
+[dir="rtl"] .user-profile,
+[dir="rtl"] .create-link-header-left,
+[dir="rtl"] .create-link-header-right {
+  flex-direction: row-reverse;
+}
+
+/* Margin and Padding Swaps */
+[dir="rtl"] .logo-section {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+[dir="rtl"] .logo-text {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+[dir="rtl"] .language-toggle {
+  margin-left: 0;
+  margin-right: 20px;
+}
+
+[dir="rtl"] .sign-in-btn {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* Header and Navigation */
+[dir="rtl"] .landing-nav {
+  direction: rtl;
+}
+
+[dir="rtl"] .landing-nav a {
+  margin-left: 0;
+  margin-right: 32px;
+}
+
+[dir="rtl"] .landing-nav a:last-child {
+  margin-right: 0;
+}
+
+/* Sidebar */
+[dir="rtl"] .sidebar {
+  left: auto;
+  right: 0;
+  border-left: none;
+  border-right: 1px solid #e5e7eb;
+}
+
+[dir="rtl"] .sidebar-item {
+  padding-left: 24px;
+  padding-right: 16px;
+}
+
+[dir="rtl"] .sidebar-item svg,
+[dir="rtl"] .sidebar-item .icon {
+  margin-left: 12px;
+  margin-right: 0;
+}
+
+/* Dashboard Layout */
+[dir="rtl"] .dashboard-main {
+  margin-left: 0;
+  margin-right: 250px;
+}
+
+[dir="rtl"] .dashboard-content {
+  padding-left: 24px;
+  padding-right: 40px;
+}
+
+/* Cards and Containers */
+[dir="rtl"] .card,
+[dir="rtl"] .stats-card {
+  text-align: right;
+}
+
+[dir="rtl"] .card-icon,
+[dir="rtl"] .stats-icon {
+  margin-left: 16px;
+  margin-right: 0;
+}
+
+/* Tables */
+[dir="rtl"] table {
+  direction: rtl;
+}
+
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: right;
+}
+
+[dir="rtl"] th:first-child,
+[dir="rtl"] td:first-child {
+  padding-right: 24px;
+  padding-left: 12px;
+}
+
+[dir="rtl"] th:last-child,
+[dir="rtl"] td:last-child {
+  padding-left: 24px;
+  padding-right: 12px;
+}
+
+/* Forms */
+[dir="rtl"] .form-group,
+[dir="rtl"] .input-group {
+  text-align: right;
+}
+
+[dir="rtl"] .form-label {
+  text-align: right;
+}
+
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+  padding-left: 16px;
+  padding-right: 12px;
+}
+
+[dir="rtl"] .input-icon-left {
+  left: auto;
+  right: 12px;
+}
+
+[dir="rtl"] .input-icon-right {
+  right: auto;
+  left: 12px;
+}
+
+/* Buttons */
+[dir="rtl"] .btn-icon-left {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .btn-icon-right {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+/* Dropdowns and Menus */
+[dir="rtl"] .dropdown-menu {
+  left: auto;
+  right: 0;
+  text-align: right;
+}
+
+[dir="rtl"] .dropdown-item {
+  padding-left: 24px;
+  padding-right: 16px;
+}
+
+/* Modal and Dialog */
+[dir="rtl"] .modal-header,
+[dir="rtl"] .modal-body,
+[dir="rtl"] .modal-footer {
+  text-align: right;
+}
+
+[dir="rtl"] .modal-close {
+  left: 16px;
+  right: auto;
+}
+
+/* Breadcrumbs */
+[dir="rtl"] .breadcrumb {
+  direction: rtl;
+}
+
+[dir="rtl"] .breadcrumb-separator::before {
+  content: "\\";
+  transform: scaleX(-1);
+}
+
+/* Tabs */
+[dir="rtl"] .tabs {
+  direction: rtl;
+}
+
+[dir="rtl"] .tab-item {
+  margin-left: 24px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .tab-item:first-child {
+  margin-left: 0;
+}
+
+/* Notifications and Alerts */
+[dir="rtl"] .alert,
+[dir="rtl"] .notification {
+  text-align: right;
+}
+
+[dir="rtl"] .alert-icon,
+[dir="rtl"] .notification-icon {
+  margin-left: 12px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .alert-close,
+[dir="rtl"] .notification-close {
+  left: 12px;
+  right: auto;
+}
+
+/* Grid Layouts */
+[dir="rtl"] .grid,
+[dir="rtl"] .grid-container {
+  direction: rtl;
+}
+
+/* Links List */
+[dir="rtl"] .links-table {
+  direction: rtl;
+}
+
+[dir="rtl"] .link-actions {
+  justify-content: flex-start;
+}
+
+/* QR Codes */
+[dir="rtl"] .qr-card {
+  text-align: right;
+}
+
+[dir="rtl"] .qr-actions {
+  justify-content: flex-start;
+}
+
+/* Analytics */
+[dir="rtl"] .analytics-chart {
+  direction: ltr; /* Keep charts LTR for proper visualization */
+}
+
+[dir="rtl"] .analytics-filters {
+  direction: rtl;
+}
+
+[dir="rtl"] .filter-item {
+  margin-left: 16px;
+  margin-right: 0;
+}
+
+/* User Profile */
+[dir="rtl"] .user-avatar {
+  margin-left: 12px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .user-name {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+/* Hamburger Menu */
+[dir="rtl"] .hamburger-menu {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .hamburger-close {
+  right: auto;
+  left: 16px;
+}
+
+/* Footer */
+[dir="rtl"] .footer {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .footer-links {
+  justify-content: flex-end;
+}
+
+[dir="rtl"] .footer-link {
+  margin-left: 24px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .footer-link:first-child {
+  margin-left: 0;
+}
+
+/* Border Radius Adjustments */
+[dir="rtl"] .rounded-l {
+  border-radius: 0 8px 8px 0;
+}
+
+[dir="rtl"] .rounded-r {
+  border-radius: 8px 0 0 8px;
+}
+
+/* Text Alignment Utilities */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Float Utilities */
+[dir="rtl"] .float-left {
+  float: right;
+}
+
+[dir="rtl"] .float-right {
+  float: left;
+}
+
+/* Scrollbar (for browsers that support it) */
+[dir="rtl"] ::-webkit-scrollbar {
+  left: 0;
+  right: auto;
+}
+
+/* Specific Component Overrides */
+
+/* Landing Page Hero */
+[dir="rtl"] .hero-content {
+  text-align: right;
+}
+
+/* Pricing Cards */
+[dir="rtl"] .pricing-card {
+  text-align: right;
+}
+
+[dir="rtl"] .pricing-feature {
+  padding-left: 0;
+  padding-right: 24px;
+}
+
+[dir="rtl"] .pricing-feature::before {
+  left: auto;
+  right: 0;
+}
+
+/* Custom Domains */
+[dir="rtl"] .domain-item {
+  text-align: right;
+}
+
+[dir="rtl"] .domain-status {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+/* Content Filter */
+[dir="rtl"] .filter-rules {
+  text-align: right;
+}
+
+[dir="rtl"] .filter-rule-item {
+  padding-left: 16px;
+  padding-right: 24px;
+}
+
+/* Subscription Page */
+[dir="rtl"] .plan-card {
+  text-align: right;
+}
+
+[dir="rtl"] .plan-features li {
+  padding-left: 0;
+  padding-right: 32px;
+}
+
+[dir="rtl"] .plan-features li::before {
+  left: auto;
+  right: 8px;
+}
+
+/* Profile Settings */
+[dir="rtl"] .profile-form {
+  text-align: right;
+}
+
+[dir="rtl"] .profile-avatar {
+  margin-left: 24px;
+  margin-right: 0;
+}
+
+/* Responsive Adjustments for RTL */
+@media (max-width: 768px) {
+  [dir="rtl"] .sidebar {
+    right: -250px;
+  }
+
+  [dir="rtl"] .sidebar.open {
+    right: 0;
+  }
+
+  [dir="rtl"] .dashboard-main {
+    margin-right: 0;
+  }
+}
+
+/* Smooth transitions for direction changes */
+* {
+  transition: margin 0.2s ease, padding 0.2s ease;
+}

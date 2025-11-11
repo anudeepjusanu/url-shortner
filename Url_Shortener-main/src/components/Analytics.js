@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import { analyticsAPI } from "../services/api";
 import "./Analytics.css";
 
 const Analytics = () => {
+  const { t } = useTranslation();
   const { id } = useParams(); // Get URL ID from route params
   const [timeFilter, setTimeFilter] = useState("7d");
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -72,7 +74,7 @@ const Analytics = () => {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
+      alert(t('common.copied'));
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -124,7 +126,7 @@ const Analytics = () => {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Error exporting data:', err);
-      alert('Failed to export data');
+      alert(t('common.error'));
     }
   };
 
@@ -138,7 +140,7 @@ const Analytics = () => {
             <div className="analytics-content">
               <div className="loading-state">
                 <div className="spinner"></div>
-                <p>Loading analytics...</p>
+                <p>{t('common.loading')}</p>
               </div>
             </div>
           </div>
@@ -156,8 +158,8 @@ const Analytics = () => {
           <div className="analytics-main">
             <div className="analytics-content">
               <div className="error-state">
-                <p>Error: {error}</p>
-                <button onClick={() => window.location.reload()}>Retry</button>
+                <p>{t('common.error')}: {error}</p>
+                <button onClick={() => window.location.reload()}>{t('common.refresh')}</button>
               </div>
             </div>
           </div>
@@ -224,10 +226,10 @@ const Analytics = () => {
               }}>
                 <div className="header-info" style={{ margin: 0 }}>
                   <h1 className="page-title" style={{ marginBottom: '4px' }}>
-                    {id ? 'Link Analytics' : 'Analytics Dashboard'}
+                    {t('analytics.title')}
                   </h1>
                   <p className="page-subtitle" style={{ margin: 0 }}>
-                    {id ? 'Track performance of your shortened link' : 'Overview of all your links performance'}
+                    {t('analytics.subtitle')}
                   </p>
                 </div>
               <button className="export-btn" onClick={exportData} style={{
@@ -272,7 +274,7 @@ const Analytics = () => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                Export Data
+                {t('analytics.export.title')}
               </button>
             </div>
 
@@ -614,7 +616,7 @@ const Analytics = () => {
                       marginBottom: '8px',
                       fontWeight: '400',
                       margin: 0
-                    }}>Total Clicks</p>
+                    }}>{t('analytics.overview.totalClicks')}</p>
                     <h3 className="stats-value" style={{
                       fontSize: '28px',
                       fontWeight: '600',
@@ -644,7 +646,7 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span style={{ margin: 0 }}>{analyticsData.totalClicksChange >= 0 ? '+' : ''}{analyticsData.totalClicksChange}% vs last period</span>
+                        <span style={{ margin: 0 }}>{analyticsData.totalClicksChange >= 0 ? '+' : ''}{analyticsData.totalClicksChange}%</span>
                       </div>
                     )}
                   </div>
@@ -695,7 +697,7 @@ const Analytics = () => {
                       marginBottom: '8px',
                       fontWeight: '400',
                       margin: 0
-                    }}>Unique Clicks</p>
+                    }}>{t('analytics.overview.uniqueClicks')}</p>
                     <h3 className="stats-value" style={{
                       fontSize: '28px',
                       fontWeight: '600',
@@ -725,7 +727,7 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span style={{ margin: 0 }}>{analyticsData.uniqueClicksChange >= 0 ? '+' : ''}{analyticsData.uniqueClicksChange}% vs last period</span>
+                        <span style={{ margin: 0 }}>{analyticsData.uniqueClicksChange >= 0 ? '+' : ''}{analyticsData.uniqueClicksChange}%</span>
                       </div>
                     )}
                   </div>
@@ -783,7 +785,7 @@ const Analytics = () => {
               <div className="stats-card">
                 <div className="stats-content">
                   <div className="stats-info">
-                    <p className="stats-label">Click-through Rate</p>
+                    <p className="stats-label">{t('analytics.overview.clickRate')}</p>
                     <h3 className="stats-value">{analyticsData?.clickThroughRate || '0%'}</h3>
                     {analyticsData?.clickThroughRateChange && (
                       <div className={`stats-change ${analyticsData.clickThroughRateChange >= 0 ? 'positive' : 'negative'}`}>
@@ -802,7 +804,7 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}% vs last period</span>
+                        <span>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}%</span>
                       </div>
                     )}
                   </div>
@@ -829,7 +831,7 @@ const Analytics = () => {
               <div className="stats-card">
                 <div className="stats-content">
                   <div className="stats-info">
-                    <p className="stats-label">Average Time</p>
+                    <p className="stats-label">{t('analytics.overview.avgClicksPerDay')}</p>
                     <h3 className="stats-value">{analyticsData?.averageTime || '0s'}</h3>
                     {analyticsData?.averageTimeChange && (
                       <div className={`stats-change ${analyticsData.averageTimeChange >= 0 ? 'positive' : 'negative'}`}>
@@ -848,7 +850,7 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.averageTimeChange >= 0 ? '+' : ''}{analyticsData.averageTimeChange}% vs last period</span>
+                        <span>{analyticsData.averageTimeChange >= 0 ? '+' : ''}{analyticsData.averageTimeChange}%</span>
                       </div>
                     )}
                   </div>
@@ -899,7 +901,7 @@ const Analytics = () => {
                   fontWeight: '600',
                   color: '#1F2937',
                   margin: 0
-                }}>Click Activity</h3>
+                }}>{t('analytics.charts.clicksOverTime')}</h3>
                 <select
                   className="time-filter-select"
                   value={timeFilter}
@@ -915,11 +917,11 @@ const Analytics = () => {
                     outline: 'none'
                   }}
                 >
-                  <option value="24h">Last 24 hours</option>
-                  <option value="7d">Last 7 days</option>
-                  <option value="30d">Last 30 days</option>
-                  <option value="90d">Last 90 days</option>
-                  <option value="1y">Last year</option>
+                  <option value="24h">{t('analytics.filters.last7Days')}</option>
+                  <option value="7d">{t('analytics.filters.last7Days')}</option>
+                  <option value="30d">{t('analytics.filters.last30Days')}</option>
+                  <option value="90d">{t('analytics.filters.last90Days')}</option>
+                  <option value="1y">{t('analytics.filters.dateRange')}</option>
                 </select>
               </div>
               <div className="chart-container" style={{ width: '100%', height: '280px' }}>
@@ -1075,11 +1077,11 @@ const Analytics = () => {
                   <g fontSize="12" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif">
                     <circle cx="300" cy="20" r="4" fill="#3B82F6" />
                     <text x="310" y="24" fill="#6B7280">
-                      Total Clicks
+                      {t('analytics.overview.totalClicks')}
                     </text>
                     <circle cx="410" cy="20" r="4" fill="#10B981" />
                     <text x="420" y="24" fill="#6B7280">
-                      Unique Clicks
+                      {t('analytics.overview.uniqueClicks')}
                     </text>
                   </g>
                 </svg>
@@ -1105,7 +1107,7 @@ const Analytics = () => {
                   color: '#1F2937',
                   marginBottom: '16px',
                   margin: '0 0 16px 0'
-                }}>Clicks by Country</h3>
+                }}>{t('analytics.charts.topCountries')}</h3>
                 <div className="country-stats" style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -1220,7 +1222,7 @@ const Analytics = () => {
                   color: '#1F2937',
                   marginBottom: '16px',
                   margin: '0 0 16px 0'
-                }}>Clicks by Device Type</h3>
+                }}>{t('analytics.charts.devices')}</h3>
                 {(() => {
                   // Dummy data for devices
                   const dummyDeviceData = {
@@ -1246,7 +1248,7 @@ const Analytics = () => {
                         color: '#9CA3AF',
                         fontSize: '14px'
                       }}>
-                        No device data available
+                        {t('myLinks.noLinks')}
                       </div>
                     );
                   }

@@ -1,8 +1,12 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../contexts/LanguageContext';
 import HamburgerMenu from "./HamburgerMenu";
 import "./MainHeader.css";
 
 const MainHeader = () => {
+  const { t } = useTranslation();
+  const { currentLanguage, toggleLanguage } = useLanguage();
   // Define navigation items for hamburger menu
   const sidebarItems = [
     {
@@ -33,8 +37,18 @@ const MainHeader = () => {
   const headerItems = (
     <>
       <div className="create-link-language-toggle">
-        <button className="create-link-lang-btn active">EN</button>
-        <button className="create-link-lang-btn">AR</button>
+        <button
+          className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+          onClick={toggleLanguage}
+        >
+          EN
+        </button>
+        <button
+          className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+          onClick={toggleLanguage}
+        >
+          AR
+        </button>
       </div>
       <div className="create-link-user-profile">
         <div className="create-link-user-avatar">
@@ -82,8 +96,18 @@ const MainHeader = () => {
         </div>
         <div className="create-link-header-right">
           <div className="create-link-language-toggle">
-            <button className="create-link-lang-btn active">EN</button>
-            <button className="create-link-lang-btn">AR</button>
+            <button
+              className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+              onClick={toggleLanguage}
+            >
+              EN
+            </button>
+            <button
+              className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+              onClick={toggleLanguage}
+            >
+              AR
+            </button>
           </div>
           <div className="create-link-user-profile">
             <div className="create-link-user-avatar">

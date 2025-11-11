@@ -1,0 +1,586 @@
+{
+  "common": {
+    "appName": "مختصر الروابط",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "search": "بحث",
+    "filter": "تصفية",
+    "reset": "إعادة تعيين",
+    "copy": "نسخ",
+    "copied": "تم النسخ!",
+    "download": "تحميل",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "register": "التسجيل",
+    "viewMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "dashboard": "لوحة التحكم",
+    "language": "اللغة",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "header": {
+    "navigation": "التنقل",
+    "home": "الرئيسية",
+    "features": "المميزات",
+    "pricing": "الأسعار",
+    "about": "عن الموقع",
+    "contact": "تواصل معنا",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "getStarted": "ابدأ الآن",
+    "myLinks": "روابطي",
+    "createLink": "إنشاء رابط",
+    "analytics": "التحليلات",
+    "qrCodes": "رموز QR",
+    "customDomains": "النطاقات المخصصة",
+    "subscription": "الاشتراك",
+    "contentFilter": "تصفية المحتوى"
+  },
+  "landing": {
+    "hero": {
+      "title": "اختصر روابطك وتتبع أدائها",
+      "titleMain": "اختصر، علامتك التجارية،",
+      "titleAccent": "تتبع",
+      "subtitle": "روابطك، محسّنة للمملكة العربية السعودية",
+      "description": "اختصار روابط سريع وآمن ومتوافق مع تحليلات متقدمة ونطاقات ذات علامات تجارية.",
+      "cta": "ابدأ مجاناً",
+      "tryDemo": "شاهد العرض التوضيحي",
+      "formTitle": "جربه الآن - اختصر رابطك الأول",
+      "urlPlaceholder": "الصق الرابط الطويل هنا...",
+      "shortenBtn": "اختصر الرابط",
+      "complianceNotice": "✓ متوافق مع نظام حماية البيانات الشخصية • البيانات مخزنة في المملكة"
+    },
+    "features": {
+      "title": "مميزات قوية للمسوقين المعاصرين",
+      "subtitle": "كل ما تحتاجه لإدارة وتتبع وتحسين روابطك",
+      "analytics": {
+        "title": "تحليلات مفصلة",
+        "description": "تتبع النقرات والبيانات الجغرافية والأجهزة والمزيد بتحليلات شاملة"
+      },
+      "customDomain": {
+        "title": "نطاقات مخصصة",
+        "description": "استخدم نطاقاتك الخاصة لروابط مختصرة احترافية"
+      },
+      "qrCode": {
+        "title": "رموز QR",
+        "description": "أنشئ وخصص رموز QR لروابطك المختصرة"
+      },
+      "security": {
+        "title": "آمن وموثوق",
+        "description": "أمان من الدرجة المؤسسية مع ضمان توفر بنسبة 99.9%"
+      }
+    },
+    "pricing": {
+      "title": "أسعار بسيطة وشفافة",
+      "subtitle": "اختر الخطة التي تناسب احتياجاتك",
+      "free": "مجاني",
+      "pro": "احترافي",
+      "enterprise": "مؤسسي",
+      "perMonth": "/شهرياً",
+      "selectPlan": "اختر الخطة",
+      "currentPlan": "الخطة الحالية"
+    },
+    "cta": {
+      "title": "هل أنت مستعد للبدء؟",
+      "subtitle": "انضم إلى آلاف المستخدمين الذين يثقون بمنصتنا",
+      "button": "ابدأ مجاناً"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بعودتك",
+      "subtitle": "سجل الدخول إلى حسابك",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "rememberMe": "تذكرني",
+      "forgotPassword": "هل نسيت كلمة المرور؟",
+      "button": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUp": "سجل هنا",
+      "errorInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+      "errorGeneral": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى."
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "ابدأ مع حسابك المجاني",
+      "firstName": "الاسم الأول",
+      "lastName": "الاسم الأخير",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "termsAgree": "أوافق على",
+      "terms": "شروط الخدمة",
+      "and": "و",
+      "privacy": "سياسة الخصوصية",
+      "button": "إنشاء حساب",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "signIn": "سجل دخول هنا",
+      "errorPasswordMismatch": "كلمات المرور غير متطابقة",
+      "errorEmailExists": "البريد الإلكتروني موجود بالفعل",
+      "errorGeneral": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+      "successMessage": "تم إنشاء الحساب بنجاح!"
+    }
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك",
+    "stats": {
+      "totalLinks": "إجمالي الروابط",
+      "totalClicks": "إجمالي النقرات",
+      "activeLinks": "الروابط النشطة",
+      "clickRate": "معدل النقر"
+    },
+    "recentLinks": {
+      "title": "الروابط الأخيرة",
+      "viewAll": "عرض كل الروابط",
+      "noLinks": "لم يتم إنشاء روابط بعد",
+      "createFirst": "أنشئ أول رابط مختصر لك"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "createLink": "إنشاء رابط جديد",
+      "viewAnalytics": "عرض التحليلات",
+      "generateQR": "إنشاء رمز QR",
+      "manageSubscription": "إدارة الاشتراك"
+    },
+    "analytics": {
+      "title": "نظرة عامة على التحليلات",
+      "lastSevenDays": "آخر 7 أيام",
+      "clicksByDate": "النقرات حسب التاريخ",
+      "topLinks": "الروابط الأكثر أداءً"
+    }
+  },
+  "createLink": {
+    "title": "إنشاء رابط مختصر",
+    "subtitle": "حول رابطك الطويل إلى رابط قصير وقابل للمشاركة",
+    "form": {
+      "originalUrl": "الرابط الأصلي",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "اسم مخصص (اختياري)",
+      "customAliasPlaceholder": "my-custom-link",
+      "title": "عنوان الرابط (اختياري)",
+      "titlePlaceholder": "رابطي الرائع",
+      "description": "الوصف (اختياري)",
+      "descriptionPlaceholder": "وصف مختصر لرابطك",
+      "tags": "الوسوم (اختياري)",
+      "tagsPlaceholder": "تسويق، حملة، منتج",
+      "domain": "النطاق",
+      "selectDomain": "اختر النطاق",
+      "expirationDate": "تاريخ الانتهاء (اختياري)",
+      "password": "حماية بكلمة مرور (اختياري)",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "createButton": "إنشاء رابط مختصر",
+      "creating": "جاري الإنشاء...",
+      "advancedOptions": "خيارات متقدمة",
+      "utmParameters": "معاملات UTM"
+    },
+    "success": {
+      "title": "تم إنشاء الرابط بنجاح!",
+      "yourLink": "رابطك المختصر:",
+      "copyLink": "نسخ الرابط",
+      "viewAnalytics": "عرض التحليلات",
+      "createAnother": "إنشاء رابط آخر"
+    },
+    "errors": {
+      "invalidUrl": "يرجى إدخال رابط صحيح",
+      "aliasExists": "هذا الاسم مستخدم بالفعل",
+      "general": "فشل إنشاء الرابط. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "myLinks": {
+    "title": "روابطي",
+    "subtitle": "إدارة جميع روابطك المختصرة",
+    "searchPlaceholder": "ابحث بالعنوان أو الرابط أو الرمز المختصر...",
+    "filters": {
+      "all": "كل الروابط",
+      "active": "نشط",
+      "expired": "منتهي الصلاحية",
+      "sortBy": "ترتيب حسب",
+      "newest": "الأحدث أولاً",
+      "oldest": "الأقدم أولاً",
+      "mostClicks": "الأكثر نقراً",
+      "leastClicks": "الأقل نقراً"
+    },
+    "table": {
+      "title": "العنوان",
+      "shortUrl": "الرابط المختصر",
+      "originalUrl": "الرابط الأصلي",
+      "clicks": "النقرات",
+      "created": "تاريخ الإنشاء",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "actions": {
+      "copy": "نسخ",
+      "edit": "تعديل",
+      "qrCode": "رمز QR",
+      "analytics": "التحليلات",
+      "delete": "حذف"
+    },
+    "confirmDelete": "هل أنت متأكد من حذف هذا الرابط؟",
+    "deleteSuccess": "تم حذف الرابط بنجاح",
+    "noLinks": "لم يتم العثور على روابط",
+    "createFirstLink": "أنشئ أول رابط مختصر لك للبدء"
+  },
+  "analytics": {
+    "title": "التحليلات",
+    "subtitle": "تتبع وحلل أداء روابطك",
+    "overview": {
+      "title": "نظرة عامة",
+      "totalClicks": "إجمالي النقرات",
+      "uniqueClicks": "النقرات الفريدة",
+      "clickRate": "معدل النقر",
+      "avgClicksPerDay": "متوسط النقرات/يوم"
+    },
+    "charts": {
+      "clicksOverTime": "النقرات عبر الوقت",
+      "topCountries": "أفضل الدول",
+      "topReferrers": "أفضل المصادر",
+      "devices": "الأجهزة",
+      "browsers": "المتصفحات",
+      "operatingSystems": "أنظمة التشغيل"
+    },
+    "filters": {
+      "dateRange": "النطاق الزمني",
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوم",
+      "last90Days": "آخر 90 يوم",
+      "custom": "نطاق مخصص",
+      "applyFilters": "تطبيق التصفية"
+    },
+    "export": {
+      "title": "تصدير البيانات",
+      "csv": "تصدير كـ CSV",
+      "pdf": "تصدير كـ PDF",
+      "json": "تصدير كـ JSON"
+    }
+  },
+  "qrCodes": {
+    "title": "إدارة رموز QR",
+    "subtitle": "أنشئ وخصص وأدر رموز QR لروابطك",
+    "stats": {
+      "totalQRCodes": "إجمالي رموز QR",
+      "totalScans": "إجمالي المسح",
+      "activeQRCodes": "رموز QR النشطة",
+      "downloadsToday": "التنزيلات اليوم"
+    },
+    "generate": {
+      "title": "إنشاء رمز QR",
+      "selectLink": "اختر الرابط لرمز QR",
+      "customize": "تخصيص الإعدادات",
+      "size": "الحجم (بكسل)",
+      "format": "التنسيق",
+      "errorCorrection": "مستوى تصحيح الخطأ",
+      "foregroundColor": "لون المقدمة",
+      "backgroundColor": "لون الخلفية",
+      "includeMargin": "تضمين هامش حول رمز QR",
+      "generateButton": "إنشاء رمز QR",
+      "bulkGenerate": "إنشاء مجمّع"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "منخفض (7%)",
+      "medium": "متوسط (15%)",
+      "quartile": "ربعي (25%)",
+      "high": "عالي (30%)"
+    },
+    "actions": {
+      "download": "تحميل",
+      "customize": "تخصيص",
+      "delete": "حذف",
+      "preview": "معاينة"
+    },
+    "noQRCodes": "لا توجد رموز QR بعد",
+    "createFirst": "أنشئ أول رمز QR لك للبدء"
+  },
+  "contentFilter": {
+    "title": "تصفية المحتوى والأمان",
+    "subtitle": "احمِ روابطك بقواعد متقدمة لتصفية المحتوى والأمان",
+    "stats": {
+      "totalFiltered": "إجمالي المفلتر",
+      "maliciousBlocked": "الخبيث المحظور",
+      "phishingBlocked": "التصيد المحظور",
+      "spamBlocked": "السبام المحظور"
+    },
+    "tabs": {
+      "settings": "الإعدادات",
+      "blocked": "محظور",
+      "whitelist": "القائمة البيضاء",
+      "logs": "السجلات"
+    },
+    "settings": {
+      "title": "إعدادات التصفية",
+      "enableContentFilter": "تفعيل تصفية المحتوى",
+      "enableDescription": "تصفية الروابط الضارة وغير المناسبة تلقائياً",
+      "blockMaliciousUrls": "حظر الروابط الضارة",
+      "blockMaliciousDescription": "حظر مواقع البرامج الضارة والفيروسات المعروفة",
+      "blockPhishing": "حظر مواقع التصيد",
+      "blockPhishingDescription": "الحماية من مواقع التصيد والاحتيال",
+      "blockAdultContent": "حظر المحتوى للبالغين",
+      "blockAdultDescription": "تصفية المحتوى للبالغين وغير اللائق",
+      "blockSpam": "حظر روابط السبام",
+      "blockSpamDescription": "اكتشاف وحظر محتوى السبام تلقائياً",
+      "customKeywordFiltering": "تصفية الكلمات الرئيسية المخصصة",
+      "customKeywordDescription": "حظر الروابط التي تحتوي على كلمات رئيسية محددة",
+      "pdplCompliance": "وضع الامتثال لـ PDPL",
+      "pdplDescription": "ضمان الامتثال لقانون حماية البيانات الشخصية في المملكة العربية السعودية",
+      "saveSettings": "حفظ الإعدادات",
+      "saving": "جاري الحفظ..."
+    },
+    "blocked": {
+      "domains": "النطاقات المحظورة",
+      "keywords": "الكلمات الرئيسية المحظورة",
+      "addDomain": "إضافة",
+      "addKeyword": "إضافة",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "كلمة رئيسية",
+      "noDomains": "لا توجد نطاقات محظورة بعد",
+      "noKeywords": "لا توجد كلمات رئيسية محظورة بعد",
+      "remove": "إزالة"
+    },
+    "whitelist": {
+      "title": "النطاقات المسموحة (القائمة البيضاء)",
+      "description": "النطاقات في القائمة البيضاء ستتجاوز جميع عوامل التصفية",
+      "addDomain": "إضافة",
+      "domainPlaceholder": "example.com",
+      "noDomains": "لا توجد نطاقات في القائمة البيضاء بعد",
+      "remove": "إزالة"
+    },
+    "logs": {
+      "title": "سجلات نشاط التصفية",
+      "refresh": "تحديث",
+      "noActivity": "لا يوجد نشاط تصفية",
+      "noUrls": "لم يتم تصفية أي روابط بعد"
+    }
+  },
+  "customDomains": {
+    "title": "النطاقات المخصصة",
+    "subtitle": "أضف وأدر نطاقاتك المخصصة لروابط مختصرة ذات علامة تجارية",
+    "stats": {
+      "totalDomains": "إجمالي النطاقات",
+      "activeDomains": "النطاقات النشطة",
+      "totalUrls": "إجمالي الروابط",
+      "totalClicks": "إجمالي النقرات"
+    },
+    "addDomain": {
+      "title": "إضافة نطاق مخصص",
+      "domainName": "اسم النطاق",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "نطاق فرعي (اختياري)",
+      "subdomainPlaceholder": "short",
+      "addButton": "إضافة نطاق",
+      "adding": "جاري الإضافة..."
+    },
+    "table": {
+      "domain": "النطاق",
+      "status": "الحالة",
+      "urls": "الروابط",
+      "clicks": "النقرات",
+      "created": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "verified": "تم التحقق",
+      "failed": "فشل"
+    },
+    "actions": {
+      "verify": "التحقق",
+      "setDefault": "تعيين كافتراضي",
+      "configure": "تكوين",
+      "delete": "حذف"
+    },
+    "verification": {
+      "title": "التحقق من النطاق",
+      "instructions": "أضف سجل DNS التالي للتحقق من نطاقك:",
+      "recordType": "نوع السجل",
+      "name": "الاسم",
+      "value": "القيمة",
+      "verifyButton": "التحقق من النطاق"
+    },
+    "noDomains": "لم تتم إضافة نطاقات مخصصة بعد",
+    "addFirst": "أضف أول نطاق مخصص لك للبدء"
+  },
+  "subscription": {
+    "title": "الاشتراك والفواتير",
+    "subtitle": "إدارة خطة اشتراكك ومعلومات الفواتير",
+    "currentPlan": {
+      "title": "الخطة الحالية",
+      "free": "الخطة المجانية",
+      "pro": "الخطة الاحترافية",
+      "enterprise": "الخطة المؤسسية",
+      "status": "الحالة",
+      "active": "نشط",
+      "renews": "يُجدد في",
+      "expires": "ينتهي في"
+    },
+    "plans": {
+      "title": "الخطط المتاحة",
+      "free": {
+        "name": "مجاني",
+        "price": "0",
+        "features": [
+          "100 رابط شهرياً",
+          "تحليلات أساسية",
+          "رموز قصيرة قياسية",
+          "دعم المجتمع"
+        ]
+      },
+      "pro": {
+        "name": "احترافي",
+        "price": "9.99",
+        "features": [
+          "روابط غير محدودة",
+          "تحليلات متقدمة",
+          "نطاقات مخصصة",
+          "رموز QR",
+          "دعم ذو أولوية",
+          "بدون إعلانات"
+        ]
+      },
+      "enterprise": {
+        "name": "مؤسسي",
+        "price": "مخصص",
+        "features": [
+          "كل ما في الاحترافي",
+          "دعم مخصص",
+          "ضمان SLA",
+          "تكاملات مخصصة",
+          "إدارة الفريق",
+          "خيار العلامة البيضاء"
+        ]
+      }
+    },
+    "actions": {
+      "upgrade": "ترقية",
+      "downgrade": "تخفيض",
+      "cancel": "إلغاء الاشتراك",
+      "contactSales": "اتصل بالمبيعات"
+    },
+    "billing": {
+      "title": "سجل الفواتير",
+      "date": "التاريخ",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "invoice": "الفاتورة",
+      "download": "تحميل"
+    }
+  },
+  "profile": {
+    "title": "إعدادات الملف الشخصي",
+    "subtitle": "إدارة معلومات حسابك وتفضيلاتك",
+    "tabs": {
+      "general": "عام",
+      "security": "الأمان",
+      "preferences": "التفضيلات",
+      "apiKeys": "مفاتيح API"
+    },
+    "general": {
+      "personalInfo": "المعلومات الشخصية",
+      "firstName": "الاسم الأول",
+      "lastName": "الاسم الأخير",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "company": "الشركة",
+      "website": "الموقع الإلكتروني",
+      "updateButton": "تحديث الملف الشخصي",
+      "updating": "جاري التحديث..."
+    },
+    "security": {
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور الجديدة",
+      "updatePassword": "تحديث كلمة المرور",
+      "twoFactor": "المصادقة الثنائية",
+      "enable2FA": "تفعيل المصادقة الثنائية",
+      "disable2FA": "تعطيل المصادقة الثنائية",
+      "sessions": "الجلسات النشطة",
+      "revokeAll": "إلغاء جميع الجلسات"
+    },
+    "preferences": {
+      "language": "اللغة",
+      "timezone": "المنطقة الزمنية",
+      "dateFormat": "تنسيق التاريخ",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "marketingEmails": "رسائل التسويق",
+      "productUpdates": "تحديثات المنتج",
+      "securityAlerts": "تنبيهات الأمان"
+    },
+    "apiKeys": {
+      "title": "مفاتيح API",
+      "description": "إدارة مفاتيح API للوصول البرمجي",
+      "createNew": "إنشاء مفتاح جديد",
+      "keyName": "اسم المفتاح",
+      "key": "المفتاح",
+      "created": "تاريخ الإنشاء",
+      "lastUsed": "آخر استخدام",
+      "revoke": "إلغاء"
+    }
+  },
+  "footer": {
+    "description": "أبسط طريقة لاختصار وتتبع روابطك",
+    "product": "المنتج",
+    "features": "المميزات",
+    "pricing": "الأسعار",
+    "documentation": "التوثيق",
+    "company": "الشركة",
+    "about": "معلومات عنا",
+    "blog": "المدونة",
+    "careers": "الوظائف",
+    "contact": "تواصل معنا",
+    "support": "الدعم",
+    "help": "مركز المساعدة",
+    "faq": "الأسئلة الشائعة",
+    "legal": "قانوني",
+    "terms": "شروط الخدمة",
+    "privacy": "سياسة الخصوصية",
+    "copyright": "© 2025 مختصر الروابط. جميع الحقوق محفوظة."
+  },
+  "notifications": {
+    "success": "نجح",
+    "error": "خطأ",
+    "warning": "تحذير",
+    "info": "معلومة",
+    "linkCreated": "تم إنشاء الرابط بنجاح!",
+    "linkUpdated": "تم تحديث الرابط بنجاح!",
+    "linkDeleted": "تم حذف الرابط بنجاح!",
+    "settingsSaved": "تم حفظ الإعدادات بنجاح!",
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح!",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح!",
+    "domainAdded": "تم إضافة النطاق بنجاح!",
+    "domainVerified": "تم التحقق من النطاق بنجاح!",
+    "subscriptionUpdated": "تم تحديث الاشتراك بنجاح!"
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك.",
+    "unauthorized": "غير مصرح. يرجى تسجيل الدخول مرة أخرى.",
+    "notFound": "المورد غير موجود.",
+    "serverError": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.",
+    "validationError": "يرجى التحقق من إدخالك والمحاولة مرة أخرى."
+  }
+}

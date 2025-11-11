@@ -1,11 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Header from "./Header";
 import "../App.css";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleShortenUrl = () => {
     // For now, just navigate to register page
@@ -50,51 +52,50 @@ const LandingPage = () => {
             className="bottom-cta-btn"
             onClick={() => navigate("/register")}
           >
-            Get Started Free
+            {t('landing.hero.cta')}
           </button>
         </div>
         <div className="hero-container">
           <div className="hero-content">
             <div className="hero-text">
               <h1 className="hero-title">
-                <span className="title-main">Shorten, Brand, </span>
-                <span className="title-accent">Track</span>
+                <span className="title-main">{t('landing.hero.titleMain')} </span>
+                <span className="title-accent">{t('landing.hero.titleAccent')}</span>
               </h1>
               <p className="hero-subtitle">
-                Your Links, Optimized for Saudi Arabia
+                {t('landing.hero.subtitle')}
               </p>
               <p className="hero-description">
-                Fast, secure, and compliant URL shortening with advanced
-                analytics and branded domains.
+                {t('landing.hero.description')}
               </p>
               <div className="hero-buttons">
                 <button
                   className="btn-primary"
                   onClick={() => navigate("/register")}
                 >
-                  Get Started Free
+                  {t('landing.hero.cta')}
                 </button>
-                <button className="btn-secondary">Watch Demo</button>
+                <button className="btn-secondary">{t('landing.hero.tryDemo')}</button>
               </div>
             </div>
 
             <div className="hero-form">
               <h3 className="form-title">
-                Try it now - Shorten your first link
+                {t('landing.hero.formTitle')}
               </h3>
               <div className="form-container">
                 <input
                   type="text"
-                  placeholder="Paste your long URL here..."
+                  placeholder={t('landing.hero.urlPlaceholder')}
                   className="url-input"
                 />
                 <button className="shorten-btn" onClick={handleShortenUrl}>
                   <ShortenIcon />
-                  Shorten URL
+                  {t('landing.hero.shortenBtn')}
                 </button>
               </div>
               <div className="compliance-notice">
-                <p>✓ PDPL Compliant • Data stored in KSA</p>
+                <p>{t('landing.hero.complianceNotice')}</p>
               </div>
             </div>
           </div>
@@ -105,8 +106,8 @@ const LandingPage = () => {
       <section className="features-section">
         <div className="container">
           <div className="section-header">
-            <h2>Powerful Features for Modern Marketers</h2>
-            <p>Everything you need to manage, track, and optimize your links</p>
+            <h2>{t('landing.features.title')}</h2>
+            <p>{t('landing.features.subtitle')}</p>
           </div>
 
           <div className="features-grid">
@@ -161,9 +162,9 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Branded Domains</h3>
+              <h3>{t('landing.features.customDomain.title')}</h3>
               <p>
-                Use your own domain for professional, trustworthy short links
+                {t('landing.features.customDomain.description')}
               </p>
             </div>
 
@@ -212,8 +213,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>QR Code Generation</h3>
-              <p>Generate beautiful QR codes for offline marketing campaigns</p>
+              <h3>{t('landing.features.qrCode.title')}</h3>
+              <p>{t('landing.features.qrCode.description')}</p>
             </div>
 
             <div className="feature-card cyan-card">
@@ -246,8 +247,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Advanced Analytics</h3>
-              <p>Real-time insights on clicks, geography, devices, and more</p>
+              <h3>{t('landing.features.analytics.title')}</h3>
+              <p>{t('landing.features.analytics.description')}</p>
             </div>
 
             <div className="feature-card emerald-card">
@@ -272,8 +273,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>PDPL Compliance</h3>
-              <p>Full data residency in KSA with enterprise-grade security</p>
+              <h3>{t('landing.features.security.title')}</h3>
+              <p>{t('landing.features.security.description')}</p>
             </div>
 
             <div className="feature-card indigo-card">
@@ -629,8 +630,7 @@ const LandingPage = () => {
                   <span className="brand-name">LinkSA</span>
                 </div>
                 <p className="footer-description">
-                  The most trusted URL shortener in Saudi Arabia, built for
-                  modern businesses.
+                  {t('footer.description')}
                 </p>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <div className="social-links">
@@ -663,13 +663,13 @@ const LandingPage = () => {
             </div>
 
             <div className="footer-section">
-              <h4>Product</h4>
+              <h4>{t('footer.product')}</h4>
               <ul>
                 <li>
-                  <a href="#">Features</a>
+                  <a href="#">{t('footer.features')}</a>
                 </li>
                 <li>
-                  <a href="#">Pricing</a>
+                  <a href="#">{t('footer.pricing')}</a>
                 </li>
                 <li>
                   <a href="#">API</a>
@@ -681,31 +681,31 @@ const LandingPage = () => {
             </div>
 
             <div className="footer-section">
-              <h4>Company</h4>
+              <h4>{t('footer.company')}</h4>
               <ul>
                 <li>
-                  <a href="#">About Us</a>
+                  <a href="#">{t('footer.about')}</a>
                 </li>
                 <li>
-                  <a href="#">Careers</a>
+                  <a href="#">{t('footer.careers')}</a>
                 </li>
                 <li>
-                  <a href="#">Blog</a>
+                  <a href="#">{t('footer.blog')}</a>
                 </li>
                 <li>
-                  <a href="#">Contact</a>
+                  <a href="#">{t('footer.contact')}</a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-section">
-              <h4>Legal</h4>
+              <h4>{t('footer.legal')}</h4>
               <ul>
                 <li>
-                  <a href="#">Privacy Policy</a>
+                  <a href="#">{t('footer.privacy')}</a>
                 </li>
                 <li>
-                  <a href="#">Terms of Service</a>
+                  <a href="#">{t('footer.terms')}</a>
                 </li>
                 <li>
                   <a href="#">PDPL Compliance</a>
@@ -719,7 +719,7 @@ const LandingPage = () => {
 
           <div className="footer-bottom">
             <p>
-              © 2024 LinkSA. All rights reserved. Made with ❤️ in Saudi Arabia.
+              {t('footer.copyright')}
             </p>
           </div>
         </div>

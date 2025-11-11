@@ -1,16 +1,20 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../contexts/LanguageContext';
 import HamburgerMenu from './HamburgerMenu';
 
 const Header = ({ isLanding = false, onGetStarted }) => {
+  const { t } = useTranslation();
+  const { currentLanguage, toggleLanguage } = useLanguage();
   if (isLanding) {
     const landingNavItems = [
       {
-        label: 'NAVIGATION',
+        label: t('header.navigation'),
         items: [
-          { label: 'Features', path: '/#features', icon: null },
-          { label: 'Pricing', path: '/#pricing', icon: null },
-          { label: 'About', path: '/#about', icon: null },
-          { label: 'Contact', path: '/#contact', icon: null }
+          { label: t('header.features'), path: '/#features', icon: null },
+          { label: t('header.pricing'), path: '/#pricing', icon: null },
+          { label: t('header.about'), path: '/#about', icon: null },
+          { label: t('header.contact'), path: '/#contact', icon: null }
         ]
       }
     ];
@@ -18,15 +22,25 @@ const Header = ({ isLanding = false, onGetStarted }) => {
     const landingHeaderItems = (
       <>
         <div className="language-toggle">
-          <button className="language-btn active">EN</button>
-          <button className="language-btn">عربي</button>
+          <button
+            className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+            onClick={toggleLanguage}
+          >
+            EN
+          </button>
+          <button
+            className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+            onClick={toggleLanguage}
+          >
+            عربي
+          </button>
         </div>
         <button
           className="sign-in-btn mobile-sign-in"
           onClick={onGetStarted}
           style={{ width: '100%', marginTop: '12px' }}
         >
-          Sign In
+          {t('header.signIn')}
         </button>
       </>
     );
@@ -59,19 +73,29 @@ const Header = ({ isLanding = false, onGetStarted }) => {
           </div>
           <div className="header-center">
             <nav className="landing-nav">
-              <a href="#features">Features</a>
-              <a href="#pricing">Pricing</a>
-              <a href="#about">About</a>
-              <a href="#contact">Contact</a>
+              <a href="#features">{t('header.features')}</a>
+              <a href="#pricing">{t('header.pricing')}</a>
+              <a href="#about">{t('header.about')}</a>
+              <a href="#contact">{t('header.contact')}</a>
             </nav>
           </div>
           <div className="header-right">
             <div className="language-toggle landing hide-mobile">
-              <button className="language-btn active">EN</button>
-              <button className="language-btn">عربي</button>
+              <button
+                className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+                onClick={toggleLanguage}
+              >
+                EN
+              </button>
+              <button
+                className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+                onClick={toggleLanguage}
+              >
+                عربي
+              </button>
             </div>
             <button className="sign-in-btn hide-mobile" onClick={onGetStarted}>
-              Sign In
+              {t('header.signIn')}
             </button>
           </div>
         </div>
@@ -93,8 +117,18 @@ const Header = ({ isLanding = false, onGetStarted }) => {
         
         <div className="header-actions">
           <div className="language-toggle">
-            <button className="language-btn active">EN</button>
-            <button className="language-btn">AR</button>
+            <button
+              className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+              onClick={toggleLanguage}
+            >
+              EN
+            </button>
+            <button
+              className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+              onClick={toggleLanguage}
+            >
+              AR
+            </button>
           </div>
           <div className="user-profile">
             <div className="user-avatar">
