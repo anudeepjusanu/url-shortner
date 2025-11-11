@@ -52,7 +52,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
             <div className="hamburger-wrapper hide-desktop">
               <HamburgerMenu
                 sidebarItems={landingNavItems}
-                headerItems={landingHeaderItems}
+                // headerItems={landingHeaderItems}
               />
             </div>
             <div className="logo-section">
@@ -80,7 +80,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
             </nav>
           </div>
           <div className="header-right">
-            <div className="language-toggle landing hide-mobile">
+            <div className="language-toggle landing">
               <button
                 className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
                 onClick={toggleLanguage}
@@ -94,7 +94,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
                 عربي
               </button>
             </div>
-            <button className="sign-in-btn hide-mobile" onClick={onGetStarted}>
+            <button className="sign-in-btn" onClick={onGetStarted}>
               {t('header.signIn')}
             </button>
           </div>

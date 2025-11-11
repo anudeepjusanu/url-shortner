@@ -46,15 +46,6 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-background-text">{t('landing.hero.titleAccent')}</div>
-        <div className="hero-bottom-cta">
-          {/* <button
-            className="bottom-cta-btn"
-            onClick={() => navigate("/register")}
-          >
-            {t('landing.hero.cta')}
-          </button> */}
-        </div>
         <div className="hero-container">
           <div className="hero-content">
             <div className="hero-text">
