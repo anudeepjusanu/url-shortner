@@ -52,7 +52,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
             <div className="hamburger-wrapper hide-desktop">
               <HamburgerMenu
                 sidebarItems={landingNavItems}
-                // headerItems={landingHeaderItems}
+                headerItems={landingHeaderItems}
               />
             </div>
             <div className="logo-section">
