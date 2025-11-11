@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "مختصر الروابط",
+    "brandName": "LinkSA",
     "loading": "جاري التحميل...",
     "error": "خطأ",
     "success": "نجح",
@@ -32,7 +33,17 @@
     "dashboard": "لوحة التحكم",
     "language": "اللغة",
     "english": "English",
-    "arabic": "العربية"
+    "arabic": "العربية",
+    "hide": "إخفاء",
+    "show": "عرض"
+  },
+  "dates": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "daysAgo": "منذ {{count}} يوم",
+    "weeksAgo": "منذ أسبوع",
+    "weeksAgo_plural": "منذ {{count}} أسابيع",
+    "ago": "منذ"
   },
   "header": {
     "navigation": "التنقل",
@@ -84,6 +95,88 @@
       "security": {
         "title": "آمن وموثوق",
         "description": "أمان من الدرجة المؤسسية مع ضمان توفر بنسبة 99.9%"
+      },
+      "urlShortening": {
+        "title": "اختصار الروابط",
+        "description": "أنشئ روابط قصيرة لا تُنسى فوراً باستخدام خوارزميتنا المتقدمة"
+      },
+      "utmBuilder": {
+        "title": "منشئ UTM",
+        "description": "تتبع أداء الحملة مع إنشاء معاملات UTM المدمجة"
+      },
+      "authintica": {
+        "title": "تكامل Authintica",
+        "description": "مصادقة آمنة مع منصة الهوية الموثوقة في المملكة العربية السعودية"
+      },
+      "bilingualUI": {
+        "title": "واجهة ثنائية اللغة",
+        "description": "واجهة سلسة بالعربية والإنجليزية مع دعم RTL"
+      }
+    },
+    "whyChoose": {
+      "title": "لماذا تختار الشركات LinkSA",
+      "subtitle": "الخيار الذكي للمسوقين والشركات السعودية"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "إطلاق الحملات بشكل أسرع",
+        "description": "أنشئ وتتبع وحسّن الروابط في دقائق، وليس ساعات",
+        "setupTime": "متوسط وقت الإعداد",
+        "setupTimeValue": "دقيقتان"
+      },
+      "trustCompliance": {
+        "title": "الثقة والامتثال أولاً",
+        "description": "متوافق مع PDPL مع استضافة البيانات محلياً في المملكة العربية السعودية",
+        "dataResidency": "إقامة البيانات",
+        "dataResidencyValue": "100% المملكة"
+      },
+      "analytics": {
+        "title": "تحليلات قابلة للتنفيذ",
+        "description": "اتخذ قرارات مستندة إلى البيانات مع رؤى في الوقت الفعلي",
+        "trackingAccuracy": "دقة تتبع النقرات",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "مثالي للمسوقين السعوديين",
+      "feature1": "دعم نطاقات .sa المخصصة",
+      "feature2": "واجهة عربية وإنجليزية مع دعم RTL",
+      "feature3": "رموز QR للحملات التقليدية",
+      "feature4": "تكامل Authintica للوصول الآمن",
+      "feature5": "دعم محلي بالعربية والإنجليزية"
+    },
+    "stats": {
+      "linksCreated": "روابط أنشأتها الشركات السعودية",
+      "linksCreatedValue": "+50,000",
+      "uptime": "وقت التشغيل",
+      "uptimeValue": "98%",
+      "clicksTracked": "النقرات المتتبعة",
+      "clicksTrackedValue": "+2.5 مليون",
+      "support": "الدعم",
+      "supportValue": "24/7"
+    },
+    "testimonials": {
+      "title": "موثوق به من قبل الشركات السعودية",
+      "subtitle": "اطلع على ما يقوله عملاؤنا عن LinkSA",
+      "testimonial1": {
+        "text": "لقد حوّل LinkSA طريقة إدارتنا لحملاتنا التسويقية. الواجهة ثنائية اللغة وتخزين البيانات المحلي يجعلانها مثالية لاحتياجاتنا.",
+        "author": "سارة الرشيد",
+        "role": "مديرة التسويق، TechCorp KSA"
+      },
+      "testimonial2": {
+        "text": "أخيراً، مختصر روابط يفهم السوق السعودي. الواجهة العربية ودعم RTL لا تشوبهما شائبة.",
+        "author": "أحمد محمد",
+        "role": "مدير التسويق الرقمي"
+      },
+      "testimonial3": {
+        "text": "كانت ميزة رمز QR تغييراً جذرياً لحملاتنا التقليدية. سهلة الاستخدام وموثوقة.",
+        "author": "فاطمة الزهراء",
+        "role": "مديرة التجارة الإلكترونية"
+      },
+      "testimonial4": {
+        "text": "منصة ممتازة مع تحليلات رائعة. حقيقة تخزين البيانات في المملكة تمنحنا راحة البال.",
+        "author": "عمر حسن",
+        "role": "مؤسس شركة ناشئة"
       }
     },
     "pricing": {
@@ -106,15 +199,27 @@
     "login": {
       "title": "مرحباً بعودتك",
       "subtitle": "سجل الدخول إلى حسابك",
+      "brandSubtitle": "مرحباً بعودتك إلى لوحة التحكم الخاصة بك",
       "email": "البريد الإلكتروني",
       "password": "كلمة المرور",
       "rememberMe": "تذكرني",
       "forgotPassword": "هل نسيت كلمة المرور؟",
       "button": "تسجيل الدخول",
+      "googleButton": "تسجيل الدخول باستخدام Google",
+      "dividerText": "أو سجل الدخول باستخدام البريد الإلكتروني",
       "noAccount": "ليس لديك حساب؟",
       "signUp": "سجل هنا",
       "errorInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-      "errorGeneral": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى."
+      "errorGeneral": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+      "errorEmailRequired": "البريد الإلكتروني مطلوب",
+      "errorEmailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+      "errorPasswordRequired": "كلمة المرور مطلوبة",
+      "feature1Title": "إدارة روابطك",
+      "feature1Description": "الوصول إلى جميع روابطك المختصرة في مكان واحد",
+      "feature2Title": "تتبع الأداء",
+      "feature2Description": "عرض التحليلات والرؤى التفصيلية",
+      "feature3Title": "آمن وموثوق",
+      "feature3Description": "بياناتك محمية بأمان على مستوى المؤسسات"
     },
     "register": {
       "title": "إنشاء حساب",
@@ -134,12 +239,15 @@
       "errorPasswordMismatch": "كلمات المرور غير متطابقة",
       "errorEmailExists": "البريد الإلكتروني موجود بالفعل",
       "errorGeneral": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+      "errorPasswordLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
       "successMessage": "تم إنشاء الحساب بنجاح!"
     }
   },
   "dashboard": {
     "title": "لوحة التحكم",
     "welcome": "مرحباً بعودتك",
+    "vsLastPeriod": "مقارنة بالفترة الماضية",
+    "changeVsLastPeriod": "{{change}} مقارنة بالفترة الماضية",
     "stats": {
       "totalLinks": "إجمالي الروابط",
       "totalClicks": "إجمالي النقرات",
@@ -256,6 +364,11 @@
       "browsers": "المتصفحات",
       "operatingSystems": "أنظمة التشغيل"
     },
+    "devices": {
+      "mobile": "الجوال",
+      "desktop": "سطح المكتب",
+      "tablet": "الجهاز اللوحي"
+    },
     "filters": {
       "dateRange": "النطاق الزمني",
       "last7Days": "آخر 7 أيام",
@@ -357,7 +470,9 @@
       "keywordPlaceholder": "كلمة رئيسية",
       "noDomains": "لا توجد نطاقات محظورة بعد",
       "noKeywords": "لا توجد كلمات رئيسية محظورة بعد",
-      "remove": "إزالة"
+      "remove": "إزالة",
+      "confirmRemove": "إزالة {{domain}} من القائمة المحظورة؟",
+      "confirmRemoveKeyword": "إزالة \"{{keyword}}\" من الكلمات الرئيسية المحظورة؟"
     },
     "whitelist": {
       "title": "النطاقات المسموحة (القائمة البيضاء)",
@@ -365,18 +480,24 @@
       "addDomain": "إضافة",
       "domainPlaceholder": "example.com",
       "noDomains": "لا توجد نطاقات في القائمة البيضاء بعد",
-      "remove": "إزالة"
+      "remove": "إزالة",
+      "confirmRemove": "إزالة {{domain}} من القائمة المسموحة؟"
     },
     "logs": {
       "title": "سجلات نشاط التصفية",
       "refresh": "تحديث",
       "noActivity": "لا يوجد نشاط تصفية",
-      "noUrls": "لم يتم تصفية أي روابط بعد"
+      "noUrls": "لم يتم تصفية أي روابط بعد",
+      "defaultMessage": "تم حظر الرابط بواسطة مرشح المحتوى",
+      "noData": "لا توجد بيانات متاحة"
     }
   },
   "customDomains": {
     "title": "النطاقات المخصصة",
     "subtitle": "أضف وأدر نطاقاتك المخصصة لروابط مختصرة ذات علامة تجارية",
+    "wizard": {
+      "step": "الخطوة {{current}} من {{total}}"
+    },
     "stats": {
       "totalDomains": "إجمالي النطاقات",
       "activeDomains": "النطاقات النشطة",
@@ -492,6 +613,9 @@
   "profile": {
     "title": "إعدادات الملف الشخصي",
     "subtitle": "إدارة معلومات حسابك وتفضيلاتك",
+    "accountOverview": "نظرة عامة على الحساب",
+    "currentPlan": "الخطة الحالية",
+    "regionalSettings": "الإعدادات الإقليمية",
     "tabs": {
       "general": "عام",
       "security": "الأمان",
@@ -506,8 +630,10 @@
       "phone": "رقم الهاتف",
       "company": "الشركة",
       "website": "الموقع الإلكتروني",
+      "jobTitle": "المسمى الوظيفي",
       "updateButton": "تحديث الملف الشخصي",
-      "updating": "جاري التحديث..."
+      "updating": "جاري التحديث...",
+      "saveChanges": "حفظ التغييرات"
     },
     "security": {
       "changePassword": "تغيير كلمة المرور",
@@ -526,9 +652,17 @@
       "timezone": "المنطقة الزمنية",
       "dateFormat": "تنسيق التاريخ",
       "emailNotifications": "إشعارات البريد الإلكتروني",
+      "emailNotificationsDesc": "تلقي إشعارات البريد الإلكتروني للتحديثات المهمة",
       "marketingEmails": "رسائل التسويق",
+      "marketingEmailsDesc": "تلقي تحديثات حول الميزات الجديدة والعروض الترويجية",
+      "weeklyReports": "التقارير الأسبوعية",
+      "weeklyReportsDesc": "احصل على تقارير تحليلات أسبوعية ترسل إلى بريدك الإلكتروني",
       "productUpdates": "تحديثات المنتج",
-      "securityAlerts": "تنبيهات الأمان"
+      "securityAlerts": "تنبيهات الأمان",
+      "savePreferences": "حفظ التفضيلات"
+    },
+    "notifications": {
+      "title": "الإشعارات"
     },
     "apiKeys": {
       "title": "مفاتيح API",
@@ -538,7 +672,10 @@
       "key": "المفتاح",
       "created": "تاريخ الإنشاء",
       "lastUsed": "آخر استخدام",
-      "revoke": "إلغاء"
+      "revoke": "إلغاء",
+      "regenerating": "جاري إعادة الإنشاء...",
+      "regenerateButton": "إعادة إنشاء مفتاح API",
+      "confirmRegenerate": "هل أنت متأكد من رغبتك في إعادة إنشاء مفتاح API الخاص بك؟ لن يعمل المفتاح القديم بعد الآن."
     }
   },
   "footer": {
@@ -547,6 +684,8 @@
     "features": "المميزات",
     "pricing": "الأسعار",
     "documentation": "التوثيق",
+    "api": "API",
+    "integrations": "التكاملات",
     "company": "الشركة",
     "about": "معلومات عنا",
     "blog": "المدونة",
@@ -558,6 +697,8 @@
     "legal": "قانوني",
     "terms": "شروط الخدمة",
     "privacy": "سياسة الخصوصية",
+    "pdplCompliance": "الامتثال لـ PDPL",
+    "security": "الأمان",
     "copyright": "© 2025 مختصر الروابط. جميع الحقوق محفوظة."
   },
   "notifications": {
@@ -573,7 +714,8 @@
     "passwordChanged": "تم تغيير كلمة المرور بنجاح!",
     "domainAdded": "تم إضافة النطاق بنجاح!",
     "domainVerified": "تم التحقق من النطاق بنجاح!",
-    "subscriptionUpdated": "تم تحديث الاشتراك بنجاح!"
+    "subscriptionUpdated": "تم تحديث الاشتراك بنجاح!",
+    "draftSaved": "تم حفظ المسودة!"
   },
   "errors": {
     "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
@@ -581,7 +723,16 @@
     "unauthorized": "غير مصرح. يرجى تسجيل الدخول مرة أخرى.",
     "notFound": "المورد غير موجود.",
     "serverError": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.",
-    "validationError": "يرجى التحقق من إدخالك والمحاولة مرة أخرى."
+    "validationError": "يرجى التحقق من إدخالك والمحاولة مرة أخرى.",
+    "enterDomain": "يرجى إدخال نطاق",
+    "enterKeyword": "يرجى إدخال كلمة رئيسية",
+    "failedToAddDomain": "فشل في إضافة النطاق المحظور: {{error}}",
+    "failedToRemoveDomain": "فشل في إزالة النطاق المحظور: {{error}}",
+    "failedToAddKeyword": "فشل في إضافة الكلمة الرئيسية المحظورة: {{error}}",
+    "failedToRemoveKeyword": "فشل في إزالة الكلمة الرئيسية المحظورة: {{error}}",
+    "failedToAddAllowedDomain": "فشل في إضافة النطاق المسموح: {{error}}",
+    "failedToRemoveAllowedDomain": "فشل في إزالة النطاق المسموح: {{error}}",
+    "failedToRegenerateApiKey": "فشل في إعادة إنشاء مفتاح API: {{error}}"
   },
   "sidebar": {
     "main": "الرئيسية",

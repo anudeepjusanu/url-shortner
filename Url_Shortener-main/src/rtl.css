@@ -96,6 +96,41 @@
   margin-right: 250px !important;
 }
 
+/* Analytics and other main layout containers */
+[dir="rtl"] .analytics-layout,
+[dir="rtl"] .content-filter-layout,
+[dir="rtl"] .custom-domains-layout,
+[dir="rtl"] .qr-codes-layout,
+[dir="rtl"] .my-links-layout,
+[dir="rtl"] .profile-layout {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+[dir="rtl"] .analytics-main,
+[dir="rtl"] .content-filter-main,
+[dir="rtl"] .custom-domains-main,
+[dir="rtl"] .qr-codes-main,
+[dir="rtl"] .my-links-main,
+[dir="rtl"] .profile-main {
+  margin-left: 0 !important;
+  margin-right: 250px !important;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Fix overlap issues - ensure content starts after sidebar */
+[dir="rtl"] .analytics-content,
+[dir="rtl"] .content-filter-content,
+[dir="rtl"] .custom-domains-content,
+[dir="rtl"] .qr-codes-content,
+[dir="rtl"] .my-links-content,
+[dir="rtl"] .profile-content {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+
 /* Cards and Containers */
 [dir="rtl"] .card,
 [dir="rtl"] .stats-card {
