@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import "./Analytics.css";
 import "./SubscriptionPage.css";
 
 const SubscriptionPage = () => {
+  const { t } = useTranslation();
   return (
     <div className="analytics-container">
       <MainHeader />
@@ -25,12 +27,12 @@ const SubscriptionPage = () => {
                 color: '#111827',
                 marginBottom: '4px',
                 margin: '0 0 4px 0'
-              }}>Subscription Management</h1>
+              }}>{t('subscription.pageTitle')}</h1>
               <p className="subscription-desc" style={{
                 color: '#6B7280',
                 fontSize: '14px',
                 margin: 0
-              }}>Manage your plan, billing, and subscription preferences</p>
+              }}>{t('subscription.pageSubtitle')}</p>
             </div>
 
             {/* Professional Plan Card */}
@@ -43,27 +45,27 @@ const SubscriptionPage = () => {
                 boxShadow: '0 2px 8px 0 rgba(16,30,54,0.03)'
               }}>
                 <div className="plan-header-row">
-                  <span className="plan-title">Professional Plan</span>
-                  <span className="plan-status active">ACTIVE</span>
-                  <span className="plan-price">$29 <span className="plan-price-unit">/month</span></span>
+                  <span className="plan-title">{t('subscription.professionalPlan')}</span>
+                  <span className="plan-status active">{t('subscription.activeStatus')}</span>
+                  <span className="plan-price">$29 <span className="plan-price-unit">{t('subscription.perMonth')}</span></span>
                 </div>
-                <div className="plan-subheader">50,000 links per month • Advanced analytics • Custom domains</div>
-                <div className="plan-next-billing">Next billing: <b>December 15, 2024</b> • $29/month</div>
+                <div className="plan-subheader">{t('subscription.professionalFeaturesSummary')}</div>
+                <div className="plan-next-billing">{t('subscription.nextBilling')} <b>December 15, 2024</b> • $29{t('subscription.perMonth')}</div>
                 <div className="plan-stats-row">
-                  <div className="plan-stat"><span className="stat-number">12,450</span><span className="stat-label">Links Created<br/><span className="stat-sub">of 50,000</span></span></div>
-                  <div className="plan-stat"><span className="stat-number">3</span><span className="stat-label">Custom Domains<br/><span className="stat-sub">of 10</span></span></div>
-                  <div className="plan-stat"><span className="stat-number">245K</span><span className="stat-label">Total Clicks<br/><span className="stat-sub">this month</span></span></div>
+                  <div className="plan-stat"><span className="stat-number">12,450</span><span className="stat-label">{t('subscription.linksCreated')}<br/><span className="stat-sub">{t('subscription.of')} 50,000</span></span></div>
+                  <div className="plan-stat"><span className="stat-number">3</span><span className="stat-label">{t('subscription.customDomains')}<br/><span className="stat-sub">{t('subscription.of')} 10</span></span></div>
+                  <div className="plan-stat"><span className="stat-number">245K</span><span className="stat-label">{t('subscription.totalClicks')}<br/><span className="stat-sub">{t('subscription.thisMonth')}</span></span></div>
                 </div>
                 <div className="plan-features-row">
                   <ul className="plan-features-list">
-                    <li>✔ 50,000 links/month</li>
-                    <li>✔ Custom domains (10)</li>
-                    <li>✔ UTM tracking</li>
+                    <li>✔ {t('subscription.feature50kLinks')}</li>
+                    <li>✔ {t('subscription.featureCustomDomains10')}</li>
+                    <li>✔ {t('subscription.featureUtmTracking')}</li>
                   </ul>
                   <ul className="plan-features-list">
-                    <li>✔ Advanced analytics</li>
-                    <li>✔ QR code generation</li>
-                    <li>✔ Priority support</li>
+                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
+                    <li>✔ {t('subscription.featureQrGeneration')}</li>
+                    <li>✔ {t('subscription.featurePrioritySupport')}</li>
                   </ul>
                 </div>
               </div>
@@ -77,7 +79,7 @@ const SubscriptionPage = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Available Plans</h2>
+              }}>{t('subscription.availablePlans')}</h2>
               <div className="plans-row" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
@@ -97,7 +99,7 @@ const SubscriptionPage = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '8px'
-                  }}>Starter</div>
+                  }}>{t('subscription.starterPlan')}</div>
                   <div className="plan-card-price" style={{
                     fontSize: '28px',
                     fontWeight: '700',
@@ -107,7 +109,7 @@ const SubscriptionPage = () => {
                     fontSize: '14px',
                     color: '#6B7280',
                     fontWeight: '400'
-                  }}>/month</span></div>
+                  }}>{t('subscription.perMonth')}</span></div>
                   <ul className="plan-card-features" style={{
                     listStyle: 'none',
                     padding: 0,
@@ -119,9 +121,9 @@ const SubscriptionPage = () => {
                     textAlign: 'left',
                     width: '100%'
                   }}>
-                    <li>✔ 5,000 links/month</li>
-                    <li>✔ Basic analytics</li>
-                    <li>✔ QR codes</li>
+                    <li>✔ {t('subscription.feature5kLinks')}</li>
+                    <li>✔ {t('subscription.featureBasicAnalytics')}</li>
+                    <li>✔ {t('subscription.featureQrCodes')}</li>
                   </ul>
                   <button className="plan-card-btn downgrade" style={{
                     width: '100%',
@@ -133,7 +135,7 @@ const SubscriptionPage = () => {
                     cursor: 'pointer',
                     background: '#F3F4F6',
                     color: '#374151'
-                  }}>Downgrade</button>
+                  }}>{t('subscription.downgradeButton')}</button>
                 </div>
                 <div className="plan-card current" style={{
                   background: '#fff',
@@ -157,13 +159,13 @@ const SubscriptionPage = () => {
                     fontWeight: '600',
                     padding: '4px 12px',
                     borderRadius: '12px'
-                  }}>CURRENT</div>
+                  }}>{t('subscription.currentBadge')}</div>
                   <div className="plan-card-title" style={{
                     fontSize: '18px',
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '8px'
-                  }}>Professional</div>
+                  }}>{t('subscription.professionalPlan')}</div>
                   <div className="plan-card-price" style={{
                     fontSize: '28px',
                     fontWeight: '700',
@@ -173,7 +175,7 @@ const SubscriptionPage = () => {
                     fontSize: '14px',
                     color: '#6B7280',
                     fontWeight: '400'
-                  }}>/month</span></div>
+                  }}>{t('subscription.perMonth')}</span></div>
                   <ul className="plan-card-features" style={{
                     listStyle: 'none',
                     padding: 0,
@@ -185,9 +187,9 @@ const SubscriptionPage = () => {
                     textAlign: 'left',
                     width: '100%'
                   }}>
-                    <li>✔ 50,000 links/month</li>
-                    <li>✔ Advanced analytics</li>
-                    <li>✔ Custom domains (10)</li>
+                    <li>✔ {t('subscription.feature50kLinks')}</li>
+                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
+                    <li>✔ {t('subscription.featureCustomDomains10')}</li>
                   </ul>
                   <button className="plan-card-btn current" style={{
                     width: '100%',
@@ -199,7 +201,7 @@ const SubscriptionPage = () => {
                     cursor: 'default',
                     background: '#DBEAFE',
                     color: '#2563EB'
-                  }}>Current Plan</button>
+                  }}>{t('subscription.currentPlanButton')}</button>
                 </div>
                 <div className="plan-card" style={{
                   background: '#fff',
@@ -215,7 +217,7 @@ const SubscriptionPage = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '8px'
-                  }}>Enterprise</div>
+                  }}>{t('subscription.enterprisePlan')}</div>
                   <div className="plan-card-price" style={{
                     fontSize: '28px',
                     fontWeight: '700',
@@ -225,7 +227,7 @@ const SubscriptionPage = () => {
                     fontSize: '14px',
                     color: '#6B7280',
                     fontWeight: '400'
-                  }}>/month</span></div>
+                  }}>{t('subscription.perMonth')}</span></div>
                   <ul className="plan-card-features" style={{
                     listStyle: 'none',
                     padding: 0,
@@ -237,9 +239,9 @@ const SubscriptionPage = () => {
                     textAlign: 'left',
                     width: '100%'
                   }}>
-                    <li>✔ Unlimited links</li>
-                    <li>✔ Advanced analytics</li>
-                    <li>✔ Unlimited domains</li>
+                    <li>✔ {t('subscription.featureUnlimitedLinks')}</li>
+                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
+                    <li>✔ {t('subscription.featureUnlimitedDomains')}</li>
                   </ul>
                   <button className="plan-card-btn upgrade" style={{
                     width: '100%',
@@ -251,7 +253,7 @@ const SubscriptionPage = () => {
                     cursor: 'pointer',
                     background: '#2563EB',
                     color: '#fff'
-                  }}>Upgrade</button>
+                  }}>{t('subscription.upgradeButton')}</button>
                 </div>
               </div>
             </section>
@@ -264,7 +266,7 @@ const SubscriptionPage = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Billing Information</h2>
+              }}>{t('subscription.billingInformation')}</h2>
               <div className="billing-info-row" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
@@ -281,7 +283,7 @@ const SubscriptionPage = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '12px'
-                  }}>Payment Method</div>
+                  }}>{t('subscription.paymentMethod')}</div>
                   <div className="billing-value" style={{
                     marginBottom: '16px',
                     display: 'flex',
@@ -305,7 +307,7 @@ const SubscriptionPage = () => {
                     <span className="card-expiry" style={{
                       fontSize: '13px',
                       color: '#6B7280'
-                    }}>Expires: 12/26</span>
+                    }}>{t('subscription.expires')} 12/26</span>
                   </div>
                   {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="billing-link" style={{
@@ -313,7 +315,7 @@ const SubscriptionPage = () => {
                     color: '#2563EB',
                     textDecoration: 'none',
                     fontWeight: '500'
-                  }}>Update payment method</a>
+                  }}>{t('subscription.updatePaymentMethod')}</a>
                 </div>
                 <div className="billing-info-box" style={{
                   background: '#fff',
@@ -326,7 +328,7 @@ const SubscriptionPage = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '12px'
-                  }}>Billing Address</div>
+                  }}>{t('subscription.billingAddress')}</div>
                   <div className="billing-value" style={{
                     fontSize: '14px',
                     color: '#374151',
@@ -341,7 +343,7 @@ const SubscriptionPage = () => {
                     color: '#2563EB',
                     textDecoration: 'none',
                     fontWeight: '500'
-                  }}>Update billing address</a>
+                  }}>{t('subscription.updateBillingAddress')}</a>
                 </div>
               </div>
             </section>
@@ -359,14 +361,14 @@ const SubscriptionPage = () => {
                   fontWeight: '600',
                   color: '#111827',
                   marginBottom: '12px'
-                }}>Cancel Subscription</div>
+                }}>{t('subscription.cancelSubscriptionTitle')}</div>
                 <div className="cancel-desc" style={{
                   fontSize: '14px',
                   color: '#6B7280',
                   lineHeight: '1.6',
                   marginBottom: '20px'
                 }}>
-                  Canceling your subscription will downgrade your account to the free plan at the end of your current billing cycle (December 15, 2024). You'll lose access to premium features but your links will continue to work.
+                  {t('subscription.cancelSubscriptionDesc')}
                 </div>
                 <div className="cancel-warning" style={{
                   background: '#FEF3C7',
@@ -385,16 +387,16 @@ const SubscriptionPage = () => {
                     fontSize: '13px',
                     color: '#78350F'
                   }}>
-                    <b style={{ display: 'block', marginBottom: '8px' }}>What you'll lose:</b>
+                    <b style={{ display: 'block', marginBottom: '8px' }}>{t('subscription.whatYouWillLose')}</b>
                     <ul style={{
                       margin: 0,
                       paddingLeft: '20px',
                       lineHeight: '1.8'
                     }}>
-                      <li>Advanced analytics and reporting</li>
-                      <li>Custom domain support</li>
-                      <li>Priority customer support</li>
-                      <li>Higher link creation limits</li>
+                      <li>{t('subscription.loseAdvancedAnalytics')}</li>
+                      <li>{t('subscription.loseCustomDomains')}</li>
+                      <li>{t('subscription.losePrioritySupport')}</li>
+                      <li>{t('subscription.loseHigherLimits')}</li>
                     </ul>
                   </div>
                 </div>
@@ -413,7 +415,7 @@ const SubscriptionPage = () => {
                     color: '#374151',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
-                  }}>Pause for 3 months</button>
+                  }}>{t('subscription.pauseFor3Months')}</button>
                   <button className="cancel-btn" style={{
                     padding: '10px 20px',
                     borderRadius: '8px',
@@ -424,7 +426,7 @@ const SubscriptionPage = () => {
                     color: '#fff',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
-                  }}>Cancel Subscription</button>
+                  }}>{t('subscription.cancelSubscriptionButton')}</button>
                 </div>
               </div>
             </section>

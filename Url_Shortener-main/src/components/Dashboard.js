@@ -1,11 +1,14 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';import Sidebar from './Sidebar';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import './Dashboard.css';
 
 const Dashboard = () => {
-   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [longUrl, setLongUrl] = useState('');
   const [customBackhalf, setCustomBackhalf] = useState('');
   const [campaign, setCampaign] = useState('');
@@ -56,12 +59,12 @@ const Dashboard = () => {
                   fontWeight: '600',
                   color: 'white',
                   margin: '0 0 6px 0'
-                }}>Welcome back, Ahmed!</h2>
+                }}>{t('dashboard.welcome')}, Ahmed!</h2>
                 <p style={{
                   fontSize: '14px',
                   color: 'rgba(255, 255, 255, 0.9)',
                   margin: 0
-                }}>Ready to create and track your links today?</p>
+                }}>{t('dashboard.welcomeMessage')}</p>
               </div>
               <div className="welcome-avatar" style={{
                 width: '56px',
@@ -116,14 +119,14 @@ const Dashboard = () => {
                     fontWeight: '600',
                     color: '#1F2937',
                     margin: 0
-                  }}>Create Short Link</h3>
+                  }}>{t('dashboard.createShortLink')}</h3>
                 </div>
                 <p style={{
                   fontSize: '13px',
                   color: '#6B7280',
                   margin: '0 0 16px 0',
                   flex: 1
-                }}>Transform your long URLs into short, trackable links</p>
+                }}>{t('dashboard.createShortLinkDesc')}</p>
                 <button className="card-btn blue-btn" style={{
                   width: '100%',
                   padding: '10px 16px',
@@ -134,7 +137,7 @@ const Dashboard = () => {
                   fontSize: '14px',
                   fontWeight: '500',
                   cursor: 'pointer'
-                }}>Get Started</button>
+                }}>{t('dashboard.getStarted')}</button>
               </div>
 
               <div className="action-card green-card" style={{
@@ -172,14 +175,14 @@ const Dashboard = () => {
                     fontWeight: '600',
                     color: '#1F2937',
                     margin: 0
-                  }}>Generate QR Code</h3>
+                  }}>{t('dashboard.generateQRCode')}</h3>
                 </div>
                 <p style={{
                   fontSize: '13px',
                   color: '#6B7280',
                   margin: '0 0 16px 0',
                   flex: 1
-                }}>Create QR codes for offline marketing campaigns</p>
+                }}>{t('dashboard.generateQRCodeDesc')}</p>
                 <button className="card-btn green-btn" style={{
                   width: '100%',
                   padding: '10px 16px',
@@ -190,7 +193,7 @@ const Dashboard = () => {
                   fontSize: '14px',
                   fontWeight: '500',
                   cursor: 'pointer'
-                }}>Create QR</button>
+                }}>{t('dashboard.createQR')}</button>
               </div>
 
               <div className="action-card purple-card" style={{
@@ -226,14 +229,14 @@ const Dashboard = () => {
                     fontWeight: '600',
                     color: '#1F2937',
                     margin: 0
-                  }}>Add Custom Domain</h3>
+                  }}>{t('dashboard.addCustomDomain')}</h3>
                 </div>
                 <p style={{
                   fontSize: '13px',
                   color: '#6B7280',
                   margin: '0 0 16px 0',
                   flex: 1
-                }}>Use your own .sa domain for branded links</p>
+                }}>{t('dashboard.addCustomDomainDesc')}</p>
                 <button className="card-btn purple-btn" style={{
                   width: '100%',
                   padding: '10px 16px',
@@ -244,7 +247,7 @@ const Dashboard = () => {
                   fontSize: '14px',
                   fontWeight: '500',
                   cursor: 'pointer'
-                }}>Setup Domain</button>
+                }}>{t('dashboard.setupDomain')}</button>
               </div>
             </div>
 
@@ -261,7 +264,7 @@ const Dashboard = () => {
                 fontWeight: '600',
                 color: '#1F2937',
                 margin: '0 0 20px 0'
-              }}>Shorten Your URL</h2>
+              }}>{t('dashboard.shortenYourURL')}</h2>
               <form className="shortener-form" onSubmit={handleShortenUrl} style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -272,13 +275,13 @@ const Dashboard = () => {
                     fontSize: '13px',
                     fontWeight: '500',
                     color: '#374151'
-                  }}>Long URL</label>
+                  }}>{t('dashboard.longURL')}</label>
                   <input
                     type="url"
                     id="longUrl"
                     value={longUrl}
                     onChange={(e) => setLongUrl(e.target.value)}
-                    placeholder="https://example.com/very-long-url-that-needs-shortening"
+                    placeholder={t('dashboard.longURLPlaceholder')}
                     required
                     style={{
                       width: '100%',
@@ -302,7 +305,7 @@ const Dashboard = () => {
                       fontSize: '13px',
                       fontWeight: '500',
                       color: '#374151'
-                    }}>Custom Back-half (Optional)</label>
+                    }}>{t('dashboard.customBackhalf')}</label>
                     <div className="custom-url-input" style={{
                       display: 'flex',
                       border: '1px solid #D1D5DB',
@@ -323,7 +326,7 @@ const Dashboard = () => {
                         id="customBackhalf"
                         value={customBackhalf}
                         onChange={(e) => setCustomBackhalf(e.target.value)}
-                        placeholder="my-campaign"
+                        placeholder={t('dashboard.customBackhalfPlaceholder')}
                         style={{
                           flex: 1,
                           padding: '10px 12px',
@@ -339,13 +342,13 @@ const Dashboard = () => {
                       fontSize: '13px',
                       fontWeight: '500',
                       color: '#374151'
-                    }}>Campaign (Optional)</label>
+                    }}>{t('dashboard.campaign')}</label>
                     <input
                       type="text"
                       id="campaign"
                       value={campaign}
                       onChange={(e) => setCampaign(e.target.value)}
-                      placeholder="summer-sale-2024"
+                      placeholder={t('dashboard.campaignPlaceholder')}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
@@ -383,7 +386,7 @@ const Dashboard = () => {
                     <circle cx="8" cy="8" r="1" fill="#3B82F6"/>
                     <circle cx="8" cy="14" r="1" fill="#3B82F6"/>
                   </svg>
-                  Advanced Settings
+                  {t('dashboard.advancedSettings')}
                 </button>
                 <button type="submit" className="shorten-btn" style={{
                   padding: '10px 24px',
@@ -394,7 +397,7 @@ const Dashboard = () => {
                   fontSize: '14px',
                   fontWeight: '500',
                   cursor: 'pointer'
-                }}>Shorten URL</button>
+                }}>{t('dashboard.shortenURL')}</button>
               </div>
             </form>
           </div>
@@ -424,7 +427,7 @@ const Dashboard = () => {
                   fontWeight: '600',
                   color: '#1F2937',
                   margin: 0
-                }}>Analytics Overview</h2>
+                }}>{t('dashboard.analytics.title')}</h2>
                 <select
                   value={timeFilter}
                   onChange={(e) => setTimeFilter(e.target.value)}
@@ -440,9 +443,9 @@ const Dashboard = () => {
                     outline: 'none'
                   }}
                 >
-                  <option value="Last 7 days">Last 7 days</option>
-                  <option value="Last 30 days">Last 30 days</option>
-                  <option value="Last 90 days">Last 90 days</option>
+                  <option value="Last 7 days">{t('dashboard.last7Days')}</option>
+                  <option value="Last 30 days">{t('dashboard.last30Days')}</option>
+                  <option value="Last 90 days">{t('dashboard.last90Days')}</option>
                 </select>
               </div>
               <div className="chart-container">
@@ -471,13 +474,13 @@ const Dashboard = () => {
                   <circle cx="470" cy="70" r="4" fill="#3B82F6"/>
                   <circle cx="540" cy="60" r="4" fill="#3B82F6"/>
                   {/* X-axis labels */}
-                  <text x="50" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Mon</text>
-                  <text x="120" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Tue</text>
-                  <text x="190" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Wed</text>
-                  <text x="260" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Thu</text>
-                  <text x="330" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Fri</text>
-                  <text x="400" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Sat</text>
-                  <text x="470" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">Sun</text>
+                  <text x="50" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.mon')}</text>
+                  <text x="120" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.tue')}</text>
+                  <text x="190" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.wed')}</text>
+                  <text x="260" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.thu')}</text>
+                  <text x="330" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.fri')}</text>
+                  <text x="400" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.sat')}</text>
+                  <text x="470" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.sun')}</text>
                   {/* Y-axis labels */}
                   <text x="30" y="185" fontSize="12" fill="#9CA3AF" textAnchor="end">100</text>
                   <text x="30" y="155" fontSize="12" fill="#9CA3AF" textAnchor="end">125</text>
@@ -509,7 +512,7 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>Total Clicks</div>
+                  }}>{t('dashboard.stats.totalClicks')}</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
@@ -522,7 +525,7 @@ const Dashboard = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↑ +8% from last week</div>
+                  }}>↑ {t('dashboard.changeFromLastWeek', { change: '+8%' })}</div>
                 </div>
                 <div className="stats-icon green" style={{
                   width: '40px',
@@ -554,7 +557,7 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>Unique Visitors</div>
+                  }}>{t('dashboard.uniqueVisitors')}</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
@@ -567,7 +570,7 @@ const Dashboard = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↑ +12% from last week</div>
+                  }}>↑ {t('dashboard.changeFromLastWeek', { change: '+12%' })}</div>
                 </div>
                 <div className="stats-icon blue" style={{
                   width: '40px',
@@ -599,7 +602,7 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>Click Rate</div>
+                  }}>{t('dashboard.stats.clickRate')}</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
@@ -612,7 +615,7 @@ const Dashboard = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↓ -2% from last week</div>
+                  }}>↓ {t('dashboard.changeFromLastWeek', { change: '-2%' })}</div>
                 </div>
                 <div className="stats-icon yellow" style={{
                   width: '40px',
@@ -651,7 +654,7 @@ const Dashboard = () => {
                 fontWeight: '600',
                 color: '#1F2937',
                 margin: 0
-              }}>Recent Links</h2>
+              }}>{t('dashboard.recentLinks.title')}</h2>
               <button className="view-all-btn" onClick={() => handleNavigation('/my-links')} style={{
                 padding: '8px 16px',
                 backgroundColor: 'transparent',
@@ -661,7 +664,7 @@ const Dashboard = () => {
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer'
-              }}>View All</button>
+              }}>{t('dashboard.viewAll')}</button>
             </div>
             <div className="links-list" style={{
               display: 'flex',
@@ -672,20 +675,20 @@ const Dashboard = () => {
                 {
                   short: 'linksa.co/summer-sale',
                   long: 'https://mystore.com/summer-collection-2024-discount-offer',
-                  clicks: '245 clicks',
-                  created: 'Created 2 days ago'
+                  clicks: 245,
+                  created: '2 days ago'
                 },
                 {
                   short: 'linksa.co/product-launch',
                   long: 'https://company.com/new-product-announcement-2024',
-                  clicks: '189 clicks',
-                  created: 'Created 5 days ago'
+                  clicks: 189,
+                  created: '5 days ago'
                 },
                 {
                   short: 'linksa.co/event-2024',
                   long: 'https://events.com/riyadh-tech-conference-2024',
-                  clicks: '567 clicks',
-                  created: 'Created 1 month ago'
+                  clicks: 567,
+                  created: '1 month ago'
                 }
               ].map((link, index) => (
                 <div key={index} className="link-item" style={{
@@ -722,8 +725,8 @@ const Dashboard = () => {
                       fontSize: '12px',
                       color: '#9CA3AF'
                     }}>
-                      <span>{link.clicks}</span>
-                      <span>{link.created}</span>
+                      <span>{t('dashboard.clicks', { count: link.clicks })}</span>
+                      <span>{t('dashboard.created', { time: link.created })}</span>
                     </div>
                   </div>
                   <div className="link-actions" style={{
@@ -731,17 +734,17 @@ const Dashboard = () => {
                     gap: '8px',
                     marginLeft: '16px'
                   }}>
-                    {['Copy', 'Edit', 'Delete'].map((action, idx) => (
-                      <button key={idx} className={`action-btn ${action.toLowerCase()}-btn`} style={{
+                    {['copy', 'edit', 'delete'].map((action, idx) => (
+                      <button key={idx} className={`action-btn ${action}-btn`} style={{
                         padding: '8px 12px',
                         fontSize: '13px',
                         fontWeight: '500',
-                        backgroundColor: action === 'Delete' ? '#FEE2E2' : '#F3F4F6',
-                        color: action === 'Delete' ? '#EF4444' : '#374151',
+                        backgroundColor: action === 'delete' ? '#FEE2E2' : '#F3F4F6',
+                        color: action === 'delete' ? '#EF4444' : '#374151',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: 'pointer'
-                      }}>{action}</button>
+                      }}>{t(`common.${action}`)}</button>
                     ))}
                   </div>
                 </div>
@@ -766,13 +769,13 @@ const Dashboard = () => {
                 color: 'white',
                 marginBottom: '12px',
                 margin: '0 0 12px 0'
-              }}>Ready to unlock more features?</h2>
+              }}>{t('dashboard.upgradeTitle')}</h2>
               <p style={{
                 fontSize: '14px',
                 color: 'rgba(255, 255, 255, 0.9)',
                 marginBottom: '20px',
                 margin: '0 0 20px 0'
-              }}>Get advanced analytics, bulk operations, API access, and more with our Pro plan.</p>
+              }}>{t('dashboard.upgradeDescription')}</p>
               <button className="upgrade-promo-btn" onClick={() => handleNavigation('/subscription')} style={{
                 padding: '12px 24px',
                 backgroundColor: 'white',
@@ -783,7 +786,7 @@ const Dashboard = () => {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}>
-                Upgrade to Pro
+                {t('dashboard.upgradeToPro')}
               </button>
             </div>
             <div className="promotion-image" style={{ marginLeft: '40px' }}>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI } from '../services/api';
 import './CreateShortLink.css';
 
 const CreateShortLink = () => {
+  const { t } = useTranslation();
   const [originalUrl, setOriginalUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [title, setTitle] = useState('');
@@ -39,7 +41,7 @@ const CreateShortLink = () => {
       }
     } catch (err) {
       console.error('Failed to fetch domains:', err);
-      setError('Failed to load domains. Using default domain.');
+      setError(t('createLink.errors.general'));
     } finally {
       setLoadingDomains(false);
     }
@@ -75,10 +77,10 @@ const CreateShortLink = () => {
       const shortUrl = `${baseUrl}/${createdUrl.shortCode}`;
 
       setShortenedUrl(shortUrl);
-      setSuccessMessage('Your short link has been created successfully!');
+      setSuccessMessage(t('createLink.success.title'));
     } catch (err) {
       console.error('Error creating short link:', err);
-      setError(err.message || 'Failed to create short link');
+      setError(err.message || t('createLink.errors.general'));
     } finally {
       setLoading(false);
     }
@@ -127,8 +129,8 @@ const CreateShortLink = () => {
           <div className="create-link-content">
             <div className="page-header">
               <div className="header-info">
-                <h1 className="page-title">Create Short Link</h1>
-                <p className="page-subtitle">Transform your long URLs into short, trackable links</p>
+                <h1 className="page-title">{t('createLink.title')}</h1>
+                <p className="page-subtitle">{t('createLink.subtitle')}</p>
               </div>
             </div>
 
@@ -158,7 +160,7 @@ const CreateShortLink = () => {
                     <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
-                    Original URL *
+                    {t('createLink.form.originalUrl')} *
                   </label>
                   <input
                     id="originalUrl"
@@ -166,7 +168,7 @@ const CreateShortLink = () => {
                     className="form-input"
                     value={originalUrl}
                     onChange={(e) => setOriginalUrl(e.target.value)}
-                    placeholder="https://example.com/very/long/url/that/needs/shortening"
+                    placeholder={t('createLink.form.originalUrlPlaceholder')}
                     required
                   />
                 </div>
@@ -177,7 +179,7 @@ const CreateShortLink = () => {
                       <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Domain
+                      {t('createLink.form.domain')}
                     </label>
                     <select
                       id="domain"
@@ -187,18 +189,18 @@ const CreateShortLink = () => {
                       disabled={loadingDomains}
                     >
                       {loadingDomains ? (
-                        <option>Loading domains...</option>
+                        <option>{t('common.loading')}</option>
                       ) : (
                         availableDomains.map((domain) => (
                           <option key={domain.id} value={domain.id}>
-                            {domain.fullDomain} {domain.isDefault ? '(Default)' : ''}
+                            {domain.fullDomain} {domain.isDefault ? `(${t('customDomains.status.active')})` : ''}
                           </option>
                         ))
                       )}
                     </select>
                     {selectedDomainId && (
                       <p className="form-hint">
-                        Short URL will be: {availableDomains.find(d => d.id === selectedDomainId)?.shortUrl}/your-code
+                        {t('createLink.success.yourLink')} {availableDomains.find(d => d.id === selectedDomainId)?.shortUrl}/your-code
                       </p>
                     )}
                   </div>
@@ -210,7 +212,7 @@ const CreateShortLink = () => {
                       <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                       </svg>
-                      Custom Code (Optional)
+                      {t('createLink.form.customAlias')}
                     </label>
                     <input
                       id="customCode"
@@ -218,9 +220,9 @@ const CreateShortLink = () => {
                       className="form-input"
                       value={customCode}
                       onChange={(e) => setCustomCode(e.target.value)}
-                      placeholder="my-custom-link"
+                      placeholder={t('createLink.form.customAliasPlaceholder')}
                     />
-                    <p className="form-hint">Leave empty to generate automatically</p>
+                    <p className="form-hint">{t('createLink.form.customAlias')}</p>
                   </div>
 
                   <div className="form-group">
@@ -228,7 +230,7 @@ const CreateShortLink = () => {
                       <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
-                      Title (Optional)
+                      {t('createLink.form.title')}
                     </label>
                     <input
                       id="title"
@@ -236,9 +238,9 @@ const CreateShortLink = () => {
                       className="form-input"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="My Link Title"
+                      placeholder={t('createLink.form.titlePlaceholder')}
                     />
-                    <p className="form-hint">Add a descriptive title for your link</p>
+                    <p className="form-hint">{t('createLink.form.title')}</p>
                   </div>
                 </div>
 
@@ -254,14 +256,14 @@ const CreateShortLink = () => {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Creating...
+                        {t('createLink.form.creating')}
                       </>
                     ) : (
                       <>
                         <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        Create Short Link
+                        {t('createLink.form.createButton')}
                       </>
                     )}
                   </button>
@@ -275,7 +277,7 @@ const CreateShortLink = () => {
                       <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      Create Another
+                      {t('createLink.success.createAnother')}
                     </button>
                   )}
                 </div>
@@ -287,7 +289,7 @@ const CreateShortLink = () => {
                     <svg className="result-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <h3 className="result-title">Your shortened URL is ready!</h3>
+                    <h3 className="result-title">{t('createLink.success.title')}</h3>
                   </div>
 
                   <div className="result-url-container">
@@ -304,14 +306,14 @@ const CreateShortLink = () => {
                             <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            Copied!
+                            {t('common.copied')}
                           </>
                         ) : (
                           <>
                             <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
-                            Copy
+                            {t('common.copy')}
                           </>
                         )}
                       </button>
@@ -323,7 +325,7 @@ const CreateShortLink = () => {
                         <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
-                        Visit
+                        {t('common.viewMore')}
                       </button>
                     </div>
                   </div>

@@ -1,11 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Header from "./Header";
 import "../App.css";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleShortenUrl = () => {
     // For now, just navigate to register page
@@ -44,57 +46,47 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-background-text">Track</div>
-        <div className="hero-bottom-cta">
-          <button
-            className="bottom-cta-btn"
-            onClick={() => navigate("/register")}
-          >
-            Get Started Free
-          </button>
-        </div>
         <div className="hero-container">
           <div className="hero-content">
             <div className="hero-text">
               <h1 className="hero-title">
-                <span className="title-main">Shorten, Brand, </span>
-                <span className="title-accent">Track</span>
+                <span className="title-main">{t('landing.hero.titleMain')} </span>
+                <span className="title-accent">{t('landing.hero.titleAccent')}</span>
               </h1>
               <p className="hero-subtitle">
-                Your Links, Optimized for Saudi Arabia
+                {t('landing.hero.subtitle')}
               </p>
               <p className="hero-description">
-                Fast, secure, and compliant URL shortening with advanced
-                analytics and branded domains.
+                {t('landing.hero.description')}
               </p>
               <div className="hero-buttons">
                 <button
                   className="btn-primary"
                   onClick={() => navigate("/register")}
                 >
-                  Get Started Free
+                  {t('landing.hero.cta')}
                 </button>
-                <button className="btn-secondary">Watch Demo</button>
+                <button className="btn-secondary">{t('landing.hero.tryDemo')}</button>
               </div>
             </div>
 
             <div className="hero-form">
               <h3 className="form-title">
-                Try it now - Shorten your first link
+                {t('landing.hero.formTitle')}
               </h3>
               <div className="form-container">
                 <input
                   type="text"
-                  placeholder="Paste your long URL here..."
+                  placeholder={t('landing.hero.urlPlaceholder')}
                   className="url-input"
                 />
                 <button className="shorten-btn" onClick={handleShortenUrl}>
                   <ShortenIcon />
-                  Shorten URL
+                  {t('landing.hero.shortenBtn')}
                 </button>
               </div>
               <div className="compliance-notice">
-                <p>✓ PDPL Compliant • Data stored in KSA</p>
+                <p>{t('landing.hero.complianceNotice')}</p>
               </div>
             </div>
           </div>
@@ -105,8 +97,8 @@ const LandingPage = () => {
       <section className="features-section">
         <div className="container">
           <div className="section-header">
-            <h2>Powerful Features for Modern Marketers</h2>
-            <p>Everything you need to manage, track, and optimize your links</p>
+            <h2>{t('landing.features.title')}</h2>
+            <p>{t('landing.features.subtitle')}</p>
           </div>
 
           <div className="features-grid">
@@ -132,10 +124,9 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>URL Shortening</h3>
+              <h3>{t('landing.features.urlShortening.title')}</h3>
               <p>
-                Create short, memorable links instantly with our advanced
-                algorithm
+                {t('landing.features.urlShortening.description')}
               </p>
             </div>
 
@@ -161,9 +152,9 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Branded Domains</h3>
+              <h3>{t('landing.features.customDomain.title')}</h3>
               <p>
-                Use your own domain for professional, trustworthy short links
+                {t('landing.features.customDomain.description')}
               </p>
             </div>
 
@@ -183,10 +174,9 @@ const LandingPage = () => {
                   />
                 </svg>
               </div>
-              <h3>UTM Builder</h3>
+              <h3>{t('landing.features.utmBuilder.title')}</h3>
               <p>
-                Track campaign performance with built-in UTM parameter
-                generation
+                {t('landing.features.utmBuilder.description')}
               </p>
             </div>
 
@@ -212,8 +202,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>QR Code Generation</h3>
-              <p>Generate beautiful QR codes for offline marketing campaigns</p>
+              <h3>{t('landing.features.qrCode.title')}</h3>
+              <p>{t('landing.features.qrCode.description')}</p>
             </div>
 
             <div className="feature-card cyan-card">
@@ -246,8 +236,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Advanced Analytics</h3>
-              <p>Real-time insights on clicks, geography, devices, and more</p>
+              <h3>{t('landing.features.analytics.title')}</h3>
+              <p>{t('landing.features.analytics.description')}</p>
             </div>
 
             <div className="feature-card emerald-card">
@@ -272,8 +262,8 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>PDPL Compliance</h3>
-              <p>Full data residency in KSA with enterprise-grade security</p>
+              <h3>{t('landing.features.security.title')}</h3>
+              <p>{t('landing.features.security.description')}</p>
             </div>
 
             <div className="feature-card indigo-card">
@@ -298,10 +288,9 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Authintica Integration</h3>
+              <h3>{t('landing.features.authintica.title')}</h3>
               <p>
-                Secure authentication with Saudi Arabia's trusted identity
-                platform
+                {t('landing.features.authintica.description')}
               </p>
             </div>
 
@@ -321,8 +310,8 @@ const LandingPage = () => {
                   />
                 </svg>
               </div>
-              <h3>Bilingual UI</h3>
-              <p>Seamless Arabic and English interface with RTL support</p>
+              <h3>{t('landing.features.bilingualUI.title')}</h3>
+              <p>{t('landing.features.bilingualUI.description')}</p>
             </div>
           </div>
         </div>
@@ -332,8 +321,8 @@ const LandingPage = () => {
       <section className="why-section">
         <div className="container">
           <div className="section-header">
-            <h2>Why Businesses Choose LinkSA</h2>
-            <p>The smart choice for Saudi marketers and businesses</p>
+            <h2>{t('landing.whyChoose.title')}</h2>
+            <p>{t('landing.whyChoose.subtitle')}</p>
           </div>
 
           <div className="benefits-grid">
@@ -359,15 +348,13 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Launch Campaigns Faster</h3>
+              <h3>{t('landing.benefits.launchFaster.title')}</h3>
               <p>
-                Create branded short links in seconds. Our UTM builder helps you
-                track every campaign from day one, giving you the insights you
-                need to optimize performance.
+                {t('landing.benefits.launchFaster.description')}
               </p>
               <div className="stat-card">
-                <p className="stat-label">Average setup time</p>
-                <p className="stat-value blue">2 minutes</p>
+                <p className="stat-label">{t('landing.benefits.launchFaster.setupTime')}</p>
+                <p className="stat-value blue">{t('landing.benefits.launchFaster.setupTimeValue')}</p>
               </div>
             </div>
 
@@ -401,14 +388,12 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Trust & Compliance First</h3>
+              <h3>{t('landing.benefits.trustCompliance.title')}</h3>
               <p>
-                Built specifically for Saudi businesses with full PDPL
-                compliance. Your data stays in KSA, and your customers trust
-                links from Saudi domains.
+                {t('landing.benefits.trustCompliance.description')}
               </p>
               <div className="stat-card">
-                <p className="stat-label">Data residency</p>
+                <p className="stat-label">{t('landing.benefits.trustCompliance.dataResidency')}</p>
                 <p className="stat-value green">
                   <svg
                     width="16"
@@ -420,7 +405,7 @@ const LandingPage = () => {
                     <rect width="16" height="12" fill="#006C35" />
                     <rect x="0" y="4" width="16" height="4" fill="white" />
                   </svg>
-                  100% KSA
+                  {t('landing.benefits.trustCompliance.dataResidencyValue')}
                 </p>
               </div>
             </div>
@@ -447,15 +432,13 @@ const LandingPage = () => {
                   </defs>
                 </svg>
               </div>
-              <h3>Actionable Analytics</h3>
+              <h3>{t('landing.benefits.analytics.title')}</h3>
               <p>
-                Get real-time insights on clicks, geography, devices, and
-                campaign performance. Make data-driven decisions with our
-                comprehensive analytics dashboard.
+                {t('landing.benefits.analytics.description')}
               </p>
               <div className="stat-card">
-                <p className="stat-label">Click tracking accuracy</p>
-                <p className="stat-value purple">99.9%</p>
+                <p className="stat-label">{t('landing.benefits.analytics.trackingAccuracy')}</p>
+                <p className="stat-value purple">{t('landing.benefits.analytics.trackingAccuracyValue')}</p>
               </div>
             </div>
           </div>
@@ -464,43 +447,43 @@ const LandingPage = () => {
           <div className="marketers-card">
             <div className="marketers-content">
               <div className="marketers-text">
-                <h3>Perfect for Saudi Marketers</h3>
+                <h3>{t('landing.saudiMarketers.title')}</h3>
                 <ul className="features-list">
                   <li>
-                    <CheckIcon /> Custom .sa domain support
+                    <CheckIcon /> {t('landing.saudiMarketers.feature1')}
                   </li>
                   <li>
-                    <CheckIcon /> Arabic & English interface with RTL support
+                    <CheckIcon /> {t('landing.saudiMarketers.feature2')}
                   </li>
                   <li>
-                    <CheckIcon /> QR codes for offline campaigns
+                    <CheckIcon /> {t('landing.saudiMarketers.feature3')}
                   </li>
                   <li>
-                    <CheckIcon /> Authintica integration for secure access
+                    <CheckIcon /> {t('landing.saudiMarketers.feature4')}
                   </li>
                   <li>
-                    <CheckIcon /> Local support in Arabic & English
+                    <CheckIcon /> {t('landing.saudiMarketers.feature5')}
                   </li>
                 </ul>
               </div>
               <div className="marketers-stats">
                 <div className="stats-card">
-                  <div className="main-stat">50,000+</div>
+                  <div className="main-stat">{t('landing.stats.linksCreatedValue')}</div>
                   <div className="stat-subtitle">
-                    Links created by Saudi businesses
+                    {t('landing.stats.linksCreated')}
                   </div>
                   <div className="stats-row">
                     <div className="stat-item">
-                      <div className="stat-number">98%</div>
-                      <div className="stat-text">Uptime</div>
+                      <div className="stat-number">{t('landing.stats.uptimeValue')}</div>
+                      <div className="stat-text">{t('landing.stats.uptime')}</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">2.5M+</div>
-                      <div className="stat-text">Clicks tracked</div>
+                      <div className="stat-number">{t('landing.stats.clicksTrackedValue')}</div>
+                      <div className="stat-text">{t('landing.stats.clicksTracked')}</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">24/7</div>
-                      <div className="stat-text">Support</div>
+                      <div className="stat-number">{t('landing.stats.supportValue')}</div>
+                      <div className="stat-text">{t('landing.stats.support')}</div>
                     </div>
                   </div>
                 </div>
@@ -514,8 +497,8 @@ const LandingPage = () => {
       <section className="testimonials-section">
         <div className="container">
           <div className="section-header">
-            <h2>Trusted by Saudi Businesses</h2>
-            <p>See what our customers say about LinkSA</p>
+            <h2>{t('landing.testimonials.title')}</h2>
+            <p>{t('landing.testimonials.subtitle')}</p>
           </div>
 
           <div className="testimonials-grid">
@@ -524,17 +507,16 @@ const LandingPage = () => {
                 <div className="avatar">
                   <img
                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face"
-                    alt="Sarah Al-Rashid"
+                    alt={t('landing.testimonials.testimonial1.author')}
                   />
                 </div>
                 <div className="testimonial-info">
-                  <h4>Sarah Al-Rashid</h4>
-                  <p>Marketing Director, TechCorp KSA</p>
+                  <h4>{t('landing.testimonials.testimonial1.author')}</h4>
+                  <p>{t('landing.testimonials.testimonial1.role')}</p>
                 </div>
               </div>
               <p className="testimonial-text">
-                "LinkSA's PDPL compliance gives us peace of mind. The analytics
-                are incredibly detailed and help us optimize our campaigns."
+                {t('landing.testimonials.testimonial1.text')}
               </p>
             </div>
 
@@ -543,17 +525,16 @@ const LandingPage = () => {
                 <div className="avatar">
                   <img
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face"
-                    alt="Ahmed Mohammed"
+                    alt={t('landing.testimonials.testimonial2.author')}
                   />
                 </div>
                 <div className="testimonial-info">
-                  <h4>Ahmed Mohammed</h4>
-                  <p>Digital Marketing Manager</p>
+                  <h4>{t('landing.testimonials.testimonial2.author')}</h4>
+                  <p>{t('landing.testimonials.testimonial2.role')}</p>
                 </div>
               </div>
               <p className="testimonial-text">
-                "The bilingual interface is perfect for our diverse team. We
-                love the branded domains feature!"
+                {t('landing.testimonials.testimonial2.text')}
               </p>
             </div>
 
@@ -562,17 +543,16 @@ const LandingPage = () => {
                 <div className="avatar">
                   <img
                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face"
-                    alt="Fatima Al-Zahra"
+                    alt={t('landing.testimonials.testimonial3.author')}
                   />
                 </div>
                 <div className="testimonial-info">
-                  <h4>Fatima Al-Zahra</h4>
-                  <p>E-commerce Director</p>
+                  <h4>{t('landing.testimonials.testimonial3.author')}</h4>
+                  <p>{t('landing.testimonials.testimonial3.role')}</p>
                 </div>
               </div>
               <p className="testimonial-text">
-                "LinkSA has revolutionized how we track our social media
-                campaigns. The QR codes are a game-changer!"
+                {t('landing.testimonials.testimonial3.text')}
               </p>
             </div>
 
@@ -581,17 +561,16 @@ const LandingPage = () => {
                 <div className="avatar">
                   <img
                     src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face"
-                    alt="Omar Hassan"
+                    alt={t('landing.testimonials.testimonial4.author')}
                   />
                 </div>
                 <div className="testimonial-info">
-                  <h4>Omar Hassan</h4>
-                  <p>Startup Founder</p>
+                  <h4>{t('landing.testimonials.testimonial4.author')}</h4>
+                  <p>{t('landing.testimonials.testimonial4.role')}</p>
                 </div>
               </div>
               <p className="testimonial-text">
-                "Fast, reliable, and secure. Everything we need for our growing
-                business in Saudi Arabia."
+                {t('landing.testimonials.testimonial4.text')}
               </p>
             </div>
           </div>
@@ -629,8 +608,7 @@ const LandingPage = () => {
                   <span className="brand-name">LinkSA</span>
                 </div>
                 <p className="footer-description">
-                  The most trusted URL shortener in Saudi Arabia, built for
-                  modern businesses.
+                  {t('footer.description')}
                 </p>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <div className="social-links">
@@ -663,55 +641,55 @@ const LandingPage = () => {
             </div>
 
             <div className="footer-section">
-              <h4>Product</h4>
+              <h4>{t('footer.product')}</h4>
               <ul>
                 <li>
-                  <a href="#">Features</a>
+                  <a href="#">{t('footer.features')}</a>
                 </li>
                 <li>
-                  <a href="#">Pricing</a>
+                  <a href="#">{t('footer.pricing')}</a>
                 </li>
                 <li>
-                  <a href="#">API</a>
+                  <a href="#">{t('footer.api')}</a>
                 </li>
                 <li>
-                  <a href="#">Integrations</a>
+                  <a href="#">{t('footer.integrations')}</a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-section">
-              <h4>Company</h4>
+              <h4>{t('footer.company')}</h4>
               <ul>
                 <li>
-                  <a href="#">About Us</a>
+                  <a href="#">{t('footer.about')}</a>
                 </li>
                 <li>
-                  <a href="#">Careers</a>
+                  <a href="#">{t('footer.careers')}</a>
                 </li>
                 <li>
-                  <a href="#">Blog</a>
+                  <a href="#">{t('footer.blog')}</a>
                 </li>
                 <li>
-                  <a href="#">Contact</a>
+                  <a href="#">{t('footer.contact')}</a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-section">
-              <h4>Legal</h4>
+              <h4>{t('footer.legal')}</h4>
               <ul>
                 <li>
-                  <a href="#">Privacy Policy</a>
+                  <a href="#">{t('footer.privacy')}</a>
                 </li>
                 <li>
-                  <a href="#">Terms of Service</a>
+                  <a href="#">{t('footer.terms')}</a>
                 </li>
                 <li>
-                  <a href="#">PDPL Compliance</a>
+                  <a href="#">{t('footer.pdplCompliance')}</a>
                 </li>
                 <li>
-                  <a href="#">Security</a>
+                  <a href="#">{t('footer.security')}</a>
                 </li>
               </ul>
             </div>
@@ -719,7 +697,7 @@ const LandingPage = () => {
 
           <div className="footer-bottom">
             <p>
-              © 2024 LinkSA. All rights reserved. Made with ❤️ in Saudi Arabia.
+              {t('footer.copyright')}
             </p>
           </div>
         </div>
