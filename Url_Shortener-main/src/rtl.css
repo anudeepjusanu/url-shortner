@@ -74,14 +74,26 @@
 }
 
 /* Dashboard Layout */
-[dir="rtl"] .dashboard-main {
-  margin-left: 0;
-  margin-right: 250px;
+[dir="rtl"] .dashboard-main,
+[dir="rtl"] .main-content,
+[dir="rtl"] .page-content,
+[dir="rtl"] .content-wrapper {
+  margin-left: 0 !important;
+  margin-right: 250px !important;
 }
 
-[dir="rtl"] .dashboard-content {
+[dir="rtl"] .dashboard-content,
+[dir="rtl"] .main-content,
+[dir="rtl"] .page-wrapper {
   padding-left: 24px;
   padding-right: 40px;
+}
+
+/* Ensure main content area has proper spacing in RTL */
+[dir="rtl"] .dashboard-container,
+[dir="rtl"] .app-container {
+  margin-left: 0 !important;
+  margin-right: 250px !important;
 }
 
 /* Cards and Containers */

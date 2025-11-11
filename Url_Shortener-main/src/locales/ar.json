@@ -582,5 +582,20 @@
     "notFound": "المورد غير موجود.",
     "serverError": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.",
     "validationError": "يرجى التحقق من إدخالك والمحاولة مرة أخرى."
+  },
+  "sidebar": {
+    "main": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "myLinks": "روابطي",
+    "analytics": "التحليلات",
+    "qrCodes": "رموز QR",
+    "settings": "الإعدادات",
+    "customDomains": "النطاقات المخصصة",
+    "contentFilter": "تصفية المحتوى",
+    "account": "الحساب",
+    "profile": "الملف الشخصي",
+    "upgradePlan": "ترقية الخطة",
+    "freePlan": "الخطة المجانية",
+    "upgradeNow": "ترقية الآن"
   }
 }

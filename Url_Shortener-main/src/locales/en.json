@@ -582,5 +582,20 @@
     "notFound": "Resource not found.",
     "serverError": "Server error. Please try again later.",
     "validationError": "Please check your input and try again."
+  },
+  "sidebar": {
+    "main": "MAIN",
+    "dashboard": "Dashboard",
+    "myLinks": "My Links",
+    "analytics": "Analytics",
+    "qrCodes": "QR Codes",
+    "settings": "SETTINGS",
+    "customDomains": "Custom Domains",
+    "contentFilter": "Content Filter",
+    "account": "ACCOUNT",
+    "profile": "Profile",
+    "upgradePlan": "Upgrade Plan",
+    "freePlan": "Free Plan",
+    "upgradeNow": "Upgrade Now"
   }
 }
