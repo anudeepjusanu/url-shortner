@@ -1,12 +1,14 @@
 
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import "./Sidebar.css";
 import "./CreateLinkHeader.css"
 
 const Sidebar = ({ activeItem }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -45,7 +47,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span className="create-link-logo-text">LinkSA</span>
+            <span className="create-link-logo-text">{t('common.brandName')}</span>
           </div>
         </div>
 
@@ -53,7 +55,7 @@ const Sidebar = ({ activeItem }) => {
       <nav className="sidebar-nav">
         {/* Main Section */}
         <div className="nav-section">
-          <div className="nav-label">MAIN</div>
+          <div className="nav-label">{t('sidebar.main')}</div>
           <div
             className={`nav-item ${isActive("/dashboard") ? "active" : ""}`}
             onClick={() => handleNavigation("/dashboard")}
@@ -79,7 +81,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span>Dashboard</span>
+            <span>{t('sidebar.dashboard')}</span>
           </div>
           {/* <div
             className={`nav-item ${
@@ -131,7 +133,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span>My Links</span>
+            <span>{t('sidebar.myLinks')}</span>
           </div>
           <div
             className={`nav-item ${isActive("/analytics") ? "active" : ""}`}
@@ -152,7 +154,7 @@ const Sidebar = ({ activeItem }) => {
                 />
               </svg>
             </div>
-            <span>Analytics</span>
+            <span>{t('sidebar.analytics')}</span>
           </div>
           <div
             className={`nav-item ${isActive("/qr-codes") ? "active" : ""}`}
@@ -173,13 +175,13 @@ const Sidebar = ({ activeItem }) => {
                 />
               </svg>
             </div>
-            <span>QR Codes</span>
+            <span>{t('sidebar.qrCodes')}</span>
           </div>
         </div>
 
         {/* Settings Section */}
         <div className="nav-section">
-          <div className="nav-label">SETTINGS</div>
+          <div className="nav-label">{t('sidebar.settings')}</div>
           <div
             className={`nav-item ${
               isActive("/custom-domains") ||
@@ -210,7 +212,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span>Custom Domains</span>
+            <span>{t('sidebar.customDomains')}</span>
           </div>
           {/* <div
             className={`nav-item ${isActive("/utm-builder") ? "active" : ""}`}
@@ -257,13 +259,13 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span>Content Filter</span>
+            <span>{t('sidebar.contentFilter')}</span>
           </div>
         </div>
 
         {/* Account Section */}
         <div className="nav-section">
-          <div className="nav-label">ACCOUNT</div>
+          <div className="nav-label">{t('sidebar.account')}</div>
           <div
             className={`nav-item ${isActive("/profile") ? "active" : ""}`}
             onClick={() => handleNavigation("/profile")}
@@ -289,7 +291,7 @@ const Sidebar = ({ activeItem }) => {
                 </defs>
               </svg>
             </div>
-            <span>Profile</span>
+            <span>{t('sidebar.profile')}</span>
           </div>
           <div
             className={`nav-item ${isActive("/subscription") ? "active" : ""}`}
@@ -310,7 +312,7 @@ const Sidebar = ({ activeItem }) => {
                 />
               </svg>
             </div>
-            <span>Upgrade Plan</span>
+            <span>{t('sidebar.upgradePlan')}</span>
           </div>
         </div>
       </nav>
@@ -319,7 +321,7 @@ const Sidebar = ({ activeItem }) => {
       <div className="upgrade-card">
         <div className="upgrade-content">
           <div className="plan-info">
-            <span className="plan-name">Free Plan</span>
+            <span className="plan-name">{t('sidebar.freePlan')}</span>
             <span className="plan-usage">50/100</span>
           </div>
           <div className="progress-bar">
@@ -329,7 +331,7 @@ const Sidebar = ({ activeItem }) => {
             className="upgrade-btn"
             onClick={() => handleNavigation("/subscription")}
           >
-            Upgrade Now
+            {t('sidebar.upgradeNow')}
           </button>
         </div>
       </div>

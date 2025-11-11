@@ -820,6 +820,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
+  justify-self: left;
 }
 
 .page-title {
@@ -860,6 +861,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  justify-self: left;
 }
 
 .notification-icon {

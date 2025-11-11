@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
@@ -6,6 +7,7 @@ import "./Analytics.css";
 import "./QRCodes.css";
 
 const QRCodes = () => {
+  const { t } = useTranslation();
   const [links, setLinks] = useState([]);
   const [filteredLinks, setFilteredLinks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,14 +99,14 @@ const QRCodes = () => {
     try {
       const response = await api.post(`/qr-codes/generate/${linkId}`, qrOptions);
       if (response) {
-        alert("QR Code generated successfully!");
+        alert(t('notifications.success'));
         loadLinks();
         loadStats();
         setShowGenerateModal(false);
         setShowCustomizeModal(false);
       }
     } catch (error) {
-      alert("Failed to generate QR code: " + error.message);
+      alert(t('errors.generic'));
     }
   };
 
@@ -121,17 +123,17 @@ const QRCodes = () => {
         link.click();
       }
     } catch (error) {
-      alert("Failed to download QR code: " + error.message);
+      alert(t('errors.generic'));
     }
   };
 
   const bulkGenerateQRCodes = async () => {
     if (selectedLinks.length === 0) {
-      alert("Please select at least one link");
+      alert(t('errors.generic'));
       return;
     }
 
-    if (!window.confirm(`Generate QR codes for ${selectedLinks.length} link(s)?`)) {
+    if (!window.confirm(t('notifications.success'))) {
       return;
     }
 
@@ -140,28 +142,28 @@ const QRCodes = () => {
         linkIds: selectedLinks,
         options: qrOptions
       });
-      alert(`Successfully generated ${selectedLinks.length} QR code(s)!`);
+      alert(t('notifications.success'));
       setSelectedLinks([]);
       setSelectAll(false);
       loadLinks();
       loadStats();
     } catch (error) {
-      alert("Failed to generate QR codes: " + error.message);
+      alert(t('errors.generic'));
     }
   };
 
   const deleteQRCode = async (linkId) => {
-    if (!window.confirm("Are you sure you want to delete this QR code?")) {
+    if (!window.confirm(t('myLinks.confirmDelete'))) {
       return;
     }
 
     try {
       await api.delete(`/qr-codes/${linkId}`);
-      alert("QR code deleted successfully!");
+      alert(t('notifications.success'));
       loadLinks();
       loadStats();
     } catch (error) {
-      alert("Failed to delete QR code: " + error.message);
+      alert(t('errors.generic'));
     }
   };
 
@@ -216,12 +218,12 @@ const QRCodes = () => {
                   color: '#111827',
                   marginBottom: '4px',
                   margin: '0 0 4px 0'
-                }}>QR Code Management</h1>
+                }}>{t('qrCodes.title')}</h1>
                 <p style={{
                   color: '#6B7280',
                   fontSize: '14px',
                   margin: 0
-                }}>Generate, customize, and manage QR codes for your links</p>
+                }}>{t('qrCodes.subtitle')}</p>
               </div>
               <button
                 onClick={() => setShowGenerateModal(true)}
@@ -239,7 +241,7 @@ const QRCodes = () => {
                   gap: '8px'
                 }}
               >
-                <span style={{ fontSize: '18px' }}>+</span> Generate QR Code
+                <span style={{ fontSize: '18px' }}>+</span> {t('qrCodes.generate.title')}
               </button>
             </div>
 
@@ -266,7 +268,7 @@ const QRCodes = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Total QR Codes</div>
+                  }}>{t('qrCodes.stats.totalQRCodes')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -284,7 +286,7 @@ const QRCodes = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Total Scans</div>
+                  }}>{t('qrCodes.stats.totalScans')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -302,7 +304,7 @@ const QRCodes = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Active QR Codes</div>
+                  }}>{t('qrCodes.stats.activeQRCodes')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -320,7 +322,7 @@ const QRCodes = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Downloads Today</div>
+                  }}>{t('qrCodes.stats.downloadsToday')}</div>
                 </div>
               </div>
             </section>
@@ -343,7 +345,7 @@ const QRCodes = () => {
                   <div style={{ flex: 1, minWidth: '250px' }}>
                     <input
                       type="text"
-                      placeholder="Search by short code, URL, or title..."
+                      placeholder={t('myLinks.searchPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       style={{
@@ -370,7 +372,7 @@ const QRCodes = () => {
                         cursor: selectedLinks.length === 0 ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      Bulk Generate ({selectedLinks.length})
+                      {t('qrCodes.generate.bulkGenerate')} ({selectedLinks.length})
                     </button>
                     <button
                       onClick={() => setShowCustomizeModal(true)}
@@ -385,7 +387,7 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      Customize Settings
+                      {t('qrCodes.generate.customize')}
                     </button>
                   </div>
                 </div>
@@ -422,7 +424,7 @@ const QRCodes = () => {
                     fontWeight: '600',
                     color: '#111827',
                     margin: 0
-                  }}>Your QR Codes ({filteredLinks.length})</h2>
+                  }}>{t('qrCodes.title')} ({filteredLinks.length})</h2>
                 </div>
 
                 {loading ? (
@@ -439,7 +441,7 @@ const QRCodes = () => {
                       animation: 'spin 1s linear infinite',
                       margin: '0 auto 16px'
                     }}></div>
-                    <p style={{ color: '#6B7280', fontSize: '14px' }}>Loading QR codes...</p>
+                    <p style={{ color: '#6B7280', fontSize: '14px' }}>{t('common.loading')}</p>
                   </div>
                 ) : filteredLinks.length === 0 ? (
                   <div style={{
@@ -455,12 +457,12 @@ const QRCodes = () => {
                       fontWeight: '600',
                       color: '#111827',
                       marginBottom: '8px'
-                    }}>No QR Codes Yet</h3>
+                    }}>{t('qrCodes.noQRCodes')}</h3>
                     <p style={{
                       color: '#6B7280',
                       fontSize: '14px',
                       marginBottom: '20px'
-                    }}>Generate your first QR code to get started</p>
+                    }}>{t('qrCodes.createFirst')}</p>
                     <button
                       onClick={() => setShowGenerateModal(true)}
                       style={{
@@ -474,7 +476,7 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      Generate QR Code
+                      {t('qrCodes.generate.title')}
                     </button>
                   </div>
                 ) : (
@@ -538,7 +540,7 @@ const QRCodes = () => {
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
                           }}>
-                            {link.title || 'Untitled Link'}
+                            {link.title || t('myLinks.table.title')}
                           </div>
                           <div style={{
                             fontSize: '13px',
@@ -573,7 +575,7 @@ const QRCodes = () => {
                             <div style={{
                               fontSize: '12px',
                               color: '#6B7280'
-                            }}>Scans</div>
+                            }}>{t('qrCodes.stats.totalScans')}</div>
                           </div>
                         </div>
 
@@ -598,9 +600,9 @@ const QRCodes = () => {
                               color: '#374151',
                               cursor: 'pointer'
                             }}
-                            title="Download PNG"
+                            title={t('qrCodes.actions.download')}
                           >
-                            Download
+                            {t('qrCodes.actions.download')}
                           </button>
                           <button
                             onClick={(e) => {
@@ -619,7 +621,7 @@ const QRCodes = () => {
                               cursor: 'pointer'
                             }}
                           >
-                            Customize
+                            {t('qrCodes.actions.customize')}
                           </button>
                           <button
                             onClick={(e) => {
@@ -637,7 +639,7 @@ const QRCodes = () => {
                               cursor: 'pointer'
                             }}
                           >
-                            Delete
+                            {t('qrCodes.actions.delete')}
                           </button>
                         </div>
                       </div>
@@ -675,7 +677,7 @@ const QRCodes = () => {
                     fontWeight: '700',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Select Link for QR Code</h2>
+                  }}>{t('qrCodes.generate.selectLink')}</h2>
 
                   <div style={{
                     maxHeight: '400px',
@@ -710,7 +712,7 @@ const QRCodes = () => {
                           fontWeight: '600',
                           color: '#111827',
                           marginBottom: '4px'
-                        }}>{link.title || 'Untitled Link'}</div>
+                        }}>{link.title || t('myLinks.table.title')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#3B82F6'
@@ -733,7 +735,7 @@ const QRCodes = () => {
                       cursor: 'pointer'
                     }}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </div>
@@ -767,7 +769,7 @@ const QRCodes = () => {
                     fontWeight: '700',
                     color: '#111827',
                     marginBottom: '20px'
-                  }}>Customize QR Code</h2>
+                  }}>{t('qrCodes.generate.customize')}</h2>
 
                   <div style={{ marginBottom: '20px' }}>
                     <label style={{
@@ -776,7 +778,7 @@ const QRCodes = () => {
                       fontWeight: '500',
                       color: '#374151',
                       marginBottom: '8px'
-                    }}>Size (pixels)</label>
+                    }}>{t('qrCodes.generate.size')}</label>
                     <input
                       type="number"
                       value={qrOptions.size}
@@ -800,7 +802,7 @@ const QRCodes = () => {
                       fontWeight: '500',
                       color: '#374151',
                       marginBottom: '8px'
-                    }}>Format</label>
+                    }}>{t('qrCodes.generate.format')}</label>
                     <select
                       value={qrOptions.format}
                       onChange={(e) => setQrOptions({...qrOptions, format: e.target.value})}
@@ -813,10 +815,10 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="png">PNG</option>
-                      <option value="svg">SVG</option>
-                      <option value="pdf">PDF</option>
-                      <option value="jpg">JPG</option>
+                      <option value="png">{t('qrCodes.formats.png')}</option>
+                      <option value="svg">{t('qrCodes.formats.svg')}</option>
+                      <option value="pdf">{t('qrCodes.formats.pdf')}</option>
+                      <option value="jpg">{t('qrCodes.formats.jpg')}</option>
                     </select>
                   </div>
 
@@ -833,7 +835,7 @@ const QRCodes = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Foreground Color</label>
+                      }}>{t('qrCodes.generate.foregroundColor')}</label>
                       <input
                         type="color"
                         value={qrOptions.foregroundColor}
@@ -855,7 +857,7 @@ const QRCodes = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Background Color</label>
+                      }}>{t('qrCodes.generate.backgroundColor')}</label>
                       <input
                         type="color"
                         value={qrOptions.backgroundColor}
@@ -879,7 +881,7 @@ const QRCodes = () => {
                       fontWeight: '500',
                       color: '#374151',
                       marginBottom: '8px'
-                    }}>Error Correction Level</label>
+                    }}>{t('qrCodes.generate.errorCorrection')}</label>
                     <select
                       value={qrOptions.errorCorrection}
                       onChange={(e) => setQrOptions({...qrOptions, errorCorrection: e.target.value})}
@@ -892,10 +894,10 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="L">Low (7%)</option>
-                      <option value="M">Medium (15%)</option>
-                      <option value="Q">Quartile (25%)</option>
-                      <option value="H">High (30%)</option>
+                      <option value="L">{t('qrCodes.errorLevels.low')}</option>
+                      <option value="M">{t('qrCodes.errorLevels.medium')}</option>
+                      <option value="Q">{t('qrCodes.errorLevels.quartile')}</option>
+                      <option value="H">{t('qrCodes.errorLevels.high')}</option>
                     </select>
                   </div>
 
@@ -919,7 +921,7 @@ const QRCodes = () => {
                     <span style={{
                       fontSize: '14px',
                       color: '#374151'
-                    }}>Include margin around QR code</span>
+                    }}>{t('qrCodes.generate.includeMargin')}</span>
                   </label>
 
                   <div style={{
@@ -943,7 +945,7 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                     <button
                       onClick={() => {
@@ -965,7 +967,7 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      {selectedLink ? 'Generate' : 'Save Settings'}
+                      {selectedLink ? t('qrCodes.generate.generateButton') : t('common.save')}
                     </button>
                   </div>
                 </div>
