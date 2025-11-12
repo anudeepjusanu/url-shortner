@@ -17,7 +17,7 @@
 
 .main-area {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 0;
   margin-top: 64px;
   display: flex;
   flex-direction: column;
@@ -25,6 +25,13 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: calc(100vh - 64px);
+}
+
+/* Desktop: Add margin for sidebar */
+@media (min-width: 1024px) {
+  .main-area {
+    margin-left: 250px;
+  }
 }
 
 /* Header styles removed - using dedicated CreateLinkHeader component */
