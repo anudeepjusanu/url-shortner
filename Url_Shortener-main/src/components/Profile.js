@@ -238,11 +238,7 @@ const Profile = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             {/* Page Header */}
             <div className="page-header" style={{
               marginBottom: '24px'
@@ -946,24 +942,14 @@ const Profile = () => {
                   }}>{t('profile.notifications.title')}</h3>
 
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.emailNotifications}
                         onChange={(e) => setPreferences({...preferences, emailNotifications: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -976,24 +962,14 @@ const Profile = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.marketingEmails}
                         onChange={(e) => setPreferences({...preferences, marketingEmails: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -1006,28 +982,19 @@ const Profile = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.weeklyReports}
                         onChange={(e) => setPreferences({...preferences, weeklyReports: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Weekly Reports</div>
+                        }}>{t('profile.preferences.weeklyReports')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'

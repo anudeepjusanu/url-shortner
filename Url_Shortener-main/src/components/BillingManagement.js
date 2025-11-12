@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
 import "./BillingManagement.css";
 
 const BillingManagement = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
   const [billingData, setBillingData] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -39,42 +41,42 @@ const BillingManagement = () => {
   };
 
   const handlePauseSubscription = async () => {
-    if (!window.confirm("Are you sure you want to pause your subscription?"))
+    if (!window.confirm(t('subscription.confirmPauseSubscription')))
       return;
 
     try {
       await api.post("/subscriptions/pause");
-      alert("Subscription paused successfully");
+      alert(t('subscription.subscriptionPausedSuccess'));
       loadBillingData();
     } catch (error) {
-      alert("Failed to pause subscription");
+      alert(t('subscription.failedToPauseSubscription'));
     }
   };
 
   const handleResumeSubscription = async () => {
     try {
       await api.post("/subscriptions/resume");
-      alert("Subscription resumed successfully");
+      alert(t('subscription.subscriptionResumedSuccess'));
       loadBillingData();
     } catch (error) {
-      alert("Failed to resume subscription");
+      alert(t('subscription.failedToResumeSubscription'));
     }
   };
 
   const handleCancelSubscription = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to cancel? You will lose premium features at the end of your billing period."
+        t('subscription.confirmCancelSubscription')
       )
     )
       return;
 
     try {
       await api.post("/subscriptions/cancel", { immediate: false });
-      alert("Subscription will cancel at the end of the billing period");
+      alert(t('subscription.subscriptionWillCancelAtPeriodEnd'));
       loadBillingData();
     } catch (error) {
-      alert("Failed to cancel subscription");
+      alert(t('subscription.failedToCancelSubscription'));
     }
   };
 
@@ -94,7 +96,7 @@ const BillingManagement = () => {
     } catch (error) {
       setCouponValidation({
         valid: false,
-        message: error.response?.data?.message || "Invalid coupon code",
+        message: error.response?.data?.message || t('subscription.invalidCouponCode'),
       });
     }
   };
@@ -106,27 +108,27 @@ const BillingManagement = () => {
       await api.post("/subscriptions/apply-coupon", {
         couponCode: couponCode.toUpperCase(),
       });
-      alert("Coupon applied successfully!");
+      alert(t('subscription.couponAppliedSuccess'));
       setCouponCode("");
       setCouponValidation(null);
       loadBillingData();
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to apply coupon");
+      alert(error.response?.data?.message || t('subscription.failedToApplyCoupon'));
     }
   };
 
   const handleRemovePaymentMethod = async (paymentMethodId) => {
     if (
-      !window.confirm("Are you sure you want to remove this payment method?")
+      !window.confirm(t('subscription.confirmRemovePaymentMethod'))
     )
       return;
 
     try {
       await api.delete(`/subscriptions/payment-methods/${paymentMethodId}`);
-      alert("Payment method removed");
+      alert(t('subscription.paymentMethodRemoved'));
       loadBillingData();
     } catch (error) {
-      alert("Failed to remove payment method");
+      alert(t('subscription.failedToRemovePaymentMethod'));
     }
   };
 
@@ -135,10 +137,10 @@ const BillingManagement = () => {
       await api.put(
         `/subscriptions/payment-methods/${paymentMethodId}/default`
       );
-      alert("Default payment method updated");
+      alert(t('subscription.defaultPaymentMethodUpdated'));
       loadBillingData();
     } catch (error) {
-      alert("Failed to update default payment method");
+      alert(t('subscription.failedToUpdateDefaultPaymentMethod'));
     }
   };
 
@@ -149,17 +151,17 @@ const BillingManagement = () => {
       );
       window.open(response.data.data.pdf, "_blank");
     } catch (error) {
-      alert("Failed to download invoice");
+      alert(t('subscription.failedToDownloadInvoice'));
     }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      active: { color: "green", label: "Active", icon: "✓" },
-      trialing: { color: "blue", label: "Trial", icon: "◷" },
-      past_due: { color: "red", label: "Past Due", icon: "⚠" },
-      cancelled: { color: "gray", label: "Cancelled", icon: "✕" },
-      paused: { color: "yellow", label: "Paused", icon: "❚❚" },
+      active: { color: "green", label: t('subscription.status.active'), icon: "✓" },
+      trialing: { color: "blue", label: t('subscription.status.trial'), icon: "◷" },
+      past_due: { color: "red", label: t('subscription.status.pastDue'), icon: "⚠" },
+      cancelled: { color: "gray", label: t('subscription.status.cancelled'), icon: "✕" },
+      paused: { color: "yellow", label: t('subscription.status.paused'), icon: "❚❚" },
     };
 
     const config = statusConfig[status] || statusConfig.active;
@@ -180,7 +182,7 @@ const BillingManagement = () => {
           <div className="analytics-main">
             <div className="loading-container">
               <div className="loading-spinner"></div>
-              <p>Loading billing information...</p>
+              <p>{t('subscription.loadingBillingInfo')}</p>
             </div>
           </div>
         </div>
@@ -196,7 +198,7 @@ const BillingManagement = () => {
           <Sidebar />
           <div className="analytics-main">
             <div className="error-container">
-              <p>Failed to load billing information</p>
+              <p>{t('subscription.failedToLoadBillingInfo')}</p>
             </div>
           </div>
         </div>
@@ -214,9 +216,9 @@ const BillingManagement = () => {
             {/* Header */}
             <div className="billing-header">
               <div>
-                <h1 className="billing-title">Billing & Subscription</h1>
+                <h1 className="billing-title">{t('subscription.title')}</h1>
                 <p className="billing-subtitle">
-                  Manage your subscription, payment methods, and billing history
+                  {t('subscription.subtitle')}
                 </p>
               </div>
             </div>
@@ -229,7 +231,7 @@ const BillingManagement = () => {
                 }`}
                 onClick={() => setActiveTab("overview")}
               >
-                Overview
+                {t('subscription.tabs.overview')}
               </button>
               <button
                 className={`tab-button ${
@@ -237,7 +239,7 @@ const BillingManagement = () => {
                 }`}
                 onClick={() => setActiveTab("payment-methods")}
               >
-                Payment Methods
+                {t('subscription.tabs.paymentMethods')}
               </button>
               <button
                 className={`tab-button ${
@@ -245,13 +247,13 @@ const BillingManagement = () => {
                 }`}
                 onClick={() => setActiveTab("invoices")}
               >
-                Invoices
+                {t('subscription.tabs.invoices')}
               </button>
               <button
                 className={`tab-button ${activeTab === "usage" ? "active" : ""}`}
                 onClick={() => setActiveTab("usage")}
               >
-                Usage
+                {t('subscription.tabs.usage')}
               </button>
             </div>
 
@@ -262,7 +264,7 @@ const BillingManagement = () => {
                 <div className="billing-card">
                   <div className="card-header">
                     <div>
-                      <h2 className="card-title">Current Plan</h2>
+                      <h2 className="card-title">{t('subscription.currentPlan.title')}</h2>
                       <p className="card-subtitle">
                         {billingData.plan.details?.displayName ||
                           billingData.plan.name}
@@ -277,9 +279,9 @@ const BillingManagement = () => {
                       <div className="alert alert-info">
                         <span className="alert-icon">ℹ</span>
                         <div>
-                          <p className="alert-title">Trial Period Active</p>
+                          <p className="alert-title">{t('subscription.trialPeriodActive')}</p>
                           <p className="alert-text">
-                            Your trial ends on{" "}
+                            {t('subscription.trialEndsOn')}{" "}
                             {new Date(
                               billingData.subscription.trialEnd
                             ).toLocaleDateString()}
@@ -292,30 +294,30 @@ const BillingManagement = () => {
                   {billingData.subscription.discountCode && (
                     <div className="alert alert-success">
                       <span className="alert-icon">🎁</span>
-                      <div>
-                        <p className="alert-title">
-                          Discount Applied: {billingData.subscription.discountCode}
-                        </p>
-                        {billingData.subscription.discountPercentage && (
-                          <p className="alert-text">
-                            {billingData.subscription.discountPercentage}% off
+                        <div>
+                          <p className="alert-title">
+                            {t('subscription.discountApplied')}: {billingData.subscription.discountCode}
                           </p>
-                        )}
-                      </div>
+                          {billingData.subscription.discountPercentage && (
+                            <p className="alert-text">
+                              {billingData.subscription.discountPercentage}% {t('subscription.off')}
+                            </p>
+                          )}
+                        </div>
                     </div>
                   )}
 
                   {/* Plan Details Grid */}
                   <div className="plan-details-grid">
                     <div className="plan-detail">
-                      <p className="detail-label">Billing Cycle</p>
+                      <p className="detail-label">{t('subscription.billingCycle')}</p>
                       <p className="detail-value">
-                        {billingData.subscription.billingCycle || "Monthly"}
+                        {billingData.subscription.billingCycle || t('subscription.monthly')}
                       </p>
                     </div>
                     {billingData.subscription.currentPeriodEnd && (
                       <div className="plan-detail">
-                        <p className="detail-label">Next Billing Date</p>
+                        <p className="detail-label">{t('subscription.nextBilling')}</p>
                         <p className="detail-value">
                           {new Date(
                             billingData.subscription.currentPeriodEnd
@@ -332,7 +334,7 @@ const BillingManagement = () => {
                         className="btn btn-success"
                         onClick={handleResumeSubscription}
                       >
-                        ▶ Resume Subscription
+                        ▶ {t('subscription.resumeSubscription')}
                       </button>
                     ) : (
                       billingData.subscription.status === "active" && (
@@ -340,7 +342,7 @@ const BillingManagement = () => {
                           className="btn btn-secondary"
                           onClick={handlePauseSubscription}
                         >
-                          ❚❚ Pause Subscription
+                          ❚❚ {t('subscription.pauseSubscription')}
                         </button>
                       )
                     )}
@@ -351,12 +353,12 @@ const BillingManagement = () => {
                           className="btn btn-danger"
                           onClick={handleCancelSubscription}
                         >
-                          ✕ Cancel Subscription
+                          ✕ {t('subscription.cancelSubscriptionButton')}
                         </button>
                       )}
 
                     <a href="/pricing" className="btn btn-primary">
-                      Change Plan
+                      {t('subscription.changePlan')}
                     </a>
                   </div>
                 </div>
@@ -364,16 +366,16 @@ const BillingManagement = () => {
                 {/* Upcoming Invoice */}
                 {billingData.upcomingInvoice && (
                   <div className="billing-card">
-                    <h2 className="card-title">Upcoming Invoice</h2>
+                    <h2 className="card-title">{t('subscription.upcomingInvoice')}</h2>
                     <div className="invoice-summary">
                       <div>
-                        <p className="detail-label">Amount Due</p>
+                        <p className="detail-label">{t('subscription.amountDue')}</p>
                         <p className="detail-value large">
                           ${billingData.upcomingInvoice.amount.toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="detail-label">Due Date</p>
+                        <p className="detail-label">{t('subscription.dueDate')}</p>
                         <p className="detail-value">
                           {new Date(
                             billingData.upcomingInvoice.date
@@ -384,7 +386,7 @@ const BillingManagement = () => {
 
                     {billingData.upcomingInvoice.lines.length > 0 && (
                       <div className="invoice-lines">
-                        <h3 className="invoice-lines-title">Line Items</h3>
+                        <h3 className="invoice-lines-title">{t('subscription.lineItems')}</h3>
                         {billingData.upcomingInvoice.lines.map((line, index) => (
                           <div key={index} className="invoice-line">
                             <span>{line.description}</span>
@@ -398,7 +400,7 @@ const BillingManagement = () => {
 
                 {/* Apply Coupon */}
                 <div className="billing-card">
-                  <h2 className="card-title">Apply Discount Code</h2>
+                  <h2 className="card-title">{t('subscription.applyDiscountCode')}</h2>
                   <div className="coupon-form">
                     <input
                       type="text"
@@ -407,21 +409,21 @@ const BillingManagement = () => {
                         setCouponCode(e.target.value.toUpperCase());
                         setCouponValidation(null);
                       }}
-                      placeholder="Enter coupon code"
+                      placeholder={t('subscription.enterCouponCode')}
                       className="coupon-input"
                     />
                     <button
                       className="btn btn-secondary"
                       onClick={handleValidateCoupon}
                     >
-                      Validate
+                      {t('subscription.validate')}
                     </button>
                     <button
                       className="btn btn-primary"
                       onClick={handleApplyCoupon}
                       disabled={!couponValidation?.valid}
                     >
-                      Apply
+                      {t('subscription.apply')}
                     </button>
                   </div>
 
@@ -443,18 +445,18 @@ const BillingManagement = () => {
               <div className="tab-content">
                 <div className="billing-card">
                   <div className="card-header">
-                    <h2 className="card-title">Payment Methods</h2>
+                    <h2 className="card-title">{t('subscription.paymentMethod')}</h2>
                     <button
                       className="btn btn-primary"
                       onClick={() => setShowAddPayment(true)}
                     >
-                      + Add Payment Method
+                      + {t('subscription.addPaymentMethod')}
                     </button>
                   </div>
 
                   <div className="payment-methods-list">
                     {billingData.paymentMethods.length === 0 ? (
-                      <p className="empty-state">No payment methods added yet</p>
+                      <p className="empty-state">{t('subscription.noPaymentMethodsYet')}</p>
                     ) : (
                       billingData.paymentMethods.map((method) => (
                         <div key={method._id} className="payment-method-item">
@@ -465,11 +467,11 @@ const BillingManagement = () => {
                                 {method.card.brand} •••• {method.card.last4}
                               </p>
                               <p className="payment-expiry">
-                                Expires {method.card.expMonth}/{method.card.expYear}
+                                {t('subscription.expires')} {method.card.expMonth}/{method.card.expYear}
                               </p>
                             </div>
                             {method.isDefault && (
-                              <span className="default-badge">Default</span>
+                              <span className="default-badge">{t('subscription.default')}</span>
                             )}
                           </div>
                           <div className="payment-method-actions">
@@ -480,14 +482,14 @@ const BillingManagement = () => {
                                   handleSetDefaultPaymentMethod(method._id)
                                 }
                               >
-                                Set as Default
+                                {t('subscription.setAsDefault')}
                               </button>
                             )}
                             <button
                               className="btn-link danger"
                               onClick={() => handleRemovePaymentMethod(method._id)}
                             >
-                              Remove
+                              {t('common.delete')}
                             </button>
                           </div>
                         </div>
@@ -502,23 +504,23 @@ const BillingManagement = () => {
             {activeTab === "invoices" && (
               <div className="tab-content">
                 <div className="billing-card">
-                  <h2 className="card-title">Invoice History</h2>
+                  <h2 className="card-title">{t('subscription.billing.title')}</h2>
 
                   <div className="invoices-table">
                     <table>
                       <thead>
                         <tr>
-                          <th>Date</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                          <th>Actions</th>
+                          <th>{t('subscription.billing.date')}</th>
+                          <th>{t('subscription.billing.amount')}</th>
+                          <th>{t('subscription.billing.status')}</th>
+                          <th>{t('myLinks.table.actions')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {invoices.length === 0 ? (
                           <tr>
                             <td colSpan="4" className="empty-state">
-                              No invoices yet
+                              {t('subscription.noInvoicesYet')}
                             </td>
                           </tr>
                         ) : (
@@ -543,7 +545,7 @@ const BillingManagement = () => {
                                   className="btn-link"
                                   onClick={() => downloadInvoice(invoice.id)}
                                 >
-                                  ⬇ Download
+                                  ⬇ {t('subscription.billing.download')}
                                 </button>
                               </td>
                             </tr>
@@ -560,12 +562,12 @@ const BillingManagement = () => {
             {activeTab === "usage" && (
               <div className="tab-content">
                 <div className="billing-card">
-                  <h2 className="card-title">Current Usage</h2>
+                  <h2 className="card-title">{t('subscription.currentUsage')}</h2>
 
                   <div className="usage-grid">
                     <div className="usage-card">
                       <div className="usage-header">
-                        <span className="usage-label">URLs This Month</span>
+                        <span className="usage-label">{t('subscription.urlsThisMonth')}</span>
                         <span className="usage-icon blue">📊</span>
                       </div>
                       <p className="usage-value">
@@ -573,15 +575,15 @@ const BillingManagement = () => {
                       </p>
                       {billingData.plan.details?.features.urlsPerMonth !== -1 && (
                         <p className="usage-limit">
-                          of {billingData.plan.details?.features.urlsPerMonth}{" "}
-                          included
+                          {t('subscription.of')} {billingData.plan.details?.features.urlsPerMonth}{" "}
+                          {t('subscription.included')}
                         </p>
                       )}
                     </div>
 
                     <div className="usage-card">
                       <div className="usage-header">
-                        <span className="usage-label">Total URLs Created</span>
+                        <span className="usage-label">{t('subscription.totalUrlsCreated')}</span>
                         <span className="usage-icon green">✓</span>
                       </div>
                       <p className="usage-value">
@@ -591,7 +593,7 @@ const BillingManagement = () => {
 
                     <div className="usage-card">
                       <div className="usage-header">
-                        <span className="usage-label">Custom Domains</span>
+                        <span className="usage-label">{t('subscription.customDomains')}</span>
                         <span className="usage-icon purple">🌐</span>
                       </div>
                       <p className="usage-value">
@@ -599,15 +601,15 @@ const BillingManagement = () => {
                       </p>
                       {billingData.plan.details?.features.customDomains > 0 && (
                         <p className="usage-limit">
-                          of {billingData.plan.details?.features.customDomains}{" "}
-                          included
+                          {t('subscription.of')} {billingData.plan.details?.features.customDomains}{" "}
+                          {t('subscription.included')}
                         </p>
                       )}
                     </div>
 
                     <div className="usage-card">
                       <div className="usage-header">
-                        <span className="usage-label">API Calls This Month</span>
+                        <span className="usage-label">{t('subscription.apiCallsThisMonth')}</span>
                         <span className="usage-icon orange">⚡</span>
                       </div>
                       <p className="usage-value">
@@ -618,13 +620,13 @@ const BillingManagement = () => {
                     {billingData.usage.overageCharges > 0 && (
                       <div className="usage-card overage">
                         <div className="usage-header">
-                          <span className="usage-label">Overage Charges</span>
+                          <span className="usage-label">{t('subscription.overageCharges')}</span>
                           <span className="usage-icon red">⚠</span>
                         </div>
                         <p className="usage-value">
                           ${billingData.usage.overageCharges.toFixed(2)}
                         </p>
-                        <p className="usage-limit">Added to next invoice</p>
+                        <p className="usage-limit">{t('subscription.addedToNextInvoice')}</p>
                       </div>
                     )}
                   </div>

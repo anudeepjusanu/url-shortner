@@ -502,11 +502,7 @@ const CustomDomains = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
               flexDirection: 'row',

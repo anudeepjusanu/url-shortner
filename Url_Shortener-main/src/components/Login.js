@@ -392,11 +392,8 @@ const Login = () => {
               disabled={loading}
             >
               {loading ? (
-                <div className="loading-spinner">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 1V4M8 12V15M15 8H12M4 8H1M12.7279 3.27208L10.6066 5.39345M5.39345 10.6066L3.27208 12.7279M12.7279 12.7279L10.6066 10.6066M5.39345 5.39345L3.27208 3.27208" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  {t('common.loading')}
+                <div>
+                  <div className="spinner"></div>
                 </div>
               ) : (
                 t('auth.login.button')
