@@ -9,13 +9,24 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^16.2.4",
     "react-router-dom": "^6.30.1",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "build:prod": "REACT_APP_API_URL=https://laghhu.link/api npm run build",
+    "test": "react-scripts test --watchAll=false",
+    "test:watch": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx}",
+    "lint:fix": "eslint src/**/*.{js,jsx} --fix",
+    "serve": "serve -s build -l 3000",
+    "docker:build": "docker build -t url-shortener-ui .",
+    "docker:run": "docker run -p 3000:80 url-shortener-ui"
   },
   "eslintConfig": {
     "extends": [
