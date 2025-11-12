@@ -2,6 +2,7 @@ import React from "react";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 
 const UTMBuilder = () => {
   return (

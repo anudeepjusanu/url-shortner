@@ -4,7 +4,9 @@ import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 import "./ContentFilter.css";
+import "./DashboardLayout.css";
 
 const ContentFilter = () => {
   const { t } = useTranslation();

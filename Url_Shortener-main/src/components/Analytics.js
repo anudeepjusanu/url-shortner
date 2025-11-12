@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import { analyticsAPI } from "../services/api";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 
 const Analytics = () => {
   const { t } = useTranslation();

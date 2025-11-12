@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
 import "./BillingManagement.css";
+import "./DashboardLayout.css";
 
 const BillingManagement = () => {
   const { t } = useTranslation();

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import './Dashboard.css';
+import './DashboardLayout.css';
 
 const Dashboard = () => {
   const { t } = useTranslation();

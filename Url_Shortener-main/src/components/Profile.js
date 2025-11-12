@@ -5,6 +5,7 @@ import MainHeader from "./MainHeader";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import "./Profile.css";
+import "./DashboardLayout.css";
 
 const Profile = () => {
   const { t } = useTranslation();

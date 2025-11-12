@@ -4,7 +4,9 @@ import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 import "./QRCodes.css";
+import "./DashboardLayout.css";
 
 const QRCodes = () => {
   const { t } = useTranslation();

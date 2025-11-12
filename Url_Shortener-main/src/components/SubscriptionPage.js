@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 import "./SubscriptionPage.css";
+import "./DashboardLayout.css";
 
 const SubscriptionPage = () => {
   const { t } = useTranslation();
