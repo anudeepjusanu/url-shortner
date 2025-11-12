@@ -55,6 +55,13 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/analytics/:id" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Analytics />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/create-short-link" element={
               <ProtectedRoute>
                 <Layout>

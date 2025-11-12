@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
+import { urlsAPI, analyticsAPI, authAPI } from '../services/api';
 import './Dashboard.css';
 import './DashboardLayout.css';
 
@@ -14,20 +15,121 @@ const Dashboard = () => {
   const [customBackhalf, setCustomBackhalf] = useState('');
   const [campaign, setCampaign] = useState('');
   const [timeFilter, setTimeFilter] = useState('Last 7 days');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalClicks: 0,
+    uniqueVisitors: 0,
+    clickRate: 0,
+    totalLinks: 0
+  });
+  const [recentLinks, setRecentLinks] = useState([]);
+  const [userName, setUserName] = useState('User');
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [timeFilter]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch user profile
+      try {
+        const profileResponse = await authAPI.getProfile();
+        if (profileResponse && profileResponse.data && profileResponse.data.user) {
+          const user = profileResponse.data.user;
+          setUserName(user.name || user.username || user.email?.split('@')[0] || 'User');
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      }
+
+      // Fetch analytics overview
+      try {
+        const period = timeFilter === 'Last 7 days' ? '7d' : timeFilter === 'Last 30 days' ? '30d' : '90d';
+        const analyticsResponse = await analyticsAPI.getOverview({ period });
+        if (analyticsResponse && analyticsResponse.data) {
+          setStats({
+            totalClicks: analyticsResponse.data.totalClicks || 0,
+            uniqueVisitors: analyticsResponse.data.uniqueClicks || 0,
+            clickRate: analyticsResponse.data.clickThroughRate || 0,
+            totalLinks: analyticsResponse.data.totalUrls || 0
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching analytics:', err);
+      }
+
+      // Fetch recent links
+      try {
+        const linksResponse = await urlsAPI.list({ page: 1, limit: 3, sortBy: 'createdAt', sortOrder: 'desc' });
+        if (linksResponse && linksResponse.data) {
+          const links = linksResponse.data.urls || linksResponse.data.data?.urls || [];
+          setRecentLinks(links);
+        }
+      } catch (err) {
+        console.error('Error fetching recent links:', err);
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNavigation = (path) => {
     navigate(path);
   };
 
-  const handleShortenUrl = (e) => {
+  const handleShortenUrl = async (e) => {
     e.preventDefault();
-    console.log('Shortening URL:', { longUrl, customBackhalf, campaign });
-    // Handle URL shortening logic here
+    try {
+      const response = await urlsAPI.createUrl({
+        originalUrl: longUrl,
+        customCode: customBackhalf || undefined,
+        title: campaign || undefined,
+      });
+
+      if (response.success) {
+        // Clear form
+        setLongUrl('');
+        setCustomBackhalf('');
+        setCampaign('');
+        // Refresh data
+        fetchDashboardData();
+        // Navigate to my links
+        navigate('/my-links');
+      }
+    } catch (err) {
+      console.error('Error creating short link:', err);
+      alert(err.message || 'Failed to create short link');
+    }
   };
 
   const handleAdvancedSettings = () => {
     console.log('Opening advanced settings');
     // Handle advanced settings modal/dropdown
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    }
+    const months = Math.floor(diffDays / 30);
+    return `${months} month${months > 1 ? 's' : ''} ago`;
+  };
+
+  const getShortUrl = (link) => {
+    const domain = link.domain || 'laghhu.link';
+    return `${domain}/${link.shortCode}`;
   };
 
 
@@ -56,7 +158,7 @@ const Dashboard = () => {
                   fontWeight: '600',
                   color: 'white',
                   margin: '0 0 6px 0'
-                }}>{t('dashboard.welcome')}, Ahmed!</h2>
+                }}>{t('dashboard.welcome')}, {userName}!</h2>
                 <p style={{
                   fontSize: '14px',
                   color: 'rgba(255, 255, 255, 0.9)',
@@ -515,14 +617,14 @@ const Dashboard = () => {
                     fontWeight: '600',
                     color: '#1F2937',
                     marginBottom: '6px'
-                  }}>2,847</div>
+                  }}>{loading ? '...' : stats.totalClicks.toLocaleString()}</div>
                   <div className="stats-change positive" style={{
                     fontSize: '12px',
                     color: '#10B981',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↑ {t('dashboard.changeFromLastWeek', { change: '+8%' })}</div>
+                  }}>↑ {timeFilter}</div>
                 </div>
                 <div className="stats-icon green" style={{
                   width: '40px',
@@ -560,14 +662,14 @@ const Dashboard = () => {
                     fontWeight: '600',
                     color: '#1F2937',
                     marginBottom: '6px'
-                  }}>1,924</div>
+                  }}>{loading ? '...' : stats.uniqueVisitors.toLocaleString()}</div>
                   <div className="stats-change positive" style={{
                     fontSize: '12px',
                     color: '#10B981',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↑ {t('dashboard.changeFromLastWeek', { change: '+12%' })}</div>
+                  }}>↑ {timeFilter}</div>
                 </div>
                 <div className="stats-icon blue" style={{
                   width: '40px',
@@ -599,20 +701,20 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>{t('dashboard.stats.clickRate')}</div>
+                  }}>{t('dashboard.stats.totalLinks')}</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
                     color: '#1F2937',
                     marginBottom: '6px'
-                  }}>67.5%</div>
-                  <div className="stats-change negative" style={{
+                  }}>{loading ? '...' : stats.totalLinks.toLocaleString()}</div>
+                  <div className="stats-change positive" style={{
                     fontSize: '12px',
-                    color: '#EF4444',
+                    color: '#10B981',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}>↓ {t('dashboard.changeFromLastWeek', { change: '-2%' })}</div>
+                  }}>↑ {timeFilter}</div>
                 </div>
                 <div className="stats-icon yellow" style={{
                   width: '40px',
@@ -668,26 +770,15 @@ const Dashboard = () => {
               flexDirection: 'column',
               gap: '12px'
             }}>
-              {[
-                {
-                  short: 'linksa.co/summer-sale',
-                  long: 'https://mystore.com/summer-collection-2024-discount-offer',
-                  clicks: 245,
-                  created: '2 days ago'
-                },
-                {
-                  short: 'linksa.co/product-launch',
-                  long: 'https://company.com/new-product-announcement-2024',
-                  clicks: 189,
-                  created: '5 days ago'
-                },
-                {
-                  short: 'linksa.co/event-2024',
-                  long: 'https://events.com/riyadh-tech-conference-2024',
-                  clicks: 567,
-                  created: '1 month ago'
-                }
-              ].map((link, index) => (
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#6B7280' }}>
+                  Loading recent links...
+                </div>
+              ) : recentLinks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280' }}>
+                  <p>No links created yet. Create your first short link above!</p>
+                </div>
+              ) : recentLinks.map((link, index) => (
                 <div key={index} className="link-item" style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -698,15 +789,15 @@ const Dashboard = () => {
                   backgroundColor: '#FAFAFA'
                 }}>
                   <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
-                    <a href="#" className="short-url" style={{
+                    <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
                       fontSize: '14px',
                       fontWeight: '600',
                       color: '#3B82F6',
                       textDecoration: 'none',
                       display: 'block',
                       marginBottom: '4px'
-                    }}>{link.short}</a>
-                    <a href="#" className="original-url" style={{
+                    }}>{getShortUrl(link)}</a>
+                    <a href={link.originalUrl} target="_blank" rel="noopener noreferrer" className="original-url" style={{
                       fontSize: '13px',
                       color: '#6B7280',
                       textDecoration: 'none',
@@ -715,15 +806,15 @@ const Dashboard = () => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap'
-                    }}>{link.long}</a>
+                    }}>{link.originalUrl}</a>
                     <div className="link-meta" style={{
                       display: 'flex',
                       gap: '16px',
                       fontSize: '12px',
                       color: '#9CA3AF'
                     }}>
-                      <span>{t('dashboard.clicks', { count: link.clicks })}</span>
-                      <span>{t('dashboard.created', { time: link.created })}</span>
+                      <span>{link.clickCount || 0} clicks</span>
+                      <span>{formatDate(link.createdAt)}</span>
                     </div>
                   </div>
                   <div className="link-actions" style={{
