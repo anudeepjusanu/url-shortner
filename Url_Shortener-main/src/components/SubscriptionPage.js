@@ -13,11 +13,7 @@ const SubscriptionPage = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             <div className="page-header" style={{
               marginBottom: '24px'
             }}>
@@ -335,7 +331,7 @@ const SubscriptionPage = () => {
                     lineHeight: '1.6',
                     marginBottom: '16px'
                   }}>
-                    Ahmed Al-Rashid<br />123 King Fahd Road<br />Riyadh, Saudi Arabia 12345
+                    {t('subscription.sampleCustomerName')}<br />{t('subscription.sampleStreetAddress')}<br />{t('subscription.sampleCityCountry')}
                   </div>
                   {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="billing-link" style={{

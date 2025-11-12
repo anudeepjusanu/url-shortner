@@ -16,28 +16,44 @@
 [dir="rtl"] .user-profile,
 [dir="rtl"] .create-link-header-left,
 [dir="rtl"] .create-link-header-right {
-  flex-direction: row-reverse;
+  flex-direction: row-reverse !important;
+}
+
+/* Ensure no layout shift on direction change */
+[dir="rtl"] * {
+  text-align: inherit;
 }
 
 /* Margin and Padding Swaps */
 [dir="rtl"] .logo-section {
-  margin-right: 0;
-  margin-left: auto;
+  margin-right: 0 !important;
+  margin-left: auto !important;
 }
 
 [dir="rtl"] .logo-text {
-  margin-left: 0;
-  margin-right: 12px;
+  margin-left: 0 !important;
+  margin-right: 12px !important;
 }
 
 [dir="rtl"] .language-toggle {
-  margin-left: 0;
-  margin-right: 20px;
+  margin-left: 0 !important;
+  margin-right: 20px !important;
 }
 
 [dir="rtl"] .sign-in-btn {
-  margin-left: 0;
-  margin-right: 16px;
+  margin-left: 0 !important;
+  margin-right: 16px !important;
+}
+
+/* Prevent all containers from shifting */
+[dir="rtl"] .container,
+[dir="rtl"] .main-container,
+[dir="rtl"] .page-container,
+[dir="rtl"] .content-container {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: inherit !important;
+  padding-right: inherit !important;
 }
 
 /* Header and Navigation */
@@ -46,31 +62,49 @@
 }
 
 [dir="rtl"] .landing-nav a {
-  margin-left: 0;
-  margin-right: 32px;
+  margin-left: 0 !important;
+  margin-right: 32px !important;
 }
 
 [dir="rtl"] .landing-nav a:last-child {
-  margin-right: 0;
+  margin-right: 0 !important;
+}
+
+/* Prevent header from jumping */
+[dir="rtl"] .landing-header,
+[dir="rtl"] .header,
+[dir="rtl"] .landing-header-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .header-left,
+[dir="rtl"] .header-center,
+[dir="rtl"] .header-right {
+  transition: none !important;
 }
 
 /* Sidebar */
 [dir="rtl"] .sidebar {
-  left: auto;
-  right: 0;
-  border-left: none;
-  border-right: 1px solid #e5e7eb;
+  left: auto !important;
+  right: 0 !important;
+  border-left: none !important;
+  border-right: 1px solid #e5e7eb !important;
 }
 
 [dir="rtl"] .sidebar-item {
-  padding-left: 24px;
-  padding-right: 16px;
+  padding-left: 24px !important;
+  padding-right: 16px !important;
 }
 
 [dir="rtl"] .sidebar-item svg,
 [dir="rtl"] .sidebar-item .icon {
-  margin-left: 12px;
-  margin-right: 0;
+  margin-left: 12px !important;
+  margin-right: 0 !important;
+}
+
+[dir="rtl"] .nav-item.active::before {
+  left: auto !important;
+  right: 0 !important;
 }
 
 /* Dashboard Layout */
@@ -82,18 +116,24 @@
   margin-right: 250px !important;
 }
 
+[dir="rtl"] .main-area {
+  margin-left: 0 !important;
+  margin-right: 250px !important;
+}
+
 [dir="rtl"] .dashboard-content,
 [dir="rtl"] .main-content,
 [dir="rtl"] .page-wrapper {
-  padding-left: 24px;
-  padding-right: 40px;
+  padding-left: 24px !important;
+  padding-right: 40px !important;
 }
 
 /* Ensure main content area has proper spacing in RTL */
 [dir="rtl"] .dashboard-container,
 [dir="rtl"] .app-container {
   margin-left: 0 !important;
-  margin-right: 250px !important;
+  margin-right: 0 !important;
+  direction: rtl;
 }
 
 /* Analytics and other main layout containers */
@@ -102,9 +142,12 @@
 [dir="rtl"] .custom-domains-layout,
 [dir="rtl"] .qr-codes-layout,
 [dir="rtl"] .my-links-layout,
-[dir="rtl"] .profile-layout {
+[dir="rtl"] .profile-layout,
+[dir="rtl"] .analytics-container,
+[dir="rtl"] .create-short-link-container {
   margin-left: 0 !important;
   margin-right: 0 !important;
+  direction: rtl;
 }
 
 [dir="rtl"] .analytics-main,
@@ -114,9 +157,9 @@
 [dir="rtl"] .my-links-main,
 [dir="rtl"] .profile-main {
   margin-left: 0 !important;
-  margin-right: 250px !important;
-  padding-left: 24px;
-  padding-right: 24px;
+  /* margin-right: 250px !important; */
+  padding-left: 24px !important;
+  padding-right: 24px !important;
 }
 
 /* Fix overlap issues - ensure content starts after sidebar */
@@ -126,9 +169,11 @@
 [dir="rtl"] .qr-codes-content,
 [dir="rtl"] .my-links-content,
 [dir="rtl"] .profile-content {
-  margin-left: 0;
-  margin-right: 0;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   width: 100%;
+  padding-left: 32px !important;
+  padding-right: 32px !important;
 }
 
 /* Cards and Containers */
@@ -920,7 +965,7 @@
   [dir="rtl"] .qr-codes-main,
   [dir="rtl"] .my-links-main,
   [dir="rtl"] .profile-main {
-    margin-right: 250px !important;
+    /* margin-right: 250px !important; */
     margin-left: 0 !important;
     padding-right: 24px !important;
     padding-left: 24px !important;
@@ -1119,7 +1164,7 @@
   [dir="rtl"] .qr-codes-main,
   [dir="rtl"] .my-links-main,
   [dir="rtl"] .profile-main {
-    margin-right: 250px !important;
+    /* margin-right: 100px !important; */
     margin-left: 0 !important;
     padding-right: 24px !important;
     padding-left: 24px !important;
@@ -1200,9 +1245,8 @@
 /* ============================================
    SMOOTH TRANSITIONS FOR DIRECTION CHANGES
    ============================================ */
-* {
-  transition: margin 0.2s ease, padding 0.2s ease;
-}
+/* Removed global transitions to prevent layout jumping */
+/* Transitions are now applied per component as needed */
 
 [dir="rtl"] .sidebar {
   transition: right 0.3s ease, transform 0.3s ease !important;
@@ -1210,7 +1254,7 @@
 
 [dir="rtl"] .dashboard-main,
 [dir="rtl"] .main-content {
-  transition: margin-right 0.3s ease !important;
+  transition: none !important;
 }
 
 /* ============================================
@@ -1371,8 +1415,119 @@
   [dir="rtl"] .landing-header-container {
     padding: 0 12px;
   }
-  
+
   [dir="rtl"] .header-right {
     gap: 6px;
   }
+}
+
+/* ============================================
+   UNIVERSAL RTL FIXES TO PREVENT JUMPING
+   ============================================ */
+
+/* Fix all header components */
+[dir="rtl"] .create-link-header-content,
+[dir="rtl"] .analytics-header-content,
+[dir="rtl"] .header-content {
+  direction: rtl !important;
+}
+
+/* Fix all left/right sections */
+[dir="rtl"] .create-link-header-left,
+[dir="rtl"] .analytics-header-left,
+[dir="rtl"] .hamburger-wrapper-dashboard {
+  flex-direction: row-reverse !important;
+}
+
+[dir="rtl"] .hamburger-wrapper-dashboard {
+  margin-right: 0 !important;
+  margin-left: 12px !important;
+}
+
+/* Ensure all content areas align properly and are centered */
+[dir="rtl"] .main-content,
+[dir="rtl"] .dashboard-content,
+[dir="rtl"] .dashboard-page-content,
+[dir="rtl"] .analytics-content,
+[dir="rtl"] .analytics-page-content,
+[dir="rtl"] .create-short-link-content,
+[dir="rtl"] .content-filter-content,
+[dir="rtl"] .custom-domains-content,
+[dir="rtl"] .qr-codes-content,
+[dir="rtl"] .my-links-content,
+[dir="rtl"] .profile-content,
+[dir="rtl"] .subscription-content,
+[dir="rtl"] .billing-content,
+[dir="rtl"] .utm-builder-content {
+  direction: rtl !important;
+  /* margin: 0 auto !important; */
+  max-width: 1400px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Fix all flex containers */
+[dir="rtl"] .header-actions,
+[dir="rtl"] .card-actions,
+[dir="rtl"] .form-actions,
+[dir="rtl"] .button-group {
+  flex-direction: row-reverse !important;
+}
+
+/* Fix all icon positions */
+[dir="rtl"] .icon-left {
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
+
+[dir="rtl"] .icon-right {
+  margin-right: 8px !important;
+  margin-left: 0 !important;
+}
+
+/* No transition on critical layout properties */
+[dir="rtl"] * {
+  margin-transition: none !important;
+  padding-transition: none !important;
+}
+
+/* Ensure stable width for all containers */
+[dir="rtl"] .container,
+[dir="rtl"] .main-container,
+[dir="rtl"] .page-container,
+[dir="rtl"] .content-container,
+[dir="rtl"] .section-container {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Fix form elements */
+[dir="rtl"] .form-row,
+[dir="rtl"] .input-row,
+[dir="rtl"] .button-row {
+  flex-direction: row-reverse !important;
+}
+
+/* Fix list items */
+[dir="rtl"] .list-item,
+[dir="rtl"] .menu-item,
+[dir="rtl"] .nav-item {
+  text-align: right !important;
+}
+
+/* Fix badges and labels */
+[dir="rtl"] .badge,
+[dir="rtl"] .label,
+[dir="rtl"] .tag {
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
+
+/* Prevent horizontal scrolling in RTL */
+[dir="rtl"] body,
+[dir="rtl"] html,
+[dir="rtl"] .app,
+[dir="rtl"] .App {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
 }

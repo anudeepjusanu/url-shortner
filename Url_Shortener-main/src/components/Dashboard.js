@@ -38,11 +38,7 @@ const Dashboard = () => {
         {/* Sidebar on the left */}
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             {/* Welcome Banner */}
             <div className="welcome-banner" style={{
               background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
@@ -826,6 +822,7 @@ const Dashboard = () => {
         </div>
       </div>
       </div>
+      
     </div>
   );
 };

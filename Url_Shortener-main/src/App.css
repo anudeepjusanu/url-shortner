@@ -8,6 +8,12 @@
   box-sizing: border-box;
 }
 
+/* Prevent layout jumping when switching languages by excluding margin/padding from transitions */
+* {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 0.2s;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 14px;
@@ -392,7 +398,10 @@ html, body {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
-  max-width: 1184px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Create Short Link Page */
@@ -1014,5 +1023,106 @@ input:checked + .toggle-slider:before {
   .logo-icon svg {
     width: 16px;
     height: 12px;
+  }
+}
+
+/* ============================================
+   GLOBAL CONTENT CENTERING FOR ALL PAGES
+   ============================================ */
+
+/* Ensure all page content is centered with equal margins */
+.analytics-content,
+.dashboard-content,
+.dashboard-page-content,
+.analytics-page-content,
+.create-short-link-content,
+.custom-domains-content,
+.my-links-content,
+.profile-content,
+.qr-codes-content,
+.content-filter-content,
+.subscription-content,
+.billing-content,
+.utm-builder-content {
+  max-width: 1400px !important;
+  /* margin: 0 auto !important; */
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive content padding */
+@media (max-width: 1440px) {
+  .analytics-content,
+  .dashboard-content,
+  .dashboard-page-content,
+  .analytics-page-content,
+  .create-short-link-content,
+  .custom-domains-content,
+  .my-links-content,
+  .profile-content,
+  .qr-codes-content,
+  .content-filter-content,
+  .subscription-content,
+  .billing-content,
+  .utm-builder-content {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .analytics-content,
+  .dashboard-content,
+  .dashboard-page-content,
+  .analytics-page-content,
+  .create-short-link-content,
+  .custom-domains-content,
+  .my-links-content,
+  .profile-content,
+  .qr-codes-content,
+  .content-filter-content,
+  .subscription-content,
+  .billing-content,
+  .utm-builder-content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-content,
+  .dashboard-content,
+  .dashboard-page-content,
+  .analytics-page-content,
+  .create-short-link-content,
+  .custom-domains-content,
+  .my-links-content,
+  .profile-content,
+  .qr-codes-content,
+  .content-filter-content,
+  .subscription-content,
+  .billing-content,
+  .utm-builder-content {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-content,
+  .dashboard-content,
+  .dashboard-page-content,
+  .analytics-page-content,
+  .create-short-link-content,
+  .custom-domains-content,
+  .my-links-content,
+  .profile-content,
+  .qr-codes-content,
+  .content-filter-content,
+  .subscription-content,
+  .billing-content,
+  .utm-builder-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
 }

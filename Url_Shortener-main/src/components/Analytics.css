@@ -18,7 +18,7 @@
 /* Main Content Area */
 .analytics-main {
   flex: 1;
-  margin-left: 250px;
+  /* margin-left: 250px; */
   margin-top: 64px;
   background: #f9fafb;
   overflow-y: auto;
@@ -29,11 +29,13 @@
 
 .analytics-content {
   padding: 24px 32px;
-  max-width: none;
-  margin: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  box-sizing: border-box;
 }
 
 /* Page Header */
@@ -862,6 +864,17 @@
     line-height: 26px;
   }
 
+  /* RTL Mobile Adjustments */
+  [dir="rtl"] .chart-legend {
+    flex-direction: row-reverse;
+    justify-content: center;
+  }
+
+  [dir="rtl"] .legend-item {
+    flex-direction: row-reverse;
+  }
+}
+
   .page-subtitle {
     font-size: 13px;
   }
@@ -1025,4 +1038,3 @@
     width: 10px;
     height: 10px;
   }
-}

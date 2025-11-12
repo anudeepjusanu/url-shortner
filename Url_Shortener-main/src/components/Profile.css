@@ -171,21 +171,46 @@
 .profile-checkbox {
   width: 18px;
   height: 18px;
-  margin-right: 12px;
   cursor: pointer;
   accent-color: #3B82F6;
+  flex-shrink: 0;
+}
+
+/* LTR spacing */
+[dir="ltr"] .profile-checkbox {
+  margin-right: 12px;
+}
+
+/* RTL spacing */
+[dir="rtl"] .profile-checkbox {
+  margin-left: 12px;
 }
 
 .profile-checkbox-label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  gap: 0;
 }
 
 .profile-checkbox-label:hover {
   opacity: 0.8;
+}
+
+.profile-checkbox-content {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from shrinking below content size */
+}
+
+/* Ensure proper spacing for RTL in all browsers */
+[dir="rtl"] .profile-checkbox-label {
+  direction: rtl;
+}
+
+[dir="ltr"] .profile-checkbox-label {
+  direction: ltr;
 }
 
 /* Select Dropdown */
@@ -499,7 +524,17 @@
   .profile-checkbox {
     width: 17px;
     height: 17px;
+  }
+
+  /* Override RTL/LTR margins for mobile */
+  [dir="ltr"] .profile-checkbox {
     margin-right: 10px;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .profile-checkbox {
+    margin-left: 10px;
+    margin-right: 0;
   }
 
   .profile-checkbox-label {
@@ -644,7 +679,17 @@
   .profile-checkbox {
     width: 16px;
     height: 16px;
+  }
+
+  /* Override RTL/LTR margins for small mobile */
+  [dir="ltr"] .profile-checkbox {
     margin-right: 8px;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .profile-checkbox {
+    margin-left: 8px;
+    margin-right: 0;
   }
 
   .profile-checkbox-label {

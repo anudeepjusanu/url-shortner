@@ -12,13 +12,12 @@ const ProtectedRoute = ({ children }) => {
       <div className="loading-container">
         <div className="loading-content">
           <div className="loading-spinner-large">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M16 2V8M16 24V30M30 16H24M8 16H2M25.4558 6.54416L21.2132 10.7868M10.7868 21.2132L6.54416 25.4558M25.4558 25.4558L21.2132 21.2132M10.7868 10.7868L6.54416 6.54416"
-                stroke="#3B82F6"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
+            <svg width="40" height="40" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <circle cx="25" cy="25" r="20" stroke="#e5e7eb" strokeWidth="4" fill="none" />
+              <g stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" fill="none">
+                <path d="M25 5 A20 20 0 0 1 45 25" />
+                <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.9s" repeatCount="indefinite" />
+              </g>
             </svg>
           </div>
           <p>Loading...</p>

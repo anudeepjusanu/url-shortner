@@ -260,28 +260,7 @@
   background: rgba(107, 114, 128, 0.1);
 }
 
-/* Reuse most styles from Registration.css */
-.login-container .left-panel,
-.login-container .right-panel,
-.login-container .language-toggle,
-.login-container .left-content,
-.login-container .brand-section,
-.login-container .features-list,
-.login-container .feature-item,
-.login-container .feature-icon,
-.login-container .feature-content,
-.login-container .brand-logo,
-.login-container .logo-icon,
-.login-container .brand-title,
-.login-container .brand-subtitle,
-.login-container .lang-toggle-btn,
-.login-container .form-wrapper,
-.login-container .form-header,
-.login-container .google-section,
-.login-container .google-btn,
-.login-container .divider {
-  /* Inherit all styles from Registration.css */
-}
+/* Most styles are inherited from Registration.css */
 
 /* Login-specific form styles */
 .login-form {
@@ -437,17 +416,18 @@
   justify-content: center;
 }
 
-.loading-spinner svg {
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Form field styles - inherit most from Registration.css but ensure they work */

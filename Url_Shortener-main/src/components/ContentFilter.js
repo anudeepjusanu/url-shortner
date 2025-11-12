@@ -280,11 +280,7 @@ const ContentFilter = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             {/* Page Header */}
             <div className="page-header" style={{
               marginBottom: '24px'
@@ -458,24 +454,14 @@ const ContentFilter = () => {
                   }}>{t('contentFilter.settings.title')}</h2>
 
                   <div style={{ marginBottom: '24px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.enableContentFilter}
                         onChange={(e) => setFilterSettings({...filterSettings, enableContentFilter: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -488,24 +474,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockMaliciousUrls}
                         onChange={(e) => setFilterSettings({...filterSettings, blockMaliciousUrls: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -518,24 +494,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockPhishing}
                         onChange={(e) => setFilterSettings({...filterSettings, blockPhishing: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -548,24 +514,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockAdultContent}
                         onChange={(e) => setFilterSettings({...filterSettings, blockAdultContent: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -578,24 +534,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockSpam}
                         onChange={(e) => setFilterSettings({...filterSettings, blockSpam: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -608,24 +554,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.customKeywordFiltering}
                         onChange={(e) => setFilterSettings({...filterSettings, customKeywordFiltering: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
@@ -638,23 +574,14 @@ const ContentFilter = () => {
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.pdplCompliance}
                         onChange={(e) => setFilterSettings({...filterSettings, pdplCompliance: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',

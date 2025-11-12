@@ -336,6 +336,112 @@
   cursor: pointer;
 }
 
+/* RTL Styles for Arabic Language */
+[dir="rtl"] .plan-header-row {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-price {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .plan-status.active {
+  margin-left: 0;
+  margin-right: 4px;
+}
+
+[dir="rtl"] .plan-features-list {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-card-features {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-card-btn {
+  text-align: center;
+  direction: rtl;
+}
+
+[dir="rtl"] .billing-value {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .visa-icon {
+  margin-right: 0;
+  margin-left: 6px;
+}
+
+[dir="rtl"] .card-expiry {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+[dir="rtl"] .cancel-warning ul {
+  padding-left: 0;
+  padding-right: 18px;
+  text-align: right;
+}
+
+[dir="rtl"] .cancel-actions {
+  direction: rtl;
+}
+
+[dir="rtl"] .subscription-title {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .subscription-desc {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-subheader {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-next-billing {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-card-title {
+  text-align: center;
+  direction: rtl;
+}
+
+[dir="rtl"] .plan-card-price {
+  text-align: center;
+  direction: rtl;
+}
+
+[dir="rtl"] .billing-label {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .billing-link {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .cancel-title {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .cancel-desc {
+  text-align: right;
+  direction: rtl;
+}
+
 /* Responsive Design */
 @media (max-width: 1023px) {
   .subscription-main-content {
@@ -629,6 +735,33 @@
     overflow-x: auto;
     padding-top: 0;
   }
+
+  /* RTL Styles for Mobile */
+  [dir="rtl"] .plan-price {
+    text-align: right;
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  [dir="rtl"] .plan-status.active {
+    margin-left: 4px;
+    margin-right: 0;
+  }
+
+  [dir="rtl"] .visa-icon {
+    margin-left: 0;
+    margin-right: 6px;
+  }
+
+  [dir="rtl"] .card-expiry {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
+  [dir="rtl"] .cancel-warning ul {
+    padding-left: 18px;
+    padding-right: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -860,5 +993,29 @@
     min-width: 100%;
     padding: 8px 16px;
     font-size: 13px;
+  }
+
+  /* RTL Styles for Small Mobile */
+  [dir="rtl"] .stat-label {
+    text-align: right;
+  }
+
+  [dir="rtl"] .visa-icon {
+    margin-right: 0;
+    margin-left: 4px;
+  }
+
+  [dir="rtl"] .card-expiry {
+    margin-left: 0;
+    margin-right: 6px;
+  }
+
+  [dir="rtl"] .cancel-warning ul {
+    padding-left: 0;
+    padding-right: 16px;
+  }
+
+  [dir="rtl"] .plan-stat {
+    direction: rtl;
   }
 }

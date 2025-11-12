@@ -329,7 +329,7 @@ const Sidebar = ({ activeItem }) => {
                 />
               </svg>
             </div>
-            <span>Billing & Payments</span>
+            <span>{t('sidebar.billing')}</span>
           </div>
           <div
             className={`nav-item ${isActive("/subscription") ? "active" : ""}`}
