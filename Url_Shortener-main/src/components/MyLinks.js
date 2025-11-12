@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
-import { urlsAPI } from '../services/api';
+import { urlsAPI, qrCodeAPI } from '../services/api';
 import './MyLinks.css';
 
 
@@ -111,6 +111,26 @@ function MyLinks() {
       });
 
       if (response.success && response.data && response.data.url) {
+        const createdUrl = response.data.url;
+        const urlId = createdUrl._id || createdUrl.id;
+
+        // Generate QR code if checkbox was checked
+        if (generateQR && urlId) {
+          try {
+            await qrCodeAPI.generate(urlId, {
+              size: 300,
+              format: 'png',
+              errorCorrection: 'M',
+              foregroundColor: '#000000',
+              backgroundColor: '#FFFFFF',
+              includeMargin: true
+            });
+          } catch (qrErr) {
+            console.error('Error generating QR code:', qrErr);
+            // Don't fail the whole operation if QR generation fails
+          }
+        }
+
         // Successfully created, refresh the list
         await fetchLinks();
 
