@@ -17,7 +17,7 @@
 
 .analytics-main {
   flex: 1;
-  margin-left: 250px; /* Sidebar width */
+  margin-left: 120px; /* Sidebar width */
   min-height: calc(100vh - 64px);
   overflow-y: auto;
   overflow-x: hidden;

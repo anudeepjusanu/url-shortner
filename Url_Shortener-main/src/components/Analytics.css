@@ -19,7 +19,6 @@
 .analytics-main {
   flex: 1;
   /* margin-left: 250px; */
-  margin-top: 64px;
   background: #f9fafb;
   overflow-y: auto;
   overflow-x: hidden;
@@ -563,7 +562,6 @@
 @media (max-width: 1023px) {
   .analytics-main {
     margin-left: 0;
-    margin-top: 64px;
     min-height: calc(100vh - 64px);
   }
 
@@ -634,7 +632,6 @@
 @media (max-width: 768px) {
   .analytics-main {
     margin-left: 0;
-    margin-top: 64px;
   }
 
   .analytics-content {
