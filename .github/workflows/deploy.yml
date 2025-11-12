@@ -23,10 +23,10 @@ jobs:
       run: npm install
 
     - name: Install frontend dependencies
-      run: cd frontend && npm install
+      run: cd Url_Shortener-main && npm install
 
     - name: Build frontend
-      run: cd frontend && npm run build
+      run: cd Url_Shortener-main && npm run build
 
     - name: Run backend tests (if available)
       run: npm test || echo "No tests configured"
@@ -48,10 +48,10 @@ jobs:
     - name: Install dependencies
       run: |
         npm install
-        cd frontend && npm install
+        cd Url_Shortener-main && npm install
 
     - name: Build frontend
-      run: cd frontend && npm run build
+      run: cd Url_Shortener-main && npm run build
 
     - name: Create deployment package
       run: |
@@ -62,7 +62,7 @@ jobs:
         cp -r src deploy-temp/
         cp -r scripts deploy-temp/
         mkdir -p deploy-temp/frontend
-        cp -r frontend/dist deploy-temp/frontend/
+        cp -r Url_Shortener-main/build deploy-temp/frontend/dist
         cp package*.json deploy-temp/
         cp ecosystem.config.js deploy-temp/
         cp .env.production deploy-temp/
