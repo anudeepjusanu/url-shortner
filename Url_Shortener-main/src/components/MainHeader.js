@@ -69,7 +69,7 @@ const MainHeader = () => {
           <div className="hamburger-wrapper-dashboard hide-desktop">
             <HamburgerMenu sidebarItems={sidebarItems} headerItems={headerItems} />
           </div>
-          <div className="create-link-logo-section">
+          <div className="create-link-logo-section hide-desktop">
             <div className="create-link-logo-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
