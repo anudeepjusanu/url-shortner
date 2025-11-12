@@ -87,6 +87,22 @@ const urlSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  qrCodeGenerated: {
+    type: Boolean,
+    default: false
+  },
+  qrCodeGeneratedAt: {
+    type: Date,
+    default: null
+  },
+  qrCodeDownloads: {
+    type: Number,
+    default: 0
+  },
+  lastQRCodeDownload: {
+    type: Date,
+    default: null
+  },
   metaData: {
     favicon: String,
     ogTitle: String,

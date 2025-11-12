@@ -294,8 +294,19 @@ export const domainsAPI = {
 
 // Analytics API methods
 export const analyticsAPI = {
-  getOverview: (params) => apiClient.get(endpoints.analytics.overview, params),
-  getUrlAnalytics: (id, params) => apiClient.get(`${endpoints.analytics.urls}/${id}`, params),
+  getOverview: (params) => apiClient.get('/analytics/dashboard', params),
+  getUrlAnalytics: (id, params) => apiClient.get(`/analytics/${id}`, params),
+  getDashboard: (params) => apiClient.get('/analytics/dashboard', params),
+  exportAnalytics: (id, params) => apiClient.get(`/analytics/${id}/export`, params)
+};
+
+// QR Code API methods
+export const qrCodeAPI = {
+  generate: (urlId, options) => apiClient.post(`/qr-codes/generate/${urlId}`, options),
+  download: (urlId, format) => apiClient.get(`/qr-codes/download/${urlId}`, { format }),
+  getStats: () => apiClient.get('/qr-codes/stats'),
+  bulkGenerate: (urlIds, options) => apiClient.post('/qr-codes/bulk-generate', { urlIds, options }),
+  getUrlQRCode: (urlId) => apiClient.get(`/qr-codes/${urlId}`)
 };
 
 // Export the API client instance

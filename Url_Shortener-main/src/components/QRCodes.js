@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
-import api from "../services/api";
+import { qrCodeAPI, urlsAPI } from "../services/api";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 import "./QRCodes.css";
@@ -54,10 +54,11 @@ const QRCodes = () => {
   const loadLinks = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/urls");
-      if (response && Array.isArray(response)) {
-        setLinks(response);
-        setFilteredLinks(response);
+      const response = await urlsAPI.getUrls();
+      if (response && response.success && response.data) {
+        const urls = response.data.urls || [];
+        setLinks(urls);
+        setFilteredLinks(urls);
       }
     } catch (error) {
       console.error("Error loading links:", error);
@@ -68,13 +69,13 @@ const QRCodes = () => {
 
   const loadStats = async () => {
     try {
-      const response = await api.get("/qr-codes/stats");
-      if (response) {
+      const response = await qrCodeAPI.getStats();
+      if (response && response.success && response.data) {
         setStats({
-          totalQRCodes: response.totalQRCodes || 0,
-          totalScans: response.totalScans || 0,
-          activeQRCodes: response.activeQRCodes || 0,
-          downloadsToday: response.downloadsToday || 0
+          totalQRCodes: response.data.totalQRCodes || 0,
+          totalScans: response.data.totalScans || 0,
+          activeQRCodes: response.data.activeQRCodes || 0,
+          downloadsToday: response.data.downloadsToday || 0
         });
       }
     } catch (error) {
@@ -99,33 +100,57 @@ const QRCodes = () => {
 
   const generateQRCode = async (linkId) => {
     try {
-      const response = await api.post(`/qr-codes/generate/${linkId}`, qrOptions);
-      if (response) {
-        alert(t('notifications.success'));
-        loadLinks();
-        loadStats();
+      const response = await qrCodeAPI.generate(linkId, qrOptions);
+      if (response && response.success) {
+        alert("QR Code generated successfully!");
         setShowGenerateModal(false);
         setShowCustomizeModal(false);
+        setSelectedLink(null);
+        loadLinks();
+        loadStats();
       }
     } catch (error) {
-      alert(t('errors.generic'));
+      console.error("Error generating QR code:", error);
+      alert(error.message || "Failed to generate QR code");
     }
   };
 
   const downloadQRCode = async (linkId, format = 'png') => {
     try {
-      const response = await api.get(`/qr-codes/download/${linkId}?format=${format}`);
-      if (response && response.downloadUrl) {
-        window.open(response.downloadUrl, '_blank');
-      } else {
-        // Fallback: generate download URL
-        const link = document.createElement('a');
-        link.href = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(getShortUrl(linkId))}`;
-        link.download = `qrcode-${linkId}.${format}`;
+      // Create a temporary form to trigger download
+      const downloadUrl = `${process.env.REACT_APP_API_URL || 'https://laghhu.link/api'}/qr-codes/download/${linkId}?format=${format}`;
+      const token = localStorage.getItem('accessToken');
+
+      // Create a link element and trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `qrcode-${linkId}.${format}`);
+
+      // Add auth header via fetch and create blob
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        link.href = url;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        // Reload to update download stats
+        loadLinks();
+        loadStats();
+      } else {
+        throw new Error('Download failed');
       }
     } catch (error) {
-      alert(t('errors.generic'));
+      console.error("Error downloading QR code:", error);
+      alert("Failed to download QR code: " + error.message);
     }
   };
 
@@ -140,32 +165,33 @@ const QRCodes = () => {
     }
 
     try {
-      await api.post("/qr-codes/bulk-generate", {
-        linkIds: selectedLinks,
-        options: qrOptions
-      });
-      alert(t('notifications.success'));
-      setSelectedLinks([]);
-      setSelectAll(false);
-      loadLinks();
-      loadStats();
+      const response = await qrCodeAPI.bulkGenerate(selectedLinks, qrOptions);
+      if (response && response.success) {
+        alert(`Successfully generated ${response.data.count} QR code(s)!`);
+        setSelectedLinks([]);
+        setSelectAll(false);
+        loadLinks();
+        loadStats();
+      }
     } catch (error) {
-      alert(t('errors.generic'));
+      console.error("Error bulk generating QR codes:", error);
+      alert("Failed to generate QR codes: " + error.message);
     }
   };
 
   const deleteQRCode = async (linkId) => {
-    if (!window.confirm(t('myLinks.confirmDelete'))) {
+    if (!window.confirm("Are you sure you want to delete this link and its QR code?")) {
       return;
     }
 
     try {
-      await api.delete(`/qr-codes/${linkId}`);
-      alert(t('notifications.success'));
+      await urlsAPI.deleteUrl(linkId);
+      alert("Link and QR code deleted successfully!");
       loadLinks();
       loadStats();
     } catch (error) {
-      alert(t('errors.generic'));
+      console.error("Error deleting:", error);
+      alert("Failed to delete: " + error.message);
     }
   };
 
