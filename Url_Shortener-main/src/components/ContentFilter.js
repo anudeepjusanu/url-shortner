@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import api from "../services/api";
 import "./Analytics.css";
+import "./DashboardLayout.css";
 import "./ContentFilter.css";
+import "./DashboardLayout.css";
 
 const ContentFilter = () => {
+  const { t } = useTranslation();
+
   // Filter Settings State
   const [filterSettings, setFilterSettings] = useState({
     enableContentFilter: true,
@@ -48,7 +53,7 @@ const ContentFilter = () => {
   const [activeTab, setActiveTab] = useState('settings');
 
   // Loading & Messages
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -154,10 +159,10 @@ const ContentFilter = () => {
 
     try {
       await api.put("/content-filter/settings", filterSettings);
-      setSuccessMessage("Filter settings saved successfully!");
+      setSuccessMessage(t('notifications.settingsSaved'));
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      setErrorMessage("Failed to save filter settings: " + error.message);
+      setErrorMessage(t('errors.generic') + ": " + error.message);
     } finally {
       setSaveLoading(false);
     }
@@ -165,7 +170,7 @@ const ContentFilter = () => {
 
   const addBlockedDomain = async () => {
     if (!newDomain.trim()) {
-      alert("Please enter a domain");
+      alert(t('errors.enterDomain'));
       return;
     }
 
@@ -176,14 +181,14 @@ const ContentFilter = () => {
       loadBlockedDomains();
       loadStats();
     } catch (error) {
-      alert("Failed to add blocked domain: " + error.message);
+      alert(t('errors.failedToAddDomain', { error: error.message }));
     } finally {
       setAddingDomain(false);
     }
   };
 
   const removeBlockedDomain = async (domain) => {
-    if (!window.confirm(`Remove ${domain} from blocked list?`)) {
+    if (!window.confirm(t('contentFilter.blocked.confirmRemove', { domain }))) {
       return;
     }
 
@@ -192,13 +197,13 @@ const ContentFilter = () => {
       loadBlockedDomains();
       loadStats();
     } catch (error) {
-      alert("Failed to remove blocked domain: " + error.message);
+      alert(t('errors.failedToRemoveDomain', { error: error.message }));
     }
   };
 
   const addBlockedKeyword = async () => {
     if (!newKeyword.trim()) {
-      alert("Please enter a keyword");
+      alert(t('errors.enterKeyword'));
       return;
     }
 
@@ -209,14 +214,14 @@ const ContentFilter = () => {
       loadBlockedKeywords();
       loadStats();
     } catch (error) {
-      alert("Failed to add blocked keyword: " + error.message);
+      alert(t('errors.failedToAddKeyword', { error: error.message }));
     } finally {
       setAddingKeyword(false);
     }
   };
 
   const removeBlockedKeyword = async (keyword) => {
-    if (!window.confirm(`Remove "${keyword}" from blocked keywords?`)) {
+    if (!window.confirm(t('contentFilter.blocked.confirmRemoveKeyword', { keyword }))) {
       return;
     }
 
@@ -225,13 +230,13 @@ const ContentFilter = () => {
       loadBlockedKeywords();
       loadStats();
     } catch (error) {
-      alert("Failed to remove blocked keyword: " + error.message);
+      alert(t('errors.failedToRemoveKeyword', { error: error.message }));
     }
   };
 
   const addAllowedDomain = async () => {
     if (!newAllowedDomain.trim()) {
-      alert("Please enter a domain");
+      alert(t('errors.enterDomain'));
       return;
     }
 
@@ -241,14 +246,14 @@ const ContentFilter = () => {
       setNewAllowedDomain("");
       loadAllowedDomains();
     } catch (error) {
-      alert("Failed to add allowed domain: " + error.message);
+      alert(t('errors.failedToAddAllowedDomain', { error: error.message }));
     } finally {
       setAddingAllowedDomain(false);
     }
   };
 
   const removeAllowedDomain = async (domain) => {
-    if (!window.confirm(`Remove ${domain} from allowed list?`)) {
+    if (!window.confirm(t('contentFilter.whitelist.confirmRemove', { domain }))) {
       return;
     }
 
@@ -256,7 +261,7 @@ const ContentFilter = () => {
       await api.delete(`/content-filter/allowed-domains/${encodeURIComponent(domain)}`);
       loadAllowedDomains();
     } catch (error) {
-      alert("Failed to remove allowed domain: " + error.message);
+      alert(t('errors.failedToRemoveAllowedDomain', { error: error.message }));
     }
   };
 
@@ -277,11 +282,7 @@ const ContentFilter = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             {/* Page Header */}
             <div className="page-header" style={{
               marginBottom: '24px'
@@ -292,12 +293,12 @@ const ContentFilter = () => {
                 color: '#111827',
                 marginBottom: '4px',
                 margin: '0 0 4px 0'
-              }}>Content Filter & Security</h1>
+              }}>{t('contentFilter.title')}</h1>
               <p style={{
                 color: '#6B7280',
                 fontSize: '14px',
                 margin: 0
-              }}>Protect your links with advanced content filtering and security rules</p>
+              }}>{t('contentFilter.subtitle')}</p>
             </div>
 
             {/* Stats Cards */}
@@ -323,7 +324,7 @@ const ContentFilter = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Total Filtered</div>
+                  }}>{t('contentFilter.stats.totalFiltered')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -341,7 +342,7 @@ const ContentFilter = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Malicious Blocked</div>
+                  }}>{t('contentFilter.stats.maliciousBlocked')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -359,7 +360,7 @@ const ContentFilter = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Phishing Blocked</div>
+                  }}>{t('contentFilter.stats.phishingBlocked')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -377,7 +378,7 @@ const ContentFilter = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Spam Blocked</div>
+                  }}>{t('contentFilter.stats.spamBlocked')}</div>
                 </div>
               </div>
             </section>
@@ -405,7 +406,7 @@ const ContentFilter = () => {
                       transition: 'all 0.2s'
                     }}
                   >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {t(`contentFilter.tabs.${tab}`)}
                   </button>
                 ))}
               </div>
@@ -452,215 +453,146 @@ const ContentFilter = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '20px'
-                  }}>Filter Settings</h2>
+                  }}>{t('contentFilter.settings.title')}</h2>
 
                   <div style={{ marginBottom: '24px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.enableContentFilter}
                         onChange={(e) => setFilterSettings({...filterSettings, enableContentFilter: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Enable Content Filtering</div>
+                        }}>{t('contentFilter.settings.enableContentFilter')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Automatically filter malicious and inappropriate URLs</div>
+                        }}>{t('contentFilter.settings.enableDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockMaliciousUrls}
                         onChange={(e) => setFilterSettings({...filterSettings, blockMaliciousUrls: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Block Malicious URLs</div>
+                        }}>{t('contentFilter.settings.blockMaliciousUrls')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Block known malware and virus distribution sites</div>
+                        }}>{t('contentFilter.settings.blockMaliciousDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockPhishing}
                         onChange={(e) => setFilterSettings({...filterSettings, blockPhishing: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Block Phishing Sites</div>
+                        }}>{t('contentFilter.settings.blockPhishing')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Protect against phishing and scam websites</div>
+                        }}>{t('contentFilter.settings.blockPhishingDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockAdultContent}
                         onChange={(e) => setFilterSettings({...filterSettings, blockAdultContent: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Block Adult Content</div>
+                        }}>{t('contentFilter.settings.blockAdultContent')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Filter adult and NSFW content</div>
+                        }}>{t('contentFilter.settings.blockAdultDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.blockSpam}
                         onChange={(e) => setFilterSettings({...filterSettings, blockSpam: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Block Spam URLs</div>
+                        }}>{t('contentFilter.settings.blockSpam')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Automatically detect and block spam content</div>
+                        }}>{t('contentFilter.settings.blockSpamDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.customKeywordFiltering}
                         onChange={(e) => setFilterSettings({...filterSettings, customKeywordFiltering: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Custom Keyword Filtering</div>
+                        }}>{t('contentFilter.settings.customKeywordFiltering')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Block URLs containing specific keywords</div>
+                        }}>{t('contentFilter.settings.customKeywordDescription')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="filter-checkbox-label">
                       <input
                         type="checkbox"
                         checked={filterSettings.pdplCompliance}
                         onChange={(e) => setFilterSettings({...filterSettings, pdplCompliance: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="filter-checkbox"
                       />
-                      <div>
+                      <div className="filter-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>PDPL Compliance Mode</div>
+                        }}>{t('contentFilter.settings.pdplCompliance')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Ensure compliance with Saudi Arabia's Personal Data Protection Law</div>
+                        }}>{t('contentFilter.settings.pdplDescription')}</div>
                       </div>
                     </label>
                   </div>
@@ -683,7 +615,7 @@ const ContentFilter = () => {
                         cursor: saveLoading ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {saveLoading ? 'Saving...' : 'Save Settings'}
+                      {saveLoading ? t('contentFilter.settings.saving') : t('contentFilter.settings.saveSettings')}
                     </button>
                   </div>
                 </div>
@@ -710,7 +642,7 @@ const ContentFilter = () => {
                       fontWeight: '600',
                       color: '#111827',
                       marginBottom: '16px'
-                    }}>Blocked Domains</h2>
+                    }}>{t('contentFilter.blocked.domains')}</h2>
 
                     <div style={{
                       display: 'flex',
@@ -721,7 +653,7 @@ const ContentFilter = () => {
                         type="text"
                         value={newDomain}
                         onChange={(e) => setNewDomain(e.target.value)}
-                        placeholder="example.com"
+                        placeholder={t('contentFilter.blocked.domainPlaceholder')}
                         style={{
                           flex: 1,
                           padding: '10px 14px',
@@ -745,7 +677,7 @@ const ContentFilter = () => {
                           cursor: addingDomain ? 'not-allowed' : 'pointer'
                         }}
                       >
-                        Add
+                        {t('contentFilter.blocked.addDomain')}
                       </button>
                     </div>
 
@@ -760,7 +692,7 @@ const ContentFilter = () => {
                           color: '#6B7280',
                           fontSize: '14px'
                         }}>
-                          No blocked domains yet
+                          {t('contentFilter.blocked.noDomains')}
                         </div>
                       ) : (
                         blockedDomains.map((domain, index) => (
@@ -793,7 +725,7 @@ const ContentFilter = () => {
                                 cursor: 'pointer'
                               }}
                             >
-                              Remove
+                              {t('contentFilter.blocked.remove')}
                             </button>
                           </div>
                         ))
@@ -813,7 +745,7 @@ const ContentFilter = () => {
                       fontWeight: '600',
                       color: '#111827',
                       marginBottom: '16px'
-                    }}>Blocked Keywords</h2>
+                    }}>{t('contentFilter.blocked.keywords')}</h2>
 
                     <div style={{
                       display: 'flex',
@@ -824,7 +756,7 @@ const ContentFilter = () => {
                         type="text"
                         value={newKeyword}
                         onChange={(e) => setNewKeyword(e.target.value)}
-                        placeholder="keyword"
+                        placeholder={t('contentFilter.blocked.keywordPlaceholder')}
                         style={{
                           flex: 1,
                           padding: '10px 14px',
@@ -848,7 +780,7 @@ const ContentFilter = () => {
                           cursor: addingKeyword ? 'not-allowed' : 'pointer'
                         }}
                       >
-                        Add
+                        {t('contentFilter.blocked.addKeyword')}
                       </button>
                     </div>
 
@@ -863,7 +795,7 @@ const ContentFilter = () => {
                           color: '#6B7280',
                           fontSize: '14px'
                         }}>
-                          No blocked keywords yet
+                          {t('contentFilter.blocked.noKeywords')}
                         </div>
                       ) : (
                         blockedKeywords.map((keyword, index) => (
@@ -895,7 +827,7 @@ const ContentFilter = () => {
                                 cursor: 'pointer'
                               }}
                             >
-                              Remove
+                              {t('contentFilter.blocked.remove')}
                             </button>
                           </div>
                         ))
@@ -920,14 +852,14 @@ const ContentFilter = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Allowed Domains (Whitelist)</h2>
+                  }}>{t('contentFilter.whitelist.title')}</h2>
 
                   <p style={{
                     fontSize: '14px',
                     color: '#6B7280',
                     marginBottom: '20px'
                   }}>
-                    Domains in the whitelist will bypass all content filters
+                    {t('contentFilter.whitelist.description')}
                   </p>
 
                   <div style={{
@@ -939,7 +871,7 @@ const ContentFilter = () => {
                       type="text"
                       value={newAllowedDomain}
                       onChange={(e) => setNewAllowedDomain(e.target.value)}
-                      placeholder="example.com"
+                      placeholder={t('contentFilter.whitelist.domainPlaceholder')}
                       style={{
                         flex: 1,
                         padding: '10px 14px',
@@ -963,7 +895,7 @@ const ContentFilter = () => {
                         cursor: addingAllowedDomain ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      Add
+                      {t('contentFilter.whitelist.addDomain')}
                     </button>
                   </div>
 
@@ -978,7 +910,7 @@ const ContentFilter = () => {
                         color: '#6B7280',
                         fontSize: '14px'
                       }}>
-                        No whitelisted domains yet
+                        {t('contentFilter.whitelist.noDomains')}
                       </div>
                     ) : (
                       <div style={{
@@ -1016,7 +948,7 @@ const ContentFilter = () => {
                                 cursor: 'pointer'
                               }}
                             >
-                              Remove
+                              {t('contentFilter.whitelist.remove')}
                             </button>
                           </div>
                         ))}
@@ -1048,7 +980,7 @@ const ContentFilter = () => {
                       fontWeight: '600',
                       color: '#111827',
                       margin: 0
-                    }}>Filter Activity Logs</h2>
+                    }}>{t('contentFilter.logs.title')}</h2>
                     <button
                       onClick={loadFilterLogs}
                       style={{
@@ -1062,7 +994,7 @@ const ContentFilter = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      Refresh
+                      {t('contentFilter.logs.refresh')}
                     </button>
                   </div>
 
@@ -1080,7 +1012,7 @@ const ContentFilter = () => {
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 16px'
                       }}></div>
-                      <p style={{ color: '#6B7280', fontSize: '14px' }}>Loading logs...</p>
+                      <p style={{ color: '#6B7280', fontSize: '14px' }}>{t('common.loading')}</p>
                     </div>
                   ) : filterLogs.length === 0 ? (
                     <div style={{
@@ -1096,11 +1028,11 @@ const ContentFilter = () => {
                         fontWeight: '600',
                         color: '#111827',
                         marginBottom: '8px'
-                      }}>No Filter Activity</h3>
+                      }}>{t('contentFilter.logs.noActivity')}</h3>
                       <p style={{
                         color: '#6B7280',
                         fontSize: '14px'
-                      }}>No URLs have been filtered yet</p>
+                      }}>{t('contentFilter.logs.noUrls')}</p>
                     </div>
                   ) : (
                     <div style={{
@@ -1152,7 +1084,7 @@ const ContentFilter = () => {
                             fontSize: '13px',
                             color: '#6B7280'
                           }}>
-                            {log.message || 'URL was blocked by content filter'}
+                            {log.message || t('contentFilter.logs.defaultMessage')}
                           </div>
                         </div>
                       ))}

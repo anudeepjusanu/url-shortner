@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import "./Login.css";
 
 const Login = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
@@ -38,13 +40,13 @@ const Login = () => {
     const errors = {};
 
     if (!formData.email.trim()) {
-      errors.email = "Email is required";
+      errors.email = t('auth.login.errorEmailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = t('auth.login.errorEmailInvalid');
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = t('auth.login.errorPasswordRequired');
     }
 
     setFormErrors(errors);
@@ -118,8 +120,8 @@ const Login = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="brand-title">LinkSa</h1>
-            <p className="brand-subtitle">Welcome back to your dashboard</p>
+            <h1 className="brand-title">{t('common.brandName')}</h1>
+            <p className="brand-subtitle">{t('auth.login.brandSubtitle')}</p>
           </div>
 
           {/* Features List */}
@@ -147,8 +149,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Manage Your Links</h3>
-                <p>Access all your shortened URLs in one place</p>
+                <h3>{t('auth.login.feature1Title')}</h3>
+                <p>{t('auth.login.feature1Description')}</p>
               </div>
             </div>
 
@@ -175,8 +177,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Track Performance</h3>
-                <p>View detailed analytics and insights</p>
+                <h3>{t('auth.login.feature2Title')}</h3>
+                <p>{t('auth.login.feature2Description')}</p>
               </div>
             </div>
 
@@ -203,8 +205,8 @@ const Login = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Secure & Reliable</h3>
-                <p>Your data is protected with enterprise security</p>
+                <h3>{t('auth.login.feature3Title')}</h3>
+                <p>{t('auth.login.feature3Description')}</p>
               </div>
             </div>
           </div>
@@ -230,15 +232,15 @@ const Login = () => {
                 strokeWidth="2"
               />
             </svg>
-            العربية
+            {t('common.arabic')}
           </button>
         </div>
 
         <div className="form-wrapper">
           {/* Header */}
           <div className="form-header">
-            <h2>Welcome back</h2>
-            <p>Sign in to your account to continue</p>
+            <h2>{t('auth.login.title')}</h2>
+            <p>{t('auth.login.subtitle')}</p>
           </div>
 
           {/* Google Sign In */}
@@ -272,12 +274,12 @@ const Login = () => {
                   fill="#EB4335"
                 />
               </svg>
-              Sign in with Google
+              {t('auth.login.googleButton')}
             </button>
 
             <div className="divider">
               <hr />
-              <span>Or sign in with email</span>
+              <span>{t('auth.login.dividerText')}</span>
             </div>
           </div>
 
@@ -298,12 +300,12 @@ const Login = () => {
           <form className="login-form" onSubmit={handleSubmit}>
             {/* Email Field */}
             <div className="form-field">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">{t('auth.login.email')}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.login.email')}
                 value={formData.email}
                 onChange={handleInputChange}
                 className={formErrors.email ? 'error' : ''}
@@ -316,13 +318,13 @@ const Login = () => {
 
             {/* Password Field */}
             <div className="form-field">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('auth.login.password')}</label>
               <div className="password-input-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.login.password')}
                   value={formData.password}
                   onChange={handleInputChange}
                   className={formErrors.password ? 'error' : ''}
@@ -372,14 +374,14 @@ const Login = () => {
                   checked={formData.rememberMe}
                   onChange={handleInputChange}
                 />
-                <label htmlFor="rememberMe">Remember me</label>
+                <label htmlFor="rememberMe">{t('auth.login.rememberMe')}</label>
               </div>
               <button
                 type="button"
                 className="forgot-password-link"
                 onClick={handleForgotPassword}
               >
-                Forgot password?
+                {t('auth.login.forgotPassword')}
               </button>
             </div>
 
@@ -390,14 +392,11 @@ const Login = () => {
               disabled={loading}
             >
               {loading ? (
-                <div className="loading-spinner">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 1V4M8 12V15M15 8H12M4 8H1M12.7279 3.27208L10.6066 5.39345M5.39345 10.6066L3.27208 12.7279M12.7279 12.7279L10.6066 10.6066M5.39345 5.39345L3.27208 3.27208" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Signing In...
+                <div>
+                  <div className="spinner"></div>
                 </div>
               ) : (
-                'Sign In'
+                t('auth.login.button')
               )}
             </button>
           </form>
@@ -405,13 +404,13 @@ const Login = () => {
           {/* Sign Up Link */}
           <div className="signup-section">
             <p>
-              Don't have an account?
+              {t('auth.login.noAccount')}
               <button
                 type="button"
                 className="signup-link"
                 onClick={() => navigate("/register")}
               >
-                Create one
+                {t('auth.login.signUp')}
               </button>
             </p>
           </div>

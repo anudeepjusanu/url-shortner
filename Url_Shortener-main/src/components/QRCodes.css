@@ -103,19 +103,368 @@ input[type="checkbox"] {
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
+  /* Stats Grid - 2 columns on tablets */
   div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Page Header */
+  .page-header[style*="flexDirection: row"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .page-header button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Modal */
+  .qr-modal-content {
+    width: 95%;
+    padding: 24px;
   }
 }
 
 @media (max-width: 768px) {
+  /* Stats Grid - single column on mobile */
   div[style*="gridTemplateColumns: repeat(4, 1fr)"],
+  div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Content padding */
+  .analytics-content {
+    padding: 16px !important;
+    gap: 16px !important;
+  }
+
+  /* Page Title */
+  .page-header h1 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  .page-header p {
+    font-size: 13px !important;
+  }
+
+  /* Stats Cards */
+  div[style*="textAlign: center"] > div[style*="fontSize: '28px'"] {
+    font-size: 24px !important;
+  }
+
+  div[style*="textAlign: center"] > div[style*="fontSize: '14px'"] {
+    font-size: 13px !important;
+  }
+
+  /* Search and Bulk Actions */
+  section > div[style*="padding: 20px 24px"] {
+    padding: 16px !important;
+  }
+
+  div[style*="flexWrap: wrap"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  div[style*="flex: 1, minWidth: '250px'"] {
+    min-width: 100% !important;
+  }
+
+  div[style*="display: flex"][style*="gap: '12px'"] {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  div[style*="display: flex"][style*="gap: '12px'"] button {
+    flex: 1;
+    min-width: calc(50% - 6px);
+  }
+
+  /* QR Code List Header */
+  div[style*="padding: 16px 24px"] {
+    padding: 12px 16px !important;
+  }
+
+  div[style*="padding: 16px 24px"] h2 {
+    font-size: 16px !important;
+  }
+
+  /* QR Code Items */
+  div[style*="padding: 20px 24px"][style*="borderBottom"] {
+    padding: 16px !important;
+    flex-wrap: wrap;
+    gap: 12px !important;
+  }
+
+  /* QR Preview */
+  div[style*="width: '80px'"][style*="height: '80px'"] {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  div[style*="width: '80px'"][style*="height: '80px'"] img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  /* Link Info */
+  div[style*="flex: 1"][style*="minWidth: 0"] {
+    width: 100%;
+    order: 2;
+  }
+
+  div[style*="flex: 1"][style*="minWidth: 0"] > div {
+    font-size: 13px !important;
+  }
+
+  div[style*="flex: 1"][style*="minWidth: 0"] > div:nth-child(2) {
+    font-size: 12px !important;
+  }
+
+  div[style*="flex: 1"][style*="minWidth: 0"] > div:nth-child(3) {
+    font-size: 11px !important;
+  }
+
+  /* Stats in List */
+  div[style*="display: flex"][style*="gap: '24px'"][style*="flexShrink: 0"] {
+    order: 3;
+    width: 100%;
+  }
+
+  div[style*="display: flex"][style*="gap: '24px'"][style*="flexShrink: 0"] > div {
+    text-align: left !important;
+  }
+
+  /* Actions in List */
+  div[style*="display: flex"][style*="gap: '8px'"][style*="flexShrink: 0"] {
+    order: 4;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  div[style*="display: flex"][style*="gap: '8px'"][style*="flexShrink: 0"] button {
+    flex: 1;
+    min-width: calc(33.333% - 6px);
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Empty State */
+  div[style*="padding: 60px 20px"] {
+    padding: 40px 16px !important;
+  }
+
+  div[style*="fontSize: '48px'"] {
+    font-size: 40px !important;
+  }
+
+  div[style*="fontSize: '18px'"][style*="fontWeight: '600'"] {
+    font-size: 16px !important;
+  }
+
+  /* Modals */
+  .qr-modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 85vh;
+  }
+
+  .qr-modal-content h2 {
+    font-size: 18px !important;
+  }
+
+  /* Modal form grid */
   div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
     grid-template-columns: 1fr !important;
   }
 
+  /* Modal buttons */
+  .qr-modal-content button {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Content padding */
   .analytics-content {
-    padding: 16px !important;
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* Page Title */
+  .page-header h1 {
+    font-size: 20px !important;
+    line-height: 26px !important;
+  }
+
+  .page-header p {
+    font-size: 12px !important;
+  }
+
+  /* Stats Cards */
+  div[style*="padding: 20px"] {
+    padding: 14px !important;
+  }
+
+  div[style*="textAlign: center"] > div[style*="fontSize: '28px'"],
+  div[style*="textAlign: center"] > div[style*="fontSize: '24px'"] {
+    font-size: 20px !important;
+  }
+
+  div[style*="textAlign: center"] > div[style*="fontSize: '14px'"],
+  div[style*="textAlign: center"] > div[style*="fontSize: '13px'"] {
+    font-size: 12px !important;
+  }
+
+  /* Search and Actions */
+  section > div[style*="padding: 20px 24px"],
+  section > div[style*="padding: 16px"] {
+    padding: 12px !important;
+  }
+
+  input[type="text"] {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Bulk Action Buttons */
+  div[style*="display: flex"][style*="gap: '12px'"] button {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    min-width: 100% !important;
+  }
+
+  /* QR List Header */
+  div[style*="padding: 16px 24px"],
+  div[style*="padding: 12px 16px"] {
+    padding: 10px 12px !important;
+  }
+
+  div[style*="padding: 16px 24px"] h2,
+  div[style*="padding: 12px 16px"] h2 {
+    font-size: 15px !important;
+  }
+
+  input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* QR Code Items */
+  div[style*="padding: 20px 24px"][style*="borderBottom"],
+  div[style*="padding: 16px"][style*="borderBottom"] {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* QR Preview */
+  div[style*="width: '80px'"][style*="height: '80px'"],
+  div[style*="width: 60px"][style*="height: 60px"] {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  div[style*="width: '80px'"][style*="height: '80px'"] img,
+  div[style*="width: 60px"][style*="height: 60px"] img {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  /* Link Info */
+  div[style*="flex: 1"][style*="minWidth: 0"] > div:nth-child(1) {
+    font-size: 12px !important;
+  }
+
+  div[style*="flex: 1"][style*="minWidth: 0"] > div:nth-child(2) {
+    font-size: 11px !important;
+  }
+
+  div[style*="flex: 1"][style*="minWidth: 0"] > div:nth-child(3) {
+    font-size: 10px !important;
+  }
+
+  /* Stats in List */
+  div[style*="display: flex"][style*="gap: '24px'"][style*="flexShrink: 0"] > div > div:nth-child(1) {
+    font-size: 16px !important;
+  }
+
+  div[style*="display: flex"][style*="gap: '24px'"][style*="flexShrink: 0"] > div > div:nth-child(2) {
+    font-size: 11px !important;
+  }
+
+  /* Actions in List */
+  div[style*="display: flex"][style*="gap: '8px'"][style*="flexShrink: 0"] button {
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+    min-width: 100% !important;
+  }
+
+  /* Empty State */
+  div[style*="padding: 60px 20px"],
+  div[style*="padding: 40px 16px"] {
+    padding: 30px 12px !important;
+  }
+
+  div[style*="fontSize: '48px'"],
+  div[style*="fontSize: '40px'"] {
+    font-size: 32px !important;
+  }
+
+  div[style*="fontSize: '18px'"][style*="fontWeight: '600'"],
+  div[style*="fontSize: '16px'"][style*="fontWeight: '600'"] {
+    font-size: 15px !important;
+  }
+
+  /* Modals */
+  .qr-modal-content {
+    width: 96%;
+    padding: 16px;
+    max-height: 80vh;
+  }
+
+  .qr-modal-content h2 {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Modal Form Elements */
+  .qr-modal-content label {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .qr-modal-content input,
+  .qr-modal-content select {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Modal Buttons */
+  .qr-modal-content button {
+    font-size: 12px !important;
+    padding: 8px !important;
+  }
+
+  /* Modal List */
+  .qr-modal-content > div[style*="maxHeight: '400px'"] {
+    max-height: 250px !important;
+  }
+
+  .qr-modal-content > div[style*="maxHeight: '400px'"] > div {
+    padding: 10px !important;
+  }
+
+  .qr-modal-content > div[style*="maxHeight: '400px'"] > div > div:nth-child(1) {
+    font-size: 13px !important;
+  }
+
+  .qr-modal-content > div[style*="maxHeight: '400px'"] > div > div:nth-child(2) {
+    font-size: 12px !important;
   }
 }

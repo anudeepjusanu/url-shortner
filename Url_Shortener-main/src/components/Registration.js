@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import "./Registration.css";
 
 const Registration = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
@@ -45,37 +47,37 @@ const Registration = () => {
 
     // Required fields validation
     if (!formData.firstName.trim()) {
-      errors.firstName = "First name is required";
+      errors.firstName = t('auth.register.errorFirstNameRequired');
     }
 
     if (!formData.lastName.trim()) {
-      errors.lastName = "Last name is required";
+      errors.lastName = t('auth.register.errorLastNameRequired');
     }
 
     if (!formData.email.trim()) {
-      errors.email = "Email is required";
+      errors.email = t('auth.register.errorEmailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = t('auth.register.errorEmailInvalid');
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = t('auth.register.errorPasswordRequired');
     } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters long";
+      errors.password = t('auth.register.errorPasswordLength');
     }
 
     if (!formData.confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
+      errors.confirmPassword = t('auth.register.errorConfirmPasswordRequired');
     } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = t('auth.register.errorPasswordMismatch');
     }
 
     if (!formData.agreeToTerms) {
-      errors.agreeToTerms = "You must agree to the Terms of Service";
+      errors.agreeToTerms = t('auth.register.errorTermsRequired');
     }
 
     if (!formData.agreeToData) {
-      errors.agreeToData = "You must consent to data processing";
+      errors.agreeToData = t('auth.register.errorDataConsentRequired');
     }
 
     setFormErrors(errors);
@@ -152,8 +154,8 @@ const Registration = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="brand-title">LinkSa</h1>
-            <p className="brand-subtitle">Shorten. Share. Succeed.</p>
+            <h1 className="brand-title">{t('auth.register.brandTitle')}</h1>
+            <p className="brand-subtitle">{t('auth.register.brandSubtitle')}</p>
           </div>
 
           {/* Features List */}
@@ -181,8 +183,8 @@ const Registration = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Smart URL Shortening</h3>
-                <p>Create memorable short links instantly</p>
+                <h3>{t('auth.register.feature1Title')}</h3>
+                <p>{t('auth.register.feature1Description')}</p>
               </div>
             </div>
 
@@ -209,8 +211,8 @@ const Registration = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Advanced Analytics</h3>
-                <p>Track clicks and measure performance</p>
+                <h3>{t('auth.register.feature2Title')}</h3>
+                <p>{t('auth.register.feature2Description')}</p>
               </div>
             </div>
 
@@ -237,8 +239,8 @@ const Registration = () => {
                 </svg>
               </div>
               <div className="feature-content">
-                <h3>Saudi Data Residency</h3>
-                <p>PDPL compliant with local data storage</p>
+                <h3>{t('auth.register.feature3Title')}</h3>
+                <p>{t('auth.register.feature3Description')}</p>
               </div>
             </div>
           </div>
@@ -264,55 +266,43 @@ const Registration = () => {
                 strokeWidth="2"
               />
             </svg>
-            العربية
+            {t('auth.register.languageToggle')}
           </button>
         </div>
 
         <div className="form-wrapper">
           {/* Header */}
           <div className="form-header">
-            <h2>Create your account</h2>
-            <p>Start shortening and tracking your links today</p>
+            <h2>{t('auth.register.title')}</h2>
+            <p>{t('auth.register.subtitle')}</p>
           </div>
 
           {/* Google Sign Up */}
-          <div className="google-section">
-            <button
-              type="button"
-              className="google-btn"
-              onClick={handleGoogleSignup}
-            >
-              <svg
-                width="19"
-                height="20"
-                viewBox="0 0 19 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0813L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M9.68813 19.9314C12.3039 19.9314 14.4999 19.0455 16.1039 17.5174L13.0467 15.0813C12.2286 15.6682 11.1306 16.0779 9.68813 16.0779C7.12612 16.0779 4.95165 14.3395 4.17651 11.9366L4.06289 11.9465L1.07231 14.3273L1.0332 14.4391C2.62638 17.6946 5.89889 19.9314 9.68813 19.9314Z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M4.17667 11.9366C3.972 11.3165 3.85486 10.6521 3.85486 9.96562C3.85486 9.27905 3.972 8.61468 4.16591 7.99462L4.1605 7.86257L1.13246 5.44363L1.03339 5.49211C0.37677 6.84302 0 8.36005 0 9.96562C0 11.5712 0.37677 13.0881 1.03339 14.4391L4.17667 11.9366Z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M9.68807 3.85336C11.5073 3.85336 12.7344 4.66168 13.4342 5.33718L16.1649 2.59107C14.4823 0.994704 12.3039 0 9.68807 0C5.89883 0 2.62632 2.23672 1.0332 5.49214L4.16573 7.99466C4.95162 5.59183 7.12608 3.85336 9.68807 3.85336Z"
-                  fill="#EB4335"
-                />
-              </svg>
-              Sign up with Google
-            </button>
+          <button type="button" className="google-btn" onClick={handleGoogleSignup}>
+            <svg width="20" height="20" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0813L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z"
+                fill="#4285F4"
+              />
+              <path
+                d="M9.68813 19.9314C12.3039 19.9314 14.4999 19.0455 16.1039 17.5174L13.0467 15.0813C12.2286 15.6682 11.1306 16.0779 9.68813 16.0779C7.12612 16.0779 4.95165 14.3395 4.17651 11.9366L4.06289 11.9465L1.07231 14.3273L1.0332 14.4391C2.62638 17.6946 5.89889 19.9314 9.68813 19.9314Z"
+                fill="#34A853"
+              />
+              <path
+                d="M4.17667 11.9366C3.972 11.3165 3.85486 10.6521 3.85486 9.96562C3.85486 9.27905 3.972 8.61468 4.16591 7.99462L4.1605 7.86257L1.13246 5.44363L1.03339 5.49211C0.37677 6.84302 0 8.36005 0 9.96562C0 11.5712 0.37677 13.0881 1.03339 14.4391L4.17667 11.9366Z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M9.68807 3.85336C11.5073 3.85336 12.7344 4.66168 13.4342 5.33718L16.1649 2.59107C14.4823 0.994704 12.3039 0 9.68807 0C5.89883 0 2.62632 2.23672 1.0332 5.49214L4.16573 7.99466C4.95162 5.59183 7.12608 3.85336 9.68807 3.85336Z"
+                fill="#EB4335"
+              />
+            </svg>
+            {t('auth.register.googleSignup')}
+          </button>
 
-            <div className="divider">
-              <hr />
-              <span>Or create account manually</span>
-            </div>
+          <div className="divider">
+            <hr />
+            <span>{t('auth.register.divider')}</span>
           </div>
 
           {/* Error Display */}
@@ -333,12 +323,12 @@ const Registration = () => {
             {/* Name Fields */}
             <div className="form-row">
               <div className="form-field">
-                <label htmlFor="firstName">First Name</label>
+                <label htmlFor="firstName">{t('auth.register.firstName')}</label>
                 <input
                   type="text"
                   id="firstName"
                   name="firstName"
-                  placeholder="Ahmed"
+                  placeholder={t('auth.register.firstNamePlaceholder')}
                   value={formData.firstName}
                   onChange={handleInputChange}
                   className={formErrors.firstName ? 'error' : ''}
@@ -349,12 +339,12 @@ const Registration = () => {
                 )}
               </div>
               <div className="form-field">
-                <label htmlFor="lastName">Last Name</label>
+                <label htmlFor="lastName">{t('auth.register.lastName')}</label>
                 <input
                   type="text"
                   id="lastName"
                   name="lastName"
-                  placeholder="Al-Rashid"
+                  placeholder={t('auth.register.lastNamePlaceholder')}
                   value={formData.lastName}
                   onChange={handleInputChange}
                   className={formErrors.lastName ? 'error' : ''}
@@ -368,12 +358,12 @@ const Registration = () => {
 
             {/* Email Field */}
             <div className="form-field">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">{t('auth.register.email')}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="ahmed@company.sa"
+                placeholder={t('auth.register.emailPlaceholder')}
                 value={formData.email}
                 onChange={handleInputChange}
                 className={formErrors.email ? 'error' : ''}
@@ -386,14 +376,14 @@ const Registration = () => {
 
             {/* Phone Field */}
             <div className="form-field">
-              <label htmlFor="phone">Phone Number (Optional)</label>
+              <label htmlFor="phone">{t('auth.register.phone')}</label>
               <div className="phone-input-wrapper">
                 <span className="country-code">+966</span>
                 <input
                   type="tel"
                   id="phone"
                   name="phone"
-                  placeholder="50 123 4567"
+                  placeholder={t('auth.register.phonePlaceholder')}
                   value={formData.phone}
                   onChange={handleInputChange}
                 />
@@ -402,13 +392,13 @@ const Registration = () => {
 
             {/* Password Field */}
             <div className="form-field">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('auth.register.password')}</label>
               <div className="password-input-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
-                  placeholder="Create a strong password"
+                  placeholder={t('auth.register.passwordPlaceholder')}
                   value={formData.password}
                   onChange={handleInputChange}
                   className={formErrors.password ? 'error' : ''}
@@ -448,19 +438,19 @@ const Registration = () => {
               )}
               {!formErrors.password && (
                 <p className="password-hint">
-                  Password must be at least 8 characters long
+                  {t('auth.register.passwordHint')}
                 </p>
               )}
             </div>
 
             {/* Confirm Password Field */}
             <div className="form-field">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</label>
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                placeholder="Confirm your password"
+                placeholder={t('auth.register.confirmPasswordPlaceholder')}
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 className={formErrors.confirmPassword ? 'error' : ''}
@@ -483,13 +473,15 @@ const Registration = () => {
                   required
                 />
                 <label htmlFor="agreeToTerms">
-                  I agree to the{" "}
+                  {t('auth.register.termsAgree')}{" "}
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="text-link">
-                    Terms of Service
+                    {t('auth.register.terms')}
                   </a>{" "}
-                  and{" "}
+                  {t('auth.register.and')}{" "}
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" className="text-link">
-                    Privacy Policy
+                    {t('auth.register.privacy')}
                   </a>
                 </label>
               </div>
@@ -504,8 +496,7 @@ const Registration = () => {
                   required
                 />
                 <label htmlFor="agreeToData">
-                  I consent to data processing in accordance with Saudi PDPL
-                  regulations
+                  {t('auth.register.pdplConsent')}
                 </label>
               </div>
 
@@ -518,8 +509,7 @@ const Registration = () => {
                   onChange={handleInputChange}
                 />
                 <label htmlFor="receiveUpdates">
-                  I'd like to receive product updates and marketing
-                  communications (optional)
+                  {t('auth.register.marketingConsent')}
                 </label>
               </div>
             </div>
@@ -531,14 +521,12 @@ const Registration = () => {
               disabled={loading}
             >
               {loading ? (
-                <div className="loading-spinner">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 1V4M8 12V15M15 8H12M4 8H1M12.7279 3.27208L10.6066 5.39345M5.39345 10.6066L3.27208 12.7279M12.7279 12.7279L10.6066 10.6066M5.39345 5.39345L3.27208 3.27208" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Creating Account...
+                <div >
+                  <div className="spinner"></div>
+                  {t('auth.register.creating')}
                 </div>
               ) : (
-                'Create Account'
+                t('auth.register.button')
               )}
             </button>
           </form>
@@ -546,13 +534,13 @@ const Registration = () => {
           {/* Sign In Link */}
           <div className="signin-section">
             <p>
-              Already have an account?
+              {t('auth.register.haveAccount')}
               <button
                 type="button"
                 className="signin-link"
                 onClick={() => navigate("/login")}
               >
-                Sign in
+                {t('auth.register.signIn')}
               </button>
             </p>
           </div>

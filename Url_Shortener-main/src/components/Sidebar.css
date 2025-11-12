@@ -1,13 +1,14 @@
 .sidebar {
   width: 250px;
   height: 100vh;
-border-right: 1px solid #E5E7EB;
-background: #FFF;
-box-shadow: 0 4px 6px 0 rgba(188, 184, 184, 0.1), 0 10px 15px 0 rgba(0, 0, 0, 0.10);
+  border-right: 1px solid #E5E7EB;
+  background: #FFF;
+  box-shadow: 0 4px 6px 0 rgba(188, 184, 184, 0.1), 0 10px 15px 0 rgba(0, 0, 0, 0.10);
   padding: 20px 0;
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 900;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -179,4 +180,18 @@ color: #6B7280;
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: #6B7280;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+/* Show sidebar on desktop */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+  }
 }

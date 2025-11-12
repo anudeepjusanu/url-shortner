@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import "./Profile.css";
+import "./DashboardLayout.css";
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { t } = useTranslation();
+  const { updateUser } = useAuth();
 
   // Personal Information State
   const [personalInfo, setPersonalInfo] = useState({
@@ -142,13 +145,13 @@ const Profile = () => {
     try {
       const response = await api.put("/auth/profile", personalInfo);
       if (response) {
-        setPersonalSuccess("Profile updated successfully!");
+        setPersonalSuccess(t('notifications.profileUpdated'));
         setIsEditingPersonal(false);
         if (updateUser) updateUser(response);
         setTimeout(() => setPersonalSuccess(""), 3000);
       }
     } catch (error) {
-      setPersonalError(error.message || "Failed to update profile");
+      setPersonalError(error.message || t('errors.generic'));
     } finally {
       setPersonalLoading(false);
     }
@@ -163,13 +166,13 @@ const Profile = () => {
 
     // Validation
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords do not match");
+      setPasswordError(t('auth.register.errorPasswordMismatch'));
       setPasswordLoading(false);
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
+      setPasswordError(t('auth.register.errorPasswordLength'));
       setPasswordLoading(false);
       return;
     }
@@ -179,11 +182,11 @@ const Profile = () => {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      setPasswordSuccess("Password changed successfully!");
+      setPasswordSuccess(t('notifications.passwordChanged'));
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setTimeout(() => setPasswordSuccess(""), 3000);
     } catch (error) {
-      setPasswordError(error.message || "Failed to change password");
+      setPasswordError(error.message || t('errors.generic'));
     } finally {
       setPasswordLoading(false);
     }
@@ -191,7 +194,7 @@ const Profile = () => {
 
   // Handle API Key Regeneration
   const handleRegenerateApiKey = async () => {
-    if (!window.confirm("Are you sure you want to regenerate your API key? The old key will no longer work.")) {
+    if (!window.confirm(t('profile.apiKeys.confirmRegenerate'))) {
       return;
     }
 
@@ -212,7 +215,7 @@ const Profile = () => {
   // Handle Copy API Key
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
-    alert("API key copied to clipboard!");
+    alert(t('common.copied'));
   };
 
   // Handle Preferences Update
@@ -222,9 +225,9 @@ const Profile = () => {
 
     try {
       await api.put("/auth/preferences", preferences);
-      alert("Preferences updated successfully!");
+      alert(t('notifications.settingsSaved'));
     } catch (error) {
-      alert("Failed to update preferences: " + error.message);
+      alert(t('errors.generic') + ": " + error.message);
     } finally {
       setPreferencesLoading(false);
     }
@@ -236,11 +239,7 @@ const Profile = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             {/* Page Header */}
             <div className="page-header" style={{
               marginBottom: '24px'
@@ -251,12 +250,12 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '4px',
                 margin: '0 0 4px 0'
-              }}>Profile Settings</h1>
+              }}>{t('profile.title')}</h1>
               <p style={{
                 color: '#6B7280',
                 fontSize: '14px',
                 margin: 0
-              }}>Manage your account information and preferences</p>
+              }}>{t('profile.subtitle')}</p>
             </div>
 
             {/* Account Statistics */}
@@ -267,7 +266,7 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Account Overview</h2>
+              }}>{t('profile.accountOverview')}</h2>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -289,7 +288,7 @@ const Profile = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Total Links</div>
+                  }}>{t('dashboard.stats.totalLinks')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -307,7 +306,7 @@ const Profile = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Total Clicks</div>
+                  }}>{t('dashboard.stats.totalClicks')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -325,7 +324,7 @@ const Profile = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Custom Domains</div>
+                  }}>{t('header.customDomains')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -343,7 +342,7 @@ const Profile = () => {
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
-                  }}>Current Plan</div>
+                  }}>{t('profile.currentPlan')}</div>
                 </div>
               </div>
             </section>
@@ -361,7 +360,7 @@ const Profile = () => {
                   fontWeight: '600',
                   color: '#111827',
                   margin: 0
-                }}>Personal Information</h2>
+                }}>{t('profile.general.personalInfo')}</h2>
                 {!isEditingPersonal && (
                   <button
                     onClick={() => setIsEditingPersonal(true)}
@@ -376,7 +375,7 @@ const Profile = () => {
                       cursor: 'pointer'
                     }}
                   >
-                    Edit Profile
+                    {t('common.edit')} {t('common.profile')}
                   </button>
                 )}
               </div>
@@ -428,7 +427,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>First Name</label>
+                      }}>{t('profile.general.firstName')}</label>
                       <input
                         type="text"
                         value={personalInfo.firstName}
@@ -452,7 +451,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Last Name</label>
+                      }}>{t('profile.general.lastName')}</label>
                       <input
                         type="text"
                         value={personalInfo.lastName}
@@ -476,7 +475,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Email</label>
+                      }}>{t('profile.general.email')}</label>
                       <input
                         type="email"
                         value={personalInfo.email}
@@ -499,7 +498,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Phone</label>
+                      }}>{t('profile.general.phone')}</label>
                       <input
                         type="tel"
                         value={personalInfo.phone}
@@ -524,7 +523,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Company</label>
+                      }}>{t('profile.general.company')}</label>
                       <input
                         type="text"
                         value={personalInfo.company}
@@ -548,7 +547,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Job Title</label>
+                      }}>{t('profile.general.jobTitle')}</label>
                       <input
                         type="text"
                         value={personalInfo.jobTitle}
@@ -590,7 +589,7 @@ const Profile = () => {
                           cursor: 'pointer'
                         }}
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                       <button
                         type="submit"
@@ -606,7 +605,7 @@ const Profile = () => {
                           cursor: personalLoading ? 'not-allowed' : 'pointer'
                         }}
                       >
-                        {personalLoading ? 'Saving...' : 'Save Changes'}
+                        {personalLoading ? t('profile.general.updating') : `${t('common.save')} Changes`}
                       </button>
                     </div>
                   )}
@@ -622,7 +621,7 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Account Security</h2>
+              }}>{t('profile.tabs.security')}</h2>
 
               <div style={{
                 background: '#fff',
@@ -662,7 +661,7 @@ const Profile = () => {
                   fontWeight: '600',
                   color: '#111827',
                   marginBottom: '16px'
-                }}>Change Password</h3>
+                }}>{t('profile.security.changePassword')}</h3>
 
                 <form onSubmit={handlePasswordSubmit}>
                   <div style={{ marginBottom: '20px' }}>
@@ -672,7 +671,7 @@ const Profile = () => {
                       fontWeight: '500',
                       color: '#374151',
                       marginBottom: '8px'
-                    }}>Current Password</label>
+                    }}>{t('profile.security.currentPassword')}</label>
                     <div style={{ position: 'relative' }}>
                       <input
                         type={showPasswords.current ? "text" : "password"}
@@ -720,7 +719,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>New Password</label>
+                      }}>{t('profile.security.newPassword')}</label>
                       <div style={{ position: 'relative' }}>
                         <input
                           type={showPasswords.new ? "text" : "password"}
@@ -761,7 +760,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Confirm New Password</label>
+                      }}>{t('profile.security.confirmPassword')}</label>
                       <div style={{ position: 'relative' }}>
                         <input
                           type={showPasswords.confirm ? "text" : "password"}
@@ -815,7 +814,7 @@ const Profile = () => {
                         cursor: passwordLoading ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {passwordLoading ? 'Updating...' : 'Update Password'}
+                      {passwordLoading ? t('profile.general.updating') : t('profile.security.updatePassword')}
                     </button>
                   </div>
                 </form>
@@ -830,7 +829,7 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>API Key Management</h2>
+              }}>{t('profile.apiKeys.title')}</h2>
 
               <div style={{
                 background: '#fff',
@@ -844,7 +843,7 @@ const Profile = () => {
                   marginBottom: '16px',
                   lineHeight: '1.6'
                 }}>
-                  Use your API key to integrate LinkSA with your applications. Keep this key secure and do not share it publicly.
+                  {t('profile.apiKeys.description')}
                 </p>
 
                 <div style={{
@@ -880,7 +879,7 @@ const Profile = () => {
                       cursor: 'pointer'
                     }}
                   >
-                    {showApiKey ? 'Hide' : 'Show'}
+                    {showApiKey ? t('common.hide') : t('common.show')}
                   </button>
                   <button
                     onClick={handleCopyApiKey}
@@ -896,7 +895,7 @@ const Profile = () => {
                       cursor: apiKey ? 'pointer' : 'not-allowed'
                     }}
                   >
-                    Copy
+                    {t('common.copy')}
                   </button>
                 </div>
 
@@ -914,7 +913,7 @@ const Profile = () => {
                     cursor: apiKeyLoading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {apiKeyLoading ? 'Regenerating...' : 'Regenerate API Key'}
+                  {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
                 </button>
               </div>
             </section>
@@ -927,7 +926,7 @@ const Profile = () => {
                 color: '#111827',
                 marginBottom: '16px',
                 margin: '0 0 16px 0'
-              }}>Preferences</h2>
+              }}>{t('profile.tabs.preferences')}</h2>
 
               <div style={{
                 background: '#fff',
@@ -941,95 +940,66 @@ const Profile = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Notifications</h3>
+                  }}>{t('profile.notifications.title')}</h3>
 
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.emailNotifications}
                         onChange={(e) => setPreferences({...preferences, emailNotifications: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Email Notifications</div>
+                        }}>{t('profile.preferences.emailNotifications')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Receive email notifications for important updates</div>
+                        }}>{t('profile.preferences.emailNotificationsDesc')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.marketingEmails}
                         onChange={(e) => setPreferences({...preferences, marketingEmails: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Marketing Emails</div>
+                        }}>{t('profile.preferences.marketingEmails')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Receive updates about new features and promotions</div>
+                        }}>{t('profile.preferences.marketingEmailsDesc')}</div>
                       </div>
                     </label>
 
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}>
+                    <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.weeklyReports}
                         onChange={(e) => setPreferences({...preferences, weeklyReports: e.target.checked})}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          marginRight: '12px',
-                          cursor: 'pointer'
-                        }}
+                        className="profile-checkbox"
                       />
-                      <div>
+                      <div className="profile-checkbox-content">
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
                           color: '#111827'
-                        }}>Weekly Reports</div>
+                        }}>{t('profile.preferences.weeklyReports')}</div>
                         <div style={{
                           fontSize: '13px',
                           color: '#6B7280'
-                        }}>Get weekly analytics reports sent to your email</div>
+                        }}>{t('profile.preferences.weeklyReportsDesc')}</div>
                       </div>
                     </label>
                   </div>
@@ -1039,7 +1009,7 @@ const Profile = () => {
                     fontWeight: '600',
                     color: '#111827',
                     marginBottom: '16px'
-                  }}>Regional Settings</h3>
+                  }}>{t('profile.regionalSettings')}</h3>
 
                   <div style={{
                     display: 'grid',
@@ -1054,7 +1024,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Language</label>
+                      }}>{t('profile.preferences.language')}</label>
                       <select
                         value={preferences.language}
                         onChange={(e) => setPreferences({...preferences, language: e.target.value})}
@@ -1067,8 +1037,8 @@ const Profile = () => {
                           cursor: 'pointer'
                         }}
                       >
-                        <option value="en">English</option>
-                        <option value="ar">العربية (Arabic)</option>
+                        <option value="en">{t('common.english')}</option>
+                        <option value="ar">{t('common.arabic')}</option>
                       </select>
                     </div>
                     <div>
@@ -1078,7 +1048,7 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>Timezone</label>
+                      }}>{t('profile.preferences.timezone')}</label>
                       <select
                         value={preferences.timezone}
                         onChange={(e) => setPreferences({...preferences, timezone: e.target.value})}
@@ -1117,7 +1087,7 @@ const Profile = () => {
                         cursor: preferencesLoading ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {preferencesLoading ? 'Saving...' : 'Save Preferences'}
+                      {preferencesLoading ? t('profile.general.updating') : `${t('common.save')} ${t('profile.tabs.preferences')}`}
                     </button>
                   </div>
                 </form>

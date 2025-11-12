@@ -34,27 +34,31 @@ const endpoints = {
 class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
-    this.token = localStorage.getItem('accessToken');
+    // Try both token names for compatibility
+    this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
   }
 
   // Set authorization token
   setToken(token) {
     this.token = token;
     if (token) {
-      localStorage.setItem('accessToken', token);
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('accessToken', token); // Keep both for compatibility
     } else {
+      localStorage.removeItem('authToken');
       localStorage.removeItem('accessToken');
     }
   }
 
   // Get authorization token
   getToken() {
-    return this.token || localStorage.getItem('accessToken');
+    return this.token || localStorage.getItem('authToken') || localStorage.getItem('accessToken');
   }
 
   // Clear tokens
   clearTokens() {
     this.token = null;
+    localStorage.removeItem('authToken');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   }
@@ -100,9 +104,17 @@ class ApiClient {
         // Handle 401 - Unauthorized (token expired)
         if (response.status === 401) {
           this.clearTokens();
-          // Redirect to login page
-          window.location.href = '/login';
-          throw new Error('Session expired. Please login again.');
+
+          // Check if we're on a page that requires auth
+          const currentPath = window.location.pathname;
+          const publicPaths = ['/', '/login', '/register', '/landing'];
+
+          // Only redirect if not already on a public page
+          if (!publicPaths.includes(currentPath)) {
+            console.error('Authentication required. Please login.');
+          }
+
+          throw new Error(data.message || 'Authentication required. Please login to continue.');
         }
 
         // Throw error with API response message
@@ -113,7 +125,7 @@ class ApiClient {
     } catch (error) {
       // Network or other errors
       if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        throw new Error('Network error. Please check your connection.');
+        throw new Error('Network error. Please check your connection and ensure the backend API is running.');
       }
       throw error;
     }
@@ -239,6 +251,9 @@ export const urlsAPI = {
   deleteUrl: (id) => apiClient.delete(`${endpoints.urls.delete}/${id}`),
   createUrl: (urlData) => apiClient.post(endpoints.urls.create, urlData),
   updateUrl: (id, data) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
+
+  // Get available domains for creating URLs
+  getAvailableDomains: () => apiClient.get('/urls/domains/available'),
 };
 
 // Domains API methods

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI } from '../services/api';
@@ -7,17 +7,17 @@ import './MyLinks.css';
 
 
 function MyLinks() {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [links, setLinks] = useState([]);
   const [showCreateShortLink, setShowCreateShortLink] = useState(false);
   // State for create short link form
   const [longUrl, setLongUrl] = useState('');
   const [customName, setCustomName] = useState('');
   const [generateQR, setGenerateQR] = useState(false);
-  const [showUTMModal, setShowUTMModal] = useState(false);
+  const [, setShowUTMModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
 
@@ -34,7 +34,7 @@ function MyLinks() {
       const linksData = response.data?.urls || response.data?.data?.urls || [];
       setLinks(linksData);
     } catch (err) {
-      setError(err.message || 'Failed to fetch links. Please try again.');
+      setError(err.message || t('errors.generic'));
     } finally {
       setLoading(false);
     }
@@ -52,18 +52,18 @@ function MyLinks() {
       setCopiedId(link.id || link._id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      alert('Failed to copy link');
+      alert(t('errors.generic'));
     }
   };
 
   const handleDeleteLink = async (linkId) => {
-    if (!window.confirm('Are you sure you want to delete this link? This action cannot be undone.')) return;
+    if (!window.confirm(t('myLinks.confirmDelete'))) return;
     try {
       setDeleteLoading(linkId);
       await urlsAPI.delete(linkId);
       setLinks(links.filter(link => (link.id || link._id) !== linkId));
     } catch (err) {
-      alert('Failed to delete link. Please try again.');
+      alert(t('errors.generic'));
     } finally {
       setDeleteLoading(null);
     }
@@ -74,12 +74,12 @@ function MyLinks() {
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays === 0) return t('dates.today');
+    if (diffDays === 1) return t('dates.yesterday');
+    if (diffDays < 7) return t('dates.daysAgo', { count: diffDays });
     if (diffDays < 30) {
       const weeks = Math.floor(diffDays / 7);
-      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+      return t('dates.weeksAgo', { count: weeks });
     }
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
@@ -93,16 +93,52 @@ function MyLinks() {
     );
   });
 
-  // Handlers for create short link form (dummy for now)
-  const handleSubmit = (e) => {
+  // Handlers for create short link form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Implement create short link logic here
-    alert('Short link created!');
-    setShowCreateShortLink(false);
+    setError(null);
+
+    if (!longUrl.trim()) {
+      setError(t('createLink.errors.invalidUrl'));
+      return;
+    }
+
+    try {
+      const response = await urlsAPI.createUrl({
+        originalUrl: longUrl,
+        customCode: customName || undefined,
+        title: customName || undefined,
+      });
+
+      if (response.success && response.data && response.data.url) {
+        // Successfully created, refresh the list
+        await fetchLinks();
+
+        // Clear form and close modal
+        setLongUrl('');
+        setCustomName('');
+        setGenerateQR(false);
+        setShowCreateShortLink(false);
+        setError(null);
+      } else {
+        setError(t('createLink.errors.general'));
+      }
+    } catch (err) {
+      console.error('Error creating short link:', err);
+      setError(err.message || t('createLink.errors.general'));
+    }
   };
+
   const handleSaveDraft = () => {
-    // Implement save draft logic here
-    alert('Draft saved!');
+    // Save form data to local storage for later
+    const draft = {
+      longUrl,
+      customName,
+      generateQR,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('linkDraft', JSON.stringify(draft));
+    alert(t('notifications.draftSaved'));
   };
 
   return (
@@ -145,11 +181,7 @@ function MyLinks() {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -159,8 +191,8 @@ function MyLinks() {
             }}>
               {!showCreateShortLink && (
                 <div className="header-info" style={{ margin: 0 }}>
-                  <h1 className="page-title" style={{ marginBottom: '4px' }}>My Links</h1>
-                  <p className="page-subtitle" style={{ margin: 0 }}>Manage and track all your shortened links in one place</p>
+                  <h1 className="page-title" style={{ marginBottom: '4px' }}>{t('myLinks.title')}</h1>
+                  <p className="page-subtitle" style={{ margin: 0 }}>{t('myLinks.subtitle')}</p>
                 </div>
               )}
               <button
@@ -179,7 +211,7 @@ function MyLinks() {
                   marginLeft: showCreateShortLink ? '0' : 'auto'
                 }}
               >
-                {showCreateShortLink ? '← Back to My Links' : 'Create Short Link'}
+                {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
               </button>
             </div>
             {showCreateShortLink ? (
@@ -192,12 +224,48 @@ function MyLinks() {
                   <span className="breadcrumb-item current">Create Short Link</span>
                 </div> */}
                 <div className='header-info'>
-                  <h1 className="page-title">Create Short Link</h1>
+                  <h1 className="page-title">{t('createLink.title')}</h1>
                   <p className="page-description">
-                    Transform your long URLs into short, trackable links with custom UTM parameters
+                    {t('createLink.subtitle')}
                   </p>
                 </div>
                 <div className="create-link-form">
+                  {error && (
+                    <div style={{
+                      padding: '12px 16px',
+                      marginBottom: '20px',
+                      background: '#FEE2E2',
+                      border: '1px solid #FCA5A5',
+                      borderRadius: '8px',
+                      color: '#DC2626',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM7 4h2v5H7V4zm0 6h2v2H7v-2z"/>
+                      </svg>
+                      {error}
+                      <button
+                        type="button"
+                        onClick={() => setError(null)}
+                        style={{
+                          marginLeft: 'auto',
+                          background: 'none',
+                          border: 'none',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                          fontSize: '18px',
+                          padding: '0',
+                          width: '20px',
+                          height: '20px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
                   <form onSubmit={handleSubmit}>
                     {/* Long URL Input */}
                     <div className="form-section">
@@ -205,14 +273,14 @@ function MyLinks() {
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M10 3h4v4M6 11L14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Enter your long URL
+                        {t('createLink.form.originalUrl')}
                       </label>
                       <div className="input-container">
                         <input
                           type="url"
                           value={longUrl}
                           onChange={(e) => setLongUrl(e.target.value)}
-                          placeholder="https://example.com/your-very-long-url-here"
+                          placeholder={t('createLink.form.originalUrlPlaceholder')}
                           className="url-input"
                           required
                         />
@@ -229,7 +297,7 @@ function MyLinks() {
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Customize your link (optional)
+                        {t('createLink.form.customAlias')}
                       </label>
                       <div className="custom-url-input">
                         <span className="url-prefix">linksa.com/</span>
@@ -237,11 +305,10 @@ function MyLinks() {
                           type="text"
                           value={customName}
                           onChange={(e) => setCustomName(e.target.value)}
-                          placeholder="custom-name"
+                          placeholder={t('createLink.form.customAliasPlaceholder')}
                           className="custom-input"
                         />
                       </div>
-                      <p className="form-hint">Leave empty for auto-generated short link</p>
                     </div>
                     {/* UTM Parameters Section */}
                     <div className="utm-section">
@@ -251,8 +318,8 @@ function MyLinks() {
                             <path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                           <div>
-                            <span className="utm-title">UTM Parameters</span>
-                            <span className="utm-subtitle">(Track campaign performance)</span>
+                            <span className="utm-title">{t('createLink.form.utmParameters')}</span>
+                            <span className="utm-subtitle">{t('createLink.form.utmParameters')}</span>
                           </div>
                         </div>
                         <button
@@ -263,7 +330,7 @@ function MyLinks() {
                           <svg width="12.25" height="14" viewBox="0 0 12.25 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6.125 1v12M1 7h10.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
-                          Add UTM Parameters
+                          {t('createLink.form.utmParameters')}
                         </button>
                       </div>
                     </div>
@@ -282,8 +349,8 @@ function MyLinks() {
                           </svg>
                         </div>
                         <div className="qr-info">
-                          <h3>Generate QR Code</h3>
-                          <p>Auto-generate a QR code for your shortened link</p>
+                          <h3>{t('qrCodes.generate.title')}</h3>
+                          <p>{t('qrCodes.generate.customize')}</p>
                         </div>
                         <div className="qr-toggle">
                           <label className="toggle-switch">
@@ -303,7 +370,7 @@ function MyLinks() {
                         <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Create Short Link
+                        {t('createLink.form.createButton')}
                       </button>
                       <button
                         type="button"
@@ -313,7 +380,7 @@ function MyLinks() {
                         <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 4v9a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4M10 1H4v3h6V1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Save as Draft
+                        {t('common.save')}
                       </button>
                     </div>
                   </form>
@@ -339,7 +406,7 @@ function MyLinks() {
                         color: '#6B7280',
                         marginBottom: '8px',
                         fontWeight: '400'
-                      }}>Total Links</p>
+                      }}>{t('dashboard.stats.totalLinks')}</p>
                       <h3 className="stats-value" style={{
                         fontSize: '28px',
                         fontWeight: '600',
@@ -366,7 +433,7 @@ function MyLinks() {
                         color: '#6B7280',
                         marginBottom: '8px',
                         fontWeight: '400'
-                      }}>Total Clicks</p>
+                      }}>{t('dashboard.stats.totalClicks')}</p>
                       <h3 className="stats-value" style={{
                         fontSize: '28px',
                         fontWeight: '600',
@@ -427,7 +494,7 @@ function MyLinks() {
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite'
                       }}></div>
-                      <p style={{ marginTop: '12px', marginBottom: 0 }}>Loading links...</p>
+                      <p style={{ marginTop: '12px', marginBottom: 0 }}>{t('common.loading')}</p>
                     </div>
                   ) : filteredLinks.length === 0 ? (
                     <div style={{
@@ -440,8 +507,8 @@ function MyLinks() {
                       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}>
                         <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>No links found</h3>
-                      <p style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>Create your first short link to get started</p>
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>{t('myLinks.noLinks')}</h3>
+                      <p style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>{t('myLinks.createFirstLink')}</p>
                     </div>
                   ) : (
                     filteredLinks.map((link) => {
@@ -464,7 +531,7 @@ function MyLinks() {
                               fontWeight: '600',
                               color: '#1F2937',
                               marginBottom: '8px'
-                            }}>{link.title || 'Untitled Link'}</div>
+                            }}>{link.title || t('myLinks.table.title')}</div>
                             <div className="link-urls" style={{
                               display: 'flex',
                               flexDirection: 'column',
@@ -512,7 +579,7 @@ function MyLinks() {
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
                                 </svg>
-                                {link.clickCount || 0} clicks
+                                {link.clickCount || 0} {t('myLinks.table.clicks')}
                               </span>
                             </div>
                           </div>
@@ -540,7 +607,7 @@ function MyLinks() {
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <polyline points="20 6 9 17 4 12"/>
                                   </svg>
-                                  Copied
+                                  {t('common.copied')}
                                 </>
                               ) : (
                                 <>
@@ -548,7 +615,7 @@ function MyLinks() {
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                   </svg>
-                                  Copy
+                                  {t('common.copy')}
                                 </>
                               )}
                             </button>
@@ -571,7 +638,7 @@ function MyLinks() {
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                               </svg>
-                              {deleteLoading === linkId ? 'Deleting...' : 'Delete'}
+                              {deleteLoading === linkId ? t('common.loading') : t('common.delete')}
                             </button>
                           </div>
                         </div>

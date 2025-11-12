@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { domainsAPI } from '../services/api';
 import './CustomDomains.css';
 
 const CustomDomains = () => {
+  const { t } = useTranslation();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newDomainName, setNewDomainName] = useState('');
-  const [newSubdomain, setNewSubdomain] = useState('');
   const [isAddingDomain, setIsAddingDomain] = useState(false);
 
   // Wizard state
@@ -18,7 +18,6 @@ const CustomDomains = () => {
   const [baseDomain, setBaseDomain] = useState('');
   const [subdomain, setSubdomain] = useState('');
   const [wizardStep, setWizardStep] = useState(1);
-  const [verificationStatus, setVerificationStatus] = useState('idle');
   const [addedDomain, setAddedDomain] = useState(null);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ const CustomDomains = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching domains:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to fetch domains');
+      setError(err.response?.data?.message || err.message || t('errors.generic'));
     } finally {
       setLoading(false);
     }
@@ -65,34 +64,36 @@ const CustomDomains = () => {
   };
 
   const handleAddDomain = async () => {
-
-    // Construct full domain from subdomain and base domain
-    const fullDomain = subdomain.trim()
-      ? `${subdomain.toLowerCase().trim()}.${baseDomain.toLowerCase().trim()}`
-      : baseDomain.toLowerCase().trim();
-
-    if (!baseDomain.trim() || !newSubdomain.trim()) return;
+    // Validate input
+    if (!baseDomain.trim()) {
+      setError(t('errors.validationError'));
+      return;
+    }
 
     try {
       setIsAddingDomain(true);
-      const fullDomain = `${newSubdomain}.${newDomainName}`;
+
+      // Construct full domain from subdomain and base domain
+      const fullDomain = subdomain.trim()
+        ? `${subdomain.toLowerCase().trim()}.${baseDomain.toLowerCase().trim()}`
+        : baseDomain.toLowerCase().trim();
+
       const domainData = {
-        domain: fullDomain,
-        subdomain: newSubdomain.toLowerCase().trim(),
-        fullDomain: fullDomain.toLowerCase().trim(),
+        domain: baseDomain.toLowerCase().trim(),
+        subdomain: subdomain.trim() ? subdomain.toLowerCase().trim() : undefined,
+        fullDomain: fullDomain,
         isDefault: false
       };
 
       const response = await domainsAPI.createDomain(domainData);
-      setAddedDomain(response.data || { ...domainData, id: Date.now() });
+      const addedDomainData = response.data?.data || response.data || { ...domainData, id: Date.now() };
+      setAddedDomain(addedDomainData);
       await fetchDomains();
-      setShowAddModal(false);
-      resetWizard();
       setWizardStep(2);
       setError(null);
     } catch (err) {
       console.error('Error adding domain:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to add domain');
+      setError(err.response?.data?.message || err.message || t('errors.generic'));
     } finally {
       setIsAddingDomain(false);
     }
@@ -103,60 +104,41 @@ const CustomDomains = () => {
     if (!targetId) return;
 
     try {
-      setVerificationStatus('checking');
       const response = await domainsAPI.verifyDomain(targetId);
 
       if (response.data?.success || response.success) {
-        setVerificationStatus('success');
         await fetchDomains();
         if (wizardStep === 2) {
           setWizardStep(3);
         }
       } else {
-        setVerificationStatus('failed');
-        setError(response.data?.message || response.message || 'DNS verification failed');
+        setError(response.data?.message || response.message || t('errors.generic'));
       }
     } catch (err) {
       console.error('Domain verification error:', err);
-      setVerificationStatus('failed');
-      setError(err.response?.data?.message || err.message || 'DNS verification failed');
+      setError(err.response?.data?.message || err.message || t('errors.generic'));
     }
   };
 
   const resetWizard = () => {
     setShowAddModal(false);
     setWizardStep(1);
-    setNewDomainName('');
-    setNewSubdomain('');
-    setVerificationStatus('idle');
+    setCurrentStep(1);
+    setBaseDomain('');
+    setSubdomain('');
     setAddedDomain(null);
     setError(null);
   };
 
-  const copyToClipboard = (text) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
-    } else {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Copied to clipboard!');
-    }
-  };
-
   const handleDeleteDomain = async (domainId) => {
-    if (!window.confirm('Are you sure you want to delete this domain?')) return;
+    if (!window.confirm(t('myLinks.confirmDelete'))) return;
 
     try {
       await domainsAPI.deleteDomain(domainId);
       await fetchDomains();
     } catch (err) {
       console.error('Error deleting domain:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to delete domain');
+      setError(err.response?.data?.message || err.message || t('errors.generic'));
     }
   };
 
@@ -164,7 +146,7 @@ const CustomDomains = () => {
   const renderStepIndicator = () => (
     <div style={{ marginBottom: '2rem' }}>
       <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
-        Step {currentStep} of 3
+        {t('customDomains.wizard.step', { current: currentStep, total: 3 })}
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {[1, 2, 3].map((step) => (
@@ -204,18 +186,18 @@ const CustomDomains = () => {
   const renderStep1 = () => (
     <div>
       <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-        Enter Domain Information
+        {t('customDomains.addDomain.title')}
       </h3>
 
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-          Base Domain
+          {t('customDomains.addDomain.domainName')}
         </label>
         <input
           type="text"
           value={baseDomain}
           onChange={(e) => setBaseDomain(e.target.value)}
-          placeholder="company.sa"
+          placeholder={t('customDomains.addDomain.domainPlaceholder')}
           style={{
             width: '100%',
             padding: '0.75rem',
@@ -227,19 +209,19 @@ const CustomDomains = () => {
           required
         />
         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
-          Enter your base domain (e.g., company.sa, ministry.gov.sa)
+          {t('customDomains.addDomain.domainName')}
         </p>
       </div>
 
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-          Subdomain (Optional)
+          {t('customDomains.addDomain.subdomain')}
         </label>
         <input
           type="text"
           value={subdomain}
           onChange={(e) => setSubdomain(e.target.value)}
-          placeholder="links"
+          placeholder={t('customDomains.addDomain.subdomainPlaceholder')}
           style={{
             width: '100%',
             padding: '0.75rem',
@@ -250,7 +232,7 @@ const CustomDomains = () => {
           }}
         />
         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
-          Optional: Add a subdomain for your short links (e.g., "links" for links.company.sa)
+          {t('customDomains.addDomain.subdomain')}
         </p>
       </div>
 
@@ -272,10 +254,10 @@ const CustomDomains = () => {
         </div>
         <div>
           <p style={{ fontWeight: '600', fontSize: '0.875rem', color: '#1E40AF', marginBottom: '0.25rem' }}>
-            Custom Domain Setup
+            {t('customDomains.addDomain.title')}
           </p>
           <p style={{ fontSize: '0.875rem', color: '#1E40AF', margin: 0 }}>
-            Your domain will be configured with DNS verification and SSL certificate management.
+            {t('customDomains.verification.instructions')}
           </p>
         </div>
       </div>
@@ -286,7 +268,7 @@ const CustomDomains = () => {
   const renderStep2 = () => (
     <div>
       <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-        DNS Configuration
+        {t('customDomains.verification.title')}
       </h3>
 
       <div style={{
@@ -297,13 +279,13 @@ const CustomDomains = () => {
         marginBottom: '1.5rem'
       }}>
         <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
-          You will need to add DNS records to verify domain ownership. Instructions will be provided after creation.
+          {t('customDomains.verification.instructions')}
         </p>
       </div>
 
       <div style={{ marginBottom: '1rem' }}>
         <p style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-          Your domain will be:
+          {t('customDomains.table.domain')}:
         </p>
         <div style={{
           padding: '0.75rem',
@@ -314,7 +296,7 @@ const CustomDomains = () => {
           fontSize: '1rem',
           color: '#1F2937'
         }}>
-          {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || 'your-domain.com'}
+          {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || t('customDomains.addDomain.domainPlaceholder')}
         </div>
       </div>
     </div>
@@ -324,7 +306,7 @@ const CustomDomains = () => {
   const renderStep3 = () => (
     <div>
       <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-        Review and Confirm
+        {t('common.confirm')}
       </h3>
 
       <div style={{
@@ -335,26 +317,26 @@ const CustomDomains = () => {
       }}>
         <div style={{ marginBottom: '1rem' }}>
           <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-            Full Domain
+            {t('customDomains.table.domain')}
           </p>
           <p style={{ fontSize: '1rem', fontWeight: '600', color: '#1F2937' }}>
-            {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || 'Not specified'}
+            {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || t('customDomains.addDomain.domainPlaceholder')}
           </p>
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
           <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-            Base Domain
+            {t('customDomains.addDomain.domainName')}
           </p>
           <p style={{ fontSize: '1rem', fontWeight: '500', color: '#1F2937' }}>
-            {baseDomain || 'Not specified'}
+            {baseDomain || t('customDomains.addDomain.domainPlaceholder')}
           </p>
         </div>
 
         {subdomain.trim() && (
           <div>
             <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-              Subdomain
+              {t('customDomains.addDomain.subdomain')}
             </p>
             <p style={{ fontSize: '1rem', fontWeight: '500', color: '#1F2937' }}>
               {subdomain}
@@ -371,7 +353,7 @@ const CustomDomains = () => {
         marginTop: '1.5rem'
       }}>
         <p style={{ fontSize: '0.875rem', color: '#166534', margin: 0 }}>
-          After clicking "Add Domain", you'll receive DNS configuration instructions to verify your domain ownership.
+          {t('customDomains.verification.instructions')}
         </p>
       </div>
     </div>
@@ -400,7 +382,7 @@ const CustomDomains = () => {
         overflow: 'auto'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Add New Domain</h3>
+          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>{t('customDomains.addDomain.title')}</h3>
           <button
             onClick={() => {
               setShowAddModal(false);
@@ -421,7 +403,12 @@ const CustomDomains = () => {
 
         {renderStepIndicator()}
 
-        <form onSubmit={handleAddDomain}>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStep === 3) {
+            handleAddDomain();
+          }
+        }}>
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
@@ -441,7 +428,7 @@ const CustomDomains = () => {
                 fontSize: '0.875rem'
               }}
             >
-              Previous
+              {t('common.back')}
             </button>
 
             {currentStep < 3 ? (
@@ -460,7 +447,7 @@ const CustomDomains = () => {
                   fontSize: '0.875rem'
                 }}
               >
-                Next
+                {t('common.next')}
               </button>
             ) : (
               <button
@@ -477,7 +464,7 @@ const CustomDomains = () => {
                   fontSize: '0.875rem'
                 }}
               >
-                {isAddingDomain ? 'Adding...' : 'Add Domain'}
+                {isAddingDomain ? t('customDomains.addDomain.adding') : t('customDomains.addDomain.addButton')}
               </button>
             )}
           </div>
@@ -515,11 +502,7 @@ const CustomDomains = () => {
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
-          <div className="analytics-content" style={{
-            padding: '24px',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
+          <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
               flexDirection: 'row',
@@ -528,8 +511,8 @@ const CustomDomains = () => {
               marginBottom: '20px'
             }}>
               <div className="header-info" style={{ margin: 0 }}>
-                <h1 className="page-title" style={{ marginBottom: '4px' }}>Custom Domains</h1>
-                <p className="page-subtitle" style={{ margin: 0 }}>Manage your branded domains for short links</p>
+                <h1 className="page-title" style={{ marginBottom: '4px' }}>{t('customDomains.title')}</h1>
+                <p className="page-subtitle" style={{ margin: 0 }}>{t('customDomains.subtitle')}</p>
               </div>
               <button
                 // className="create-link-btn"
@@ -546,7 +529,7 @@ const CustomDomains = () => {
                   fontWeight: "500"
                 }}
               >
-                Add New Domain
+                {t('customDomains.addDomain.title')}
               </button>
             </div>
 
@@ -596,7 +579,7 @@ const CustomDomains = () => {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
-                  <p style={{ marginTop: '12px', marginBottom: 0 }}>Loading domains...</p>
+                  <p style={{ marginTop: '12px', marginBottom: 0 }}>{t('common.loading')}</p>
                 </div>
               ) : domains.length === 0 ? (
                 <div className="empty-state" style={{
@@ -611,8 +594,8 @@ const CustomDomains = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
                   </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>No domains found</h3>
-                  <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '20px' }}>Add your first custom domain to start creating branded short links</p>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>{t('customDomains.noDomains')}</h3>
+                  <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '20px' }}>{t('customDomains.addFirst')}</p>
                   <button
                     onClick={() => setShowAddModal(true)}
                     className="create-first-link-btn"
@@ -633,7 +616,7 @@ const CustomDomains = () => {
                     <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Add Your First Domain
+                    {t('customDomains.addDomain.title')}
                   </button>
                 </div>
               ) : (
@@ -652,23 +635,23 @@ const CustomDomains = () => {
                               <h3 className="link-title">{domain.fullDomain || domain.domain}</h3>
                               <div className="link-status">
                                 <span className={`status-badge ${domain.status === 'active' ? 'active' : 'inactive'}`}>
-                                  {domain.status === 'active' ? 'Active' : 'Inactive'}
+                                  {domain.status === 'active' ? t('customDomains.status.active') : t('customDomains.status.inactive')}
                                 </span>
                                 {domain.isDefault && (
-                                  <span className="status-badge active">Default</span>
+                                  <span className="status-badge active">{t('customDomains.actions.setDefault')}</span>
                                 )}
                               </div>
                             </div>
                           </div>
                           <div className="link-urls">
                             <div className="url-row">
-                              <span className="url-label">Domain:</span>
+                              <span className="url-label">{t('customDomains.table.domain')}:</span>
                               <span className="short-url">{domain.fullDomain || domain.domain}</span>
                             </div>
                             <div className="url-row">
-                              <span className="url-label">Status:</span>
+                              <span className="url-label">{t('customDomains.table.status')}:</span>
                               <span className="original-url">
-                                {domain.verified || domain.verificationStatus === 'verified' ? 'DNS Verified' : 'Pending Verification'}
+                                {domain.verified || domain.verificationStatus === 'verified' ? t('customDomains.status.verified') : t('customDomains.status.pending')}
                               </span>
                             </div>
                           </div>
@@ -677,13 +660,13 @@ const CustomDomains = () => {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m0 0v13a2 2 0 01-2 2H10a2 2 0 01-2-2V7z" />
                               </svg>
-                              <span>Added {new Date(domain.createdAt || domain.dateAdded).toLocaleDateString()}</span>
+                              <span>{t('customDomains.table.created')} {new Date(domain.createdAt || domain.dateAdded).toLocaleDateString()}</span>
                             </div>
                             <div className="meta-item">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
-                              <span>{domain.owner?.email || domain.addedBy || 'Unknown'}</span>
+                              <span>{domain.owner?.email || domain.addedBy || t('common.loading')}</span>
                             </div>
                           </div>
                         </div>
@@ -696,7 +679,7 @@ const CustomDomains = () => {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
-                              Verify
+                              {t('customDomains.actions.verify')}
                             </button>
                           )}
                           <button
@@ -706,7 +689,7 @@ const CustomDomains = () => {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            Delete
+                            {t('customDomains.actions.delete')}
                           </button>
                         </div>
                       </div>

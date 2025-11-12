@@ -3,13 +3,15 @@
 /* Main Area Layout for Custom Domains */
 .dashboard-container .main-area {
   margin-left: 256px; /* Account for CustomDomainsSidebar width */
+  margin-top: 64px; /* Account for fixed header */
   background: #F8FAFC;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
 }
 
 .main-content {
@@ -818,6 +820,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
+  justify-self: left;
 }
 
 .page-title {
@@ -858,6 +861,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  justify-self: left;
 }
 
 .notification-icon {

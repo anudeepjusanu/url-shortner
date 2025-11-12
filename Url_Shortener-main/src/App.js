@@ -1,12 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import './App.css';
+import './rtl.css';
 import LandingPage from './components/LandingPage';
 import Registration from './components/Registration';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
 import CustomDomains from './components/CustomDomains';
 import CreateShortLink from './components/CreateShortLink';
 import Analytics from './components/Analytics';
@@ -26,9 +29,10 @@ const TeamMembers = () => <div>Team Members Page</div>;
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Routes>
+      <LanguageProvider>
+        <Router>
+          <div className="App">
+            <Routes>
             {/* Landing page route */}
             <Route path="/" element={<LandingPage />} />
 
@@ -39,69 +43,95 @@ function App() {
             {/* Dashboard routes - Protected */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/analytics" element={
               <ProtectedRoute>
-                <Analytics />
+                <Layout>
+                  <Analytics />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/create-short-link" element={
               <ProtectedRoute>
-                <CreateShortLink />
+                <Layout>
+                  <CreateShortLink />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/my-links" element={
               <ProtectedRoute>
-                <MyLinks />
+                <Layout>
+                  <MyLinks />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/qr-codes" element={
               <ProtectedRoute>
-                <QRCodes />
+                <Layout>
+                  <QRCodes />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/custom-domains" element={
               <ProtectedRoute>
-                <CustomDomains />
+                <Layout>
+                  <CustomDomains />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/utm-builder" element={
               <ProtectedRoute>
-                <UTMBuilder />
+                <Layout>
+                  <UTMBuilder />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/create-link" element={
               <ProtectedRoute>
-                <CreateLink />
+                <Layout>
+                  <CreateLink />
+                </Layout>
               </ProtectedRoute>
             } />
 
             {/* Account & Settings routes - Protected */}
             <Route path="/profile" element={
               <ProtectedRoute>
-                <Profile />
+                <Layout>
+                  <Profile />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/team-members" element={
               <ProtectedRoute>
-                <TeamMembers />
+                <Layout>
+                  <TeamMembers />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/billing" element={
               <ProtectedRoute>
-                <BillingManagement />
+                <Layout>
+                  <BillingManagement />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/subscription" element={
               <ProtectedRoute>
-                <Subscription />
+                <Layout>
+                  <Subscription />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/content-filter" element={
               <ProtectedRoute>
-                <ContentFilter />
+                <Layout>
+                  <ContentFilter />
+                </Layout>
               </ProtectedRoute>
             } />
 
@@ -110,6 +140,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

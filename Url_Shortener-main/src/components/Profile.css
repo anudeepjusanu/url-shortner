@@ -171,21 +171,46 @@
 .profile-checkbox {
   width: 18px;
   height: 18px;
-  margin-right: 12px;
   cursor: pointer;
   accent-color: #3B82F6;
+  flex-shrink: 0;
+}
+
+/* LTR spacing */
+[dir="ltr"] .profile-checkbox {
+  margin-right: 12px;
+}
+
+/* RTL spacing */
+[dir="rtl"] .profile-checkbox {
+  margin-left: 12px;
 }
 
 .profile-checkbox-label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  gap: 0;
 }
 
 .profile-checkbox-label:hover {
   opacity: 0.8;
+}
+
+.profile-checkbox-content {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from shrinking below content size */
+}
+
+/* Ensure proper spacing for RTL in all browsers */
+[dir="rtl"] .profile-checkbox-label {
+  direction: rtl;
+}
+
+[dir="ltr"] .profile-checkbox-label {
+  direction: ltr;
 }
 
 /* Select Dropdown */
@@ -346,42 +371,358 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
+  /* Form Grid - Single column on tablets */
   .profile-form-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Stats Grid - 2 columns on tablets */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Page Header */
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Section Cards */
+  .profile-section-card {
+    padding: 20px 24px !important;
   }
 }
 
 @media (max-width: 768px) {
+  /* Content Padding */
   .analytics-content {
     padding: 16px !important;
+    gap: 16px !important;
   }
 
+  /* Page Title */
+  .page-header h1 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  .page-header p {
+    font-size: 13px !important;
+  }
+
+  /* Section Cards */
   .profile-section-card {
-    padding: 20px !important;
+    padding: 16px !important;
   }
 
   .profile-section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
-  /* Stack account stats vertically on mobile */
+  .profile-section-title {
+    fontSize: 16px !important;
+  }
+
+  /* Stats Grid - 2 columns on mobile */
   div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .profile-stat-card {
+    padding: 16px !important;
+  }
+
+  .profile-stat-card > div:first-child {
+    font-size: 24px !important;
+  }
+
+  .profile-stat-card > div:last-child {
+    font-size: 13px !important;
+  }
+
+  /* Form Grid */
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* Labels */
+  .profile-label {
+    fontSize: 13px !important;
+    margin-bottom: 6px;
+  }
+
+  /* Inputs */
+  .profile-input,
+  .profile-select,
+  .api-key-input {
+    padding: 9px 12px !important;
+    fontSize: 13px !important;
+  }
+
+  /* Buttons */
+  .profile-btn-primary,
+  .profile-btn-secondary,
+  .profile-btn-warning {
+    padding: 9px 18px !important;
+    fontSize: 13px !important;
+  }
+
+  /* Avatar Section */
+  .profile-avatar-section {
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 28px;
+  }
+
+  .profile-avatar-info h3 {
+    font-size: 16px;
+  }
+
+  .profile-avatar-info p {
+    font-size: 12px;
+  }
+
+  /* Info/Warning Boxes */
+  .profile-info-box,
+  .profile-warning-box {
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* Alert Messages */
+  .profile-alert-success,
+  .profile-alert-error {
+    padding: 10px 14px;
+    fontSize: 13px !important;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  /* Divider */
+  .profile-divider {
+    margin: 20px 0;
+  }
+
+  /* Checkbox */
+  .profile-checkbox {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* Override RTL/LTR margins for mobile */
+  [dir="ltr"] .profile-checkbox {
+    margin-right: 10px;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .profile-checkbox {
+    margin-left: 10px;
+    margin-right: 0;
+  }
+
+  .profile-checkbox-label {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  /* Password Toggle */
+  .password-toggle-btn {
+    right: 10px;
+    fontSize: 13px !important;
   }
 }
 
 @media (max-width: 480px) {
-  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
-    grid-template-columns: 1fr !important;
+  /* Content Padding */
+  .analytics-content {
+    padding: 12px !important;
+    gap: 12px !important;
   }
 
+  /* Page Title */
+  .page-header h1 {
+    font-size: 20px !important;
+    line-height: 26px !important;
+  }
+
+  .page-header p {
+    font-size: 12px !important;
+  }
+
+  /* Section Cards */
+  .profile-section-card {
+    padding: 14px !important;
+  }
+
+  .profile-section-title {
+    fontSize: 15px !important;
+  }
+
+  /* Stats Grid - Single column on small mobile */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"],
+  div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .profile-stat-card {
+    padding: 14px !important;
+  }
+
+  .profile-stat-card > div:first-child {
+    font-size: 20px !important;
+  }
+
+  .profile-stat-card > div:last-child {
+    font-size: 12px !important;
+  }
+
+  /* Form Grid */
+  .profile-form-grid {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* Labels */
+  .profile-label {
+    fontSize: 12px !important;
+    margin-bottom: 6px;
+  }
+
+  /* Inputs */
+  .profile-input,
+  .profile-select,
+  .api-key-input {
+    padding: 8px 10px !important;
+    fontSize: 12px !important;
+  }
+
+  /* Buttons - Full width on small mobile */
   .profile-btn-primary,
   .profile-btn-secondary,
   .profile-btn-warning {
+    width: 100% !important;
+    padding: 8px 16px !important;
+    fontSize: 12px !important;
+  }
+
+  /* Avatar Section */
+  .profile-avatar-section {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .profile-avatar-info {
+    text-align: center;
+  }
+
+  .profile-avatar-info h3 {
+    font-size: 15px;
+  }
+
+  .profile-avatar-info p {
+    font-size: 11px;
+  }
+
+  /* Info/Warning Boxes */
+  .profile-info-box,
+  .profile-warning-box {
+    padding: 10px 12px;
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  /* Alert Messages */
+  .profile-alert-success,
+  .profile-alert-error {
+    padding: 8px 12px;
+    fontSize: 12px !important;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Divider */
+  .profile-divider {
+    margin: 16px 0;
+  }
+
+  /* Checkbox */
+  .profile-checkbox {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Override RTL/LTR margins for small mobile */
+  [dir="ltr"] .profile-checkbox {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .profile-checkbox {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
+  .profile-checkbox-label {
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  /* Password Toggle */
+  .password-toggle-btn {
+    right: 8px;
+    fontSize: 12px !important;
+    padding: 3px;
+  }
+
+  /* Button Loading Spinner */
+  .btn-loading {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+  }
+
+  /* Section Header Buttons */
+  .profile-section-header button {
     width: 100%;
+  }
+
+  /* API Key Input Container */
+  div[style*="display: flex"][style*="gap"] {
+    flex-direction: column;
+  }
+
+  .api-key-input {
+    width: 100% !important;
   }
 }
 
