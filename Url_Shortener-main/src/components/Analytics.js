@@ -35,11 +35,63 @@ const Analytics = () => {
         groupBy: timeFilter === '7d' ? 'hour' : 'day'
       });
 
-      setAnalyticsData(response.data);
+      console.log('Analytics API Response:', response);
 
-      // If we have analytics data, extract the link info from it
-      if (response.data?.url) {
-        setLinkData(response.data.url);
+      // Transform backend data to frontend format
+      const backendData = response.data;
+      const transformedData = {
+        totalClicks: backendData.overview?.totalClicks || 0,
+        uniqueClicks: backendData.overview?.uniqueClicks || 0,
+        clickThroughRate: backendData.overview?.clickThroughRate || '0%',
+        averageTime: backendData.overview?.averageClicksPerDay ? `${backendData.overview.averageClicksPerDay}/day` : '0/day',
+        
+        // Transform time series data for chart
+        clickActivity: backendData.timeSeries?.map(item => ({
+          label: item.date || item._id,
+          date: item.date || item._id,
+          totalClicks: item.clicks || 0,
+          uniqueClicks: item.uniqueClicks || 0
+        })) || [],
+        
+        // Transform country data
+        clicksByCountry: backendData.topStats?.countries?.map(item => ({
+          country: item.countryName || item.country || 'Unknown',
+          name: item.countryName || item.country || 'Unknown',
+          clicks: item.clicks || 0
+        })) || [],
+        
+        // Transform device data
+        clicksByDevice: backendData.topStats?.devices?.reduce((acc, item) => {
+          const deviceType = (item.type || item._id || 'unknown').toLowerCase();
+          acc[deviceType] = item.clicks || 0;
+          return acc;
+        }, {}) || {},
+        
+        // Store URL info if available
+        url: backendData.url || null
+      };
+
+      setAnalyticsData(transformedData);
+
+      // Fetch URL details separately if not included
+      if (!transformedData.url && id) {
+        try {
+          const urlResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3015/api'}/urls/${id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('accessToken')}`
+            }
+          });
+          if (urlResponse.ok) {
+            const urlData = await urlResponse.json();
+            if (urlData.success && urlData.data) {
+              setLinkData(urlData.data);
+            }
+          }
+        } catch (urlErr) {
+          console.error('Error fetching URL details:', urlErr);
+        }
+      } else if (transformedData.url) {
+        setLinkData(transformedData.url);
       }
     } catch (err) {
       console.error('Error fetching analytics data:', err);

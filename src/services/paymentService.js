@@ -1,13 +1,23 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const Plan = require('../models/Plan');
 const Coupon = require('../models/Coupon');
 const PaymentMethod = require('../models/PaymentMethod');
 const emailService = require('./emailService');
 
+// Initialize Stripe only if API key is provided
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+} else {
+  console.warn('⚠️  Stripe API key not configured - payment features will be disabled');
+}
+
 class PaymentService {
   // Create Stripe customer
   async createCustomer(user) {
+    if (!stripe) {
+      throw new Error('Payment service not configured');
+    }
     try {
       const customer = await stripe.customers.create({
         email: user.email,

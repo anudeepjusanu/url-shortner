@@ -98,6 +98,15 @@ const getUrlAnalytics = async (req, res) => {
     ]);
     
     const analyticsData = {
+      url: {
+        _id: url._id,
+        shortCode: url.shortCode,
+        customCode: url.customCode,
+        originalUrl: url.originalUrl,
+        title: url.title,
+        domain: url.domain,
+        createdAt: url.createdAt
+      },
       overview: {
         totalClicks: url.clickCount,
         uniqueClicks: url.uniqueClickCount,
