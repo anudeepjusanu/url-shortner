@@ -9,6 +9,11 @@ const config = require('../config/environment');
 class AnalyticsService {
   async recordClick(shortCode, clickData) {
     try {
+      console.log('📊 Recording click for:', shortCode, {
+        ip: clickData.ipAddress,
+        trackingEnabled: config.ANALYTICS.TRACK_CLICKS
+      });
+
       const {
         ipAddress,
         userAgent,
@@ -23,10 +28,18 @@ class AnalyticsService {
       });
       
       if (!url) {
+        console.error('❌ URL not found for click recording:', shortCode);
         throw new Error('URL not found');
       }
       
+      console.log('✅ Found URL for click:', {
+        id: url._id,
+        shortCode: url.shortCode,
+        domain: url.domain
+      });
+      
       if (!config.ANALYTICS.TRACK_CLICKS) {
+        console.warn('⚠️ Click tracking is disabled');
         return null;
       }
       
@@ -54,8 +67,18 @@ class AnalyticsService {
       };
       
       const click = await Click.createClick(clickRecord);
+      console.log('✅ Click recorded:', {
+        clickId: click._id,
+        urlId: url._id,
+        isUnique,
+        isBot
+      });
       
       await url.incrementClick(isUnique);
+      console.log('✅ URL click count incremented:', {
+        clickCount: url.clickCount + 1,
+        uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0)
+      });
       
       this.updateAnalyticsSummaries(url._id, shortCode, clickRecord);
       

@@ -6,6 +6,13 @@ const redirectToOriginalUrl = async (req, res) => {
     const { shortCode } = req.params;
     const requestDomain = req.get('host');
 
+    console.log('🔗 Redirect Request:', {
+      shortCode,
+      requestDomain,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')?.substring(0, 50)
+    });
+
     const requestData = {
       ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
       userAgent: req.get('User-Agent') || '',
