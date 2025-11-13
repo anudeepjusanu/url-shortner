@@ -94,7 +94,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="features-section">
+      <section id="features" className="features-section">
         <div className="container">
           <div className="section-header">
             <h2>{t('landing.features.title')}</h2>
@@ -318,7 +318,7 @@ const LandingPage = () => {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="why-section">
+      <section id="about" className="why-section">
         <div className="container">
           <div className="section-header">
             <h2>{t('landing.whyChoose.title')}</h2>
@@ -493,6 +493,83 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="pricing-section">
+        <div className="container">
+          <div className="section-header">
+            <h2>{t('landing.pricing.title')}</h2>
+            <p>{t('landing.pricing.subtitle')}</p>
+          </div>
+
+          <div className="pricing-grid">
+            <div className="pricing-card">
+              <div className="pricing-header">
+                <h3>{t('landing.pricing.free.title')}</h3>
+                <div className="price">
+                  <span className="currency">{t('landing.pricing.free.currency')}</span>
+                  <span className="amount">{t('landing.pricing.free.amount')}</span>
+                  <span className="period">/{t('landing.pricing.free.period')}</span>
+                </div>
+                <p className="pricing-description">{t('landing.pricing.free.description')}</p>
+              </div>
+              <ul className="pricing-features">
+                <li><CheckIcon /> {t('landing.pricing.free.feature1')}</li>
+                <li><CheckIcon /> {t('landing.pricing.free.feature2')}</li>
+                <li><CheckIcon /> {t('landing.pricing.free.feature3')}</li>
+              </ul>
+              <button className="pricing-btn" onClick={() => navigate("/register")}>
+                {t('landing.pricing.free.cta')}
+              </button>
+            </div>
+
+            <div className="pricing-card featured">
+              <div className="pricing-badge">{t('landing.pricing.pro.badge')}</div>
+              <div className="pricing-header">
+                <h3>{t('landing.pricing.pro.title')}</h3>
+                <div className="price">
+                  <span className="currency">{t('landing.pricing.pro.currency')}</span>
+                  <span className="amount">{t('landing.pricing.pro.amount')}</span>
+                  <span className="period">/{t('landing.pricing.pro.period')}</span>
+                </div>
+                <p className="pricing-description">{t('landing.pricing.pro.description')}</p>
+              </div>
+              <ul className="pricing-features">
+                <li><CheckIcon /> {t('landing.pricing.pro.feature1')}</li>
+                <li><CheckIcon /> {t('landing.pricing.pro.feature2')}</li>
+                <li><CheckIcon /> {t('landing.pricing.pro.feature3')}</li>
+                <li><CheckIcon /> {t('landing.pricing.pro.feature4')}</li>
+                <li><CheckIcon /> {t('landing.pricing.pro.feature5')}</li>
+              </ul>
+              <button className="pricing-btn primary" onClick={() => navigate("/register")}>
+                {t('landing.pricing.pro.cta')}
+              </button>
+            </div>
+
+            <div className="pricing-card">
+              <div className="pricing-header">
+                <h3>{t('landing.pricing.enterprise.title')}</h3>
+                <div className="price">
+                  <span className="currency">{t('landing.pricing.enterprise.currency')}</span>
+                  <span className="amount">{t('landing.pricing.enterprise.amount')}</span>
+                  <span className="period">/{t('landing.pricing.enterprise.period')}</span>
+                </div>
+                <p className="pricing-description">{t('landing.pricing.enterprise.description')}</p>
+              </div>
+              <ul className="pricing-features">
+                <li><CheckIcon /> {t('landing.pricing.enterprise.feature1')}</li>
+                <li><CheckIcon /> {t('landing.pricing.enterprise.feature2')}</li>
+                <li><CheckIcon /> {t('landing.pricing.enterprise.feature3')}</li>
+                <li><CheckIcon /> {t('landing.pricing.enterprise.feature4')}</li>
+                <li><CheckIcon /> {t('landing.pricing.enterprise.feature5')}</li>
+              </ul>
+              <button className="pricing-btn" onClick={() => navigate("/contact")}>
+                {t('landing.pricing.enterprise.cta')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="testimonials-section">
         <div className="container">
@@ -578,13 +655,13 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer id="contact" className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <div className="footer-brand">
+              <div >
                 <div className="brand-logo">
-                  <div className="logo-icon">
+                  {/* <div className="logo-icon">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="23"
@@ -604,7 +681,7 @@ const LandingPage = () => {
                         </clipPath>
                       </defs>
                     </svg>
-                  </div>
+                  </div> */}
                   <span className="brand-name">LinkSA</span>
                 </div>
                 <p className="footer-description">

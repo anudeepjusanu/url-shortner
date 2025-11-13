@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  /* margin: 0 auto; */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -314,7 +314,7 @@
 }
 
 .sign-in-btn {
-  width: 100%;
+  /* width: 100%; */
   background: #3B82F6;
   color: white;
   border: none;
@@ -328,8 +328,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 48px;
-  min-height: 48px;
+  height: 40px;
+  min-height: 40px;
 }
 
 .sign-in-btn:hover:not(:disabled) {
@@ -518,7 +518,7 @@
   .google-btn,
   .login-container .sign-in-btn,
   .sign-in-btn {
-    width: 100%;
+    /* width: 100%; */
   }
 
   .login-container .brand-section,
@@ -657,7 +657,7 @@
 
   .login-container .sign-in-btn,
   .sign-in-btn {
-    height: 46px;
+    height: 40px;
     font-size: 15px;
   }
 
@@ -794,7 +794,7 @@
 
   .login-container .sign-in-btn,
   .sign-in-btn {
-    height: 44px;
+    height: 40px;
     font-size: 14px;
   }
 

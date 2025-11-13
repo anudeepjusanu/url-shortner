@@ -182,12 +182,44 @@
     "pricing": {
       "title": "Simple, Transparent Pricing",
       "subtitle": "Choose the plan that fits your needs",
-      "free": "Free",
-      "pro": "Pro",
-      "enterprise": "Enterprise",
-      "perMonth": "/month",
-      "selectPlan": "Select Plan",
-      "currentPlan": "Current Plan"
+      "free": {
+        "title": "Free",
+        "currency": "$",
+        "amount": "0",
+        "period": "month",
+        "description": "Perfect for personal use and getting started",
+        "feature1": "100 URLs per month",
+        "feature2": "Basic analytics",
+        "feature3": "Standard support",
+        "cta": "Get Started Free"
+      },
+      "pro": {
+        "title": "Pro",
+        "badge": "Most Popular",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "month",
+        "description": "Best for professionals and small teams",
+        "feature1": "Unlimited URLs",
+        "feature2": "Advanced analytics",
+        "feature3": "Custom domains",
+        "feature4": "Password protection",
+        "feature5": "Priority support",
+        "cta": "Start Free Trial"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "month",
+        "description": "For large teams and organizations",
+        "feature1": "Everything in Pro",
+        "feature2": "Unlimited custom domains",
+        "feature3": "Team collaboration",
+        "feature4": "API access",
+        "feature5": "Dedicated support",
+        "cta": "Contact Sales"
+      }
     },
     "cta": {
       "title": "Ready to Get Started?",

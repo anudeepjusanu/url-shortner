@@ -28,9 +28,35 @@ const HamburgerMenu = ({ sidebarItems, headerItems }) => {
     setIsOpen(!isOpen);
   };
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.offsetTop;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const handleNavigation = (path) => {
-    navigate(path);
-    setIsOpen(false);
+    // Check if it's a section ID for smooth scrolling
+    if (path && !path.startsWith('/') && !path.startsWith('#')) {
+      scrollToSection(path);
+      setIsOpen(false);
+    } else if (path.startsWith('#')) {
+      // Handle hash links for sections
+      const sectionId = path.substring(1);
+      scrollToSection(sectionId);
+      setIsOpen(false);
+    } else {
+      // Regular navigation
+      navigate(path);
+      setIsOpen(false);
+    }
   };
 
   const isActive = (path) => {

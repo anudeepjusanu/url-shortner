@@ -808,7 +808,8 @@ const Dashboard = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '20px'
+              marginBottom: '20px',
+              width: '100%'
             }}>
               <h2 style={{
                 fontSize: '18px',
@@ -848,9 +849,15 @@ const Dashboard = () => {
                   padding: '16px',
                   border: '1px solid #E5E7EB',
                   borderRadius: '8px',
-                  backgroundColor: '#FAFAFA'
+                  backgroundColor: '#FAFAFA',
+                  width: '100%',
+                  boxSizing: 'border-box'
                 }}>
-                  <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
+                  <div className="link-info" style={{ 
+                    flex: 1, 
+                    minWidth: 0,
+                    textAlign: 'left'
+                  }}>
                     <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
                       fontSize: '14px',
                       fontWeight: '600',
@@ -882,20 +889,121 @@ const Dashboard = () => {
                   <div className="link-actions" style={{
                     display: 'flex',
                     gap: '8px',
-                    marginLeft: '16px'
+                    marginLeft: '16px',
+                    alignItems: 'center',
+                    flexShrink: 0
                   }}>
-                    {['copy', 'edit', 'delete'].map((action, idx) => (
-                      <button key={idx} className={`action-btn ${action}-btn`} style={{
+                    <button 
+                      className=" copy-btn" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://${getShortUrl(link)}`);
+                        // You can add a toast notification here
+                      }}
+                      style={{
                         padding: '8px 12px',
-                        fontSize: '13px',
+                        fontSize: '12px',
                         fontWeight: '500',
-                        backgroundColor: action === 'delete' ? '#FEE2E2' : '#F3F4F6',
-                        color: action === 'delete' ? '#EF4444' : '#374151',
-                        border: 'none',
+                        backgroundColor: '#DBEAFE',
+                        color: '#1E40AF',
+                        border: '1px solid #BFDBFE',
                         borderRadius: '6px',
-                        cursor: 'pointer'
-                      }}>{t(`common.${action}`)}</button>
-                    ))}
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#1E40AF';
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#DBEAFE';
+                        e.target.style.color = '#1E40AF';
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      <span>{t('common.copy')}</span>
+                    </button>
+                    
+                    <button 
+                      className=" edit-btn"
+                      onClick={() => {
+                        // Handle edit functionality
+                        console.log('Edit link:', link.id);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: '#FEF3C7',
+                        color: '#D97706',
+                        border: '1px solid #FDE68A',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#D97706';
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#FEF3C7';
+                        e.target.style.color = '#D97706';
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      <span>{t('common.edit')}</span>
+                    </button>
+                    
+                    <button 
+                      className=" delete-btn"
+                      onClick={() => {
+                        // Handle delete functionality
+                        if (window.confirm(t('common.confirmDelete'))) {
+                          console.log('Delete link:', link.id);
+                        }
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: '#FEE2E2',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#DC2626';
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#FEE2E2';
+                        e.target.style.color = '#DC2626';
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2"/>
+                        <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" strokeWidth="2"/>
+                        <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      <span>{t('common.delete')}</span>
+                    </button>
                   </div>
                 </div>
               ))}
