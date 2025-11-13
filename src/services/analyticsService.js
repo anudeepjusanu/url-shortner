@@ -52,7 +52,7 @@ class AnalyticsService {
       const clickRecord = {
         url: url._id,
         shortCode,
-        ipAddress: config.NODE_ENV === 'development' ? ipAddress : null,
+        ipAddress: config.NODE_ENV === 'development' ? ipAddress : "",
         ipHash,
         userAgent,
         referer,
