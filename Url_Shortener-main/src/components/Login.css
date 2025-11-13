@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* margin: 0 auto; */
+  margin: 0 auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -428,6 +428,26 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Small spinner for login button */
+.login-spinner {
+  flex-shrink: 0;
+}
+
+@keyframes spin-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
 }
 
 /* Form field styles - inherit most from Registration.css but ensure they work */

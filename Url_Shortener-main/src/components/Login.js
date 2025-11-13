@@ -391,13 +391,34 @@ const Login = () => {
               className={`sign-in-btn ${loading ? 'loading' : ''}`}
               disabled={loading}
             >
-              {loading ? (
-                <div>
-                  <div className="spinner"></div>
-                </div>
-              ) : (
-                t('auth.login.button')
+              {loading && (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="login-spinner"
+                  style={{
+                    marginRight: '8px',
+                    animation: 'spin 1s linear infinite'
+                  }}
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray="37.7"
+                    strokeDashoffset="37.7"
+                    strokeLinecap="round"
+                    style={{
+                      animation: 'spin-dash 1.5s ease-in-out infinite'
+                    }}
+                  />
+                </svg>
               )}
+              {loading ? t('auth.login.signingIn') : t('auth.login.button')}
             </button>
           </form>
 
