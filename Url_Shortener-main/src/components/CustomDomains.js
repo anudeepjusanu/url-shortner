@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../contexts/LanguageContext';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { domainsAPI } from '../services/api';
@@ -7,6 +8,7 @@ import './CustomDomains.css';
 
 const CustomDomains = () => {
   const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -628,68 +630,204 @@ const CustomDomains = () => {
                   {domains.map((domain) => {
                     const domainId = domain.id || domain._id;
                     return (
-                      <div key={domainId} className="link-card">
-                        <div className="link-content">
+                      <div key={domainId} className="link-card" style={{
+                        display: 'flex',
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '16px',
+                        padding: '20px',
+                        backgroundColor: 'white',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease'
+                      }}>
+                        <div className="link-content" style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                          textAlign: isRTL ? 'right' : 'left'
+                        }}>
                           <div className="link-header">
                             <div className="link-title-section">
-                              <h3 className="link-title">{domain.fullDomain || domain.domain}</h3>
-                              <div className="link-status">
-                                <span className={`status-badge ${domain.status === 'active' ? 'active' : 'inactive'}`}>
+                              <h3 className="link-title" style={{
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                color: '#1F2937',
+                                margin: '0 0 8px 0',
+                                wordBreak: 'break-all',
+                                textAlign: isRTL ? 'right' : 'left'
+                              }}>{domain.fullDomain || domain.domain}</h3>
+                              <div className="link-status" style={{
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                                justifyContent: isRTL ? 'flex-end' : 'flex-start'
+                              }}>
+                                <span className={`status-badge ${domain.status === 'active' ? 'active' : 'inactive'}`} style={{
+                                  padding: '4px 12px',
+                                  borderRadius: '12px',
+                                  fontSize: '12px',
+                                  fontWeight: '500'
+                                }}>
                                   {domain.status === 'active' ? t('customDomains.status.active') : t('customDomains.status.inactive')}
                                 </span>
                                 {domain.isDefault && (
-                                  <span className="status-badge active">{t('customDomains.actions.setDefault')}</span>
+                                  <span className="status-badge active" style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '12px',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                  }}>{t('customDomains.actions.setDefault')}</span>
                                 )}
                               </div>
                             </div>
                           </div>
                           <div className="link-urls">
-                            <div className="url-row">
-                              <span className="url-label">{t('customDomains.table.domain')}:</span>
-                              <span className="short-url">{domain.fullDomain || domain.domain}</span>
+                            <div className="url-row" style={{
+                              display: 'flex',
+                              gap: isRTL ? '16px' : '8px',
+                              fontSize: '14px',
+                              marginBottom: '8px',
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              textAlign: isRTL ? 'right' : 'left',
+                              alignItems: 'flex-start'
+                            }}>
+                              <span className="url-label" style={{
+                                color: '#6B7280',
+                                flexShrink: 0,
+                                minWidth: isRTL ? '60px' : 'auto',
+                                fontWeight: '500'
+                              }}>{t('customDomains.table.domain')}:</span>
+                              <span className="short-url" style={{
+                                color: '#1F2937',
+                                wordBreak: 'break-all',
+                                flex: 1
+                              }}>{domain.fullDomain || domain.domain}</span>
                             </div>
-                            <div className="url-row">
-                              <span className="url-label">{t('customDomains.table.status')}:</span>
-                              <span className="original-url">
+                            <div className="url-row" style={{
+                              display: 'flex',
+                              gap: isRTL ? '16px' : '8px',
+                              fontSize: '14px',
+                              marginBottom: '8px',
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              textAlign: isRTL ? 'right' : 'left',
+                              alignItems: 'flex-start'
+                            }}>
+                              <span className="url-label" style={{
+                                color: '#6B7280',
+                                flexShrink: 0,
+                                minWidth: isRTL ? '60px' : 'auto',
+                                fontWeight: '500'
+                              }}>{t('customDomains.table.status')}:</span>
+                              <span className="original-url" style={{
+                                color: '#1F2937',
+                                flex: 1
+                              }}>
                                 {domain.verified || domain.verificationStatus === 'verified' ? t('customDomains.status.verified') : t('customDomains.status.pending')}
                               </span>
                             </div>
                           </div>
-                          <div className="link-meta">
-                            <div className="meta-item">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="link-meta" style={{
+                            display: 'flex',
+                            gap: isRTL ? '20px' : '16px',
+                            flexWrap: 'wrap',
+                            fontSize: '13px',
+                            color: '#6B7280',
+                            flexDirection: isRTL ? 'row-reverse' : 'row',
+                            justifyContent: isRTL ? 'flex-end' : 'flex-start',
+                            marginTop: '4px'
+                          }}>
+                            <div className="meta-item" style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: isRTL ? '8px' : '6px',
+                              flexDirection: isRTL ? 'row-reverse' : 'row'
+                            }}>
+                              <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m0 0v13a2 2 0 01-2 2H10a2 2 0 01-2-2V7z" />
                               </svg>
                               <span>{t('customDomains.table.created')} {new Date(domain.createdAt || domain.dateAdded).toLocaleDateString()}</span>
                             </div>
-                            <div className="meta-item">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="meta-item" style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: isRTL ? '8px' : '6px',
+                              flexDirection: isRTL ? 'row-reverse' : 'row'
+                            }}>
+                              <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
-                              <span>{domain.owner?.email || domain.addedBy || t('common.loading')}</span>
+                              <span style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>{domain.owner?.email || domain.addedBy || t('common.loading')}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="link-actions">
+                        <div className="link-actions" style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          flexShrink: 0,
+                          minWidth: 'fit-content'
+                        }}>
                           {(!domain.verified && domain.verificationStatus !== 'verified') && (
                             <button
                               onClick={() => handleVerifyDomain(domainId)}
                               className="action-btn analytics"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                padding: '8px 16px',
+                                backgroundColor: '#3B82F6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                minWidth: '100px',
+                                transition: 'all 0.2s ease'
+                              }}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
-                              {t('customDomains.actions.verify')}
+                              <span>{t('customDomains.actions.verify')}</span>
                             </button>
                           )}
                           <button
                             onClick={() => handleDeleteDomain(domainId)}
                             className="action-btn delete"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              padding: '8px 16px',
+                              backgroundColor: 'white',
+                              color: '#EF4444',
+                              border: '1px solid #FEE2E2',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              minWidth: '100px',
+                              transition: 'all 0.2s ease'
+                            }}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            {t('customDomains.actions.delete')}
+                            <span>{t('customDomains.actions.delete')}</span>
                           </button>
                         </div>
                       </div>

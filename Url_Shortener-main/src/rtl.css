@@ -412,6 +412,61 @@
   margin-right: 0;
 }
 
+/* Analytics Link Info Card RTL Support */
+[dir="rtl"] .link-info-card {
+  direction: rtl !important;
+}
+
+[dir="rtl"] .link-info-content {
+  text-align: right !important;
+}
+
+[dir="rtl"] .link-details {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+[dir="rtl"] .link-details h3,
+[dir="rtl"] .link-details p {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+[dir="rtl"] .link-actions {
+  margin-left: 0 !important;
+  margin-right: 16px !important;
+  flex-direction: row-reverse !important;
+}
+
+/* Icon positioning for RTL - icon should be on the right side */
+[dir="rtl"] .link-icon {
+  order: 2 !important;
+}
+
+[dir="rtl"] .link-details {
+  order: 1 !important;
+}
+
+/* Mobile RTL adjustments for Analytics */
+@media (max-width: 768px) {
+  [dir="rtl"] .link-info-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  [dir="rtl"] .link-info-content {
+    width: 100% !important;
+    margin-bottom: 12px !important;
+  }
+
+  [dir="rtl"] .link-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    margin-right: 0 !important;
+  }
+}
+
 /* User Profile */
 [dir="rtl"] .user-avatar {
   margin-left: 12px;
@@ -2024,191 +2079,6 @@
     flex: 1 !important;
     justify-content: center !important;
     min-width: 0 !important;
-  }
-}
-
-/* CustomDomains RTL Support */
-[dir="rtl"] .custom-domains-page {
-  direction: rtl !important;
-}
-
-[dir="rtl"] .page-header {
-  flex-direction: row-reverse !important;
-  text-align: right !important;
-}
-
-[dir="rtl"] .header-info {
-  text-align: right !important;
-}
-
-[dir="rtl"] .page-title,
-[dir="rtl"] .page-subtitle {
-  text-align: right !important;
-}
-
-[dir="rtl"] .link-card,
-[dir="rtl"] .domain-item {
-  direction: rtl !important;
-}
-
-[dir="rtl"] .link-content {
-  text-align: right !important;
-}
-
-[dir="rtl"] .link-header,
-[dir="rtl"] .link-title-section {
-  text-align: right !important;
-  flex-direction: row-reverse !important;
-}
-
-[dir="rtl"] .link-title,
-[dir="rtl"] .domain-name {
-  text-align: right !important;
-}
-
-[dir="rtl"] .link-status {
-  flex-direction: row-reverse !important;
-}
-
-[dir="rtl"] .link-urls,
-[dir="rtl"] .url-row {
-  text-align: right !important;
-}
-
-[dir="rtl"] .url-label {
-  margin-left: 8px !important;
-  margin-right: 0 !important;
-}
-
-[dir="rtl"] .short-url,
-[dir="rtl"] .original-url {
-  text-align: right !important;
-  direction: ltr !important; /* Keep URLs in LTR format */
-}
-
-[dir="rtl"] .link-meta {
-  justify-content: flex-start !important;
-  flex-direction: row-reverse !important;
-  text-align: right !important;
-}
-
-[dir="rtl"] .meta-item {
-  flex-direction: row-reverse !important;
-  text-align: right !important;
-}
-
-[dir="rtl"] .meta-item svg {
-  margin-left: 8px !important;
-  margin-right: 0 !important;
-}
-
-/* CustomDomains button RTL positioning */
-[dir="rtl"] .link-card {
-  flex-direction: row !important; /* Keep normal flex direction for main container */
-}
-
-[dir="rtl"] .link-content {
-  order: 2 !important; /* Content goes to the right */
-  margin-left: 16px !important;
-  margin-right: 0 !important;
-  text-align: right !important;
-  flex: 1 !important;
-  min-width: 0 !important; /* Allow content to shrink */
-}
-
-[dir="rtl"] .link-actions {
-  order: 1 !important; /* Buttons go to the left */
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  flex-shrink: 0 !important; /* Don't let buttons shrink */
-  align-self: flex-start !important; /* Align to top */
-}
-
-[dir="rtl"] .action-btn {
-  /* Keep normal flex direction for button content (icon + text) */
-  flex-direction: row !important;
-}
-
-[dir="rtl"] .action-btn svg {
-  margin-left: 0 !important;
-  margin-right: 4px !important;
-}
-
-[dir="rtl"] .action-btn span {
-  order: 2 !important;
-}
-
-/* Mobile RTL adjustments for CustomDomains */
-@media (max-width: 768px) {
-  [dir="rtl"] .page-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-  }
-
-  [dir="rtl"] .link-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-  }
-  
-  [dir="rtl"] .link-content {
-    width: 100% !important;
-    order: 1 !important;
-  }
-  
-  [dir="rtl"] .link-actions {
-    width: 100% !important;
-    margin: 0 !important;
-    justify-content: flex-start !important;
-    order: 2 !important;
-  }
-}
-
-@media (max-width: 480px) {
-  [dir="rtl"] .action-btn span {
-    display: none !important;
-  }
-  
-  [dir="rtl"] .link-actions {
-    justify-content: flex-start !important;
-    gap: 4px !important;
-  }
-  
-  [dir="rtl"] .action-btn {
-    flex: 1 !important;
-    justify-content: center !important;
-    min-width: 0 !important;
-  }
-}
-
-/* CustomDomains specific RTL mobile fixes */
-@media (max-width: 768px) {
-  [dir="rtl"] .link-card {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-  
-  [dir="rtl"] .link-content {
-    width: 100% !important;
-    order: 1 !important;
-    margin: 0 !important;
-  }
-  
-  [dir="rtl"] .link-actions {
-    width: 100% !important;
-    order: 2 !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    margin: 0 !important;
-    align-self: stretch !important;
-  }
-}
-
-/* Desktop RTL specific adjustments */
-@media (min-width: 769px) {
-  [dir="rtl"] .link-actions {
-    flex-direction: column !important;
   }
 }
 

@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI, qrCodeAPI } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 import './MyLinks.css';
 
 
 function MyLinks() {
   const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [showCreateShortLink, setShowCreateShortLink] = useState(false);
@@ -230,35 +232,92 @@ function MyLinks() {
           <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
+              flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              marginBottom: showCreateShortLink ? '24px' : '20px',
-              paddingBottom: '0'
+              marginBottom: showCreateShortLink ? '24px' : '24px'
             }}>
-              {!showCreateShortLink && (
-                <div className="header-info" style={{ margin: 0 }}>
-                  <h1 className="page-title" style={{ marginBottom: '4px' }}>{t('myLinks.title')}</h1>
-                  <p className="page-subtitle" style={{ margin: 0 }}>{t('myLinks.subtitle')}</p>
-                </div>
+              {isRTL ? (
+                <>
+                  <button
+                    className="create-short-link-btn"
+                    onClick={() => setShowCreateShortLink((prev) => !prev)}
+                    style={{
+                      minWidth: 180,
+                      color: "white",
+                      padding: "10px 16px",
+                      background: "#3B82F6",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      flexShrink: 0
+                    }}
+                  >
+                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
+                  </button>
+                  {!showCreateShortLink && (
+                    <div style={{
+                      margin: 0,
+                      textAlign: 'right'
+                    }}>
+                      <h1 style={{
+                        fontSize: '28px',
+                        fontWeight: '700',
+                        color: '#111827',
+                        marginBottom: '4px',
+                        margin: '0 0 4px 0'
+                      }}>{t('myLinks.title')}</h1>
+                      <p style={{
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        margin: 0
+                      }}>{t('myLinks.subtitle')}</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {!showCreateShortLink && (
+                    <div style={{
+                      margin: 0,
+                      textAlign: 'left'
+                    }}>
+                      <h1 style={{
+                        fontSize: '28px',
+                        fontWeight: '700',
+                        color: '#111827',
+                        marginBottom: '4px',
+                        margin: '0 0 4px 0'
+                      }}>{t('myLinks.title')}</h1>
+                      <p style={{
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        margin: 0
+                      }}>{t('myLinks.subtitle')}</p>
+                    </div>
+                  )}
+                  <button
+                    className="create-short-link-btn"
+                    onClick={() => setShowCreateShortLink((prev) => !prev)}
+                    style={{
+                      minWidth: 180,
+                      color: "white",
+                      padding: "10px 16px",
+                      background: "#3B82F6",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      flexShrink: 0
+                    }}
+                  >
+                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
+                  </button>
+                </>
               )}
-              <button
-                className="create-short-link-btn"
-                onClick={() => setShowCreateShortLink((prev) => !prev)}
-                style={{
-                  minWidth: 180,
-                  color: "white",
-                  padding: "10px 16px",
-                  background: "#3B82F6",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginLeft: showCreateShortLink ? '0' : 'auto'
-                }}
-              >
-                {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
-              </button>
             </div>
             {showCreateShortLink ? (
               <div className="create-short-link-content">
