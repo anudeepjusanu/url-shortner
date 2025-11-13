@@ -48,38 +48,47 @@ const createUrl = async (req, res) => {
 
     // Handle custom domain
     let selectedDomain = null;
+    let useBaseDomain = false;
+    
     if (domainId) {
-      selectedDomain = await Domain.findById(domainId);
-      if (!selectedDomain) {
-        return res.status(400).json({
-          success: false,
-          message: 'Selected domain not found'
-        });
-      }
+      // Check if user selected the base/system domain
+      if (domainId === 'base') {
+        useBaseDomain = true;
+        console.log('Using base domain for URL creation');
+      } else {
+        selectedDomain = await Domain.findById(domainId);
+        if (!selectedDomain) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected domain not found'
+          });
+        }
 
-      // Check if user has access to the domain
-      if (selectedDomain.owner.toString() !== req.user.id &&
-          (!req.user.organization || selectedDomain.organization?.toString() !== req.user.organization.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied to selected domain'
-        });
-      }
+        // Check if user has access to the domain
+        if (selectedDomain.owner.toString() !== req.user.id &&
+            (!req.user.organization || selectedDomain.organization?.toString() !== req.user.organization.toString())) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access denied to selected domain'
+          });
+        }
 
-      // Check if domain is verified and active
-      if (!selectedDomain.isActive) {
-        return res.status(400).json({
-          success: false,
-          message: 'Selected domain is not active or verified'
-        });
+        // Check if domain is verified and active
+        if (!selectedDomain.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected domain is not active or verified'
+          });
+        }
       }
     } else {
       // Get user's default domain if no domain is specified
       selectedDomain = await Domain.getDefaultDomain(req.user.id, req.user.organization);
 
-      // If no default domain is set, create URLs without a specific domain (main domain)
+      // If no default domain is set, use base domain
       if (!selectedDomain) {
-        console.log('No default domain found, creating URL for main domain');
+        useBaseDomain = true;
+        console.log('No default domain found, using base domain');
       }
     }
     
@@ -115,7 +124,7 @@ const createUrl = async (req, res) => {
       description,
       creator: req.user.id,
       organization: req.user.organization,
-      domain: selectedDomain ? selectedDomain.fullDomain : null,
+      domain: useBaseDomain ? null : (selectedDomain ? selectedDomain.fullDomain : null),
       tags: tags ? tags.map(tag => tag.toLowerCase().trim()) : [],
       expiresAt,
       password,
@@ -141,16 +150,33 @@ const createUrl = async (req, res) => {
 
     await cacheSet(`url:${shortCode}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
 
+    // Prepare domain info for response
+    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
+    const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
+    
+    const domainInfo = useBaseDomain ? {
+      id: 'base',
+      fullDomain: baseDomain,
+      shortUrl: baseUrl,
+      isSystemDomain: true
+    } : (selectedDomain ? {
+      id: selectedDomain._id,
+      fullDomain: selectedDomain.fullDomain,
+      shortUrl: selectedDomain.shortUrl,
+      isSystemDomain: false
+    } : {
+      id: 'base',
+      fullDomain: baseDomain,
+      shortUrl: baseUrl,
+      isSystemDomain: true
+    });
+
     res.status(201).json({
       success: true,
       message: 'URL created successfully',
       data: {
         url: populatedUrl,
-        domain: selectedDomain ? {
-          id: selectedDomain._id,
-          fullDomain: selectedDomain.fullDomain,
-          shortUrl: selectedDomain.shortUrl
-        } : null
+        domain: domainInfo
       }
     });
   } catch (error) {
@@ -478,18 +504,39 @@ const getAvailableDomains = async (req, res) => {
     const domains = await Domain.getUserDomains(req.user.id, req.user.organization);
     const activeDomains = domains.filter(domain => domain.isActive);
 
+    // Always include the base/default system domain
+    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
+    const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
+    
+    const domainList = [
+      // Base domain (always first and default if user has no custom domains)
+      {
+        id: 'base',
+        fullDomain: baseDomain,
+        domain: baseDomain,
+        subdomain: null,
+        isDefault: activeDomains.length === 0 || !activeDomains.some(d => d.isDefault),
+        shortUrl: baseUrl,
+        status: 'active',
+        isSystemDomain: true
+      },
+      // User's custom domains
+      ...activeDomains.map(domain => ({
+        id: domain._id.toString(),
+        fullDomain: domain.fullDomain,
+        domain: domain.domain,
+        subdomain: domain.subdomain,
+        isDefault: domain.isDefault,
+        shortUrl: domain.shortUrl,
+        status: domain.status,
+        isSystemDomain: false
+      }))
+    ];
+
     res.json({
       success: true,
       data: {
-        domains: activeDomains.map(domain => ({
-          id: domain._id,
-          fullDomain: domain.fullDomain,
-          domain: domain.domain,
-          subdomain: domain.subdomain,
-          isDefault: domain.isDefault,
-          shortUrl: domain.shortUrl,
-          status: domain.status
-        }))
+        domains: domainList
       }
     });
   } catch (error) {
