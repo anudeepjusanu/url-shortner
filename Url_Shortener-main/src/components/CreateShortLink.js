@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
-import { urlsAPI } from '../services/api';
+import { urlsAPI, qrCodeAPI } from '../services/api';
 import './CreateShortLink.css';
 
 const CreateShortLink = () => {
@@ -14,10 +14,12 @@ const CreateShortLink = () => {
   const [availableDomains, setAvailableDomains] = useState([]);
   const [loadingDomains, setLoadingDomains] = useState(true);
   const [shortenedUrl, setShortenedUrl] = useState('');
+  const [createdUrlId, setCreatedUrlId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [downloadingQR, setDownloadingQR] = useState(false);
 
   useEffect(() => {
     fetchAvailableDomains();
@@ -77,6 +79,7 @@ const CreateShortLink = () => {
       const shortUrl = `${baseUrl}/${createdUrl.shortCode}`;
 
       setShortenedUrl(shortUrl);
+      setCreatedUrlId(createdUrl._id || createdUrl.id);
       setSuccessMessage(t('createLink.success.title'));
     } catch (err) {
       console.error('Error creating short link:', err);
@@ -105,14 +108,63 @@ const CreateShortLink = () => {
     }
   };
 
+  const downloadQRCode = async () => {
+    if (!createdUrlId) return;
+
+    try {
+      setDownloadingQR(true);
+
+      // First, generate the QR code if it doesn't exist
+      await qrCodeAPI.generate(createdUrlId, {
+        size: 300,
+        format: 'png',
+        errorCorrection: 'M',
+        foregroundColor: '#000000',
+        backgroundColor: '#FFFFFF',
+        includeMargin: true
+      });
+
+      // Then download it
+      const downloadUrl = `${process.env.REACT_APP_API_URL || 'https://laghhu.link/api'}/qr-codes/download/${createdUrlId}?format=png`;
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `qrcode-${createdUrlId}.png`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (err) {
+      console.error('Error downloading QR code:', err);
+      setError(err.message || 'Failed to download QR code');
+    } finally {
+      setDownloadingQR(false);
+    }
+  };
+
   const reset = () => {
     setOriginalUrl('');
     setCustomCode('');
     setTitle('');
     setShortenedUrl('');
+    setCreatedUrlId(null);
     setError('');
     setSuccessMessage('');
     setCopied(false);
+    setDownloadingQR(false);
 
     const defaultDomain = availableDomains.find(d => d.isDefault);
     if (defaultDomain) {
@@ -326,6 +378,29 @@ const CreateShortLink = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                         {t('common.viewMore')}
+                      </button>
+
+                      <button
+                        onClick={downloadQRCode}
+                        className="btn-action btn-action-qr"
+                        disabled={downloadingQR}
+                      >
+                        {downloadingQR ? (
+                          <>
+                            <svg className="action-icon btn-spinner" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Downloading...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                            QR Code
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

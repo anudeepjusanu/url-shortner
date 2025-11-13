@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
-import { urlsAPI } from '../services/api';
+import { urlsAPI, qrCodeAPI } from '../services/api';
 import './MyLinks.css';
 
 
 function MyLinks() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [showCreateShortLink, setShowCreateShortLink] = useState(false);
   // State for create short link form
@@ -111,6 +113,26 @@ function MyLinks() {
       });
 
       if (response.success && response.data && response.data.url) {
+        const createdUrl = response.data.url;
+        const urlId = createdUrl._id || createdUrl.id;
+
+        // Generate QR code if checkbox was checked
+        if (generateQR && urlId) {
+          try {
+            await qrCodeAPI.generate(urlId, {
+              size: 300,
+              format: 'png',
+              errorCorrection: 'M',
+              foregroundColor: '#000000',
+              backgroundColor: '#FFFFFF',
+              includeMargin: true
+            });
+          } catch (qrErr) {
+            console.error('Error generating QR code:', qrErr);
+            // Don't fail the whole operation if QR generation fails
+          }
+        }
+
         // Successfully created, refresh the list
         await fetchLinks();
 
@@ -618,6 +640,27 @@ function MyLinks() {
                                   {t('common.copy')}
                                 </>
                               )}
+                            </button>
+                            <button onClick={() => navigate(`/analytics/${linkId}`)} style={{
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: '#7C3AED',
+                              backgroundColor: '#F3E8FF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                              </svg>
+                              Analytics
                             </button>
                             <button onClick={() => handleDeleteLink(linkId)} disabled={deleteLoading === linkId} style={{
                               padding: '8px 16px',
