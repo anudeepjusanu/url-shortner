@@ -15,6 +15,9 @@ function MyLinks() {
   // State for create short link form
   const [longUrl, setLongUrl] = useState('');
   const [customName, setCustomName] = useState('');
+  const [selectedDomainId, setSelectedDomainId] = useState('');
+  const [availableDomains, setAvailableDomains] = useState([]);
+  const [loadingDomains, setLoadingDomains] = useState(true);
   const [generateQR, setGenerateQR] = useState(false);
   const [, setShowUTMModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -25,8 +28,28 @@ function MyLinks() {
 
   useEffect(() => {
     fetchLinks();
-    // eslint-disable-next-line
+    fetchAvailableDomains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchAvailableDomains = async () => {
+    try {
+      setLoadingDomains(true);
+      const response = await urlsAPI.getAvailableDomains();
+      const domains = response.data?.domains || response.domains || [];
+      setAvailableDomains(domains);
+
+      // Set default domain
+      const defaultDomain = domains.find(d => d.isDefault);
+      if (defaultDomain) {
+        setSelectedDomainId(defaultDomain.id || defaultDomain._id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch domains:', err);
+    } finally {
+      setLoadingDomains(false);
+    }
+  };
 
   const fetchLinks = async () => {
     try {
@@ -110,6 +133,7 @@ function MyLinks() {
         originalUrl: longUrl,
         customCode: customName || undefined,
         title: customName || undefined,
+        domainId: selectedDomainId || undefined,
       });
 
       if (response.success && response.data && response.data.url) {
@@ -313,6 +337,53 @@ function MyLinks() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Domain Selection */}
+                    {availableDomains.length > 0 && (
+                      <div className="form-section">
+                        <label className="form-label">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" />
+                            <path d="M1 7h12M7 1c1.5 0 3 2.5 3 6s-1.5 6-3 6-3-2.5-3-6 1.5-6 3-6z" stroke="currentColor" strokeWidth="1.5" />
+                          </svg>
+                          {t('createLink.form.domain') || 'Domain'}
+                        </label>
+                        <select
+                          value={selectedDomainId}
+                          onChange={(e) => setSelectedDomainId(e.target.value)}
+                          disabled={loadingDomains}
+                          className="url-input"
+                          style={{
+                            cursor: 'pointer',
+                            paddingRight: '32px',
+                            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%236B7280\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 12px center',
+                            appearance: 'none'
+                          }}
+                        >
+                          {loadingDomains ? (
+                            <option>{t('common.loading') || 'Loading...'}</option>
+                          ) : (
+                            availableDomains.map((domain) => (
+                              <option key={domain.id} value={domain.id}>
+                                {domain.fullDomain} {domain.isDefault ? '(Default)' : ''}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                        {selectedDomainId && !loadingDomains && (
+                          <p style={{
+                            fontSize: '12px',
+                            color: '#6B7280',
+                            marginTop: '6px'
+                          }}>
+                            {t('createLink.success.yourLink') || 'Short URL'}: https://{availableDomains.find(d => d.id === selectedDomainId)?.fullDomain}/your-code
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     {/* Custom Link Input */}
                     <div className="form-section">
                       <label className="form-label">
@@ -322,7 +393,9 @@ function MyLinks() {
                         {t('createLink.form.customAlias')}
                       </label>
                       <div className="custom-url-input">
-                        <span className="url-prefix">linksa.com/</span>
+                        <span className="url-prefix">
+                          {availableDomains.find(d => d.id === selectedDomainId)?.fullDomain || 'laghhu.link'}/
+                        </span>
                         <input
                           type="text"
                           value={customName}

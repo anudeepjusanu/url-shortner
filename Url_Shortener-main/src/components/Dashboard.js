@@ -14,6 +14,9 @@ const Dashboard = () => {
   const [longUrl, setLongUrl] = useState('');
   const [customBackhalf, setCustomBackhalf] = useState('');
   const [campaign, setCampaign] = useState('');
+  const [selectedDomainId, setSelectedDomainId] = useState('');
+  const [availableDomains, setAvailableDomains] = useState([]);
+  const [loadingDomains, setLoadingDomains] = useState(true);
   const [timeFilter, setTimeFilter] = useState('Last 7 days');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -27,7 +30,27 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchAvailableDomains();
   }, [timeFilter]);
+
+  const fetchAvailableDomains = async () => {
+    try {
+      setLoadingDomains(true);
+      const response = await urlsAPI.getAvailableDomains();
+      const domains = response.data?.domains || response.domains || [];
+      setAvailableDomains(domains);
+
+      // Set default domain
+      const defaultDomain = domains.find(d => d.isDefault);
+      if (defaultDomain) {
+        setSelectedDomainId(defaultDomain.id || defaultDomain._id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch domains:', err);
+    } finally {
+      setLoadingDomains(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -88,6 +111,7 @@ const Dashboard = () => {
         originalUrl: longUrl,
         customCode: customBackhalf || undefined,
         title: campaign || undefined,
+        domainId: selectedDomainId || undefined,
       });
 
       if (response.success) {
@@ -394,6 +418,58 @@ const Dashboard = () => {
                   />
                 </div>
 
+                {/* Domain Selection */}
+                {availableDomains.length > 0 && (
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label htmlFor="domain" style={{
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: '#374151'
+                    }}>
+                      <svg style={{ width: '14px', height: '14px', display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {t('createLink.form.domain') || 'Domain'}
+                    </label>
+                    <select
+                      id="domain"
+                      value={selectedDomainId}
+                      onChange={(e) => setSelectedDomainId(e.target.value)}
+                      disabled={loadingDomains}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        backgroundColor: 'white',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {loadingDomains ? (
+                        <option>{t('common.loading') || 'Loading...'}</option>
+                      ) : (
+                        availableDomains.map((domain) => (
+                          <option key={domain.id} value={domain.id}>
+                            {domain.fullDomain} {domain.isDefault ? '(Default)' : ''}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    {selectedDomainId && !loadingDomains && (
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        margin: '4px 0 0 0'
+                      }}>
+                        Short URL: {availableDomains.find(d => d.id === selectedDomainId)?.shortUrl}/your-code
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="form-row" style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(2, 1fr)',
@@ -405,36 +481,22 @@ const Dashboard = () => {
                       fontWeight: '500',
                       color: '#374151'
                     }}>{t('dashboard.customBackhalf')}</label>
-                    <div className="custom-url-input" style={{
-                      display: 'flex',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '8px',
-                      overflow: 'hidden'
-                    }}>
-                      <span className="url-prefix" style={{
+                    <input
+                      type="text"
+                      id="customBackhalf"
+                      value={customBackhalf}
+                      onChange={(e) => setCustomBackhalf(e.target.value)}
+                      placeholder={t('dashboard.customBackhalfPlaceholder')}
+                      style={{
+                        width: '100%',
                         padding: '10px 12px',
-                        backgroundColor: '#F9FAFB',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '8px',
                         fontSize: '14px',
-                        color: '#6B7280',
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderRight: '1px solid #D1D5DB'
-                      }}>linksa.co/</span>
-                      <input
-                        type="text"
-                        id="customBackhalf"
-                        value={customBackhalf}
-                        onChange={(e) => setCustomBackhalf(e.target.value)}
-                        placeholder={t('dashboard.customBackhalfPlaceholder')}
-                        style={{
-                          flex: 1,
-                          padding: '10px 12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
                   </div>
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label htmlFor="campaign" style={{
