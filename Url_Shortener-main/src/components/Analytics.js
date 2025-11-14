@@ -1513,7 +1513,8 @@ const Analytics = () => {
             <div className="bottom-section" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '16px'
+              gap: '16px',
+              marginBottom: '16px'
             }}>
               {/* Clicks by Country */}
               <div className="section-card" style={{
@@ -1535,18 +1536,36 @@ const Analytics = () => {
                   gap: '10px'
                 }}>
                   {(() => {
-                    // Dummy data for countries
-                    const dummyCountries = [
-                      { country: 'Saudi Arabia', clicks: 1247 },
-                      { country: 'UAE', clicks: 421 },
-                      { country: 'United States', clicks: 318 },
-                      { country: 'United Kingdom', clicks: 142 },
-                      { country: 'Germany', clicks: 98 }
-                    ];
-
-                    const countryData = (analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0)
-                      ? analyticsData.clicksByCountry.slice(0, 5)
-                      : dummyCountries;
+                    // Get country data from API or aggregate from recentClicks
+                    let countryData = [];
+                    
+                    if (analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0) {
+                      countryData = analyticsData.clicksByCountry.slice(0, 5);
+                    } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                      // Aggregate from recent clicks
+                      const countryCounts = {};
+                      analyticsData.recentClicks.forEach(click => {
+                        const country = click.country || 'Unknown';
+                        countryCounts[country] = (countryCounts[country] || 0) + 1;
+                      });
+                      countryData = Object.entries(countryCounts)
+                        .map(([country, clicks]) => ({ country, clicks }))
+                        .sort((a, b) => b.clicks - a.clicks)
+                        .slice(0, 5);
+                    }
+                    
+                    if (countryData.length === 0) {
+                      return (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '20px',
+                          color: '#9CA3AF',
+                          fontSize: '14px'
+                        }}>
+                          No country data available yet
+                        </div>
+                      );
+                    }
 
                     const maxClicks = Math.max(...countryData.map(c => c.clicks || c.count || 0));
                     const countryFlags = {
@@ -1645,16 +1664,18 @@ const Analytics = () => {
                   margin: '0 0 16px 0'
                 }}>{t('analytics.charts.devices')}</h3>
                 {(() => {
-                  // Dummy data for devices
-                  const dummyDeviceData = {
-                    mobile: 1687,
-                    desktop: 892,
-                    tablet: 268
-                  };
-
-                  const deviceData = (analyticsData?.clicksByDevice && Object.keys(analyticsData.clicksByDevice).length > 0)
-                    ? analyticsData.clicksByDevice
-                    : dummyDeviceData;
+                  // Get device data from API or aggregate from recentClicks
+                  let deviceData = {};
+                  
+                  if (analyticsData?.clicksByDevice && Object.keys(analyticsData.clicksByDevice).length > 0) {
+                    deviceData = analyticsData.clicksByDevice;
+                  } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                    // Aggregate from recent clicks
+                    analyticsData.recentClicks.forEach(click => {
+                      const device = (click.device || 'unknown').toLowerCase();
+                      deviceData[device] = (deviceData[device] || 0) + 1;
+                    });
+                  }
 
                   const mobileClicks = deviceData.mobile || deviceData.Mobile || 0;
                   const desktopClicks = deviceData.desktop || deviceData.Desktop || 0;
@@ -1846,6 +1867,514 @@ const Analytics = () => {
                       </>
                     );
                   })()}
+              </div>
+            </div>
+
+            {/* Additional Analytics Sections - Browsers, OS, Cities, Referrers */}
+            <div className="additional-stats-section" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '16px',
+              marginBottom: '20px'
+            }}>
+              {/* Browsers */}
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>
+                  {t('analytics.charts.browsers') || 'Top Browsers'}
+                </h3>
+                <div className="browser-stats" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  {(() => {
+                    // Get browser data from recentClicks if topStats is empty
+                    let browserData = [];
+                    
+                    if (analyticsData?.topStats?.browsers && analyticsData.topStats.browsers.length > 0) {
+                      browserData = analyticsData.topStats.browsers.slice(0, 5);
+                    } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                      // Aggregate from recent clicks
+                      const browserCounts = {};
+                      analyticsData.recentClicks.forEach(click => {
+                        const browser = click.browser || 'Unknown';
+                        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+                      });
+                      browserData = Object.entries(browserCounts)
+                        .map(([browser, count]) => ({ browser, count }))
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5);
+                    }
+
+                    if (browserData.length === 0) {
+                      return (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '20px',
+                          color: '#9CA3AF',
+                          fontSize: '14px'
+                        }}>
+                          No browser data available
+                        </div>
+                      );
+                    }
+
+                    const maxCount = Math.max(...browserData.map(b => b.count || b.clicks || 0));
+                    const browserIcons = {
+                      'Chrome': '🌐',
+                      'Safari': '🧭',
+                      'Firefox': '🦊',
+                      'Edge': '🌊',
+                      'Opera': '🎭'
+                    };
+
+                    return browserData.map((browser, index) => {
+                      const browserName = browser.browser || browser._id || 'Unknown';
+                      const count = browser.count || browser.clicks || 0;
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                      const icon = browserIcons[browserName] || '🌐';
+
+                      return (
+                        <div key={index} className="browser-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}>
+                          <div className="browser-info" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            minWidth: '100px',
+                            flex: '0 0 auto'
+                          }}>
+                            <span style={{ fontSize: '16px' }}>{icon}</span>
+                            <span style={{
+                              fontSize: '13px',
+                              color: '#374151',
+                              fontWeight: '500'
+                            }}>{browserName}</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            flex: 1
+                          }}>
+                            <div style={{
+                              flex: 1,
+                              height: '6px',
+                              backgroundColor: '#E5E7EB',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: '#8B5CF6',
+                                borderRadius: '4px',
+                                transition: 'width 0.3s ease'
+                              }}></div>
+                            </div>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              minWidth: '30px',
+                              textAlign: 'right'
+                            }}>{count}</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Operating Systems */}
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>
+                  {t('analytics.charts.operatingSystems') || 'Operating Systems'}
+                </h3>
+                <div className="os-stats" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  {(() => {
+                    // Get OS data from recentClicks if topStats is empty
+                    let osData = [];
+                    
+                    if (analyticsData?.topStats?.operatingSystems && analyticsData.topStats.operatingSystems.length > 0) {
+                      osData = analyticsData.topStats.operatingSystems.slice(0, 5);
+                    } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                      // Aggregate from recent clicks
+                      const osCounts = {};
+                      analyticsData.recentClicks.forEach(click => {
+                        const os = click.os || 'Unknown';
+                        osCounts[os] = (osCounts[os] || 0) + 1;
+                      });
+                      osData = Object.entries(osCounts)
+                        .map(([os, count]) => ({ os, count }))
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5);
+                    }
+
+                    if (osData.length === 0) {
+                      return (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '20px',
+                          color: '#9CA3AF',
+                          fontSize: '14px'
+                        }}>
+                          No OS data available
+                        </div>
+                      );
+                    }
+
+                    const maxCount = Math.max(...osData.map(o => o.count || o.clicks || 0));
+                    const osIcons = {
+                      'Windows': '🪟',
+                      'Mac OS X': '🍎',
+                      'macOS': '🍎',
+                      'iOS': '📱',
+                      'Android': '🤖',
+                      'Linux': '🐧'
+                    };
+
+                    return osData.map((os, index) => {
+                      const osName = os.os || os._id || 'Unknown';
+                      const count = os.count || os.clicks || 0;
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                      const icon = osIcons[osName] || '💻';
+
+                      return (
+                        <div key={index} className="os-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}>
+                          <div className="os-info" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            minWidth: '100px',
+                            flex: '0 0 auto'
+                          }}>
+                            <span style={{ fontSize: '16px' }}>{icon}</span>
+                            <span style={{
+                              fontSize: '13px',
+                              color: '#374151',
+                              fontWeight: '500'
+                            }}>{osName}</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            flex: 1
+                          }}>
+                            <div style={{
+                              flex: 1,
+                              height: '6px',
+                              backgroundColor: '#E5E7EB',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: '#10B981',
+                                borderRadius: '4px',
+                                transition: 'width 0.3s ease'
+                              }}></div>
+                            </div>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              minWidth: '30px',
+                              textAlign: 'right'
+                            }}>{count}</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Cities */}
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>
+                  {t('analytics.charts.topCities') || 'Top Cities'}
+                </h3>
+                <div className="city-stats" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  {(() => {
+                    // Get city data from recentClicks if topStats is empty
+                    let cityData = [];
+                    
+                    if (analyticsData?.topStats?.cities && analyticsData.topStats.cities.length > 0) {
+                      cityData = analyticsData.topStats.cities.slice(0, 5);
+                    } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                      // Aggregate from recent clicks
+                      const cityCounts = {};
+                      analyticsData.recentClicks.forEach(click => {
+                        if (click.city) {
+                          const key = `${click.city}, ${click.country || ''}`;
+                          cityCounts[key] = (cityCounts[key] || 0) + 1;
+                        }
+                      });
+                      cityData = Object.entries(cityCounts)
+                        .map(([city, count]) => ({ city, count }))
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5);
+                    }
+
+                    if (cityData.length === 0) {
+                      return (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '20px',
+                          color: '#9CA3AF',
+                          fontSize: '14px'
+                        }}>
+                          No city data available yet
+                        </div>
+                      );
+                    }
+
+                    const maxCount = Math.max(...cityData.map(c => c.count || c.clicks || 0));
+
+                    return cityData.map((city, index) => {
+                      const cityName = city.city || city._id?.city || 'Unknown';
+                      const count = city.count || city.clicks || 0;
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+                      return (
+                        <div key={index} className="city-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}>
+                          <div className="city-info" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            minWidth: '120px',
+                            flex: '0 0 auto'
+                          }}>
+                            <span style={{ fontSize: '16px' }}>🏙️</span>
+                            <span style={{
+                              fontSize: '13px',
+                              color: '#374151',
+                              fontWeight: '500'
+                            }}>{cityName}</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            flex: 1
+                          }}>
+                            <div style={{
+                              flex: 1,
+                              height: '6px',
+                              backgroundColor: '#E5E7EB',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: '#F59E0B',
+                                borderRadius: '4px',
+                                transition: 'width 0.3s ease'
+                              }}></div>
+                            </div>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              minWidth: '30px',
+                              textAlign: 'right'
+                            }}>{count}</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Referrers */}
+              <div className="section-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <h3 className="section-title" style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '16px',
+                  margin: '0 0 16px 0'
+                }}>
+                  {t('analytics.charts.topReferrers') || 'Top Referrers'}
+                </h3>
+                <div className="referrer-stats" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  {(() => {
+                    // Get referrer data from recentClicks if topStats is empty
+                    let referrerData = [];
+                    
+                    if (analyticsData?.topStats?.referrers && analyticsData.topStats.referrers.length > 0) {
+                      referrerData = analyticsData.topStats.referrers.slice(0, 5);
+                    } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
+                      // Aggregate from recent clicks
+                      const referrerCounts = {};
+                      analyticsData.recentClicks.forEach(click => {
+                        const referrer = click.referer || 'Direct';
+                        if (referrer && referrer !== '') {
+                          try {
+                            const url = new URL(referrer);
+                            const domain = url.hostname.replace('www.', '');
+                            referrerCounts[domain] = (referrerCounts[domain] || 0) + 1;
+                          } catch {
+                            referrerCounts['Direct'] = (referrerCounts['Direct'] || 0) + 1;
+                          }
+                        } else {
+                          referrerCounts['Direct'] = (referrerCounts['Direct'] || 0) + 1;
+                        }
+                      });
+                      referrerData = Object.entries(referrerCounts)
+                        .map(([domain, count]) => ({ domain, count }))
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5);
+                    }
+
+                    if (referrerData.length === 0) {
+                      return (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '20px',
+                          color: '#9CA3AF',
+                          fontSize: '14px'
+                        }}>
+                          No referrer data available
+                        </div>
+                      );
+                    }
+
+                    const maxCount = Math.max(...referrerData.map(r => r.count || r.clicks || 0));
+
+                    return referrerData.map((referrer, index) => {
+                      const domain = referrer.domain || referrer._id || 'Direct';
+                      const count = referrer.count || referrer.clicks || 0;
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+                      return (
+                        <div key={index} className="referrer-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}>
+                          <div className="referrer-info" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            minWidth: '120px',
+                            flex: '0 0 auto'
+                          }}>
+                            <span style={{ fontSize: '16px' }}>🔗</span>
+                            <span style={{
+                              fontSize: '13px',
+                              color: '#374151',
+                              fontWeight: '500',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>{domain}</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            flex: 1
+                          }}>
+                            <div style={{
+                              flex: 1,
+                              height: '6px',
+                              backgroundColor: '#E5E7EB',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: '#EF4444',
+                                borderRadius: '4px',
+                                transition: 'width 0.3s ease'
+                              }}></div>
+                            </div>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#1F2937',
+                              minWidth: '30px',
+                              textAlign: 'right'
+                            }}>{count}</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
               </div>
             </div>
 
