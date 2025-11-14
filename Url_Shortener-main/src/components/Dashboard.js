@@ -27,6 +27,9 @@ const Dashboard = () => {
   });
   const [recentLinks, setRecentLinks] = useState([]);
   const [userName, setUserName] = useState('User');
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
+  const [editDialog, setEditDialog] = useState({ isOpen: false, link: null });
+  const [copySuccess, setCopySuccess] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -133,6 +136,65 @@ const Dashboard = () => {
   const handleAdvancedSettings = () => {
     console.log('Opening advanced settings');
     // Handle advanced settings modal/dropdown
+  };
+
+  // Copy functionality
+  const handleCopyLink = async (link) => {
+    try {
+      const shortUrl = `https://${getShortUrl(link)}`;
+      await navigator.clipboard.writeText(shortUrl);
+      setCopySuccess(link.id || link._id);
+      setTimeout(() => setCopySuccess(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      alert(t('common.copyFailed') || 'Failed to copy link');
+    }
+  };
+
+  // Edit functionality
+  const handleEditLink = (link) => {
+    setEditDialog({ isOpen: true, link: link });
+  };
+
+  const handleSaveEdit = async (linkId, updatedData) => {
+    try {
+      const response = await urlsAPI.updateUrl(linkId, updatedData);
+      if (response.success) {
+        // Refresh the dashboard data
+        await fetchDashboardData();
+        setEditDialog({ isOpen: false, link: null });
+      }
+    } catch (err) {
+      console.error('Error updating link:', err);
+      alert(err.message || 'Failed to update link');
+    }
+  };
+
+  // Delete functionality
+  const handleDeleteClick = (link) => {
+    setDeleteDialog({
+      isOpen: true,
+      linkId: link.id || link._id,
+      linkUrl: getShortUrl(link)
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await urlsAPI.deleteUrl(deleteDialog.linkId);
+      if (response.success || response.data) {
+        // Refresh the dashboard data
+        await fetchDashboardData();
+        setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+      }
+    } catch (err) {
+      console.error('Error deleting link:', err);
+      alert(err.message || 'Failed to delete link');
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
   };
 
   const formatDate = (dateString) => {
@@ -893,12 +955,9 @@ const Dashboard = () => {
                     alignItems: 'center',
                     flexShrink: 0
                   }}>
-                    <button 
-                      className=" copy-btn" 
-                      onClick={() => {
-                        navigator.clipboard.writeText(`https://${getShortUrl(link)}`);
-                        // You can add a toast notification here
-                      }}
+                    <button
+                      className=" copy-btn"
+                      onClick={() => handleCopyLink(link)}
                       style={{
                         padding: '8px 12px',
                         fontSize: '12px',
@@ -926,15 +985,12 @@ const Dashboard = () => {
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/>
                       </svg>
-                      <span>{t('common.copy')}</span>
+                      <span>{copySuccess === (link.id || link._id) ? (t('common.copied') || 'Copied!') : t('common.copy')}</span>
                     </button>
                     
-                    <button 
+                    <button
                       className=" edit-btn"
-                      onClick={() => {
-                        // Handle edit functionality
-                        console.log('Edit link:', link.id);
-                      }}
+                      onClick={() => handleEditLink(link)}
                       style={{
                         padding: '8px 12px',
                         fontSize: '12px',
@@ -965,14 +1021,9 @@ const Dashboard = () => {
                       <span>{t('common.edit')}</span>
                     </button>
                     
-                    <button 
+                    <button
                       className=" delete-btn"
-                      onClick={() => {
-                        // Handle delete functionality
-                        if (window.confirm(t('common.confirmDelete'))) {
-                          console.log('Delete link:', link.id);
-                        }
-                      }}
+                      onClick={() => handleDeleteClick(link)}
                       style={{
                         padding: '8px 12px',
                         fontSize: '12px',
@@ -1081,10 +1132,240 @@ const Dashboard = () => {
               </svg>
             </div>
           </div>
+
+          {/* Delete Confirmation Dialog */}
+          {deleteDialog.isOpen && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999
+            }} onClick={handleCancelDelete}>
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                maxWidth: '400px',
+                width: '90%',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+              }} onClick={(e) => e.stopPropagation()}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: '#FEE2E2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: '16px'
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    margin: 0
+                  }}>{t('common.deleteConfirmTitle') || 'Delete Link?'}</h3>
+                </div>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#6B7280',
+                  marginBottom: '20px',
+                  lineHeight: '1.5'
+                }}>
+                  {t('common.deleteConfirmMessage') || 'Are you sure you want to delete this link?'} <br />
+                  <strong style={{ color: '#3B82F6' }}>{deleteDialog.linkUrl}</strong>
+                </p>
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  justifyContent: 'flex-end'
+                }}>
+                  <button
+                    onClick={handleCancelDelete}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#F3F4F6',
+                      color: '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#E5E7EB'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#F3F4F6'}
+                  >
+                    {t('common.cancel') || 'Cancel'}
+                  </button>
+                  <button
+                    onClick={handleConfirmDelete}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#DC2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#B91C1C'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#DC2626'}
+                  >
+                    {t('common.delete') || 'Delete'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Dialog */}
+          {editDialog.isOpen && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999
+            }} onClick={() => setEditDialog({ isOpen: false, link: null })}>
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+              }} onClick={(e) => e.stopPropagation()}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#1F2937',
+                  marginBottom: '20px'
+                }}>{t('common.editLink') || 'Edit Link'}</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  const updatedData = {
+                    title: formData.get('title'),
+                    customCode: formData.get('customCode')
+                  };
+                  handleSaveEdit(editDialog.link.id || editDialog.link._id, updatedData);
+                }}>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>{t('dashboard.campaign') || 'Title/Campaign'}</label>
+                    <input
+                      type="text"
+                      name="title"
+                      defaultValue={editDialog.link.title}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>{t('dashboard.customBackhalf') || 'Custom Back-half'}</label>
+                    <input
+                      type="text"
+                      name="customCode"
+                      defaultValue={editDialog.link.shortCode}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    justifyContent: 'flex-end'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditDialog({ isOpen: false, link: null })}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#F3F4F6',
+                        color: '#374151',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {t('common.cancel') || 'Cancel'}
+                    </button>
+                    <button
+                      type="submit"
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#3B82F6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {t('common.save') || 'Save'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       </div>
-      
+
     </div>
   );
 };

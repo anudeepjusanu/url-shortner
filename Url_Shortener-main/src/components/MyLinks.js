@@ -27,6 +27,7 @@ function MyLinks() {
   const [searchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
 
   useEffect(() => {
     fetchLinks();
@@ -83,17 +84,34 @@ function MyLinks() {
     }
   };
 
-  const handleDeleteLink = async (linkId) => {
-    if (!window.confirm(t('myLinks.confirmDelete'))) return;
+  const handleDeleteClick = (link) => {
+    const linkId = link.id || link._id;
+    const shortUrl = link.domain && link.domain !== 'laghhu.link'
+      ? `${link.domain}/${link.shortCode}`
+      : `laghhu.link/${link.shortCode}`;
+
+    setDeleteDialog({
+      isOpen: true,
+      linkId: linkId,
+      linkUrl: shortUrl
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      setDeleteLoading(linkId);
-      await urlsAPI.delete(linkId);
-      setLinks(links.filter(link => (link.id || link._id) !== linkId));
+      setDeleteLoading(deleteDialog.linkId);
+      await urlsAPI.delete(deleteDialog.linkId);
+      setLinks(links.filter(link => (link.id || link._id) !== deleteDialog.linkId));
+      setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
     } catch (err) {
       alert(t('errors.generic'));
     } finally {
       setDeleteLoading(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
   };
 
   const formatDate = (dateString) => {
@@ -794,7 +812,7 @@ function MyLinks() {
                               </svg>
                               {t('myLinks.actions.analytics')}
                             </button>
-                            <button onClick={() => handleDeleteLink(linkId)} disabled={deleteLoading === linkId} style={{
+                            <button onClick={() => handleDeleteClick(link)} disabled={deleteLoading === linkId} style={{
                               padding: '8px 16px',
                               fontSize: '13px',
                               fontWeight: '500',
@@ -822,6 +840,111 @@ function MyLinks() {
                   )}
                 </div>
               </>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {deleteDialog.isOpen && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999
+              }} onClick={handleCancelDelete}>
+                <div style={{
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  maxWidth: '400px',
+                  width: '90%',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+                }} onClick={(e) => e.stopPropagation()}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FEE2E2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '16px'
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      margin: 0
+                    }}>{t('common.deleteConfirmTitle') || 'Delete Link?'}</h3>
+                  </div>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#6B7280',
+                    marginBottom: '20px',
+                    lineHeight: '1.5'
+                  }}>
+                    {t('common.deleteConfirmMessage') || 'Are you sure you want to delete this link?'} <br />
+                    <strong style={{ color: '#3B82F6' }}>{deleteDialog.linkUrl}</strong>
+                  </p>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    justifyContent: 'flex-end'
+                  }}>
+                    <button
+                      onClick={handleCancelDelete}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#F3F4F6',
+                        color: '#374151',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#E5E7EB'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#F3F4F6'}
+                    >
+                      {t('common.cancel') || 'Cancel'}
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      disabled={deleteLoading === deleteDialog.linkId}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#DC2626',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: deleteLoading === deleteDialog.linkId ? 'not-allowed' : 'pointer',
+                        opacity: deleteLoading === deleteDialog.linkId ? 0.6 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => { if (!deleteLoading) e.target.style.backgroundColor = '#B91C1C'; }}
+                      onMouseLeave={(e) => { if (!deleteLoading) e.target.style.backgroundColor = '#DC2626'; }}
+                    >
+                      {deleteLoading === deleteDialog.linkId ? t('common.loading') : t('common.delete') || 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -183,8 +183,9 @@
 [dir="rtl"] .dashboard-content,
 [dir="rtl"] .main-content,
 [dir="rtl"] .page-wrapper {
-  padding-left: 24px !important;
-  padding-right: 40px !important;
+  /* Let content use its natural centering with margin: 0 auto */
+  /* Equal padding for proper centering */
+  
 }
 
 /* Ensure main content area has proper spacing in RTL */
@@ -217,22 +218,19 @@
 [dir="rtl"] .profile-main {
   margin-left: 0 !important;
   /* margin-right: 250px !important; */
-  padding-left: 16px !important;
-  padding-right: 16px !important;
 }
 
 /* Fix overlap issues - ensure content starts after sidebar */
+/* Keep content centered with same padding as LTR mode */
 [dir="rtl"] .analytics-content,
 [dir="rtl"] .content-filter-content,
 [dir="rtl"] .custom-domains-content,
 [dir="rtl"] .qr-codes-content,
 [dir="rtl"] .my-links-content,
 [dir="rtl"] .profile-content {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  width: 100%;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  /* Let the original padding from component CSS apply naturally */
 }
 
 /* Cards and Containers */

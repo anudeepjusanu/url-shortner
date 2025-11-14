@@ -35,6 +35,9 @@ const QRCodes = () => {
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
+  // Delete dialog
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
+
   // Stats
   const [stats, setStats] = useState({
     totalQRCodes: 0,
@@ -181,20 +184,31 @@ const QRCodes = () => {
     }
   };
 
-  const deleteQRCode = async (linkId) => {
-    if (!window.confirm("Are you sure you want to delete this link and its QR code?")) {
-      return;
-    }
+  const handleDeleteClick = (link) => {
+    const linkId = link._id || link.id;
+    const shortUrl = getShortUrl(link);
 
+    setDeleteDialog({
+      isOpen: true,
+      linkId: linkId,
+      linkUrl: shortUrl
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await urlsAPI.deleteUrl(linkId);
-      alert("Link and QR code deleted successfully!");
+      await urlsAPI.deleteUrl(deleteDialog.linkId);
       loadLinks();
       loadStats();
+      setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
     } catch (error) {
       console.error("Error deleting:", error);
       alert("Failed to delete: " + error.message);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
   };
 
   const getShortUrl = (link) => {
@@ -670,7 +684,7 @@ const QRCodes = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteQRCode(link._id || link.id);
+                              handleDeleteClick(link);
                             }}
                             style={{
                               padding: '8px 12px',
@@ -1021,6 +1035,135 @@ const QRCodes = () => {
                     >
                       {selectedLink ? t('qrCodes.generate.generateButton') : t('common.save')}
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {deleteDialog.isOpen && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999
+                }}
+                onClick={handleCancelDelete}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '32px',
+                    maxWidth: '450px',
+                    width: '90%',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FEE2E2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '20px'
+                    }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </div>
+
+                    <h2 style={{
+                      fontSize: '20px',
+                      fontWeight: '700',
+                      color: '#111827',
+                      marginBottom: '12px',
+                      margin: '0 0 12px 0'
+                    }}>
+                      {t('common.deleteQRTitle') || 'Delete QR Code?'}
+                    </h2>
+
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      margin: '0 0 8px 0'
+                    }}>
+                      {t('common.deleteQRMessage') || 'Are you sure you want to delete this QR code and link?'}
+                    </p>
+
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#3B82F6',
+                      marginBottom: '24px',
+                      margin: '0 0 24px 0',
+                      wordBreak: 'break-all'
+                    }}>
+                      {deleteDialog.linkUrl}
+                    </p>
+
+                    <div style={{
+                      display: 'flex',
+                      gap: '12px',
+                      width: '100%'
+                    }}>
+                      <button
+                        onClick={handleCancelDelete}
+                        style={{
+                          flex: 1,
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: '1px solid #E5E7EB',
+                          backgroundColor: '#ffffff',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
+                      >
+                        {t('common.cancel') || 'Cancel'}
+                      </button>
+                      <button
+                        onClick={handleConfirmDelete}
+                        style={{
+                          flex: 1,
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: 'none',
+                          backgroundColor: '#DC2626',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#B91C1C'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#DC2626'}
+                      >
+                        {t('common.delete') || 'Delete'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
