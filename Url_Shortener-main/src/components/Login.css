@@ -314,7 +314,7 @@
 }
 
 .sign-in-btn {
-  width: 100%;
+  /* width: 100%; */
   background: #3B82F6;
   color: white;
   border: none;
@@ -328,8 +328,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 48px;
-  min-height: 48px;
+  height: 40px;
+  min-height: 40px;
 }
 
 .sign-in-btn:hover:not(:disabled) {
@@ -430,6 +430,26 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Small spinner for login button */
+.login-spinner {
+  flex-shrink: 0;
+}
+
+@keyframes spin-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
 /* Form field styles - inherit most from Registration.css but ensure they work */
 .form-field {
   display: flex;
@@ -518,7 +538,7 @@
   .google-btn,
   .login-container .sign-in-btn,
   .sign-in-btn {
-    width: 100%;
+    /* width: 100%; */
   }
 
   .login-container .brand-section,
@@ -657,7 +677,7 @@
 
   .login-container .sign-in-btn,
   .sign-in-btn {
-    height: 46px;
+    height: 40px;
     font-size: 15px;
   }
 
@@ -794,7 +814,7 @@
 
   .login-container .sign-in-btn,
   .sign-in-btn {
-    height: 44px;
+    height: 40px;
     font-size: 14px;
   }
 

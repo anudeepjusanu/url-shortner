@@ -51,6 +51,7 @@
   height: 32px;
   background-color: #3B82F6;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .create-link-logo-text {
@@ -58,6 +59,21 @@
   font-weight: 600;
   font-size: 20px;
   color: #1F2937;
+  white-space: nowrap;
+}
+
+/* RTL Support for Logo */
+[dir="rtl"] .create-link-header-left {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .hamburger-wrapper-dashboard {
+  margin-right: 0;
+  margin-left: 12px;
+}
+
+[dir="rtl"] .create-link-logo-section {
+  flex-direction: row-reverse;
 }
 
 .create-link-header-right {
@@ -104,12 +120,31 @@
   height: 32px;
   border-radius: 50%;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .create-link-user-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.create-link-user-avatar-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #3B82F6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-transform: uppercase;
 }
 
 .create-link-user-name {
@@ -149,6 +184,10 @@
     padding: 5px 10px;
     font-size: 13px;
   }
+
+  .create-link-logo-text {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -158,5 +197,9 @@
 
   .create-link-header-right {
     gap: 8px;
+  }
+
+  .create-link-logo-text {
+    font-size: 14px;
   }
 }

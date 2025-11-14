@@ -6,15 +6,29 @@ import HamburgerMenu from './HamburgerMenu';
 const Header = ({ isLanding = false, onGetStarted }) => {
   const { t } = useTranslation();
   const { currentLanguage, toggleLanguage } = useLanguage();
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.offsetTop;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
   if (isLanding) {
     const landingNavItems = [
       {
         label: t('header.navigation'),
         items: [
-          { label: t('header.features'), path: '/#features', icon: null },
-          { label: t('header.pricing'), path: '/#pricing', icon: null },
-          { label: t('header.about'), path: '/#about', icon: null },
-          { label: t('header.contact'), path: '/#contact', icon: null }
+          { label: t('header.features'), path: 'features', icon: null },
+          { label: t('header.pricing'), path: 'pricing', icon: null },
+          { label: t('header.about'), path: 'about', icon: null },
+          { label: t('header.contact'), path: 'contact', icon: null }
         ]
       }
     ];
@@ -32,7 +46,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
             className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
             onClick={toggleLanguage}
           >
-            عربي
+            AR
           </button>
         </div>
         <button
@@ -73,14 +87,14 @@ const Header = ({ isLanding = false, onGetStarted }) => {
           </div>
           <div className="header-center">
             <nav className="landing-nav">
-              <a href="#features">{t('header.features')}</a>
-              <a href="#pricing">{t('header.pricing')}</a>
-              <a href="#about">{t('header.about')}</a>
-              <a href="#contact">{t('header.contact')}</a>
+              <button onClick={() => scrollToSection('features')} className="nav-link">{t('header.features')}</button>
+              <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
+              <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button>
+              <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
             </nav>
           </div>
-          <div className="header-right">
-            <div className="language-toggle landing">
+          <div className="create-link-header-right">
+            {/* <div className="language-toggle landing">
               <button
                 className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
                 onClick={toggleLanguage}
@@ -91,9 +105,25 @@ const Header = ({ isLanding = false, onGetStarted }) => {
                 className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
                 onClick={toggleLanguage}
               >
-                عربي
+                AR
               </button>
-            </div>
+            </div> */}
+                  <div className="create-link-language-toggle">
+        <button
+          className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+          onClick={toggleLanguage}
+        >
+          EN
+        </button>
+        <button
+          className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
+          onClick={toggleLanguage}
+        >
+          AR
+        </button>
+      </div>
+
+
             <button className="sign-in-btn" onClick={onGetStarted}>
               {t('header.signIn')}
             </button>

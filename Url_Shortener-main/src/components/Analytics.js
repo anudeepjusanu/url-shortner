@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "../contexts/LanguageContext";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import { analyticsAPI } from "../services/api";
@@ -9,6 +10,7 @@ import "./DashboardLayout.css";
 
 const Analytics = () => {
   const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const { id } = useParams(); // Get URL ID from route params
   const [timeFilter, setTimeFilter] = useState("7d");
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -271,61 +273,70 @@ const Analytics = () => {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                marginBottom: '20px'
+                marginBottom: '24px'
               }}>
-                <div className="header-info" style={{ margin: 0 }}>
-                  <h1 className="page-title" style={{ marginBottom: '4px' }}>
-                    {t('analytics.title')}
-                  </h1>
-                  <p className="page-subtitle" style={{ margin: 0 }}>
-                    {t('analytics.subtitle')}
-                  </p>
+                <div>
+                  <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    color: '#111827',
+                    marginBottom: '4px',
+                    margin: '0 0 4px 0'
+                  }}>{t('analytics.title')}</h1>
+                  <p style={{
+                    color: '#6B7280',
+                    fontSize: '14px',
+                    margin: 0
+                  }}>{t('analytics.subtitle')}</p>
                 </div>
-              <button className="export-btn" onClick={exportData} style={{
-                padding: '10px 16px',
-                backgroundColor: '#3B82F6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                <button
+                  onClick={exportData}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    border: 'none',
+                    background: '#3B82F6',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
                 >
-                  <path
-                    d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M5.33325 6.66669L7.99992 4.00002L10.6666 6.66669"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M8 4V10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                {t('analytics.export.title')}
-              </button>
-            </div>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5.33325 6.66669L7.99992 4.00002L10.6666 6.66669"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M8 4V10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {t('analytics.export.title')}
+                </button>
+              </div>
 
             {/* Link Info Card */}
             <div className="link-info-card" style={{
@@ -335,11 +346,13 @@ const Analytics = () => {
               padding: '16px 20px',
               marginBottom: '20px',
               display: 'flex',
+              flexDirection: isRTL ? 'row-reverse' : 'row',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <div className="link-info-content" style={{
                 display: 'flex',
+                flexDirection: isRTL ? 'row-reverse' : 'row',
                 alignItems: 'center',
                 gap: '12px',
                 flex: 1,
@@ -371,13 +384,19 @@ const Analytics = () => {
                     />
                   </svg>
                 </div>
-                <div className="link-details" style={{ minWidth: 0, flex: 1 }}>
+                <div className="link-details" style={{
+                  minWidth: 0,
+                  flex: 1,
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>
                   <h3 className="short-link" style={{
                     fontSize: '15px',
                     fontWeight: '600',
                     color: '#1F2937',
                     marginBottom: '4px',
-                    margin: 0
+                    margin: 0,
+                    direction: 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}>linksa.co/abc123</h3>
                   <p className="original-link" style={{
                     fontSize: '13px',
@@ -385,7 +404,9 @@ const Analytics = () => {
                     margin: 0,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    direction: 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}>
                     https://www.example.com/very-long-url-that-was-shortened
                   </p>
@@ -394,7 +415,9 @@ const Analytics = () => {
               <div className="link-actions" style={{
                 display: 'flex',
                 gap: '8px',
-                marginLeft: '16px'
+                marginLeft: isRTL ? 0 : '16px',
+                marginRight: isRTL ? '16px' : 0,
+                flexShrink: 0
               }}>
                 <button className="action-btn copy-btn" style={{
                   width: '36px',
@@ -517,9 +540,35 @@ const Analytics = () => {
             </div>
             {/* Link Info Card - Only show for individual URL analytics */}
             {linkData && (
-              <div className="link-info-card">
-                <div className="link-info-content">
-                  <div className="link-icon">
+              <div className="link-info-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '16px 20px',
+                marginBottom: '20px',
+                display: 'flex',
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div className="link-info-content" style={{
+                  display: 'flex',
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                  alignItems: 'center',
+                  gap: '12px',
+                  flex: 1,
+                  minWidth: 0
+                }}>
+                  <div className="link-icon" style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    backgroundColor: '#EFF6FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
                     <svg
                       width="25"
                       height="20"
@@ -536,18 +585,45 @@ const Analytics = () => {
                       />
                     </svg>
                   </div>
-                  <div className="link-details">
-                    <h3 className="short-link">
+                  <div className="link-details" style={{
+                    minWidth: 0,
+                    flex: 1,
+                    textAlign: isRTL ? 'right' : 'left'
+                  }}>
+                    <h3 className="short-link" style={{
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      marginBottom: '4px',
+                      margin: 0,
+                      direction: 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}>
                       {linkData.domain && linkData.domain !== 'laghhu.link'
                         ? `${linkData.domain}/${linkData.shortCode}`
                         : `laghhu.link/${linkData.shortCode}`}
                     </h3>
-                    <p className="original-link">
+                    <p className="original-link" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      margin: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      direction: 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}>
                       {linkData.originalUrl}
                     </p>
                   </div>
                 </div>
-                <div className="link-actions">
+                <div className="link-actions" style={{
+                  display: 'flex',
+                  gap: '8px',
+                  marginLeft: isRTL ? 0 : '16px',
+                  marginRight: isRTL ? '16px' : 0,
+                  flexShrink: 0
+                }}>
                   <button
                     className="action-btn copy-btn"
                     onClick={() => copyToClipboard(
@@ -555,6 +631,19 @@ const Analytics = () => {
                         ? `https://${linkData.domain}/${linkData.shortCode}`
                         : `https://laghhu.link/${linkData.shortCode}`
                     )}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      padding: '8px',
+                      backgroundColor: '#F3F4F6',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#6B7280'
+                    }}
                   >
                     <svg
                       width="16"
@@ -581,7 +670,19 @@ const Analytics = () => {
                       />
                     </svg>
                   </button>
-                  <button className="action-btn share-btn">
+                  <button className="action-btn share-btn" style={{
+                    width: '36px',
+                    height: '36px',
+                    padding: '8px',
+                    backgroundColor: '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#6B7280'
+                  }}>
                     <svg
                       width="14"
                       height="16"
@@ -612,7 +713,19 @@ const Analytics = () => {
                       />
                     </svg>
                   </button>
-                  <button className="action-btn edit-btn">
+                  <button className="action-btn edit-btn" style={{
+                    width: '36px',
+                    height: '36px',
+                    padding: '8px',
+                    backgroundColor: '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#6B7280'
+                  }}>
                     <svg
                       width="16"
                       height="16"
@@ -643,9 +756,10 @@ const Analytics = () => {
             {/* Stats Cards */}
             <div className="stats-grid" style={{
               display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '16px',
-              marginBottom: '20px'
+              marginBottom: '20px',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}>
               <div className="stats-card" style={{
                 backgroundColor: 'white',
@@ -655,10 +769,16 @@ const Analytics = () => {
               }}>
                 <div className="stats-content" style={{
                   display: 'flex',
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
                   justifyContent: 'space-between',
-                  alignItems: 'flex-start'
+                  alignItems: 'flex-start',
+                  gap: '16px'
                 }}>
-                  <div className="stats-info">
+                  <div className="stats-info" style={{
+                    textAlign: isRTL ? 'right' : 'left',
+                    flex: 1,
+                    minWidth: 0
+                  }}>
                     <p className="stats-label" style={{
                       fontSize: '13px',
                       color: '#6B7280',
@@ -675,6 +795,7 @@ const Analytics = () => {
                     {analyticsData?.totalClicksChange && (
                       <div className={`stats-change ${analyticsData.totalClicksChange >= 0 ? 'positive' : 'negative'}`} style={{
                       display: 'flex',
+                      flexDirection: isRTL ? 'row-reverse' : 'row',
                       alignItems: 'center',
                       gap: '4px',
                       fontSize: '12px',
@@ -736,10 +857,16 @@ const Analytics = () => {
               }}>
                 <div className="stats-content" style={{
                   display: 'flex',
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
                   justifyContent: 'space-between',
-                  alignItems: 'flex-start'
+                  alignItems: 'flex-start',
+                  gap: '16px'
                 }}>
-                  <div className="stats-info">
+                  <div className="stats-info" style={{
+                    textAlign: isRTL ? 'right' : 'left',
+                    flex: 1,
+                    minWidth: 0
+                  }}>
                     <p className="stats-label" style={{
                       fontSize: '13px',
                       color: '#6B7280',
@@ -756,6 +883,7 @@ const Analytics = () => {
                     {analyticsData?.uniqueClicksChange && (
                       <div className={`stats-change ${analyticsData.uniqueClicksChange >= 0 ? 'positive' : 'negative'}`} style={{
                       display: 'flex',
+                      flexDirection: isRTL ? 'row-reverse' : 'row',
                       alignItems: 'center',
                       gap: '4px',
                       fontSize: '12px',
@@ -831,13 +959,46 @@ const Analytics = () => {
               </div>
 
               {/* Additional stats cards for comprehensive analytics */}
-              <div className="stats-card">
-                <div className="stats-content">
-                  <div className="stats-info">
-                    <p className="stats-label">{t('analytics.overview.clickRate')}</p>
-                    <h3 className="stats-value">{analyticsData?.clickThroughRate || '0%'}</h3>
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <div className="stats-content" style={{
+                  display: 'flex',
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: '16px'
+                }}>
+                  <div className="stats-info" style={{
+                    textAlign: isRTL ? 'right' : 'left',
+                    flex: 1,
+                    minWidth: 0
+                  }}>
+                    <p className="stats-label" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      fontWeight: '400',
+                      margin: 0
+                    }}>{t('analytics.overview.clickRate')}</p>
+                    <h3 className="stats-value" style={{
+                      fontSize: '28px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      margin: '8px 0'
+                    }}>{analyticsData?.clickThroughRate || '0%'}</h3>
                     {analyticsData?.clickThroughRateChange && (
-                      <div className={`stats-change ${analyticsData.clickThroughRateChange >= 0 ? 'positive' : 'negative'}`}>
+                      <div className={`stats-change ${analyticsData.clickThroughRateChange >= 0 ? 'positive' : 'negative'}`} style={{
+                        display: 'flex',
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '12px',
+                        color: '#10B981'
+                      }}>
                         <svg
                           width="11"
                           height="14"
@@ -853,11 +1014,20 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}%</span>
+                        <span style={{ margin: 0 }}>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}%</span>
                       </div>
                     )}
                   </div>
-                  <div className="stats-icon orange">
+                  <div className="stats-icon orange" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    backgroundColor: '#FEF3C7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#F59E0B'
+                  }}>
                     <svg
                       width="20"
                       height="20"
@@ -877,13 +1047,46 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="stats-card">
-                <div className="stats-content">
-                  <div className="stats-info">
-                    <p className="stats-label">{t('analytics.overview.avgClicksPerDay')}</p>
-                    <h3 className="stats-value">{analyticsData?.averageTime || '0s'}</h3>
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <div className="stats-content" style={{
+                  display: 'flex',
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: '16px'
+                }}>
+                  <div className="stats-info" style={{
+                    textAlign: isRTL ? 'right' : 'left',
+                    flex: 1,
+                    minWidth: 0
+                  }}>
+                    <p className="stats-label" style={{
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      fontWeight: '400',
+                      margin: 0
+                    }}>{t('analytics.overview.avgClicksPerDay')}</p>
+                    <h3 className="stats-value" style={{
+                      fontSize: '28px',
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      margin: '8px 0'
+                    }}>{analyticsData?.averageTime || '0s'}</h3>
                     {analyticsData?.averageTimeChange && (
-                      <div className={`stats-change ${analyticsData.averageTimeChange >= 0 ? 'positive' : 'negative'}`}>
+                      <div className={`stats-change ${analyticsData.averageTimeChange >= 0 ? 'positive' : 'negative'}`} style={{
+                        display: 'flex',
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '12px',
+                        color: '#10B981'
+                      }}>
                         <svg
                           width="11"
                           height="14"
@@ -899,11 +1102,20 @@ const Analytics = () => {
                             }}
                           />
                         </svg>
-                        <span>{analyticsData.averageTimeChange >= 0 ? '+' : ''}{analyticsData.averageTimeChange}%</span>
+                        <span style={{ margin: 0 }}>{analyticsData.averageTimeChange >= 0 ? '+' : ''}{analyticsData.averageTimeChange}%</span>
                       </div>
                     )}
                   </div>
-                  <div className="stats-icon purple">
+                  <div className="stats-icon purple" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    backgroundColor: '#EDE9FE',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#8B5CF6'
+                  }}>
                     <svg
                       width="20"
                       height="20"
@@ -1124,14 +1336,31 @@ const Analytics = () => {
 
                   {/* Legend */}
                   <g fontSize="12" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif">
-                    <circle cx="300" cy="20" r="4" fill="#3B82F6" />
-                    <text x="310" y="24" fill="#6B7280">
-                      {t('analytics.overview.totalClicks')}
-                    </text>
-                    <circle cx="410" cy="20" r="4" fill="#10B981" />
-                    <text x="420" y="24" fill="#6B7280">
-                      {t('analytics.overview.uniqueClicks')}
-                    </text>
+                    {isRTL ? (
+                      <>
+                        {/* RTL Layout - Right to Left */}
+                        <circle cx="690" cy="20" r="4" fill="#3B82F6"  />
+                        <text x="682" y="24" fill="#6B7280" textAnchor="end">
+                          {t('analytics.overview.totalClicks')}
+                        </text>
+                        <circle cx="540" cy="20" r="4" fill="#10B981" />
+                        <text x="532" y="24" fill="#6B7280" textAnchor="end">
+                          {t('analytics.overview.uniqueClicks')}
+                        </text>
+                      </>
+                    ) : (
+                      <>
+                        {/* LTR Layout - Left to Right */}
+                        <circle cx="300" cy="20" r="4" fill="#3B82F6" />
+                        <text x="310" y="24" fill="#6B7280" textAnchor="start">
+                          {t('analytics.overview.totalClicks')}
+                        </text>
+                        <circle cx="450" cy="20" r="4" fill="#10B981" />
+                        <text x="460" y="24" fill="#6B7280" textAnchor="start">
+                          {t('analytics.overview.uniqueClicks')}
+                        </text>
+                      </>
+                    )}
                   </g>
                 </svg>
               </div>

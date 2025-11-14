@@ -1,12 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import { authAPI } from '../services/api';
 import HamburgerMenu from "./HamburgerMenu";
 import "./MainHeader.css";
 
 const MainHeader = () => {
   const { t } = useTranslation();
   const { currentLanguage, toggleLanguage } = useLanguage();
+  const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await authAPI.getProfile();
+      if (response.success && response.data) {
+        setUserProfile(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Fallback to user from context if API fails
+      if (user) {
+        setUserProfile(user);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (userProfile?.name) return userProfile.name;
+    if (userProfile?.username) return userProfile.username;
+    if (userProfile?.email) return userProfile.email.split('@')[0];
+    if (user?.name) return user.name;
+    if (user?.username) return user.username;
+    if (user?.email) return user.email.split('@')[0];
+    return t('common.user');
+  };
+
+  // Get user avatar URL or initials
+  const getUserAvatar = () => {
+    if (userProfile?.avatar) return userProfile.avatar;
+    if (userProfile?.profilePicture) return userProfile.profilePicture;
+    if (user?.avatar) return user.avatar;
+    if (user?.profilePicture) return user.profilePicture;
+    return null;
+  };
+
+  // Get user initials for fallback avatar
+  const getUserInitials = () => {
+    const name = getUserDisplayName();
+    const words = name.split(' ');
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const displayName = getUserDisplayName();
+  const avatarUrl = getUserAvatar();
   // Define navigation items for hamburger menu
   const sidebarItems = [
     {
@@ -52,12 +112,37 @@ const MainHeader = () => {
       </div>
       <div className="create-link-user-profile">
         <div className="create-link-user-avatar">
-          <img
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format"
-            alt="Ahmed Al-Rashid"
-          />
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div
+            className="create-link-user-avatar-initials"
+            style={{
+              display: avatarUrl ? 'none' : 'flex',
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              backgroundColor: '#3B82F6',
+              color: 'white',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              fontWeight: '600'
+            }}
+          >
+            {getUserInitials()}
+          </div>
         </div>
-        <span className="create-link-user-name">Ahmed Al-Rashid</span>
+        <span className="create-link-user-name">
+          {loading ? t('common.loading') : displayName}
+        </span>
       </div>
     </>
   );
@@ -69,7 +154,7 @@ const MainHeader = () => {
           <div className="hamburger-wrapper-dashboard hide-desktop">
             <HamburgerMenu sidebarItems={sidebarItems} headerItems={headerItems} />
           </div>
-          <div className="create-link-logo-section hide-desktop">
+          <div className="create-link-logo-section">
             <div className="create-link-logo-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +176,7 @@ const MainHeader = () => {
                 </defs>
               </svg>
             </div>
-            <span className="create-link-logo-text hide-mobile">{t('common.brandName')}</span>
+            <span className="create-link-logo-text">{t('common.brandName')}</span>
           </div>
         </div>
         <div className="create-link-header-right">
@@ -111,12 +196,37 @@ const MainHeader = () => {
           </div>
           <div className="create-link-user-profile">
             <div className="create-link-user-avatar">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format"
-                alt="Ahmed Al-Rashid"
-              />
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="create-link-user-avatar-initials"
+                style={{
+                  display: avatarUrl ? 'none' : 'flex',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                {getUserInitials()}
+              </div>
             </div>
-            <span className="create-link-user-name">Ahmed Al-Rashid</span>
+            <span className="create-link-user-name">
+              {loading ? t('common.loading') : displayName}
+            </span>
           </div>
         </div>
       </div>
