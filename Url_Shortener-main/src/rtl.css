@@ -217,8 +217,8 @@
 [dir="rtl"] .profile-main {
   margin-left: 0 !important;
   /* margin-right: 250px !important; */
-  padding-left: 24px !important;
-  padding-right: 24px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 /* Fix overlap issues - ensure content starts after sidebar */
@@ -231,8 +231,8 @@
   margin-left: 0 !important;
   margin-right: 0 !important;
   width: 100%;
-  padding-left: 32px !important;
-  padding-right: 32px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 /* Cards and Containers */
@@ -768,8 +768,8 @@
   [dir="rtl"] .profile-main {
     margin-right: 0 !important;
     margin-left: 0 !important;
-    padding-right: 16px !important;
-    padding-left: 16px !important;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
   }
 
   /* Header adjustments - Mobile (≤767px) - Use flexbox instead of grid */
@@ -1063,8 +1063,8 @@
   /* Content padding reduction for mobile */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 16px !important;
-    padding-left: 16px !important;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
   }
 }
 
@@ -1103,8 +1103,8 @@
   [dir="rtl"] .profile-main {
     margin-right: 200px !important;
     margin-left: 0 !important;
-    padding-right: 20px !important;
-    padding-left: 20px !important;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
   }
 
   /* Sidebar items - Compact on tablet */
@@ -1216,8 +1216,8 @@
   /* Content padding for tablet */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 20px !important;
-    padding-left: 20px !important;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
   }
 
   /* Pricing cards - Two columns on tablet */
@@ -1285,8 +1285,8 @@
   [dir="rtl"] .profile-main {
     /* margin-right: 250px !important; */
     margin-left: 0 !important;
-    padding-right: 24px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
   }
 
   /* Ensure no overlap and proper centering */
@@ -1299,13 +1299,13 @@
     margin-right: 0 !important;
     margin-left: 0 !important;
     width: 100% !important;
-    max-width: 1400px !important;
+    max-width: 1600px !important;
   }
 
   /* Specific inline style overrides for Dashboard */
   [dir="rtl"] .analytics-content[style*="margin"] {
     margin: 0 auto !important;
-    max-width: 1400px !important;
+    max-width: 1600px !important;
   }
 
   /* Sidebar items - Full padding on desktop */
@@ -1439,8 +1439,8 @@
   /* Content padding for desktop */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 40px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
   }
 
   /* Pricing cards - Three columns on desktop */
@@ -1506,8 +1506,8 @@
   [dir="rtl"] .profile-main {
     /* margin-right: 100px !important; */
     margin-left: 0 !important;
-    padding-right: 24px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
     max-width: none !important;
   }
 
@@ -1518,20 +1518,20 @@
   [dir="rtl"] .qr-codes-content,
   [dir="rtl"] .my-links-content,
   [dir="rtl"] .profile-content {
-    max-width: 1400px !important;
+    max-width: 1600px !important;
     margin-right: auto !important;
     margin-left: auto !important;
-    padding: 24px !important;
+    padding: 24px 16px !important;
     width: 100% !important;
   }
 
   /* Dashboard specific content centering */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    max-width: 1400px !important;
+    max-width: 1600px !important;
     margin-right: auto !important;
     margin-left: auto !important;
-    padding: 24px !important;
+    padding: 24px 16px !important;
   }
 
   /* Four column grids on large screens */
@@ -1897,7 +1897,7 @@
 [dir="rtl"] .utm-builder-content {
   direction: rtl !important;
   /* margin: 0 auto !important; */
-  max-width: 1400px !important;
+  max-width: 1600px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }

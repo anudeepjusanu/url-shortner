@@ -25,9 +25,9 @@
 }
 
 .analytics-content {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 24px 32px;
+  padding: 24px 16px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -38,14 +38,14 @@
     margin-left: 0;
     width: 100%;
   }
-  
+
   .analytics-content {
-    padding: 20px 16px;
+    padding: 20px 12px;
   }
 }
 
 @media (max-width: 768px) {
   .analytics-content {
-    padding: 16px 12px;
+    padding: 16px 8px;
   }
 }
