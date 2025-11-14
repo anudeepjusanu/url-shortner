@@ -7,6 +7,162 @@
   text-align: right;
 }
 
+/* Registration Page RTL Styles */
+[dir="rtl"] .registration-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .language-toggle {
+  left: 40px;
+  right: auto;
+}
+
+[dir="rtl"] .left-panel {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .feature-item {
+  text-align: right;
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .feature-content {
+  text-align: right;
+  padding-right: 2px;
+  padding-left: 0;
+}
+
+[dir="rtl"] .right-panel {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .form-wrapper {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .form-header {
+  text-align: center;
+}
+
+[dir="rtl"] .google-btn {
+  direction: ltr; /* Keep Google button LTR for icon + text */
+  text-align: center;
+}
+
+[dir="rtl"] .divider {
+  direction: rtl;
+}
+
+[dir="rtl"] .form-field {
+  text-align: right;
+}
+
+[dir="rtl"] .form-field label {
+  text-align: right;
+}
+
+[dir="rtl"] .form-field input {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .form-field input::placeholder {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .phone-input-wrapper {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .country-code {
+  border-right: none;
+  border-left: 1px solid #d1d5db;
+  text-align: center;
+  order: 2;
+  direction: ltr;
+}
+
+[dir="rtl"] .phone-input-wrapper input {
+  text-align: right;
+  padding: 0 14px 0 0;
+  border: none;
+  order: 1;
+}
+
+[dir="rtl"] .password-input-wrapper input {
+  padding-left: 50px;
+  padding-right: 14px;
+  text-align: right;
+}
+
+[dir="rtl"] .password-toggle {
+  left: 15px;
+  right: auto;
+}
+
+[dir="rtl"] .checkbox-group {
+  flex-direction: row-reverse;
+  text-align: right;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+[dir="rtl"] .checkbox-group label {
+  text-align: right;
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .create-account-btn {
+  text-align: center;
+  direction: ltr;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[dir="rtl"] .signin-section {
+  text-align: center;
+}
+
+[dir="rtl"] .signin-link {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
+/* Responsive RTL adjustments */
+@media (max-width: 1023px) {
+  [dir="rtl"] .language-toggle {
+    left: 32px;
+    right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  [dir="rtl"] .language-toggle {
+    left: 24px;
+    right: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  [dir="rtl"] .language-toggle {
+    left: 20px;
+    right: auto;
+  }
+}
+
+@media (max-width: 374px) {
+  [dir="rtl"] .language-toggle {
+    left: 16px;
+    right: auto;
+  }
+}
+
 /* Flexbox Direction Fixes */
 [dir="rtl"] .header-left,
 [dir="rtl"] .header-right,

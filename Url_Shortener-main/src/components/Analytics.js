@@ -503,57 +503,109 @@ const Analytics = () => {
                 marginRight: isRTL ? '16px' : 0,
                 flexShrink: 0
               }}>
-                <button className="action-btn copy-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      x="4"
-                      y="4"
-                      width="8"
-                      height="8"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <button
+                  className=" copy-btn"
+                  onClick={() => copyToClipboard('https://linksa.co/abc123')}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: copySuccess ? '#10B981' : '#6B7280',
+                    transition: 'all 0.2s',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }}
+                  title={copySuccess ? 'Copied!' : 'Copy link'}
+                >
+                  {copySuccess ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.5 4.5L6 12L2.5 8.5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="4"
+                        y="4"
+                        width="8"
+                        height="8"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                  <span>{t('common.copy') || 'Copy'}</span>
                 </button>
-                <button className="action-btn share-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
+                <button
+                  className="share-btn"
+                  onClick={async () => {
+                    const demoUrl = 'https://linksa.co/abc123';
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({
+                          title: 'Demo Link',
+                          text: 'Check out this link',
+                          url: demoUrl
+                        });
+                      } catch (err) {
+                        if (err.name !== 'AbortError') {
+                          copyToClipboard(demoUrl);
+                        }
+                      }
+                    } else {
+                      copyToClipboard(demoUrl);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: '#6B7280',
+                    transition: 'all 0.2s',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }}
+                  title="Share link"
+                >
                   <svg
                     width="14"
                     height="16"
@@ -583,20 +635,29 @@ const Analytics = () => {
                       strokeLinejoin="round"
                     />
                   </svg>
+                  <span>{t('common.share') || 'Share'}</span>
                 </button>
-                <button className="action-btn edit-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
+                {/* <button
+                  className="action-btn edit-btn"
+                  onClick={() => alert(t('common.noLinkSelected') || 'Please select a specific link to edit')}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: '#6B7280',
+                    transition: 'all 0.2s',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }}
+                  title="Edit link"
+                >
                   <svg
                     width="16"
                     height="16"
@@ -619,7 +680,8 @@ const Analytics = () => {
                       strokeLinejoin="round"
                     />
                   </svg>
-                </button>
+                  <span>{t('common.edit') || 'Edit'}</span>
+                </button> */}
               </div>
             </div>
             )}
@@ -717,9 +779,7 @@ const Analytics = () => {
                         : `https://laghhu.link/${linkData.shortCode}`
                     )}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      padding: '8px',
+                      padding: '8px 12px',
                       backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
                       border: 'none',
                       borderRadius: '6px',
@@ -727,8 +787,12 @@ const Analytics = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      gap: '6px',
                       color: copySuccess ? '#10B981' : '#6B7280',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}
                     title={copySuccess ? 'Copied!' : 'Copy link'}
                   >
@@ -774,14 +838,13 @@ const Analytics = () => {
                         />
                       </svg>
                     )}
+                    <span>{t('common.copy') || 'Copy'}</span>
                   </button>
                   <button
                     className="action-btn share-btn"
                     onClick={handleShare}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      padding: '8px',
+                      padding: '8px 12px',
                       backgroundColor: '#F3F4F6',
                       border: 'none',
                       borderRadius: '6px',
@@ -789,8 +852,12 @@ const Analytics = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      gap: '6px',
                       color: '#6B7280',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}
                     title="Share link"
                   >
@@ -823,14 +890,13 @@ const Analytics = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
+                    <span>{t('common.share') || 'Share'}</span>
                   </button>
                   <button
                     className="action-btn edit-btn"
                     onClick={handleEditClick}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      padding: '8px',
+                      padding: '8px 12px',
                       backgroundColor: '#F3F4F6',
                       border: 'none',
                       borderRadius: '6px',
@@ -838,8 +904,12 @@ const Analytics = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      gap: '6px',
                       color: '#6B7280',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}
                     title="Edit link"
                   >
@@ -865,6 +935,7 @@ const Analytics = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
+                    <span>{t('common.edit') || 'Edit'}</span>
                   </button>
                 </div>
               </div>
