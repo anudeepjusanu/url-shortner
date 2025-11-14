@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link2, Copy, Check, ExternalLink, Globe } from 'lucide-react';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
+import UTMBuilder from './UTMBuilder';
 import { urlsAPI, Domain } from '../../services/api';
+import { UTMParameters } from '../../types';
 
 const URLShortener: React.FC = () => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [title, setTitle] = useState('');
   const [selectedDomainId, setSelectedDomainId] = useState('');
+  const [utm, setUtm] = useState<UTMParameters>({});
   const [shortenedUrl, setShortenedUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -45,11 +48,15 @@ const URLShortener: React.FC = () => {
     setShortenedUrl('');
 
     try {
+      // Only include UTM if at least one field is filled
+      const hasUtm = Object.values(utm).some((v) => v);
+
       const response = await urlsAPI.createUrl({
         originalUrl: originalUrl,
         customCode: customCode || undefined,
         title: title || undefined,
         domainId: selectedDomainId || undefined,
+        utm: hasUtm ? utm : undefined,
       });
 
       const selectedDomain = availableDomains.find((d: Domain) => d.id === selectedDomainId);
@@ -76,6 +83,7 @@ const URLShortener: React.FC = () => {
     setOriginalUrl('');
     setCustomCode('');
     setTitle('');
+    setUtm({});
     setShortenedUrl('');
     setError('');
     setCopied(false);
@@ -168,6 +176,9 @@ const URLShortener: React.FC = () => {
             placeholder="My Link Title"
           />
         </div>
+
+        {/* UTM Parameters */}
+        <UTMBuilder utm={utm} onChange={setUtm} />
 
         <div className="flex gap-4">
           <Button

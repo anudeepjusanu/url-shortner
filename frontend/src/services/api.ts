@@ -82,6 +82,14 @@ export interface URL {
   shortUrl: string;
 }
 
+export interface UTMParameters {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  term?: string;
+  content?: string;
+}
+
 export interface CreateURLData {
   originalUrl: string;
   customCode?: string;
@@ -91,6 +99,16 @@ export interface CreateURLData {
   tags?: string[];
   expiresAt?: string;
   password?: string;
+  utm?: UTMParameters;
+}
+
+export interface QRCodeOptions {
+  size?: number;
+  format?: string;
+  fgColor?: string;
+  bgColor?: string;
+  errorCorrection?: string;
+  margin?: number;
 }
 
 // Auth API
@@ -182,6 +200,19 @@ export const urlsAPI = {
 
   // Get available domains for URL creation
   getAvailableDomains: () => api.get('/urls/domains/available'),
+
+  // Generate QR code for a short code
+  generateQRCode: (shortCode: string, options?: QRCodeOptions) => {
+    const params = new URLSearchParams();
+    if (options?.size) params.append('size', options.size.toString());
+    if (options?.format) params.append('format', options.format);
+    if (options?.fgColor) params.append('fgColor', options.fgColor);
+    if (options?.bgColor) params.append('bgColor', options.bgColor);
+    if (options?.errorCorrection) params.append('errorCorrection', options.errorCorrection);
+    if (options?.margin) params.append('margin', options.margin.toString());
+
+    return api.get(`/qr/${shortCode}${params.toString() ? '?' + params.toString() : ''}`);
+  },
 };
 
 // Analytics API

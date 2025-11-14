@@ -20,6 +20,14 @@ export interface AuthResponse {
   };
 }
 
+export interface UTMParameters {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  term?: string;
+  content?: string;
+}
+
 export interface URL {
   id: string;
   originalUrl: string;
@@ -34,6 +42,8 @@ export interface URL {
   isActive: boolean;
   clickCount: number;
   lastClickedAt?: string;
+  utm?: UTMParameters;
+  qrCode?: string;
 }
 
 export interface URLResponse {
