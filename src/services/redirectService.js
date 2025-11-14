@@ -382,20 +382,48 @@ class RedirectService {
   
   async generateQRCode(shortCode, options = {}) {
     try {
-      const { size = 200, format = 'png' } = options;
-      
+      const {
+        size = 300,
+        format = 'png',
+        fgColor = '000000',
+        bgColor = 'ffffff',
+        errorCorrection = 'M',
+        margin = 1
+      } = options;
+
       const url = await this.getUrlByShortCode(shortCode);
       if (!url) {
         throw new Error('URL not found');
       }
-      
+
       const shortUrl = `${config.BASE_URL}/${shortCode}`;
-      
+
+      // Build QR code URL with customization parameters
+      const qrParams = new URLSearchParams({
+        size: `${size}x${size}`,
+        data: shortUrl,
+        format: format,
+        color: fgColor,
+        bgcolor: bgColor,
+        ecc: errorCorrection,
+        margin: margin.toString()
+      });
+
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?${qrParams.toString()}`;
+
       return {
         url: shortUrl,
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(shortUrl)}&format=${format}`,
+        qrCodeUrl,
         shortCode,
-        originalUrl: url.originalUrl
+        originalUrl: url.originalUrl,
+        customization: {
+          size,
+          format,
+          fgColor,
+          bgColor,
+          errorCorrection,
+          margin
+        }
       };
     } catch (error) {
       console.error('Error generating QR code:', error);

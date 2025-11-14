@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Copy, Trash2, Edit3, BarChart3, Check } from 'lucide-react';
+import { ExternalLink, Copy, Trash2, Edit3, BarChart3, Check, QrCode } from 'lucide-react';
 import Button from '../UI/Button';
+import QRCodeModal from './QRCodeModal';
 import { URL } from '../../types';
 import { urlsAPI } from '../../services/api';
 
@@ -8,6 +9,7 @@ const URLList: React.FC = () => {
   const [urls, setUrls] = useState<URL[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string>('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<{ shortCode: string; shortUrl: string } | null>(null);
 
   useEffect(() => {
     fetchUrls();
@@ -54,6 +56,16 @@ const URLList: React.FC = () => {
         console.error('Failed to delete URL:', error);
       }
     }
+  };
+
+  const openQRCode = (url: URL) => {
+    let shortUrl;
+    if (url.domain && url.domain !== 'laghhu.link') {
+      shortUrl = `http://${url.domain}/${url.shortCode}`;
+    } else {
+      shortUrl = `https://laghhu.link/${url.shortCode}`;
+    }
+    setQrCodeUrl({ shortCode: url.shortCode, shortUrl });
   };
 
   const formatDate = (dateString: string) => {
@@ -158,6 +170,7 @@ const URLList: React.FC = () => {
                     size="sm"
                     onClick={() => copyToClipboard(url)}
                     className="text-gray-600 hover:text-gray-800"
+                    title="Copy URL"
                   >
                     {copiedId === url.id ? (
                       <Check className="h-4 w-4" />
@@ -165,29 +178,42 @@ const URLList: React.FC = () => {
                       <Copy className="h-4 w-4" />
                     )}
                   </Button>
-                  
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openQRCode(url)}
+                    className="text-gray-600 hover:text-gray-800"
+                    title="Generate QR Code"
+                  >
+                    <QrCode className="h-4 w-4" />
+                  </Button>
+
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => window.open(url.originalUrl, '_blank')}
                     className="text-gray-600 hover:text-gray-800"
+                    title="Visit URL"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-gray-600 hover:text-gray-800"
+                    title="Edit URL"
                   >
                     <Edit3 className="h-4 w-4" />
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => deleteUrl(url.id)}
                     className="text-red-600 hover:text-red-800"
+                    title="Delete URL"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -196,6 +222,15 @@ const URLList: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* QR Code Modal */}
+      {qrCodeUrl && (
+        <QRCodeModal
+          shortCode={qrCodeUrl.shortCode}
+          shortUrl={qrCodeUrl.shortUrl}
+          onClose={() => setQrCodeUrl(null)}
+        />
       )}
     </div>
   );

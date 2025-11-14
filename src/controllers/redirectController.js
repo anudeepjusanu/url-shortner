@@ -207,10 +207,25 @@ const checkUrlSafety = async (req, res) => {
 const generateQRCode = async (req, res) => {
   try {
     const { shortCode } = req.params;
-    const { size, format } = req.query;
-    
-    const qrData = await redirectService.generateQRCode(shortCode, { size, format });
-    
+    const {
+      size,
+      format,
+      fgColor,
+      bgColor,
+      errorCorrection,
+      margin
+    } = req.query;
+
+    const options = {};
+    if (size) options.size = parseInt(size);
+    if (format) options.format = format;
+    if (fgColor) options.fgColor = fgColor;
+    if (bgColor) options.bgColor = bgColor;
+    if (errorCorrection) options.errorCorrection = errorCorrection;
+    if (margin) options.margin = parseInt(margin);
+
+    const qrData = await redirectService.generateQRCode(shortCode, options);
+
     res.json({
       success: true,
       data: qrData
@@ -218,14 +233,14 @@ const generateQRCode = async (req, res) => {
 
   } catch (error) {
     console.error('QR code generation error:', error);
-    
+
     if (error.message === 'URL not found') {
       return res.status(404).json({
         success: false,
         message: 'The requested URL was not found'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to generate QR code',

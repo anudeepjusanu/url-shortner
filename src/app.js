@@ -89,6 +89,9 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
 
+// QR Code endpoint (e.g., /qr/mbtw7f)
+app.get('/qr/:shortCode', redirectController.generateQRCode);
+
 // Handle shortened URL redirects (e.g., /mbtw7f)
 // TEMPORARILY DISABLED - Rate limiting paused until going live
 app.get('/:shortCode', /* redirectLimiter, */ redirectController.redirectToOriginalUrl);
