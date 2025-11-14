@@ -116,16 +116,21 @@ const getUrlAnalytics = async (req, res) => {
       timeSeries: timeSeriesData,
       topStats: topStats[0] || {
         countries: [],
+        cities: [],
         referrers: [],
         devices: [],
-        browsers: []
+        browsers: [],
+        operatingSystems: []
       },
       recentClicks: clicks.slice(0, 20).map(click => ({
         timestamp: click.timestamp,
-        country: click.location.countryName,
-        device: click.device.type,
-        browser: click.device.browser.name,
-        referer: click.referer
+        country: click.location.countryName || '',
+        region: click.location.region || '',
+        city: click.location.city || '',
+        device: click.device.type || '',
+        browser: click.device.browser.name || '',
+        os: click.device.os.name || '',
+        referer: click.referer || ''
       }))
     };
     
@@ -168,7 +173,10 @@ const getDashboardAnalytics = async (req, res) => {
       totalClicks,
       clicksByDay,
       topCountries,
+      topCities,
       topDevices,
+      topBrowsers,
+      topOS,
       topReferrers
     ] = await Promise.all([
       Click.countDocuments({
@@ -202,7 +210,7 @@ const getDashboardAnalytics = async (req, res) => {
             url: { $in: urlIds },
             timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            'location.country': { $ne: null }
+            'location.country': { $ne: null, $ne: '' }
           }
         },
         {
@@ -210,6 +218,29 @@ const getDashboardAnalytics = async (req, res) => {
             _id: {
               country: '$location.country',
               countryName: '$location.countryName'
+            },
+            clicks: { $sum: 1 }
+          }
+        },
+        { $sort: { clicks: -1 } },
+        { $limit: 10 }
+      ]),
+      
+      Click.aggregate([
+        {
+          $match: {
+            url: { $in: urlIds },
+            timestamp: { $gte: startDate },
+            isBot: { $ne: true },
+            'location.city': { $ne: null, $ne: '' }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              city: '$location.city',
+              region: '$location.region',
+              country: '$location.countryName'
             },
             clicks: { $sum: 1 }
           }
@@ -233,6 +264,44 @@ const getDashboardAnalytics = async (req, res) => {
           }
         },
         { $sort: { clicks: -1 } }
+      ]),
+      
+      Click.aggregate([
+        {
+          $match: {
+            url: { $in: urlIds },
+            timestamp: { $gte: startDate },
+            isBot: { $ne: true },
+            'device.browser.name': { $ne: null, $ne: '' }
+          }
+        },
+        {
+          $group: {
+            _id: '$device.browser.name',
+            clicks: { $sum: 1 }
+          }
+        },
+        { $sort: { clicks: -1 } },
+        { $limit: 10 }
+      ]),
+      
+      Click.aggregate([
+        {
+          $match: {
+            url: { $in: urlIds },
+            timestamp: { $gte: startDate },
+            isBot: { $ne: true },
+            'device.os.name': { $ne: null, $ne: '' }
+          }
+        },
+        {
+          $group: {
+            _id: '$device.os.name',
+            clicks: { $sum: 1 }
+          }
+        },
+        { $sort: { clicks: -1 } },
+        { $limit: 10 }
       ]),
       
       Click.aggregate([
@@ -289,11 +358,25 @@ const getDashboardAnalytics = async (req, res) => {
         topStats: {
           countries: topCountries.map(item => ({
             country: item._id.country,
-            countryName: item._id.countryName,
+            countryName: item._id.countryName || item._id.country,
+            clicks: item.clicks
+          })),
+          cities: topCities.map(item => ({
+            city: item._id.city,
+            region: item._id.region,
+            country: item._id.country,
             clicks: item.clicks
           })),
           devices: topDevices.map(item => ({
             type: item._id,
+            clicks: item.clicks
+          })),
+          browsers: topBrowsers.map(item => ({
+            browser: item._id,
+            clicks: item.clicks
+          })),
+          operatingSystems: topOS.map(item => ({
+            os: item._id,
             clicks: item.clicks
           })),
           referrers: topReferrers.map(item => ({
@@ -355,19 +438,21 @@ const exportAnalytics = async (req, res) => {
       totalClicks: clicks.length,
       clicks: clicks.map(click => ({
         timestamp: click.timestamp,
-        country: click.location.countryName,
-        city: click.location.city,
-        deviceType: click.device.type,
-        browser: click.device.browser.name,
-        os: click.device.os.name,
-        referer: click.referer
+        country: click.location.countryName || '',
+        region: click.location.region || '',
+        city: click.location.city || '',
+        deviceType: click.device.type || '',
+        browser: click.device.browser.name || '',
+        os: click.device.os.name || '',
+        referer: click.referer || '',
+        language: click.language || ''
       }))
     };
     
     if (format === 'csv') {
-      const csvHeader = 'Timestamp,Country,City,Device,Browser,OS,Referer\n';
+      const csvHeader = 'Timestamp,Country,Region,City,Device,Browser,OS,Language,Referer\n';
       const csvData = exportData.clicks.map(click => 
-        `${click.timestamp},${click.country || ''},${click.city || ''},${click.deviceType || ''},${click.browser || ''},${click.os || ''},"${click.referer || ''}"`
+        `${click.timestamp},${click.country},${click.region},${click.city},${click.deviceType},${click.browser},${click.os},${click.language},"${click.referer}"`
       ).join('\n');
       
       res.setHeader('Content-Type', 'text/csv');

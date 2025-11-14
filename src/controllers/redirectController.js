@@ -13,8 +13,31 @@ const redirectToOriginalUrl = async (req, res) => {
       userAgent: req.get('User-Agent')?.substring(0, 50)
     });
 
+    // Extract real IP address from various headers (for proxies, load balancers, CDNs)
+    const getClientIP = () => {
+      // Check common proxy headers in order of reliability
+      const xForwardedFor = req.get('X-Forwarded-For');
+      const xRealIP = req.get('X-Real-IP');
+      const cfConnectingIP = req.get('CF-Connecting-IP'); // Cloudflare
+      const xClientIP = req.get('X-Client-IP');
+      
+      if (cfConnectingIP) return cfConnectingIP;
+      if (xRealIP) return xRealIP;
+      if (xForwardedFor) {
+        // X-Forwarded-For can contain multiple IPs, get the first one (original client)
+        return xForwardedFor.split(',')[0].trim();
+      }
+      if (xClientIP) return xClientIP;
+      
+      // Fallback to Express req.ip (works with trust proxy)
+      return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || '127.0.0.1';
+    };
+
+    const clientIP = getClientIP();
+    console.log('📍 Client IP detected:', clientIP);
+
     const requestData = {
-      ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
+      ipAddress: clientIP,
       userAgent: req.get('User-Agent') || '',
       referer: req.get('Referer') || '',
       language: req.get('Accept-Language') || '',

@@ -7,6 +7,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Trust proxy - CRITICAL for getting real IP addresses behind reverse proxies (nginx, cloudflare, etc.)
+app.set('trust proxy', true);
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {

@@ -96,14 +96,29 @@ class AnalyticsService {
   getLocationFromIP(ipAddress) {
     try {
       if (!config.ANALYTICS.TRACK_GEOLOCATION) {
+        console.warn('⚠️ Geolocation tracking is disabled');
+        return {};
+      }
+      
+      // Skip localhost/private IPs
+      if (!ipAddress || ipAddress === '127.0.0.1' || ipAddress === '::1' || ipAddress.startsWith('192.168.') || ipAddress.startsWith('10.')) {
+        console.warn('⚠️ Cannot geolocate private/localhost IP:', ipAddress);
         return {};
       }
       
       const geo = geoip.lookup(ipAddress);
       
       if (!geo) {
+        console.warn('⚠️ No geolocation data found for IP:', ipAddress);
         return {};
       }
+      
+      console.log('✅ Geolocation found:', {
+        ip: ipAddress,
+        country: geo.country,
+        region: geo.region,
+        city: geo.city
+      });
       
       return {
         country: geo.country,
@@ -117,7 +132,7 @@ class AnalyticsService {
         }
       };
     } catch (error) {
-      console.error('Error getting location from IP:', error);
+      console.error('❌ Error getting location from IP:', ipAddress, error);
       return {};
     }
   }
@@ -360,6 +375,26 @@ class AnalyticsService {
             { $sort: { count: -1 } },
             { $limit: 10 }
           ],
+          cities: [
+            {
+              $match: { 
+                'location.city': { $ne: null, $ne: '' },
+                'location.country': { $ne: null, $ne: '' }
+              }
+            },
+            {
+              $group: {
+                _id: {
+                  city: '$location.city',
+                  region: '$location.region',
+                  country: '$location.countryName'
+                },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ],
           referrers: [
             {
               $match: { referer: { $ne: null, $ne: '' } }
@@ -397,11 +432,24 @@ class AnalyticsService {
           ],
           browsers: [
             {
-              $match: { 'device.browser.name': { $ne: null } }
+              $match: { 'device.browser.name': { $ne: null, $ne: '' } }
             },
             {
               $group: {
                 _id: '$device.browser.name',
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ],
+          operatingSystems: [
+            {
+              $match: { 'device.os.name': { $ne: null, $ne: '' } }
+            },
+            {
+              $group: {
+                _id: '$device.os.name',
                 count: { $sum: 1 }
               }
             },
@@ -415,9 +463,11 @@ class AnalyticsService {
     const results = await Click.aggregate(pipeline);
     return results[0] || {
       countries: [],
+      cities: [],
       referrers: [],
       devices: [],
-      browsers: []
+      browsers: [],
+      operatingSystems: []
     };
   }
   
@@ -467,11 +517,14 @@ class AnalyticsService {
   formatClickForResponse(click) {
     return {
       timestamp: click.timestamp,
-      country: click.location.countryName,
-      city: click.location.city,
-      device: click.device.type,
-      browser: click.device.browser.name,
-      referer: click.referer
+      country: click.location.countryName || '',
+      region: click.location.region || '',
+      city: click.location.city || '',
+      device: click.device.type || '',
+      browser: click.device.browser.name || '',
+      os: click.device.os.name || '',
+      referer: click.referer || '',
+      language: click.language || ''
     };
   }
   
@@ -496,7 +549,10 @@ class AnalyticsService {
         totalClicks,
         clicksByDay,
         topCountries,
+        topCities,
         topDevices,
+        topBrowsers,
+        topOS,
         topReferrers
       ] = await Promise.all([
         Click.countDocuments({
@@ -506,7 +562,10 @@ class AnalyticsService {
         }),
         this.getClicksByDay(urlIds, dateRange),
         this.getTopCountriesForUrls(urlIds, dateRange),
+        this.getTopCitiesForUrls(urlIds, dateRange),
         this.getTopDevicesForUrls(urlIds, dateRange),
+        this.getTopBrowsersForUrls(urlIds, dateRange),
+        this.getTopOSForUrls(urlIds, dateRange),
         this.getTopReferrersForUrls(urlIds, dateRange)
       ]);
       
@@ -528,7 +587,10 @@ class AnalyticsService {
         },
         topStats: {
           countries: topCountries,
+          cities: topCities,
           devices: topDevices,
+          browsers: topBrowsers,
+          operatingSystems: topOS,
           referrers: topReferrers
         }
       };
@@ -566,7 +628,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'location.country': { $ne: null }
+          'location.country': { $ne: null, $ne: '' }
         }
       },
       {
@@ -584,7 +646,91 @@ class AnalyticsService {
     
     return results.map(item => ({
       country: item._id.country,
-      countryName: item._id.countryName,
+      countryName: item._id.countryName || item._id.country,
+      clicks: item.clicks
+    }));
+  }
+  
+  async getTopCitiesForUrls(urlIds, dateRange) {
+    const results = await Click.aggregate([
+      {
+        $match: {
+          url: { $in: urlIds },
+          timestamp: dateRange,
+          isBot: { $ne: true },
+          'location.city': { $ne: null, $ne: '' }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            city: '$location.city',
+            region: '$location.region',
+            country: '$location.countryName'
+          },
+          clicks: { $sum: 1 }
+        }
+      },
+      { $sort: { clicks: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    return results.map(item => ({
+      city: item._id.city,
+      region: item._id.region,
+      country: item._id.country,
+      clicks: item.clicks
+    }));
+  }
+  
+  async getTopBrowsersForUrls(urlIds, dateRange) {
+    const results = await Click.aggregate([
+      {
+        $match: {
+          url: { $in: urlIds },
+          timestamp: dateRange,
+          isBot: { $ne: true },
+          'device.browser.name': { $ne: null, $ne: '' }
+        }
+      },
+      {
+        $group: {
+          _id: '$device.browser.name',
+          clicks: { $sum: 1 }
+        }
+      },
+      { $sort: { clicks: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    return results.map(item => ({
+      browser: item._id,
+      clicks: item.clicks
+    }));
+  }
+  
+  async getTopOSForUrls(urlIds, dateRange) {
+    const results = await Click.aggregate([
+      {
+        $match: {
+          url: { $in: urlIds },
+          timestamp: dateRange,
+          isBot: { $ne: true },
+          'device.os.name': { $ne: null, $ne: '' }
+        }
+      },
+      {
+        $group: {
+          _id: '$device.os.name',
+          clicks: { $sum: 1 }
+        }
+      },
+      { $sort: { clicks: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    return results.map(item => ({
+      os: item._id,
       clicks: item.clicks
     }));
   }
@@ -687,11 +833,13 @@ class AnalyticsService {
     return {
       timestamp: click.timestamp,
       country: click.location.countryName || '',
+      region: click.location.region || '',
       city: click.location.city || '',
       deviceType: click.device.type || '',
       browser: click.device.browser.name || '',
       os: click.device.os.name || '',
-      referer: click.referer || ''
+      referer: click.referer || '',
+      language: click.language || ''
     };
   }
 }
