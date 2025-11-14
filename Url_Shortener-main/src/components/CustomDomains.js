@@ -15,6 +15,9 @@ const CustomDomains = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAddingDomain, setIsAddingDomain] = useState(false);
 
+  // Delete dialog
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, domainId: null, domainName: '' });
+
   // Wizard state
   const [currentStep, setCurrentStep] = useState(1);
   const [baseDomain, setBaseDomain] = useState('');
@@ -132,16 +135,30 @@ const CustomDomains = () => {
     setError(null);
   };
 
-  const handleDeleteDomain = async (domainId) => {
-    if (!window.confirm(t('myLinks.confirmDelete'))) return;
+  const handleDeleteClick = (domain) => {
+    const domainId = domain.id || domain._id;
+    const domainName = domain.fullDomain || domain.domain;
 
+    setDeleteDialog({
+      isOpen: true,
+      domainId: domainId,
+      domainName: domainName
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await domainsAPI.deleteDomain(domainId);
+      await domainsAPI.deleteDomain(deleteDialog.domainId);
       await fetchDomains();
+      setDeleteDialog({ isOpen: false, domainId: null, domainName: '' });
     } catch (err) {
       console.error('Error deleting domain:', err);
       setError(err.response?.data?.message || err.message || t('errors.generic'));
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ isOpen: false, domainId: null, domainName: '' });
   };
 
   // Step indicator component
@@ -804,7 +821,7 @@ const CustomDomains = () => {
                             </button>
                           )}
                           <button
-                            onClick={() => handleDeleteDomain(domainId)}
+                            onClick={() => handleDeleteClick(domain)}
                             className="action-btn delete"
                             style={{
                               display: 'flex',
@@ -838,6 +855,136 @@ const CustomDomains = () => {
             </div>
 
             {showAddModal && renderAddDomainModal()}
+
+            {/* Delete Confirmation Dialog */}
+            {deleteDialog.isOpen && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999
+                }}
+                onClick={handleCancelDelete}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '32px',
+                    maxWidth: '450px',
+                    width: '90%',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FEE2E2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '20px'
+                    }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </div>
+
+                    <h2 style={{
+                      fontSize: '20px',
+                      fontWeight: '700',
+                      color: '#111827',
+                      marginBottom: '12px',
+                      margin: '0 0 12px 0'
+                    }}>
+                      {t('common.deleteDomainTitle') || 'Delete Domain?'}
+                    </h2>
+
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#6B7280',
+                      marginBottom: '8px',
+                      margin: '0 0 8px 0'
+                    }}>
+                      {t('common.deleteDomainMessage') || 'Are you sure you want to delete this custom domain?'}
+                    </p>
+
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#3B82F6',
+                      marginBottom: '24px',
+                      margin: '0 0 24px 0',
+                      wordBreak: 'break-all'
+                    }}>
+                      {deleteDialog.domainName}
+                    </p>
+
+                    <div style={{
+                      display: 'flex',
+                      gap: '12px',
+                      width: '100%'
+                    }}>
+                      <button
+                        onClick={handleCancelDelete}
+                        style={{
+                          flex: 1,
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: '1px solid #E5E7EB',
+                          backgroundColor: '#ffffff',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
+                      >
+                        {t('common.cancel') || 'Cancel'}
+                      </button>
+                      <button
+                        onClick={handleConfirmDelete}
+                        style={{
+                          flex: 1,
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: 'none',
+                          backgroundColor: '#DC2626',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#B91C1C'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#DC2626'}
+                      >
+                        {t('common.delete') || 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>

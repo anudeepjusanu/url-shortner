@@ -7,6 +7,162 @@
   text-align: right;
 }
 
+/* Registration Page RTL Styles */
+[dir="rtl"] .registration-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .language-toggle {
+  left: 40px;
+  right: auto;
+}
+
+[dir="rtl"] .left-panel {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .feature-item {
+  text-align: right;
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .feature-content {
+  text-align: right;
+  padding-right: 2px;
+  padding-left: 0;
+}
+
+[dir="rtl"] .right-panel {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .form-wrapper {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .form-header {
+  text-align: center;
+}
+
+[dir="rtl"] .google-btn {
+  direction: ltr; /* Keep Google button LTR for icon + text */
+  text-align: center;
+}
+
+[dir="rtl"] .divider {
+  direction: rtl;
+}
+
+[dir="rtl"] .form-field {
+  text-align: right;
+}
+
+[dir="rtl"] .form-field label {
+  text-align: right;
+}
+
+[dir="rtl"] .form-field input {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .form-field input::placeholder {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .phone-input-wrapper {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .country-code {
+  border-right: none;
+  border-left: 1px solid #d1d5db;
+  text-align: center;
+  order: 2;
+  direction: ltr;
+}
+
+[dir="rtl"] .phone-input-wrapper input {
+  text-align: right;
+  padding: 0 14px 0 0;
+  border: none;
+  order: 1;
+}
+
+[dir="rtl"] .password-input-wrapper input {
+  padding-left: 50px;
+  padding-right: 14px;
+  text-align: right;
+}
+
+[dir="rtl"] .password-toggle {
+  left: 15px;
+  right: auto;
+}
+
+[dir="rtl"] .checkbox-group {
+  flex-direction: row-reverse;
+  text-align: right;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+[dir="rtl"] .checkbox-group label {
+  text-align: right;
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .create-account-btn {
+  text-align: center;
+  direction: ltr;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[dir="rtl"] .signin-section {
+  text-align: center;
+}
+
+[dir="rtl"] .signin-link {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
+/* Responsive RTL adjustments */
+@media (max-width: 1023px) {
+  [dir="rtl"] .language-toggle {
+    left: 32px;
+    right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  [dir="rtl"] .language-toggle {
+    left: 24px;
+    right: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  [dir="rtl"] .language-toggle {
+    left: 20px;
+    right: auto;
+  }
+}
+
+@media (max-width: 374px) {
+  [dir="rtl"] .language-toggle {
+    left: 16px;
+    right: auto;
+  }
+}
+
 /* Flexbox Direction Fixes */
 [dir="rtl"] .header-left,
 [dir="rtl"] .header-right,
@@ -183,8 +339,9 @@
 [dir="rtl"] .dashboard-content,
 [dir="rtl"] .main-content,
 [dir="rtl"] .page-wrapper {
-  padding-left: 24px !important;
-  padding-right: 40px !important;
+  /* Let content use its natural centering with margin: 0 auto */
+  /* Equal padding for proper centering */
+  
 }
 
 /* Ensure main content area has proper spacing in RTL */
@@ -217,22 +374,19 @@
 [dir="rtl"] .profile-main {
   margin-left: 0 !important;
   /* margin-right: 250px !important; */
-  padding-left: 24px !important;
-  padding-right: 24px !important;
 }
 
 /* Fix overlap issues - ensure content starts after sidebar */
+/* Keep content centered with same padding as LTR mode */
 [dir="rtl"] .analytics-content,
 [dir="rtl"] .content-filter-content,
 [dir="rtl"] .custom-domains-content,
 [dir="rtl"] .qr-codes-content,
 [dir="rtl"] .my-links-content,
 [dir="rtl"] .profile-content {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  width: 100%;
-  padding-left: 32px !important;
-  padding-right: 32px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  /* Let the original padding from component CSS apply naturally */
 }
 
 /* Cards and Containers */
@@ -768,8 +922,8 @@
   [dir="rtl"] .profile-main {
     margin-right: 0 !important;
     margin-left: 0 !important;
-    padding-right: 16px !important;
-    padding-left: 16px !important;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
   }
 
   /* Header adjustments - Mobile (≤767px) - Use flexbox instead of grid */
@@ -1063,8 +1217,8 @@
   /* Content padding reduction for mobile */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 16px !important;
-    padding-left: 16px !important;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
   }
 }
 
@@ -1103,8 +1257,8 @@
   [dir="rtl"] .profile-main {
     margin-right: 200px !important;
     margin-left: 0 !important;
-    padding-right: 20px !important;
-    padding-left: 20px !important;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
   }
 
   /* Sidebar items - Compact on tablet */
@@ -1216,8 +1370,8 @@
   /* Content padding for tablet */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 20px !important;
-    padding-left: 20px !important;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
   }
 
   /* Pricing cards - Two columns on tablet */
@@ -1285,8 +1439,8 @@
   [dir="rtl"] .profile-main {
     /* margin-right: 250px !important; */
     margin-left: 0 !important;
-    padding-right: 24px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
   }
 
   /* Ensure no overlap and proper centering */
@@ -1299,13 +1453,13 @@
     margin-right: 0 !important;
     margin-left: 0 !important;
     width: 100% !important;
-    max-width: 1400px !important;
+    max-width: 1600px !important;
   }
 
   /* Specific inline style overrides for Dashboard */
   [dir="rtl"] .analytics-content[style*="margin"] {
     margin: 0 auto !important;
-    max-width: 1400px !important;
+    max-width: 1600px !important;
   }
 
   /* Sidebar items - Full padding on desktop */
@@ -1439,8 +1593,8 @@
   /* Content padding for desktop */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    padding-right: 40px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
   }
 
   /* Pricing cards - Three columns on desktop */
@@ -1506,8 +1660,8 @@
   [dir="rtl"] .profile-main {
     /* margin-right: 100px !important; */
     margin-left: 0 !important;
-    padding-right: 24px !important;
-    padding-left: 24px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
     max-width: none !important;
   }
 
@@ -1518,20 +1672,20 @@
   [dir="rtl"] .qr-codes-content,
   [dir="rtl"] .my-links-content,
   [dir="rtl"] .profile-content {
-    max-width: 1400px !important;
+    max-width: 1600px !important;
     margin-right: auto !important;
     margin-left: auto !important;
-    padding: 24px !important;
+    padding: 24px 16px !important;
     width: 100% !important;
   }
 
   /* Dashboard specific content centering */
   [dir="rtl"] .dashboard-content,
   [dir="rtl"] .page-wrapper {
-    max-width: 1400px !important;
+    max-width: 1600px !important;
     margin-right: auto !important;
     margin-left: auto !important;
-    padding: 24px !important;
+    padding: 24px 16px !important;
   }
 
   /* Four column grids on large screens */
@@ -1897,7 +2051,7 @@
 [dir="rtl"] .utm-builder-content {
   direction: rtl !important;
   /* margin: 0 auto !important; */
-  max-width: 1400px !important;
+  max-width: 1600px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }

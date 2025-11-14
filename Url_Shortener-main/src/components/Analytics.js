@@ -17,6 +17,9 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [linkData, setLinkData] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editFormData, setEditFormData] = useState({ title: '', customCode: '' });
 
   useEffect(() => {
     if (id) {
@@ -129,10 +132,90 @@ const Analytics = () => {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert(t('common.copied'));
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      alert(t('common.copyFailed') || 'Failed to copy link');
     }
+  };
+
+  const handleShare = async () => {
+    if (!linkData) return;
+
+    const shareUrl = linkData.domain && linkData.domain !== 'laghhu.link'
+      ? `https://${linkData.domain}/${linkData.shortCode}`
+      : `https://laghhu.link/${linkData.shortCode}`;
+
+    // Check if Web Share API is available
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: linkData.title || 'Shortened Link',
+          text: `Check out this link: ${shareUrl}`,
+          url: shareUrl
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const handleEditClick = () => {
+    if (!linkData) return;
+
+    setEditFormData({
+      title: linkData.title || '',
+      customCode: linkData.shortCode || ''
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://laghhu.link/api'}/urls/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+          title: editFormData.title,
+          shortCode: editFormData.customCode
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Refresh link data
+          setLinkData(result.data);
+          setShowEditDialog(false);
+          // Optionally refresh analytics data
+          if (id) {
+            fetchAnalyticsData();
+          }
+        }
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || t('errors.generic') || 'Failed to update link');
+      }
+    } catch (err) {
+      console.error('Error updating link:', err);
+      alert(t('errors.generic') || 'Failed to update link');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditDialog(false);
+    setEditFormData({ title: '', customCode: '' });
   };
 
   const exportData = async () => {
@@ -338,7 +421,8 @@ const Analytics = () => {
                 </button>
               </div>
 
-            {/* Link Info Card */}
+            {/* Link Info Card - Only show when there's NO specific link data (dashboard mode) */}
+            {!id && !linkData && (
             <div className="link-info-card" style={{
               backgroundColor: 'white',
               border: '1px solid #E5E7EB',
@@ -419,57 +503,109 @@ const Analytics = () => {
                 marginRight: isRTL ? '16px' : 0,
                 flexShrink: 0
               }}>
-                <button className="action-btn copy-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      x="4"
-                      y="4"
-                      width="8"
-                      height="8"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <button
+                  className=" copy-btn"
+                  onClick={() => copyToClipboard('https://linksa.co/abc123')}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: copySuccess ? '#10B981' : '#6B7280',
+                    transition: 'all 0.2s',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }}
+                  title={copySuccess ? 'Copied!' : 'Copy link'}
+                >
+                  {copySuccess ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.5 4.5L6 12L2.5 8.5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="4"
+                        y="4"
+                        width="8"
+                        height="8"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                  <span>{t('common.copy') || 'Copy'}</span>
                 </button>
-                <button className="action-btn share-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
+                <button
+                  className="share-btn"
+                  onClick={async () => {
+                    const demoUrl = 'https://linksa.co/abc123';
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({
+                          title: 'Demo Link',
+                          text: 'Check out this link',
+                          url: demoUrl
+                        });
+                      } catch (err) {
+                        if (err.name !== 'AbortError') {
+                          copyToClipboard(demoUrl);
+                        }
+                      }
+                    } else {
+                      copyToClipboard(demoUrl);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#F3F4F6',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: '#6B7280',
+                    transition: 'all 0.2s',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }}
+                  title="Share link"
+                >
                   <svg
                     width="14"
                     height="16"
@@ -499,45 +635,11 @@ const Analytics = () => {
                       strokeLinejoin="round"
                     />
                   </svg>
-                </button>
-                <button className="action-btn edit-btn" style={{
-                  width: '36px',
-                  height: '36px',
-                  padding: '8px',
-                  backgroundColor: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#6B7280'
-                }}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.33333 2.66669H2.66667C2.31304 2.66669 1.97391 2.80716 1.72386 3.05721C1.47381 3.30726 1.33333 3.64640 1.33333 4.00002V13.3334C1.33333 13.687 1.47381 14.0261 1.72386 14.2762C1.97391 14.5262 2.31304 14.6667 2.66667 14.6667H12C12.3536 14.6667 12.6928 14.5262 12.9428 14.2762C13.1929 14.0261 13.3333 13.687 13.3333 13.3334V8.66669"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12.3333 1.66669C12.5985 1.40148 12.9583 1.25244 13.3333 1.25244C13.7083 1.25244 14.0681 1.40148 14.3333 1.66669C14.5985 1.9319 14.7476 2.29171 14.7476 2.66669C14.7476 3.04167 14.5985 3.40148 14.3333 3.66669L8 10L5.33333 10.6667L6 8.00002L12.3333 1.66669Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <span>{t('common.share') || 'Share'}</span>
                 </button>
               </div>
             </div>
+            )}
             {/* Link Info Card - Only show for individual URL analytics */}
             {linkData && (
               <div className="link-info-card" style={{
@@ -632,9 +734,72 @@ const Analytics = () => {
                         : `https://laghhu.link/${linkData.shortCode}`
                     )}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      padding: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      color: copySuccess ? '#10B981' : '#6B7280',
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
+                    }}
+                    title={copySuccess ? 'Copied!' : 'Copy link'}
+                  >
+                    {copySuccess ? (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M13.5 4.5L6 12L2.5 8.5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          x="4"
+                          y="4"
+                          width="8"
+                          height="8"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                    <span>{t('common.copy') || 'Copy'}</span>
+                  </button>
+                  <button
+                    className="action-btn share-btn"
+                    onClick={handleShare}
+                    style={{
+                      padding: '8px 12px',
                       backgroundColor: '#F3F4F6',
                       border: 'none',
                       borderRadius: '6px',
@@ -642,47 +807,15 @@ const Analytics = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#6B7280'
+                      gap: '6px',
+                      color: '#6B7280',
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}
+                    title="Share link"
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect
-                        x="4"
-                        y="4"
-                        width="8"
-                        height="8"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button className="action-btn share-btn" style={{
-                    width: '36px',
-                    height: '36px',
-                    padding: '8px',
-                    backgroundColor: '#F3F4F6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#6B7280'
-                  }}>
                     <svg
                       width="14"
                       height="16"
@@ -712,20 +845,29 @@ const Analytics = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
+                    <span>{t('common.share') || 'Share'}</span>
                   </button>
-                  <button className="action-btn edit-btn" style={{
-                    width: '36px',
-                    height: '36px',
-                    padding: '8px',
-                    backgroundColor: '#F3F4F6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#6B7280'
-                  }}>
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={handleEditClick}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: '#F3F4F6',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      color: '#6B7280',
+                      transition: 'all 0.2s',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
+                    }}
+                    title="Edit link"
+                  >
                     <svg
                       width="16"
                       height="16"
@@ -748,6 +890,7 @@ const Analytics = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
+                    <span>{t('common.edit') || 'Edit'}</span>
                   </button>
                 </div>
               </div>
@@ -1705,6 +1848,146 @@ const Analytics = () => {
                   })()}
               </div>
             </div>
+
+            {/* Edit Link Dialog */}
+            {showEditDialog && linkData && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999
+                }}
+                onClick={handleCancelEdit}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '32px',
+                    maxWidth: '500px',
+                    width: '90%',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 style={{
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: '#111827',
+                    marginBottom: '20px',
+                    margin: '0 0 20px 0'
+                  }}>
+                    {t('myLinks.editLink') || 'Edit Link'}
+                  </h2>
+
+                  <form onSubmit={handleEditSubmit}>
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        {t('myLinks.table.title') || 'Title'}
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.title}
+                        onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                        placeholder={t('myLinks.table.title') || 'Enter link title'}
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          border: '1px solid #D1D5DB',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '24px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        {t('createLink.customCode') || 'Custom Short Code'}
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.customCode}
+                        onChange={(e) => setEditFormData({ ...editFormData, customCode: e.target.value })}
+                        placeholder={t('createLink.customCodePlaceholder') || 'Enter custom code'}
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          border: '1px solid #D1D5DB',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{
+                      display: 'flex',
+                      gap: '12px',
+                      justifyContent: 'flex-end'
+                    }}>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: '1px solid #E5E7EB',
+                          backgroundColor: '#ffffff',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
+                      >
+                        {t('common.cancel') || 'Cancel'}
+                      </button>
+                      <button
+                        type="submit"
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          border: 'none',
+                          backgroundColor: '#3B82F6',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#2563EB'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#3B82F6'}
+                      >
+                        {t('common.save') || 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
       </div>
     </div>
     </div>

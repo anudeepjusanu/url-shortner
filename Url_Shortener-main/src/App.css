@@ -413,9 +413,9 @@ html, body {
 /* Main Content */
 .main-content {
   flex: 1;
-  padding: 32px;
+  padding: 24px 16px;
   overflow-y: auto;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -1061,7 +1061,7 @@ input:checked + .toggle-slider:before {
 .subscription-content,
 .billing-content,
 .utm-builder-content {
-  max-width: 1400px !important;
+  max-width: 1600px !important;
   /* margin: 0 auto !important; */
   width: 100% !important;
   box-sizing: border-box !important;
@@ -1082,8 +1082,8 @@ input:checked + .toggle-slider:before {
   .subscription-content,
   .billing-content,
   .utm-builder-content {
-    padding-left: 32px !important;
-    padding-right: 32px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 }
 
@@ -1101,8 +1101,8 @@ input:checked + .toggle-slider:before {
   .subscription-content,
   .billing-content,
   .utm-builder-content {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
 }
 
@@ -1120,8 +1120,8 @@ input:checked + .toggle-slider:before {
   .subscription-content,
   .billing-content,
   .utm-builder-content {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
 }
 
@@ -1139,7 +1139,7 @@ input:checked + .toggle-slider:before {
   .subscription-content,
   .billing-content,
   .utm-builder-content {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
 }

@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import "./Login.css";
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, loading, error, clearError } = useAuth();
+  const { currentLanguage, changeLanguage } = useLanguage();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -217,7 +219,32 @@ const Login = () => {
       <div className="right-panel">
         {/* Language Toggle */}
         <div className="language-toggle">
-          <button className="lang-toggle-btn">
+          <button
+            className="lang-toggle-btn"
+            onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              border: '1px solid #E5E7EB',
+              borderRadius: '8px',
+              background: '#fff',
+              cursor: 'pointer',
+              fontSize: '14px',
+              color: '#6B7280',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#F9FAFB';
+              e.target.style.borderColor = '#D1D5DB';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#fff';
+              e.target.style.borderColor = '#E5E7EB';
+            }}
+          >
             <svg
               width="14"
               height="14"
@@ -225,14 +252,14 @@ const Login = () => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="7" cy="7" r="6" stroke="#6B7280" strokeWidth="2" />
+              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="2" />
               <path
                 d="M2 7h10M7 2c1.5 0 3 2.686 3 6s-1.5 6-3 6-3-2.686-3-6 1.5-6 3-6z"
-                stroke="#6B7280"
+                stroke="currentColor"
                 strokeWidth="2"
               />
             </svg>
-            {t('common.arabic')}
+            {currentLanguage === 'en' ? 'العربية' : 'English'}
           </button>
         </div>
 
