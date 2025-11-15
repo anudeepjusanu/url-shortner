@@ -22,8 +22,9 @@ const CustomDomains = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [baseDomain, setBaseDomain] = useState('');
   const [subdomain, setSubdomain] = useState('');
-  const [wizardStep, setWizardStep] = useState(1);
   const [addedDomain, setAddedDomain] = useState(null);
+  const [verificationStatus, setVerificationStatus] = useState('idle'); // 'idle' | 'checking' | 'success' | 'failed'
+  const [copiedField, setCopiedField] = useState(null); // Track which field was copied
 
   useEffect(() => {
     fetchDomains();
@@ -56,9 +57,28 @@ const CustomDomains = () => {
   // };
 
   // Wizard navigation
-  const handleNext = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    console.log('Next button clicked. Current step:', currentStep);
+
+    if (currentStep === 1) {
+      // Step 1 -> Step 2: Create domain and move to DNS configuration
+      if (!baseDomain.trim()) {
+        setError(t('errors.validationError'));
+        return;
+      }
+
+      // Create the domain first
+      await handleAddDomain();
+
+      // If domain was created successfully, move to step 2
+      if (!isAddingDomain) {
+        setCurrentStep(2);
+        console.log('Moving to step 2 - DNS Configuration');
+      }
+    } else if (currentStep === 2) {
+      // Step 2 -> Step 3: Just move to review step
+      setCurrentStep(3);
+      console.log('Moving to step 3 - Review and Confirm');
     }
   };
 
@@ -69,10 +89,13 @@ const CustomDomains = () => {
   };
 
   const handleAddDomain = async () => {
+    console.log('handleAddDomain called. Current step:', currentStep);
+
+    console.log('Creating domain...');
     // Validate input
     if (!baseDomain.trim()) {
       setError(t('errors.validationError'));
-      return;
+      return false;
     }
 
     try {
@@ -90,49 +113,76 @@ const CustomDomains = () => {
         isDefault: false
       };
 
+      console.log('⚠️ Creating domain with data:', domainData);
       const response = await domainsAPI.createDomain(domainData);
+      console.log('✅ Domain created successfully');
       const addedDomainData = response.data?.data || response.data || { ...domainData, id: Date.now() };
       setAddedDomain(addedDomainData);
+
       await fetchDomains();
-      setWizardStep(2);
       setError(null);
+
+      return true; // Return success
     } catch (err) {
       console.error('Error adding domain:', err);
       setError(err.response?.data?.message || err.message || t('errors.generic'));
+      return false; // Return failure
     } finally {
       setIsAddingDomain(false);
     }
   };
 
+  const handleCopyToClipboard = async (text, fieldName) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const handleVerifyDomain = async (domainId) => {
     const targetId = domainId || addedDomain?.id;
-    if (!targetId) return;
+    if (!targetId) {
+      console.warn('No domain ID provided for verification');
+      return;
+    }
 
     try {
+      setVerificationStatus('checking');
+      console.log('Verifying domain:', targetId);
+
       const response = await domainsAPI.verifyDomain(targetId);
+      console.log('Verification response:', response);
 
       if (response.data?.success || response.success) {
+        setVerificationStatus('success');
         await fetchDomains();
-        if (wizardStep === 2) {
-          setWizardStep(3);
-        }
+        setError(null);
+        console.log('✅ Domain verified successfully');
       } else {
+        setVerificationStatus('failed');
         setError(response.data?.message || response.message || t('errors.generic'));
+        console.error('❌ Verification failed:', response.data?.message);
       }
     } catch (err) {
       console.error('Domain verification error:', err);
+      setVerificationStatus('failed');
       setError(err.response?.data?.message || err.message || t('errors.generic'));
     }
   };
 
   const resetWizard = () => {
     setShowAddModal(false);
-    setWizardStep(1);
     setCurrentStep(1);
     setBaseDomain('');
     setSubdomain('');
     setAddedDomain(null);
+    setVerificationStatus('idle');
+    setCopiedField(null);
     setError(null);
+    console.log('Wizard reset');
   };
 
   const handleDeleteClick = (domain) => {
@@ -302,31 +352,223 @@ const CustomDomains = () => {
         </p>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-          {t('customDomains.table.domain')}:
-        </p>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151' }}>
+          DNS Configuration Required:
+        </h4>
         <div style={{
-          padding: '0.75rem',
           backgroundColor: '#F9FAFB',
           border: '1px solid #E5E7EB',
-          borderRadius: '4px',
-          fontFamily: 'monospace',
-          fontSize: '1rem',
-          color: '#1F2937'
+          borderRadius: '8px',
+          padding: '1rem',
+          overflow: 'auto'
         }}>
-          {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || t('customDomains.addDomain.domainPlaceholder')}
+          {/* DNS Record Type */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '0.75rem',
+            gap: '16px'
+          }}>
+            <span style={{
+              fontSize: '0.875rem',
+              color: '#6B7280',
+              minWidth: '60px',
+              fontWeight: '500'
+            }}>Type:</span>
+            <span style={{
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              color: '#1F2937',
+              flex: 1,
+              padding: '6px 12px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              borderRadius: '4px'
+            }}>CNAME</span>
+          </div>
+
+          {/* DNS Record Name */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '0.75rem',
+            gap: '16px'
+          }}>
+            <span style={{
+              fontSize: '0.875rem',
+              color: '#6B7280',
+              minWidth: '60px',
+              fontWeight: '500'
+            }}>Name:</span>
+            <span style={{
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              color: '#1F2937',
+              flex: 1,
+              padding: '6px 12px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              borderRadius: '4px',
+              wordBreak: 'break-all'
+            }}>
+              {subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain || 'your-domain.com'}
+            </span>
+          </div>
+
+          {/* DNS Record Value */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <span style={{
+              fontSize: '0.875rem',
+              color: '#6B7280',
+              minWidth: '60px',
+              fontWeight: '500'
+            }}>Value:</span>
+            <span style={{
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              color: '#1F2937',
+              flex: 1,
+              padding: '6px 12px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              borderRadius: '4px'
+            }}>laghhu.link</span>
+            <button
+              onClick={() => handleCopyToClipboard('laghhu.link', 'value')}
+              style={{
+                padding: '6px 10px',
+                backgroundColor: copiedField === 'value' ? '#10B981' : '#FFFFFF',
+                border: '1px solid #E5E7EB',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s',
+                minWidth: '70px',
+                justifyContent: 'center'
+              }}
+            >
+              {copiedField === 'value' ? (
+                <>
+                  <svg width="14" height="14" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>Copied</span>
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" fill="none" stroke="#6B7280" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {addedDomain && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <button
+            onClick={() => handleVerifyDomain(addedDomain.id)}
+            disabled={verificationStatus === 'checking'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: verificationStatus === 'checking' ? '#9CA3AF' : '#3B82F6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: verificationStatus === 'checking' ? 'not-allowed' : 'pointer',
+              opacity: verificationStatus === 'checking' ? 0.7 : 1
+            }}
+          >
+            {verificationStatus === 'checking' ? (
+              <>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid white',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                Checking DNS...
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Check DNS Configuration
+              </>
+            )}
+          </button>
+
+          {verificationStatus === 'success' && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#DCFCE7',
+              border: '1px solid #BBF7D0',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <svg width="20" height="20" fill="none" stroke="#16A34A" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span style={{ fontSize: '0.875rem', color: '#166534', fontWeight: '500' }}>
+                DNS record verified successfully!
+              </span>
+            </div>
+          )}
+
+          {verificationStatus === 'failed' && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#FEE2E2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <svg width="20" height="20" fill="none" stroke="#DC2626" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span style={{ fontSize: '0.875rem', color: '#991B1B' }}>
+                DNS record not found. Please check your configuration.
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 
   // Step 3: Review and Confirm
-  const renderStep3 = () => (
-    <div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-        {t('common.confirm')}
-      </h3>
+  const renderStep3 = () => {
+    console.log('📋 Rendering Step 3 (PREVIEW ONLY - no API call yet)');
+    console.log('Domain to be created:', { baseDomain, subdomain, fullDomain: subdomain.trim() ? `${subdomain}.${baseDomain}` : baseDomain });
+    return (
+      <div>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+          {t('common.confirm')}
+        </h3>
 
       <div style={{
         backgroundColor: '#F9FAFB',
@@ -376,7 +618,8 @@ const CustomDomains = () => {
         </p>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderAddDomainModal = () => (
     <div className="modal-overlay" style={{
@@ -424,8 +667,13 @@ const CustomDomains = () => {
 
         <form onSubmit={(e) => {
           e.preventDefault();
+          console.log('Form submitted! Current step:', currentStep);
+          // Only handle submit on step 3 - close the wizard
           if (currentStep === 3) {
-            handleAddDomain();
+            console.log('Step is 3, closing wizard');
+            resetWizard();
+          } else {
+            console.log('Step is NOT 3, ignoring submit. Current step:', currentStep);
           }
         }}>
           {currentStep === 1 && renderStep1()}
@@ -454,36 +702,39 @@ const CustomDomains = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                disabled={currentStep === 1 && !baseDomain.trim()}
+                disabled={
+                  (currentStep === 1 && !baseDomain.trim()) ||
+                  (currentStep === 2 && !addedDomain)
+                }
                 style={{
                   padding: '0.5rem 1.5rem',
                   backgroundColor: '#3B82F6',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: (currentStep === 1 && !baseDomain.trim()) ? 'not-allowed' : 'pointer',
-                  opacity: (currentStep === 1 && !baseDomain.trim()) ? 0.6 : 1,
+                  cursor: ((currentStep === 1 && !baseDomain.trim()) || (currentStep === 2 && !addedDomain)) ? 'not-allowed' : 'pointer',
+                  opacity: ((currentStep === 1 && !baseDomain.trim()) || (currentStep === 2 && !addedDomain)) ? 0.6 : 1,
                   fontSize: '0.875rem'
                 }}
               >
-                {t('common.next')}
+                {currentStep === 1 ? t('customDomains.addDomain.addButton') : t('common.next')}
               </button>
             ) : (
               <button
                 type="submit"
-                disabled={isAddingDomain || !baseDomain.trim()}
+                disabled={false}
                 style={{
                   padding: '0.5rem 1.5rem',
-                  backgroundColor: '#3B82F6',
+                  backgroundColor: '#10B981',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: (isAddingDomain || !baseDomain.trim()) ? 'not-allowed' : 'pointer',
-                  opacity: (isAddingDomain || !baseDomain.trim()) ? 0.6 : 1,
+                  cursor: 'pointer',
+                  opacity: 1,
                   fontSize: '0.875rem'
                 }}
               >
-                {isAddingDomain ? t('customDomains.addDomain.adding') : t('customDomains.addDomain.addButton')}
+                {t('common.close') || 'Finish'}
               </button>
             )}
           </div>

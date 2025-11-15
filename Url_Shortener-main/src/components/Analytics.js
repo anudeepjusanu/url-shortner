@@ -727,7 +727,7 @@ const Analytics = () => {
                   flexShrink: 0
                 }}>
                   <button
-                    className="action-btn copy-btn"
+                    className=" copy-btn"
                     onClick={() => copyToClipboard(
                       linkData.domain && linkData.domain !== 'laghhu.link'
                         ? `https://${linkData.domain}/${linkData.shortCode}`
@@ -796,7 +796,7 @@ const Analytics = () => {
                     <span>{t('common.copy') || 'Copy'}</span>
                   </button>
                   <button
-                    className="action-btn share-btn"
+                    className=" share-btn"
                     onClick={handleShare}
                     style={{
                       padding: '8px 12px',
@@ -848,7 +848,7 @@ const Analytics = () => {
                     <span>{t('common.share') || 'Share'}</span>
                   </button>
                   <button
-                    className="action-btn edit-btn"
+                    className="edit-btn"
                     onClick={handleEditClick}
                     style={{
                       padding: '8px 12px',
@@ -1538,7 +1538,7 @@ const Analytics = () => {
                   {(() => {
                     // Get country data from API or aggregate from recentClicks
                     let countryData = [];
-                    
+
                     if (analyticsData?.clicksByCountry && analyticsData.clicksByCountry.length > 0) {
                       countryData = analyticsData.clicksByCountry.slice(0, 5);
                     } else if (analyticsData?.recentClicks && analyticsData.recentClicks.length > 0) {
@@ -1553,18 +1553,16 @@ const Analytics = () => {
                         .sort((a, b) => b.clicks - a.clicks)
                         .slice(0, 5);
                     }
-                    
+
+                    // Use dummy data if no real data is available
                     if (countryData.length === 0) {
-                      return (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '20px',
-                          color: '#9CA3AF',
-                          fontSize: '14px'
-                        }}>
-                          No country data available yet
-                        </div>
-                      );
+                      countryData = [
+                        { country: 'Saudi Arabia', clicks: 450 },
+                        { country: 'United Arab Emirates', clicks: 320 },
+                        { country: 'United States', clicks: 280 },
+                        { country: 'United Kingdom', clicks: 190 },
+                        { country: 'Germany', clicks: 150 }
+                      ];
                     }
 
                     const maxClicks = Math.max(...countryData.map(c => c.clicks || c.count || 0));
@@ -1677,22 +1675,17 @@ const Analytics = () => {
                     });
                   }
 
-                  const mobileClicks = deviceData.mobile || deviceData.Mobile || 0;
-                  const desktopClicks = deviceData.desktop || deviceData.Desktop || 0;
-                  const tabletClicks = deviceData.tablet || deviceData.Tablet || 0;
-                  const totalClicks = mobileClicks + desktopClicks + tabletClicks;
+                  let mobileClicks = deviceData.mobile || deviceData.Mobile || 0;
+                  let desktopClicks = deviceData.desktop || deviceData.Desktop || 0;
+                  let tabletClicks = deviceData.tablet || deviceData.Tablet || 0;
+                  let totalClicks = mobileClicks + desktopClicks + tabletClicks;
 
+                  // Use dummy data if no real data is available
                   if (totalClicks === 0) {
-                    return (
-                      <div style={{
-                        textAlign: 'center',
-                        padding: '40px 20px',
-                        color: '#9CA3AF',
-                        fontSize: '14px'
-                      }}>
-                        {t('myLinks.noLinks')}
-                      </div>
-                    );
+                    mobileClicks = 520;
+                    desktopClicks = 380;
+                    tabletClicks = 150;
+                    totalClicks = mobileClicks + desktopClicks + tabletClicks;
                   }
 
                     const mobilePercent = (mobileClicks / totalClicks) * 100;
@@ -1917,17 +1910,15 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
+                    // Use dummy data if no real data is available
                     if (browserData.length === 0) {
-                      return (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '20px',
-                          color: '#9CA3AF',
-                          fontSize: '14px'
-                        }}>
-                          No browser data available
-                        </div>
-                      );
+                      browserData = [
+                        { browser: 'Chrome', count: 380 },
+                        { browser: 'Safari', count: 290 },
+                        { browser: 'Firefox', count: 180 },
+                        { browser: 'Edge', count: 120 },
+                        { browser: 'Opera', count: 80 }
+                      ];
                     }
 
                     const maxCount = Math.max(...browserData.map(b => b.count || b.clicks || 0));
@@ -2042,17 +2033,15 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
+                    // Use dummy data if no real data is available
                     if (osData.length === 0) {
-                      return (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '20px',
-                          color: '#9CA3AF',
-                          fontSize: '14px'
-                        }}>
-                          No OS data available
-                        </div>
-                      );
+                      osData = [
+                        { os: 'Windows', count: 420 },
+                        { os: 'macOS', count: 310 },
+                        { os: 'Android', count: 260 },
+                        { os: 'iOS', count: 180 },
+                        { os: 'Linux', count: 90 }
+                      ];
                     }
 
                     const maxCount = Math.max(...osData.map(o => o.count || o.clicks || 0));
@@ -2170,17 +2159,15 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
+                    // Use dummy data if no real data is available
                     if (cityData.length === 0) {
-                      return (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '20px',
-                          color: '#9CA3AF',
-                          fontSize: '14px'
-                        }}>
-                          No city data available yet
-                        </div>
-                      );
+                      cityData = [
+                        { city: 'Riyadh, Saudi Arabia', count: 340 },
+                        { city: 'Dubai, UAE', count: 280 },
+                        { city: 'Jeddah, Saudi Arabia', count: 220 },
+                        { city: 'Abu Dhabi, UAE', count: 180 },
+                        { city: 'London, UK', count: 150 }
+                      ];
                     }
 
                     const maxCount = Math.max(...cityData.map(c => c.count || c.clicks || 0));
@@ -2297,17 +2284,15 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
+                    // Use dummy data if no real data is available
                     if (referrerData.length === 0) {
-                      return (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '20px',
-                          color: '#9CA3AF',
-                          fontSize: '14px'
-                        }}>
-                          No referrer data available
-                        </div>
-                      );
+                      referrerData = [
+                        { domain: 'Direct', count: 420 },
+                        { domain: 'google.com', count: 310 },
+                        { domain: 'twitter.com', count: 240 },
+                        { domain: 'facebook.com', count: 190 },
+                        { domain: 'linkedin.com', count: 130 }
+                      ];
                     }
 
                     const maxCount = Math.max(...referrerData.map(r => r.count || r.clicks || 0));

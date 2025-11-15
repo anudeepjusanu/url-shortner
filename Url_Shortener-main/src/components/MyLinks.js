@@ -710,27 +710,41 @@ function MyLinks() {
                               gap: '4px',
                               marginBottom: '8px'
                             }}>
-                              <span className="short-url" style={{
-                                fontSize: '14px',
-                                color: '#3B82F6',
-                                fontWeight: '500',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                              }}>
+                              <a 
+                                href={link.domain && link.domain !== 'laghhu.link' ? `http://${link.domain}/${link.shortCode}` : `https://laghhu.link/${link.shortCode}`}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="short-url" 
+                                style={{
+                                  fontSize: '14px',
+                                  color: '#3B82F6',
+                                  fontWeight: '500',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  textDecoration: 'none'
+                                }}
+                              >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                                 {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
-                              </span>
-                              <span className="original-url" style={{
-                                fontSize: '13px',
-                                color: '#6B7280',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}>{link.originalUrl}</span>
+                              </a>
+                              <a 
+                                href={link.originalUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="original-url" 
+                                style={{
+                                  fontSize: '13px',
+                                  color: '#6B7280',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  textDecoration: 'none'
+                                }}
+                              >{link.originalUrl}</a>
                             </div>
                             <div className="link-meta" style={{
                               display: 'flex',

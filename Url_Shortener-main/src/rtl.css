@@ -366,6 +366,7 @@
   direction: rtl;
 }
 
+/* Base RTL layout - applies to all screen sizes, will be overridden by media queries */
 [dir="rtl"] .analytics-main,
 [dir="rtl"] .content-filter-main,
 [dir="rtl"] .custom-domains-main,
@@ -373,7 +374,7 @@
 [dir="rtl"] .my-links-main,
 [dir="rtl"] .profile-main {
   margin-left: 0 !important;
-  /* margin-right: 250px !important; */
+  /* No margin-right here - will be added in desktop media query only */
 }
 
 /* Fix overlap issues - ensure content starts after sidebar */
@@ -1226,42 +1227,68 @@
    TABLET DEVICES (768px - 1023px)
    ============================================ */
 @media (min-width: 768px) and (max-width: 1023px) {
-  /* Sidebar - Collapsible on tablet */
+  /* Sidebar - Hidden on tablet (matching English behavior) */
   [dir="rtl"] .sidebar {
-    right: 0 !important;
-    left: auto !important;
-    width: 200px !important;
+    display: none !important;
   }
 
-  [dir="rtl"] .sidebar.collapsed {
-    right: -200px !important;
-  }
-
-  /* Main content - Reduced margin for tablet */
+  /* Main content - NO margin on tablet since sidebar is hidden */
   [dir="rtl"] .dashboard-main,
   [dir="rtl"] .main-content,
   [dir="rtl"] .page-content,
   [dir="rtl"] .content-wrapper,
   [dir="rtl"] .dashboard-container,
   [dir="rtl"] .app-container {
-    margin-right: 200px !important;
+    margin-right: 0 !important;
     margin-left: 0 !important;
+    width: 100% !important;
   }
 
-  /* Layout containers - Tablet margins */
+  /* Layout containers - NO margin on tablet, full width */
   [dir="rtl"] .analytics-main,
   [dir="rtl"] .content-filter-main,
   [dir="rtl"] .custom-domains-main,
   [dir="rtl"] .qr-codes-main,
   [dir="rtl"] .my-links-main,
   [dir="rtl"] .profile-main {
-    margin-right: 200px !important;
+    margin-right: 0 !important;
     margin-left: 0 !important;
     padding-right: 12px !important;
     padding-left: 12px !important;
+    width: 100% !important;
   }
 
-  /* Sidebar items - Compact on tablet */
+  /* Main area - Full width on tablet */
+  [dir="rtl"] .main-area {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Content areas - Centered with proper padding on tablet */
+  [dir="rtl"] .analytics-content,
+  [dir="rtl"] .content-filter-content,
+  [dir="rtl"] .custom-domains-content,
+  [dir="rtl"] .qr-codes-content,
+  [dir="rtl"] .my-links-content,
+  [dir="rtl"] .profile-content,
+  [dir="rtl"] .dashboard-content {
+    margin-right: auto !important;
+    margin-left: auto !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Stats grid - Single column on tablet for better mobile experience */
+  [dir="rtl"] .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Sidebar items - Compact on tablet (though hidden) */
   [dir="rtl"] .sidebar-item {
     padding-right: 12px !important;
     padding-left: 20px !important;
@@ -1437,7 +1464,7 @@
   [dir="rtl"] .qr-codes-main,
   [dir="rtl"] .my-links-main,
   [dir="rtl"] .profile-main {
-    /* margin-right: 250px !important; */
+    margin-right: 140px !important;
     margin-left: 0 !important;
     padding-right: 16px !important;
     padding-left: 16px !important;
@@ -1658,7 +1685,7 @@
   [dir="rtl"] .qr-codes-main,
   [dir="rtl"] .my-links-main,
   [dir="rtl"] .profile-main {
-    /* margin-right: 100px !important; */
+    margin-right: 140px !important;
     margin-left: 0 !important;
     padding-right: 16px !important;
     padding-left: 16px !important;

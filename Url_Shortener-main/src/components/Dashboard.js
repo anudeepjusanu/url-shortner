@@ -312,17 +312,21 @@ const Dashboard = () => {
                   margin: '0 0 16px 0',
                   flex: 1
                 }}>{t('dashboard.createShortLinkDesc')}</p>
-                <button className="card-btn blue-btn" style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: '#3B82F6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}>{t('dashboard.getStarted')}</button>
+                <button
+                  className="card-btn blue-btn"
+                  onClick={() => handleNavigation('/my-links')}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    backgroundColor: '#3B82F6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >{t('dashboard.getStarted')}</button>
               </div>
 
               <div className="action-card green-card" style={{
@@ -368,17 +372,21 @@ const Dashboard = () => {
                   margin: '0 0 16px 0',
                   flex: 1
                 }}>{t('dashboard.generateQRCodeDesc')}</p>
-                <button className="card-btn green-btn" style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: '#10B981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}>{t('dashboard.createQR')}</button>
+                <button
+                  className="card-btn green-btn"
+                  onClick={() => handleNavigation('/qr-codes')}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    backgroundColor: '#10B981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >{t('dashboard.createQR')}</button>
               </div>
 
               <div className="action-card purple-card" style={{
@@ -422,17 +430,21 @@ const Dashboard = () => {
                   margin: '0 0 16px 0',
                   flex: 1
                 }}>{t('dashboard.addCustomDomainDesc')}</p>
-                <button className="card-btn purple-btn" style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: '#7C3AED',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}>{t('dashboard.setupDomain')}</button>
+                <button
+                  className="card-btn purple-btn"
+                  onClick={() => handleNavigation('/custom-domains')}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    backgroundColor: '#7C3AED',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >{t('dashboard.setupDomain')}</button>
               </div>
             </div>
 
