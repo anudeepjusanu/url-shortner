@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,13 +10,35 @@ import "./MainHeader.css";
 const MainHeader = () => {
   const { t } = useTranslation();
   const { currentLanguage, toggleLanguage } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ right: 0 });
+  const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const fetchUserProfile = async () => {
     try {
@@ -63,6 +86,40 @@ const MainHeader = () => {
       return (words[0][0] + words[1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if API call fails, still redirect to login
+      navigate('/login');
+    }
+  };
+
+  // Toggle dropdown
+  const toggleDropdown = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
+
+    if (!showDropdown && profileRef.current) {
+      // Calculate position when opening
+      const rect = profileRef.current.getBoundingClientRect();
+      const isRTL = currentLanguage === 'ar';
+
+      if (isRTL) {
+        // For RTL, position from left
+        setDropdownPosition({ left: rect.left });
+      } else {
+        // For LTR, position from right
+        setDropdownPosition({ right: window.innerWidth - rect.right });
+      }
+    }
+
+    console.log('Toggle dropdown clicked. Current state:', showDropdown, 'New state:', !showDropdown);
+    setShowDropdown(!showDropdown);
   };
 
   const displayName = getUserDisplayName();
@@ -141,9 +198,27 @@ const MainHeader = () => {
           </div>
         </div>
         <span className="create-link-user-name">
-          {loading ? t('common.loading') : displayName}
+          {displayName}
         </span>
       </div>
+      <button className="hamburger-logout-btn" onClick={handleLogout}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6M10.6667 11.3333L14 8M14 8L10.6667 4.66667M14 8H6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {t('common.logout')}
+      </button>
     </>
   );
 
@@ -194,39 +269,88 @@ const MainHeader = () => {
               AR
             </button>
           </div>
-          <div className="create-link-user-profile">
-            <div className="create-link-user-avatar">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
+          <div className="create-link-user-profile-wrapper" ref={dropdownRef}>
+            <div className="create-link-user-profile" onClick={toggleDropdown} ref={profileRef}>
+              <div className="create-link-user-avatar">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="create-link-user-avatar-initials"
+                  style={{
+                    display: avatarUrl ? 'none' : 'flex',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    backgroundColor: '#3B82F6',
+                    color: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: '600'
                   }}
+                >
+                  {getUserInitials()}
+                </div>
+              </div>
+              <span className="create-link-user-name">
+                {displayName}
+              </span>
+              <svg
+                className="create-link-dropdown-arrow"
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M3 4.5L6 7.5L9 4.5"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-              ) : null}
+              </svg>
+            </div>
+            {showDropdown && (
               <div
-                className="create-link-user-avatar-initials"
+                className="create-link-user-dropdown"
                 style={{
-                  display: avatarUrl ? 'none' : 'flex',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%',
-                  backgroundColor: '#3B82F6',
-                  color: 'white',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: '600'
+                  right: dropdownPosition.right !== undefined ? `${dropdownPosition.right}px` : 'auto',
+                  left: dropdownPosition.left !== undefined ? `${dropdownPosition.left}px` : 'auto'
                 }}
               >
-                {getUserInitials()}
+                <button
+                  className="create-link-dropdown-item"
+                  onClick={handleLogout}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6M10.6667 11.3333L14 8M14 8L10.6667 4.66667M14 8H6"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {t('common.logout')}
+                </button>
               </div>
-            </div>
-            <span className="create-link-user-name">
-              {loading ? t('common.loading') : displayName}
-            </span>
+            )}
           </div>
         </div>
       </div>

@@ -470,7 +470,8 @@
       "topReferrers": "Top Referrers",
       "devices": "Devices",
       "browsers": "Browsers",
-      "operatingSystems": "Operating Systems"
+      "operatingSystems": "Operating Systems",
+      "topCities": "Top Cities"
     },
     "devices": {
       "mobile": "Mobile",
