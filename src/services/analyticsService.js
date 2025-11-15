@@ -361,13 +361,18 @@ class AnalyticsService {
         $facet: {
           countries: [
             {
-              $match: { 'location.country': { $ne: null, $ne: '' } }
+              $match: { 
+                $or: [
+                  { 'location.country': { $exists: true, $ne: null, $ne: '' } },
+                  { 'location.countryName': { $exists: true, $ne: null, $ne: '' } }
+                ]
+              }
             },
             {
               $group: {
                 _id: {
-                  country: '$location.country',
-                  countryName: '$location.countryName'
+                  country: { $ifNull: ['$location.country', 'Unknown'] },
+                  countryName: { $ifNull: ['$location.countryName', '$location.country'] }
                 },
                 count: { $sum: 1 }
               }
@@ -424,7 +429,7 @@ class AnalyticsService {
           devices: [
             {
               $group: {
-                _id: '$device.type',
+                _id: { $ifNull: ['$device.type', 'unknown'] },
                 count: { $sum: 1 }
               }
             },
@@ -432,7 +437,9 @@ class AnalyticsService {
           ],
           browsers: [
             {
-              $match: { 'device.browser.name': { $ne: null, $ne: '' } }
+              $match: { 
+                'device.browser.name': { $exists: true, $ne: null, $ne: '' }
+              }
             },
             {
               $group: {
