@@ -26,7 +26,7 @@ const endpoints = {
   },
   analytics: {
     overview: '/analytics/dashboard',
-    urls: '/analytics/dashboard'
+    urls: '/analytics'
   }
 };
 

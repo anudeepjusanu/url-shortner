@@ -7,6 +7,13 @@ const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
 
 class AnalyticsService {
+  // Helper method to check if a domain is a main/default domain
+  isMainDomain(domain) {
+    if (!domain) return true;
+    const mainDomains = ['laghhu.link', 'www.laghhu.link', 'localhost:3015', 'localhost'];
+    return mainDomains.includes(domain);
+  }
+
   async recordClick(shortCode, clickData) {
     try {
       console.log('📊 Recording click for:', shortCode, {
@@ -20,12 +27,21 @@ class AnalyticsService {
         referer,
         language,
         screenResolution,
+        domain = null,
         timestamp = new Date()
       } = clickData;
-      
-      const url = await Url.findOne({
+
+      // Build query with domain filtering for custom domains
+      let query = {
         $or: [{ shortCode }, { customCode: shortCode }]
-      });
+      };
+
+      // Add domain filtering for custom domains to prevent duplicate counting
+      if (domain && !this.isMainDomain(domain)) {
+        query.domain = domain;
+      }
+
+      const url = await Url.findOne(query);
       
       if (!url) {
         console.error('❌ URL not found for click recording:', shortCode);
