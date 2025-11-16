@@ -14,6 +14,8 @@ const CustomDomains = () => {
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAddingDomain, setIsAddingDomain] = useState(false);
+  const [showDNSModal, setShowDNSModal] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState(null);
 
   // Delete dialog
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, domainId: null, domainName: '' });
@@ -621,6 +623,166 @@ const CustomDomains = () => {
     );
   };
 
+  const renderDNSModal = () => {
+    if (!selectedDomain) return null;
+
+    const domainName = selectedDomain.fullDomain || selectedDomain.domain;
+
+    return (
+      <div className="modal-overlay" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: '8px',
+          width: '90%',
+          maxWidth: '700px',
+          maxHeight: '90vh',
+          overflow: 'auto'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>
+              DNS Records for {domainName}
+            </h3>
+            <button
+              onClick={() => {
+                setShowDNSModal(false);
+                setSelectedDomain(null);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '0.25rem',
+                color: '#6b7280'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{
+            backgroundColor: '#FEF3C7',
+            border: '1px solid #FDE68A',
+            borderRadius: '6px',
+            padding: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
+              Add these DNS records to your domain provider to verify ownership and enable custom domain functionality.
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151' }}>
+              A Record
+            </h4>
+            <div style={{
+              backgroundColor: '#F9FAFB',
+              border: '1px solid #E5E7EB',
+              borderRadius: '6px',
+              padding: '1rem'
+            }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Type</div>
+                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>A</code>
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Name</div>
+                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
+                  {selectedDomain.subdomain || '@'}
+                </code>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Value</div>
+                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
+                  {process.env.REACT_APP_SERVER_IP || '0.0.0.0'}
+                </code>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151' }}>
+              TXT Record (Verification)
+            </h4>
+            <div style={{
+              backgroundColor: '#F9FAFB',
+              border: '1px solid #E5E7EB',
+              borderRadius: '6px',
+              padding: '1rem'
+            }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Type</div>
+                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>TXT</code>
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Name</div>
+                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
+                  _verification.{selectedDomain.subdomain ? selectedDomain.subdomain : domainName}
+                </code>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Value</div>
+                <code style={{
+                  fontSize: '0.875rem',
+                  color: '#1F2937',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all'
+                }}>
+                  {selectedDomain.verificationToken || 'laghhu-verify=' + (selectedDomain.id || selectedDomain._id)}
+                </code>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: '#DBEAFE',
+            border: '1px solid #BFDBFE',
+            borderRadius: '6px',
+            padding: '1rem'
+          }}>
+            <p style={{ fontSize: '0.875rem', color: '#1E40AF', margin: 0 }}>
+              <strong>Note:</strong> DNS changes can take up to 48 hours to propagate globally, but usually take effect within a few minutes to hours.
+            </p>
+          </div>
+
+          <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => {
+                setShowDNSModal(false);
+                setSelectedDomain(null);
+              }}
+              style={{
+                padding: '0.5rem 1.5rem',
+                backgroundColor: '#3B82F6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAddDomainModal = () => (
     <div className="modal-overlay" style={{
       position: 'fixed',
@@ -1043,6 +1205,36 @@ const CustomDomains = () => {
                           flexShrink: 0,
                           minWidth: 'fit-content'
                         }}>
+                          <button
+                            onClick={() => {
+                              setSelectedDomain(domain);
+                              setShowDNSModal(true);
+                            }}
+                            className="action-btn dns"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              padding: '8px 16px',
+                              backgroundColor: '#EFF6FF',
+                              color: '#3B82F6',
+                              border: '1px solid #BFDBFE',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              minWidth: '100px',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12h20M12 2c2.5 0 4.5 4.5 4.5 10s-2 10-4.5 10-4.5-4.5-4.5-10S9.5 2 12 2z"/>
+                            </svg>
+                            <span>DNS</span>
+                          </button>
                           {(!domain.verified && domain.verificationStatus !== 'verified') && (
                             <button
                               onClick={() => handleVerifyDomain(domainId)}
@@ -1106,6 +1298,7 @@ const CustomDomains = () => {
             </div>
 
             {showAddModal && renderAddDomainModal()}
+            {showDNSModal && renderDNSModal()}
 
             {/* Delete Confirmation Dialog */}
             {deleteDialog.isOpen && (

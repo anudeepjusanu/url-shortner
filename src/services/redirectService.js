@@ -37,7 +37,8 @@ class RedirectService {
         userAgent,
         referer,
         language,
-        screenResolution
+        screenResolution,
+        domain // Pass the domain to analytics service
       };
       
       try {

@@ -106,6 +106,22 @@ const Analytics = () => {
     }
   };
 
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      // Handle hour format (YYYY-MM-DD-HH)
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}-\d{2}$/)) {
+        const [year, month, day, hour] = dateStr.split('-');
+        return `${hour}:00`;
+      }
+      // Handle day format (YYYY-MM-DD)
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   const fetchDashboardAnalytics = async () => {
     try {
       setLoading(true);
@@ -116,7 +132,24 @@ const Analytics = () => {
         period: timeFilter
       });
 
-      setAnalyticsData(response.data);
+      // Transform backend data to match frontend expectations
+      const backendData = response.data;
+      const transformedData = {
+        ...backendData,
+        totalClicks: backendData.overview?.totalClicks || 0,
+        uniqueClicks: backendData.overview?.totalUniqueClicks || 0,
+        totalUrls: backendData.overview?.totalUrls || 0,
+        clickActivity: backendData.chartData?.clicksByDay?.map(item => ({
+          date: item.date,
+          label: formatDateLabel(item.date),
+          totalClicks: item.clicks || 0,
+          uniqueClicks: 0 // Dashboard doesn't track unique clicks per day yet
+        })) || [],
+        clicksByCountry: backendData.topStats?.countries || [],
+        clicksByDevice: backendData.topStats?.devices || []
+      };
+
+      setAnalyticsData(transformedData);
     } catch (err) {
       console.error('Error fetching dashboard analytics:', err);
       setError(err.message || 'Failed to fetch analytics data');
