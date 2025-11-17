@@ -28,10 +28,13 @@
     "morgan": "^1.10.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^7.0.9",
+    "pdfkit": "^0.15.0",
     "qrcode": "^1.5.3",
     "redis": "^5.8.2",
     "stripe": "^19.1.0",
-    "user-agent-parser": "^0.6.0"
+    "user-agent-parser": "^0.6.0",
+    "winston": "^3.18.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

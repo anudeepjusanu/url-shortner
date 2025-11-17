@@ -17,15 +17,18 @@ const userSchema = new mongoose.Schema({
   },
   firstName: {
     type: String,
-    required: [true, 'First name is required'],
     trim: true,
     maxlength: [50, 'First name cannot exceed 50 characters']
   },
   lastName: {
     type: String,
-    required: [true, 'Last name is required'],
     trim: true,
     maxlength: [50, 'Last name cannot exceed 50 characters']
+  },
+  name: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Name cannot exceed 100 characters']
   },
   role: {
     type: String,
@@ -34,35 +37,140 @@ const userSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['free', 'pro', 'enterprise'],
+    enum: ['free', 'basic', 'pro', 'enterprise'],
     default: 'free'
   },
   subscription: {
+    // Payment gateway tracking
+    paymentGateway: {
+      type: String,
+      enum: ['stripe', 'moyasar', 'manual', 'none'],
+      default: 'none'
+    },
+
+    // Stripe-specific fields
     stripeCustomerId: String,
     stripeSubscriptionId: String,
     stripePriceId: String,
+
+    // Moyasar-specific fields
+    moyasarCustomerId: String,
+    moyasarSubscriptionId: String,
+
+    // General subscription fields
     status: {
       type: String,
-      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing', 'paused'],
+      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing', 'paused', 'expired'],
       default: 'inactive'
     },
+
+    // Subscription plan
+    plan: {
+      type: String,
+      enum: ['free', 'basic', 'pro', 'enterprise'],
+      default: 'free'
+    },
+
+    // Pricing and currency
+    currency: {
+      type: String,
+      enum: ['SAR', 'USD', 'AED', 'EUR', 'KWD', 'BHD', 'OMR'],
+      default: 'SAR'
+    },
+
+    price: {
+      type: Number,
+      default: 0
+    },
+
+    // Billing period
     currentPeriodStart: Date,
     currentPeriodEnd: Date,
+    startDate: Date,
+    endDate: Date,
+
     cancelAtPeriodEnd: {
       type: Boolean,
       default: false
     },
+
+    cancelledAt: Date,
+    cancelReason: String,
+
+    // Trial period
     trialEnd: Date,
     trialStart: Date,
+
+    // Pause/resume
     pausedAt: Date,
     resumeAt: Date,
+
+    // Billing cycle
     billingCycle: {
       type: String,
-      enum: ['monthly', 'yearly'],
+      enum: ['monthly', 'yearly', 'lifetime'],
       default: 'monthly'
     },
+
+    // Discounts
     discountCode: String,
-    discountPercentage: Number
+    discountPercentage: Number,
+
+    // Features based on plan
+    features: {
+      maxUrls: {
+        type: Number,
+        default: 100  // -1 for unlimited
+      },
+      maxCustomDomains: {
+        type: Number,
+        default: 0  // -1 for unlimited
+      },
+      analyticsEnabled: {
+        type: Boolean,
+        default: false
+      },
+      qrCodesEnabled: {
+        type: Boolean,
+        default: false
+      },
+      customBrandingEnabled: {
+        type: Boolean,
+        default: false
+      },
+      apiAccessEnabled: {
+        type: Boolean,
+        default: false
+      },
+      bulkOperationsEnabled: {
+        type: Boolean,
+        default: false
+      }
+    },
+
+    // Payment history references
+    lastInvoiceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Invoice'
+    },
+    lastTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction'
+    },
+
+    // Renewal tracking
+    autoRenew: {
+      type: Boolean,
+      default: true
+    },
+    nextBillingDate: Date,
+    lastPaymentDate: Date,
+
+    // Metadata
+    metadata: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed
+    }
   },
   usage: {
     urlsCreatedThisMonth: {
@@ -185,7 +293,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.virtual('fullName').get(function() {
-  return `${this.firstName} ${this.lastName}`;
+  if (this.name) return this.name;
+  if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
+  if (this.firstName) return this.firstName;
+  if (this.lastName) return this.lastName;
+  return this.email;
 });
 
 userSchema.virtual('isLocked').get(function() {
