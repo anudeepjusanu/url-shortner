@@ -491,6 +491,22 @@
       "csv": "Export as CSV",
       "pdf": "Export as PDF",
       "json": "Export as JSON"
+    },
+    "noData": {
+      "title": "No Click Activity Data Available",
+      "chartDescription": "Start sharing your links to see click trends and activity over time.",
+      "countries": "No Geographic Data",
+      "countriesDescription": "Country data will appear once your links are clicked.",
+      "devices": "No Device Data",
+      "devicesDescription": "Device breakdown will show after clicks are recorded.",
+      "browsers": "No Browser Data",
+      "browsersDescription": "Browser statistics will appear after your links are clicked.",
+      "os": "No Operating System Data",
+      "osDescription": "OS distribution will be visible after clicks are tracked.",
+      "cities": "No City Data",
+      "citiesDescription": "City-level analytics will be available once clicks are recorded.",
+      "referrers": "No Referrer Data",
+      "referrersDescription": "Traffic sources will be tracked when visitors click your links."
     }
   },
   "qrCodes": {

@@ -49,14 +49,20 @@ const Analytics = () => {
         uniqueClicks: backendData.overview?.uniqueClicks || 0,
         clickThroughRate: backendData.overview?.clickThroughRate || '0%',
         averageTime: backendData.overview?.averageClicksPerDay ? `${backendData.overview.averageClicksPerDay}/day` : '0/day',
-        
+
         // Transform time series data for chart
-        clickActivity: backendData.timeSeries?.map(item => ({
-          label: item.date || item._id,
-          date: item.date || item._id,
-          totalClicks: item.clicks || 0,
-          uniqueClicks: item.uniqueClicks || 0
-        })) || [],
+        clickActivity: backendData.timeSeries?.map(item => {
+          const dateStr = item.date || item._id;
+          return {
+            label: formatDateLabel(dateStr),
+            date: dateStr,
+            totalClicks: item.clicks || 0,
+            uniqueClicks: item.uniqueClicks || 0
+          };
+        }).sort((a, b) => {
+          // Sort by date to ensure proper chronological order
+          return new Date(a.date) - new Date(b.date);
+        }) || [],
         
         // Transform country data
         clicksByCountry: backendData.topStats?.countries?.map(item => ({
@@ -75,6 +81,9 @@ const Analytics = () => {
         // Store URL info if available
         url: backendData.url || null
       };
+
+      console.log('Transformed Analytics Data:', transformedData);
+      console.log('Click Activity for Chart:', transformedData.clickActivity);
 
       setAnalyticsData(transformedData);
 
@@ -454,225 +463,7 @@ const Analytics = () => {
                 </button>
               </div>
 
-            {/* Link Info Card - Only show when there's NO specific link data (dashboard mode) */}
-            {!id && !linkData && (
-            <div className="link-info-card" style={{
-              backgroundColor: 'white',
-              border: '1px solid #E5E7EB',
-              borderRadius: '8px',
-              padding: '16px 20px',
-              marginBottom: '20px',
-              display: 'flex',
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div className="link-info-content" style={{
-                display: 'flex',
-                flexDirection: isRTL ? 'row-reverse' : 'row',
-                alignItems: 'center',
-                gap: '12px',
-                flex: 1,
-                minWidth: 0
-              }}>
-                <div className="link-icon" style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '8px',
-                  backgroundColor: '#EFF6FF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <svg
-                    width="25"
-                    height="20"
-                    viewBox="0 0 25 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 6H14M10 6C8.34315 6 7 7.34315 7 9C7 10.6569 8.34315 12 10 12H12M10 6C8.34315 6 7 4.65685 7 3C7 1.34315 8.34315 0 10 0H12M14 6C15.6569 6 17 7.34315 17 9C17 10.6569 15.6569 12 14 12H12M14 6C15.6569 6 17 4.65685 17 3C17 1.34315 15.6569 0 14 0H12M12 0V12"
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="link-details" style={{
-                  minWidth: 0,
-                  flex: 1,
-                  textAlign: isRTL ? 'right' : 'left'
-                }}>
-                  <h3 className="short-link" style={{
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    color: '#1F2937',
-                    marginBottom: '4px',
-                    margin: 0,
-                    direction: 'ltr',
-                    textAlign: isRTL ? 'right' : 'left'
-                  }}>linksa.co/abc123</h3>
-                  <p className="original-link" style={{
-                    fontSize: '13px',
-                    color: '#6B7280',
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    direction: 'ltr',
-                    textAlign: isRTL ? 'right' : 'left'
-                  }}>
-                    https://www.example.com/very-long-url-that-was-shortened
-                  </p>
-                </div>
-              </div>
-              <div className="link-actions" style={{
-                display: 'flex',
-                gap: '8px',
-                marginLeft: isRTL ? 0 : '16px',
-                marginRight: isRTL ? '16px' : 0,
-                flexShrink: 0
-              }}>
-                <button
-                  className=" copy-btn"
-                  onClick={() => copyToClipboard('https://linksa.co/abc123')}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    color: copySuccess ? '#10B981' : '#6B7280',
-                    transition: 'all 0.2s',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    flexDirection: isRTL ? 'row-reverse' : 'row'
-                  }}
-                  title={copySuccess ? 'Copied!' : 'Copy link'}
-                >
-                  {copySuccess ? (
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M13.5 4.5L6 12L2.5 8.5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect
-                        x="4"
-                        y="4"
-                        width="8"
-                        height="8"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M8 2H4C2.89543 2 2 2.89543 2 4V8"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                  <span>{t('common.copy') || 'Copy'}</span>
-                </button>
-                <button
-                  className="share-btn"
-                  onClick={async () => {
-                    const demoUrl = 'https://linksa.co/abc123';
-                    if (navigator.share) {
-                      try {
-                        await navigator.share({
-                          title: 'Demo Link',
-                          text: 'Check out this link',
-                          url: demoUrl
-                        });
-                      } catch (err) {
-                        if (err.name !== 'AbortError') {
-                          copyToClipboard(demoUrl);
-                        }
-                      }
-                    } else {
-                      copyToClipboard(demoUrl);
-                    }
-                  }}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#F3F4F6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    color: '#6B7280',
-                    transition: 'all 0.2s',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    flexDirection: isRTL ? 'row-reverse' : 'row'
-                  }}
-                  title="Share link"
-                >
-                  <svg
-                    width="14"
-                    height="16"
-                    viewBox="0 0 14 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 6L6 2L2 6"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M6 2V12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14 12V13C14 13.5304 13.7893 14.0391 13.4142 14.4142C13.0391 14.7893 12.5304 15 12 15H2C1.46957 15 0.960859 14.7893 0.585786 14.4142C0.210714 14.0391 0 13.5304 0 13V12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>{t('common.share') || 'Share'}</span>
-                </button>
-              </div>
-            </div>
-            )}
+            {/* Link Info Card - Only show for individual URL analytics */}
             {/* Link Info Card - Only show for individual URL analytics */}
             {linkData && (
               <div className="link-info-card" style={{
@@ -1361,50 +1152,57 @@ const Analytics = () => {
                   <option value="1y">{t('analytics.filters.dateRange')}</option>
                 </select>
               </div>
-              <div className="chart-container" style={{ width: '100%', height: '280px' }}>
+              {(analyticsData?.clickActivity && analyticsData.clickActivity.length > 0) ? (
+              <div className="chart-container" style={{ width: '100%', height: '320px' }}>
                 <svg
                   width="100%"
-                  height="280"
-                  viewBox="0 0 800 280"
+                  height="320"
+                  viewBox="0 0 800 320"
                   preserveAspectRatio="xMidYMid meet"
                   style={{ display: 'block' }}
                 >
+                  {/* Axes */}
+                  <g stroke="#E5E7EB" strokeWidth="1.5">
+                    {/* Y-axis */}
+                    <line x1="60" y1="40" x2="60" y2="250" />
+                    {/* X-axis */}
+                    <line x1="60" y1="250" x2="760" y2="250" />
+                  </g>
+
                   {/* Y-axis grid lines */}
                   <g stroke="#F3F4F6" strokeWidth="1">
-                    <line x1="50" y1="30" x2="750" y2="30" />
-                    <line x1="50" y1="80" x2="750" y2="80" />
-                    <line x1="50" y1="130" x2="750" y2="130" />
-                    <line x1="50" y1="180" x2="750" y2="180" />
-                    <line x1="50" y1="230" x2="750" y2="230" />
+                    <line x1="60" y1="40" x2="760" y2="40" />
+                    <line x1="60" y1="82" x2="760" y2="82" />
+                    <line x1="60" y1="124" x2="760" y2="124" />
+                    <line x1="60" y1="166" x2="760" y2="166" />
+                    <line x1="60" y1="208" x2="760" y2="208" />
+                    <line x1="60" y1="250" x2="760" y2="250" />
                   </g>
 
                   {/* Dynamic chart lines based on analytics data */}
                   {(() => {
-                    // Use API data or fallback to dummy data
-                    const dummyData = [
-                      { label: 'Mon', totalClicks: 130, uniqueClicks: 90 },
-                      { label: 'Tue', totalClicks: 190, uniqueClicks: 150 },
-                      { label: 'Wed', totalClicks: 240, uniqueClicks: 190 },
-                      { label: 'Thu', totalClicks: 320, uniqueClicks: 230 },
-                      { label: 'Fri', totalClicks: 280, uniqueClicks: 200 },
-                      { label: 'Sat', totalClicks: 450, uniqueClicks: 320 },
-                      { label: 'Sun', totalClicks: 380, uniqueClicks: 280 }
-                    ];
-
+                    // Use only real API data, no dummy data
                     const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
                       ? analyticsData.clickActivity
-                      : dummyData;
+                      : [];
+
+                    console.log('Chart Data Being Rendered:', chartData);
 
                     const maxClicks = Math.max(...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)), 1);
-                    const spacing = 700 / Math.max(1, chartData.length - 1);
+                    const chartWidth = 700; // 760 - 60
+                    const chartHeight = 210; // 250 - 40
+                    const spacing = chartData.length > 1 ? chartWidth / (chartData.length - 1) : chartWidth;
+
+                    console.log('Max Clicks for Chart Scale:', maxClicks);
+                    console.log('Data Points:', chartData.map(p => ({ label: p.label, totalClicks: p.totalClicks, uniqueClicks: p.uniqueClicks })));
 
                     return (
                       <>
                         {/* Total Clicks Line */}
                         <polyline
                           points={chartData.map((point, index) => {
-                            const x = 50 + (index * spacing);
-                            const y = 230 - ((point.totalClicks || 0) / maxClicks) * 200;
+                            const x = 60 + (index * spacing);
+                            const y = 250 - ((point.totalClicks || 0) / maxClicks) * chartHeight;
                             return `${x},${y}`;
                           }).join(' ')}
                           fill="none"
@@ -1417,8 +1215,8 @@ const Analytics = () => {
                         {/* Unique Clicks Line */}
                         <polyline
                           points={chartData.map((point, index) => {
-                            const x = 50 + (index * spacing);
-                            const y = 230 - ((point.uniqueClicks || 0) / maxClicks) * 200;
+                            const x = 60 + (index * spacing);
+                            const y = 250 - ((point.uniqueClicks || 0) / maxClicks) * chartHeight;
                             return `${x},${y}`;
                           }).join(' ')}
                           fill="none"
@@ -1430,15 +1228,15 @@ const Analytics = () => {
 
                         {/* Data points - Total Clicks */}
                         {chartData.map((point, index) => {
-                          const x = 50 + (index * spacing);
-                          const y = 230 - ((point.totalClicks || 0) / maxClicks) * 200;
+                          const x = 60 + (index * spacing);
+                          const y = 250 - ((point.totalClicks || 0) / maxClicks) * chartHeight;
                           return <circle key={`total-${index}`} cx={x} cy={y} r="4" fill="#3B82F6" />;
                         })}
 
                         {/* Data points - Unique Clicks */}
                         {chartData.map((point, index) => {
-                          const x = 50 + (index * spacing);
-                          const y = 230 - ((point.uniqueClicks || 0) / maxClicks) * 200;
+                          const x = 60 + (index * spacing);
+                          const y = 250 - ((point.uniqueClicks || 0) / maxClicks) * chartHeight;
                           return <circle key={`unique-${index}`} cx={x} cy={y} r="4" fill="#10B981" />;
                         })}
                       </>
@@ -1453,21 +1251,19 @@ const Analytics = () => {
                     fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
                   >
                     {(() => {
-                      const dummyData = [
-                        { label: 'Mon' }, { label: 'Tue' }, { label: 'Wed' },
-                        { label: 'Thu' }, { label: 'Fri' }, { label: 'Sat' }, { label: 'Sun' }
-                      ];
+                      // Use only real API data, no dummy data
                       const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
                         ? analyticsData.clickActivity
-                        : dummyData;
+                        : [];
 
-                      const spacing = 700 / Math.max(1, chartData.length - 1);
+                      const chartWidth = 700;
+                      const spacing = chartData.length > 1 ? chartWidth / (chartData.length - 1) : chartWidth;
 
                       return chartData.map((point, index) => {
-                        const x = 50 + (index * spacing);
+                        const x = 60 + (index * spacing);
                         const label = point.label || point.date || `Day ${index + 1}`;
                         return (
-                          <text key={index} x={x} y="260">
+                          <text key={index} x={x} y="270">
                             {label}
                           </text>
                         );
@@ -1483,26 +1279,20 @@ const Analytics = () => {
                     fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
                   >
                     {(() => {
-                      const dummyData = [
-                        { totalClicks: 130, uniqueClicks: 90 },
-                        { totalClicks: 190, uniqueClicks: 150 },
-                        { totalClicks: 240, uniqueClicks: 190 },
-                        { totalClicks: 320, uniqueClicks: 230 },
-                        { totalClicks: 280, uniqueClicks: 200 },
-                        { totalClicks: 450, uniqueClicks: 320 },
-                        { totalClicks: 380, uniqueClicks: 280 }
-                      ];
+                      // Use only real API data, no dummy data
                       const chartData = (analyticsData?.clickActivity && analyticsData.clickActivity.length > 0)
                         ? analyticsData.clickActivity
-                        : dummyData;
+                        : [];
 
                       const maxClicks = Math.max(...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)), 1);
                       const step = Math.ceil(maxClicks / 5);
+                      const chartHeight = 210; // 250 - 40
+
                       return [0, 1, 2, 3, 4, 5].map((i) => {
                         const value = i * step;
-                        const y = 235 - (i * 40);
+                        const y = 250 - (i * (chartHeight / 5));
                         return (
-                          <text key={i} x="40" y={y}>
+                          <text key={i} x="55" y={y + 4}>
                             {value}
                           </text>
                         );
@@ -1515,24 +1305,24 @@ const Analytics = () => {
                     {isRTL ? (
                       <>
                         {/* RTL Layout - Right to Left */}
-                        <circle cx="690" cy="20" r="4" fill="#3B82F6"  />
-                        <text x="682" y="24" fill="#6B7280" textAnchor="end">
+                        <circle cx="720" cy="300" r="4" fill="#3B82F6"  />
+                        <text x="712" y="304" fill="#6B7280" textAnchor="end">
                           {t('analytics.overview.totalClicks')}
                         </text>
-                        <circle cx="540" cy="20" r="4" fill="#10B981" />
-                        <text x="532" y="24" fill="#6B7280" textAnchor="end">
+                        <circle cx="570" cy="300" r="4" fill="#10B981" />
+                        <text x="562" y="304" fill="#6B7280" textAnchor="end">
                           {t('analytics.overview.uniqueClicks')}
                         </text>
                       </>
                     ) : (
                       <>
                         {/* LTR Layout - Left to Right */}
-                        <circle cx="300" cy="20" r="4" fill="#3B82F6" />
-                        <text x="310" y="24" fill="#6B7280" textAnchor="start">
+                        <circle cx="300" cy="300" r="4" fill="#3B82F6" />
+                        <text x="310" y="304" fill="#6B7280" textAnchor="start">
                           {t('analytics.overview.totalClicks')}
                         </text>
-                        <circle cx="450" cy="20" r="4" fill="#10B981" />
-                        <text x="460" y="24" fill="#6B7280" textAnchor="start">
+                        <circle cx="450" cy="300" r="4" fill="#10B981" />
+                        <text x="460" y="304" fill="#6B7280" textAnchor="start">
                           {t('analytics.overview.uniqueClicks')}
                         </text>
                       </>
@@ -1540,6 +1330,28 @@ const Analytics = () => {
                   </g>
                 </svg>
               </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '320px',
+                  textAlign: 'center',
+                  color: '#9CA3AF'
+                }}>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '16px' }}>
+                    <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 12l4-4 4 4 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p style={{ fontSize: '15px', fontWeight: '500', color: '#6B7280', margin: '0 0 8px 0' }}>
+                    {t('analytics.noData.title') || 'No Click Activity Data Available'}
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0, maxWidth: '400px' }}>
+                    {t('analytics.noData.chartDescription') || 'Start sharing your links to see click trends and activity over time.'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Bottom Section - Country and Device Stats */}
@@ -1587,15 +1399,30 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
-                    // Use dummy data if no real data is available
+                    // No dummy data - show "no data" message if empty
                     if (countryData.length === 0) {
-                      countryData = [
-                        { country: 'Saudi Arabia', clicks: 450 },
-                        { country: 'United Arab Emirates', clicks: 320 },
-                        { country: 'United States', clicks: 280 },
-                        { country: 'United Kingdom', clicks: 190 },
-                        { country: 'Germany', clicks: 150 }
-                      ];
+                      return (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: '#9CA3AF'
+                        }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                          <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                            {t('analytics.noData.countries') || 'No Geographic Data'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                            {t('analytics.noData.countriesDescription') || 'Country data will appear once your links are clicked.'}
+                          </p>
+                        </div>
+                      );
                     }
 
                     const maxClicks = Math.max(...countryData.map(c => c.clicks || c.count || 0));
@@ -1713,12 +1540,30 @@ const Analytics = () => {
                   let tabletClicks = deviceData.tablet || deviceData.Tablet || 0;
                   let totalClicks = mobileClicks + desktopClicks + tabletClicks;
 
-                  // Use dummy data if no real data is available
+                  // No dummy data - show "no data" message if empty
                   if (totalClicks === 0) {
-                    mobileClicks = 520;
-                    desktopClicks = 380;
-                    tabletClicks = 150;
-                    totalClicks = mobileClicks + desktopClicks + tabletClicks;
+                    return (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        color: '#9CA3AF'
+                      }}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                          <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" strokeWidth="2"/>
+                          <path d="M12 18h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                          {t('analytics.noData.devices') || 'No Device Data'}
+                        </p>
+                        <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                          {t('analytics.noData.devicesDescription') || 'Device breakdown will show after clicks are recorded.'}
+                        </p>
+                      </div>
+                    );
                   }
 
                     const mobilePercent = (mobileClicks / totalClicks) * 100;
@@ -1943,15 +1788,31 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
-                    // Use dummy data if no real data is available
+                    // No dummy data - show "no data" message if empty
                     if (browserData.length === 0) {
-                      browserData = [
-                        { browser: 'Chrome', count: 380 },
-                        { browser: 'Safari', count: 290 },
-                        { browser: 'Firefox', count: 180 },
-                        { browser: 'Edge', count: 120 },
-                        { browser: 'Opera', count: 80 }
-                      ];
+                      return (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: '#9CA3AF'
+                        }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            <path d="M12 2v4M12 18v4M22 12h-4M6 12H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
+                          <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                            {t('analytics.noData.browsers') || 'No Browser Data'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                            {t('analytics.noData.browsersDescription') || 'Browser statistics will appear after your links are clicked.'}
+                          </p>
+                        </div>
+                      );
                     }
 
                     const maxCount = Math.max(...browserData.map(b => b.count || b.clicks || 0));
@@ -2066,15 +1927,30 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
-                    // Use dummy data if no real data is available
+                    // No dummy data - show "no data" message if empty
                     if (osData.length === 0) {
-                      osData = [
-                        { os: 'Windows', count: 420 },
-                        { os: 'macOS', count: 310 },
-                        { os: 'Android', count: 260 },
-                        { os: 'iOS', count: 180 },
-                        { os: 'Linux', count: 90 }
-                      ];
+                      return (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: '#9CA3AF'
+                        }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                            <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+                            <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
+                          <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                            {t('analytics.noData.os') || 'No Operating System Data'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                            {t('analytics.noData.osDescription') || 'OS distribution will be visible after clicks are tracked.'}
+                          </p>
+                        </div>
+                      );
                     }
 
                     const maxCount = Math.max(...osData.map(o => o.count || o.clicks || 0));
@@ -2192,15 +2068,30 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
-                    // Use dummy data if no real data is available
+                    // No dummy data - show "no data" message if empty
                     if (cityData.length === 0) {
-                      cityData = [
-                        { city: 'Riyadh, Saudi Arabia', count: 340 },
-                        { city: 'Dubai, UAE', count: 280 },
-                        { city: 'Jeddah, Saudi Arabia', count: 220 },
-                        { city: 'Abu Dhabi, UAE', count: 180 },
-                        { city: 'London, UK', count: 150 }
-                      ];
+                      return (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: '#9CA3AF'
+                        }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                            {t('analytics.noData.cities') || 'No City Data'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                            {t('analytics.noData.citiesDescription') || 'City-level analytics will be available once clicks are recorded.'}
+                          </p>
+                        </div>
+                      );
                     }
 
                     const maxCount = Math.max(...cityData.map(c => c.count || c.clicks || 0));
@@ -2317,15 +2208,30 @@ const Analytics = () => {
                         .slice(0, 5);
                     }
 
-                    // Use dummy data if no real data is available
+                    // No dummy data - show "no data" message if empty
                     if (referrerData.length === 0) {
-                      referrerData = [
-                        { domain: 'Direct', count: 420 },
-                        { domain: 'google.com', count: 310 },
-                        { domain: 'twitter.com', count: 240 },
-                        { domain: 'facebook.com', count: 190 },
-                        { domain: 'linkedin.com', count: 130 }
-                      ];
+                      return (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: '#9CA3AF'
+                        }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                            {t('analytics.noData.referrers') || 'No Referrer Data'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+                            {t('analytics.noData.referrersDescription') || 'Traffic sources will be tracked when visitors click your links.'}
+                          </p>
+                        </div>
+                      );
                     }
 
                     const maxCount = Math.max(...referrerData.map(r => r.count || r.clicks || 0));
