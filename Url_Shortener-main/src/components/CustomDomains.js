@@ -1200,10 +1200,12 @@ const CustomDomains = () => {
                         </div>
                         <div className="link-actions" style={{
                           display: 'flex',
-                          flexDirection: 'column',
+                          flexDirection: isRTL ? 'row-reverse' : 'row',
                           gap: '8px',
                           flexShrink: 0,
-                          minWidth: 'fit-content'
+                          minWidth: 'fit-content',
+                          alignItems: 'center',
+                          flexWrap: 'wrap'
                         }}>
                           <button
                             onClick={() => {
