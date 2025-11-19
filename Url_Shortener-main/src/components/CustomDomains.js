@@ -646,13 +646,13 @@ const CustomDomains = () => {
           padding: '2rem',
           borderRadius: '8px',
           width: '90%',
-          maxWidth: '700px',
+          maxWidth: '600px',
           maxHeight: '90vh',
           overflow: 'auto'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>
-              DNS Records for {domainName}
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600', color: '#1F2937' }}>
+              Domain Verification
             </h3>
             <button
               onClick={() => {
@@ -680,104 +680,213 @@ const CustomDomains = () => {
             marginBottom: '1.5rem'
           }}>
             <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
-              Add these DNS records to your domain provider to verify ownership and enable custom domain functionality.
+              Add the following DNS record to verify your domain:
             </p>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151' }}>
-              A Record
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#1F2937' }}>
+              DNS Configuration Required:
             </h4>
             <div style={{
               backgroundColor: '#F9FAFB',
               border: '1px solid #E5E7EB',
-              borderRadius: '6px',
-              padding: '1rem'
+              borderRadius: '8px',
+              padding: '1rem',
+              overflow: 'auto'
             }}>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Type</div>
-                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>A</code>
-              </div>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Name</div>
-                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
-                  {selectedDomain.subdomain || '@'}
-                </code>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Value</div>
-                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
-                  {process.env.REACT_APP_SERVER_IP || '0.0.0.0'}
-                </code>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151' }}>
-              TXT Record (Verification)
-            </h4>
-            <div style={{
-              backgroundColor: '#F9FAFB',
-              border: '1px solid #E5E7EB',
-              borderRadius: '6px',
-              padding: '1rem'
-            }}>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Type</div>
-                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>TXT</code>
-              </div>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Name</div>
-                <code style={{ fontSize: '0.875rem', color: '#1F2937', fontFamily: 'monospace' }}>
-                  _verification.{selectedDomain.subdomain ? selectedDomain.subdomain : domainName}
-                </code>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.25rem' }}>Value</div>
-                <code style={{
+              {/* DNS Record Type */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+                gap: '16px'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6B7280',
+                  minWidth: '60px',
+                  fontWeight: '500'
+                }}>Type:</span>
+                <span style={{
+                  fontFamily: 'monospace',
                   fontSize: '0.875rem',
                   color: '#1F2937',
+                  flex: 1,
+                  padding: '6px 12px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '4px'
+                }}>CNAME</span>
+              </div>
+
+              {/* DNS Record Name */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+                gap: '16px'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6B7280',
+                  minWidth: '60px',
+                  fontWeight: '500'
+                }}>Name:</span>
+                <span style={{
                   fontFamily: 'monospace',
+                  fontSize: '0.875rem',
+                  color: '#1F2937',
+                  flex: 1,
+                  padding: '6px 12px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '4px',
                   wordBreak: 'break-all'
                 }}>
-                  {selectedDomain.verificationToken || 'laghhu-verify=' + (selectedDomain.id || selectedDomain._id)}
-                </code>
+                  {domainName}
+                </span>
+              </div>
+
+              {/* DNS Record Value */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6B7280',
+                  minWidth: '60px',
+                  fontWeight: '500'
+                }}>Value:</span>
+                <span style={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.875rem',
+                  color: '#1F2937',
+                  flex: 1,
+                  padding: '6px 12px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '4px'
+                }}>laghhu.link</span>
+                <button
+                  onClick={() => handleCopyToClipboard('laghhu.link', 'modal-value')}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: copiedField === 'modal-value' ? '#10B981' : '#FFFFFF',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s',
+                    minWidth: '70px',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {copiedField === 'modal-value' ? (
+                    <>
+                      <svg width="14" height="14" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" fill="none" stroke="#6B7280" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>Copy</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
 
-          <div style={{
-            backgroundColor: '#DBEAFE',
-            border: '1px solid #BFDBFE',
-            borderRadius: '6px',
-            padding: '1rem'
-          }}>
-            <p style={{ fontSize: '0.875rem', color: '#1E40AF', margin: 0 }}>
-              <strong>Note:</strong> DNS changes can take up to 48 hours to propagate globally, but usually take effect within a few minutes to hours.
-            </p>
-          </div>
-
-          <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
             <button
-              onClick={() => {
-                setShowDNSModal(false);
-                setSelectedDomain(null);
-              }}
+              onClick={() => handleVerifyDomain(selectedDomain.id || selectedDomain._id)}
+              disabled={verificationStatus === 'checking'}
               style={{
-                padding: '0.5rem 1.5rem',
-                backgroundColor: '#3B82F6',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                backgroundColor: verificationStatus === 'checking' ? '#9CA3AF' : '#3B82F6',
                 color: 'white',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: verificationStatus === 'checking' ? 'not-allowed' : 'pointer',
+                opacity: verificationStatus === 'checking' ? 0.7 : 1
               }}
             >
-              Close
+              {verificationStatus === 'checking' ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid white',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  Checking DNS...
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Check DNS Configuration
+                </>
+              )}
             </button>
           </div>
+
+          {verificationStatus === 'success' && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#DCFCE7',
+              border: '1px solid #BBF7D0',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <svg width="20" height="20" fill="none" stroke="#16A34A" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span style={{ fontSize: '0.875rem', color: '#166534', fontWeight: '500' }}>
+                DNS record verified successfully!
+              </span>
+            </div>
+          )}
+
+          {verificationStatus === 'failed' && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#FEE2E2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <svg width="20" height="20" fill="none" stroke="#DC2626" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span style={{ fontSize: '0.875rem', color: '#991B1B' }}>
+                DNS record not found. Please check your configuration.
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
