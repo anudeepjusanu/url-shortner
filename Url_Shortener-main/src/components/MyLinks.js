@@ -7,6 +7,99 @@ import { urlsAPI, qrCodeAPI } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import './MyLinks.css';
 
+// Reserved aliases that cannot be used for shortened URLs
+const RESERVED_ALIASES = [
+  // Frontend routes
+  'admin', 'dashboard', 'analytics', 'profile', 'settings',
+  'login', 'register', 'logout', 'signup', 'signin',
+  'my-links', 'mylinks', 'links', 'urls',
+  'create-short-link', 'create-link', 'create',
+  'qr-codes', 'qr', 'qrcode', 'qrcodes',
+  'utm-builder', 'utm', 'builder',
+  'custom-domains', 'domains', 'domain',
+  'subscription', 'billing', 'payment', 'pricing',
+  'team-members', 'team', 'members', 'users',
+  'content-filter', 'filter', 'content',
+
+  // Backend/API routes
+  'api', 'auth', 'v1', 'v2', 'v3',
+  'graphql', 'webhook', 'webhooks',
+  'oauth', 'callback', 'redirect',
+
+  // Common system pages
+  'about', 'contact', 'help', 'support',
+  'terms', 'privacy', 'legal', 'policy',
+  'docs', 'documentation', 'guide', 'tutorial',
+  'blog', 'news', 'updates', 'changelog',
+  'status', 'health', 'ping', 'test',
+
+  // Security/Admin
+  'root', 'administrator', 'superuser', 'moderator',
+  'system', 'config', 'configuration', 'setup',
+  'install', 'upgrade', 'migrate', 'backup',
+
+  // Common reserved words
+  'www', 'ftp', 'mail', 'smtp', 'pop3',
+  'assets', 'static', 'public', 'cdn',
+  'download', 'upload', 'file', 'files',
+  'img', 'image', 'images', 'css', 'js',
+  'favicon', 'robots', 'sitemap', 'feed', 'rss'
+];
+
+
+// Validation function for custom alias
+const validateCustomCode = (code, t) => {
+  // Empty is valid (will be auto-generated)
+  console.log('Validating custom code:', code);
+  if (!code || code.trim() === '') {
+    return { valid: true, error: null };
+  }
+
+  const trimmedCode = code.trim();
+
+  // Check length (minimum 3, maximum 50 characters)
+  if (trimmedCode.length < 3) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength') || 'Custom alias must be between 3 and 50 characters'
+    };
+  }
+
+  if (trimmedCode.length > 50) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength') || 'Custom alias must be between 3 and 50 characters'
+    };
+  }
+
+  // Check format: only alphanumeric, hyphens, and underscores
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidFormat') || 'Custom alias can only contain letters, numbers, hyphens, and underscores'
+    };
+  }
+
+  // Must start with letter or number (not hyphen or underscore)
+  if (!/^[a-zA-Z0-9]/.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidStart') || 'Custom alias must start with a letter or number'
+    };
+  }
+  
+  console.log('Custom code passed all validations:', trimmedCode);
+  
+  // Check if reserved
+  if (RESERVED_ALIASES.includes(trimmedCode.toLowerCase())) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasReserved') || 'This alias is reserved and cannot be used'
+    };
+  }
+
+  return { valid: true, error: null };
+};
 
 function MyLinks() {
   const { t } = useTranslation();
@@ -28,6 +121,10 @@ function MyLinks() {
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
+  
+  // Field-specific error states
+  const [urlError, setUrlError] = useState('');
+  const [customCodeError, setCustomCodeError] = useState('');
 
   useEffect(() => {
     fetchLinks();
@@ -138,13 +235,119 @@ function MyLinks() {
     );
   });
 
+  // Validate URL
+  const validateUrl = (url) => {
+    if (!url || url.trim() === '') {
+      return { valid: false, error: t('createLink.errors.urlRequired') || 'URL is required' };
+    }
+
+    const trimmedUrl = url.trim();
+
+    // Check length
+    if (trimmedUrl.length > 2000) {
+      return { valid: false, error: t('createLink.errors.urlTooLong') || 'URL is too long (max 2000 characters)' };
+    }
+
+    // Check if it's a valid URL format
+    try {
+      const urlObj = new URL(trimmedUrl);
+      // Must start with http or https
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return { valid: false, error: t('createLink.errors.invalidUrl') || 'URL must start with http:// or https://' };
+      }
+      return { valid: true, error: null };
+    } catch (e) {
+      return { valid: false, error: t('createLink.errors.invalidUrl') || 'Please enter a valid URL' };
+    }
+  };
+
+  // Handle URL input change with validation
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setLongUrl(value);
+
+    // Clear general error when user starts typing
+    if (error) setError(null);
+
+    // Only validate if user has typed something (not empty)
+    if (value.trim() !== '') {
+      const validation = validateUrl(value);
+      if (validation.valid) {
+        setUrlError('');
+      } else {
+        setUrlError(validation.error);
+      }
+    } else {
+      setUrlError('');
+    }
+  };
+
+  // Handle URL blur (when user leaves the field)
+  const handleUrlBlur = () => {
+    console.log('URL blur triggered, value:', longUrl);
+    const validation = validateUrl(longUrl);
+    console.log('URL validation result:', validation);
+    if (!validation.valid) {
+      setUrlError(validation.error);
+      console.log('Setting URL error:', validation.error);
+    }
+  };
+
+  // Handle custom code input change with validation
+  const handleCustomCodeChange = (e) => {
+    const value = e.target.value;
+    setCustomName(value);
+
+    // Clear general error when user starts typing
+    if (error) setError(null);
+
+    // Validate the custom code in real-time (including when empty since it's optional)
+    const validation = validateCustomCode(value, t);
+    if (validation.valid) {
+      setCustomCodeError('');
+    } else {
+      setCustomCodeError(validation.error);
+    }
+  };
+
+  // Handle custom code blur
+  const handleCustomCodeBlur = () => {
+    if (customName) {
+      const validation = validateCustomCode(customName, t);
+      if (!validation.valid) {
+        setCustomCodeError(validation.error);
+      }
+    }
+  };
+
   // Handlers for create short link form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    if (!longUrl.trim()) {
-      setError(t('createLink.errors.invalidUrl'));
+    // Validate all fields before submission
+    let hasError = false;
+
+    // Validate URL
+    const urlValidation = validateUrl(longUrl);
+    if (!urlValidation.valid) {
+      setUrlError(urlValidation.error);
+      hasError = true;
+    }
+
+    // Validate custom code
+    if (customName) {
+      const codeValidation = validateCustomCode(customName, t);
+      console.log('Custom code validation result:', codeValidation.error);
+      if (!codeValidation.valid) {
+        setCustomCodeError(codeValidation.error);
+        hasError = true;
+      }
+    }
+
+    // If any validation failed, stop submission
+    if (hasError) {
+      setError(t('createLink.errors.fixErrors') || 'Please fix the errors below before submitting');
       return;
     }
 
@@ -155,7 +358,7 @@ function MyLinks() {
         title: customName || undefined,
         domainId: selectedDomainId || undefined,
       });
-
+      console.log('Create URL response:', response);
       if (response.success && response.data && response.data.url) {
         const createdUrl = response.data.url;
         const urlId = createdUrl._id || createdUrl.id;
@@ -186,12 +389,38 @@ function MyLinks() {
         setGenerateQR(false);
         setShowCreateShortLink(false);
         setError(null);
+        
+        // Clear all field errors on success
+        setUrlError('');
+        setCustomCodeError('');
       } else {
         setError(t('createLink.errors.general'));
       }
     } catch (err) {
       console.error('Error creating short link:', err);
-      setError(err.message || t('createLink.errors.general'));
+      console.log('Error details:', err);
+      console.log('Error message:', err.message);
+      console.log('Error response data:', err.response);
+      
+      // Parse error message to determine which field has the error
+      const errorMessage = err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
+      const errorLower = errorMessage.toLowerCase();
+
+      // Check if error is about URL
+      if (errorLower.includes('url') && !errorLower.includes('alias')) {
+        setUrlError(errorMessage);
+      }
+      // Check if error is about alias/custom code
+      else if (errorLower.includes('alias') ||
+               errorLower.includes('reserved') ||
+               errorLower.includes('taken') ||
+               errorLower.includes('exists') ||
+               errorLower.includes('code')) {
+        setCustomCodeError(errorMessage);
+      }
+
+      // Set general error as well
+      setError(errorMessage);
     }
   };
 
@@ -396,15 +625,19 @@ function MyLinks() {
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M10 3h4v4M6 11L14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        {t('createLink.form.originalUrl')}
+                        {t('createLink.form.originalUrl')} *
                       </label>
                       <div className="input-container">
                         <input
                           type="url"
                           value={longUrl}
-                          onChange={(e) => setLongUrl(e.target.value)}
+                          onChange={handleUrlChange}
+                          onBlur={handleUrlBlur}
                           placeholder={t('createLink.form.originalUrlPlaceholder')}
                           className="url-input"
+                          style={{
+                            borderColor: urlError ? '#EF4444' : '#D1D5DB'
+                          }}
                           required
                         />
                         <button type="button" className="paste-btn">
@@ -413,6 +646,31 @@ function MyLinks() {
                           </svg>
                         </button>
                       </div>
+                      {urlError && urlError.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#FEE2E2',
+                          border: '1px solid #FCA5A5',
+                          borderRadius: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{urlError}</span>
+                        </div>
+                      )}
+                      {!urlError && (
+                        <p style={{marginTop: '4px', color: '#6B7280', fontSize: '12px'}}>
+                          {t('createLink.form.urlHint') || 'Enter the long URL you want to shorten'}
+                        </p>
+                      )}
                     </div>
 
                     {/* Domain Selection */}
@@ -476,11 +734,40 @@ function MyLinks() {
                         <input
                           type="text"
                           value={customName}
-                          onChange={(e) => setCustomName(e.target.value)}
+                          onChange={handleCustomCodeChange}
+                          onBlur={handleCustomCodeBlur}
                           placeholder={t('createLink.form.customAliasPlaceholder')}
                           className="custom-input"
+                          style={{
+                            borderColor: customCodeError ? '#EF4444' : '#D1D5DB'
+                          }}
                         />
                       </div>
+                      {customCodeError && customCodeError.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#FEE2E2',
+                          border: '1px solid #FCA5A5',
+                          borderRadius: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{customCodeError}</span>
+                        </div>
+                      )}
+                      {!customCodeError && (
+                        <p style={{marginTop: '4px', color: '#6B7280', fontSize: '12px'}}>
+                          {t('createLink.form.aliasHint') || 'Leave empty for auto-generated code'}
+                        </p>
+                      )}
                     </div>
                     {/* UTM Parameters Section */}
                     <div className="utm-section">
@@ -538,7 +825,11 @@ function MyLinks() {
                     </div>
                     {/* Action Buttons */}
                     <div className="action-buttons">
-                      <button type="submit" className="create-link-btn">
+                      <button 
+                        type="submit" 
+                        className="create-link-btn"
+                        disabled={!longUrl || urlError || customCodeError}
+                      >
                         <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
