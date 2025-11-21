@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -513,6 +521,81 @@ function MyLinks() {
         .create-short-link-btn:active {
           transform: translateY(0);
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+          .page-header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px;
+          }
+
+          .page-header > div {
+            text-align: center !important;
+          }
+
+          .create-short-link-btn {
+            width: 100% !important;
+            min-width: auto !important;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+
+          .link-card {
+            flex-direction: column !important;
+            padding: 12px 16px !important;
+            gap: 12px;
+          }
+
+          .link-info {
+            width: 100%;
+            text-align: ${isRTL ? 'right' : 'left'} !important;
+          }
+
+          .link-urls {
+            align-items: ${isRTL ? 'flex-end' : 'flex-start'} !important;
+          }
+
+          .short-url {
+            flex-direction: ${isRTL ? 'row-reverse' : 'row'} !important;
+          }
+
+          .link-actions {
+            width: 100%;
+            flex-direction: ${isRTL ? 'row-reverse' : 'row'} !important;
+            margin: 0 !important;
+            gap: 6px !important;
+          }
+
+          .link-actions button {
+            flex: 1;
+            padding: 8px 10px !important;
+            font-size: 12px !important;
+            justify-content: center;
+          }
+
+          .link-actions button svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .link-actions {
+            flex-wrap: wrap;
+          }
+
+          .link-actions button {
+            min-width: calc(50% - 3px);
+          }
+
+          .link-actions button:nth-child(3) {
+            width: 100%;
+          }
+        }
       `}</style>
       <div className="analytics-container">
         <MainHeader />
@@ -522,92 +605,48 @@ function MyLinks() {
           <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: isRTL ? 'row-reverse' : 'row',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               marginBottom: showCreateShortLink ? '24px' : '24px'
             }}>
-              {isRTL ? (
-                <>
-                  <button
-                    className="create-short-link-btn"
-                    onClick={() => setShowCreateShortLink((prev) => !prev)}
-                    style={{
-                      minWidth: 180,
-                      color: "white",
-                      padding: "10px 16px",
-                      background: "#3B82F6",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      flexShrink: 0
-                    }}
-                  >
-                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
-                  </button>
-                  {!showCreateShortLink && (
-                    <div style={{
-                      margin: 0,
-                      textAlign: 'right'
-                    }}>
-                      <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: '700',
-                        color: '#111827',
-                        marginBottom: '4px',
-                        margin: '0 0 4px 0'
-                      }}>{t('myLinks.title')}</h1>
-                      <p style={{
-                        color: '#6B7280',
-                        fontSize: '14px',
-                        margin: 0
-                      }}>{t('myLinks.subtitle')}</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {!showCreateShortLink && (
-                    <div style={{
-                      margin: 0,
-                      textAlign: 'left'
-                    }}>
-                      <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: '700',
-                        color: '#111827',
-                        marginBottom: '4px',
-                        margin: '0 0 4px 0'
-                      }}>{t('myLinks.title')}</h1>
-                      <p style={{
-                        color: '#6B7280',
-                        fontSize: '14px',
-                        margin: 0
-                      }}>{t('myLinks.subtitle')}</p>
-                    </div>
-                  )}
-                  <button
-                    className="create-short-link-btn"
-                    onClick={() => setShowCreateShortLink((prev) => !prev)}
-                    style={{
-                      minWidth: 180,
-                      color: "white",
-                      padding: "10px 16px",
-                      background: "#3B82F6",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      flexShrink: 0
-                    }}
-                  >
-                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
-                  </button>
-                </>
+              {!showCreateShortLink && (
+                <div style={{
+                  margin: 0,
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>
+                  <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    color: '#111827',
+                    marginBottom: '4px',
+                    margin: '0 0 4px 0'
+                  }}>{t('myLinks.title')}</h1>
+                  <p style={{
+                    color: '#6B7280',
+                    fontSize: '14px',
+                    margin: 0
+                  }}>{t('myLinks.subtitle')}</p>
+                </div>
               )}
+              <button
+                className="create-short-link-btn"
+                onClick={() => setShowCreateShortLink((prev) => !prev)}
+                style={{
+                  minWidth: 180,
+                  color: "white",
+                  padding: "10px 16px",
+                  background: "#3B82F6",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  flexShrink: 0
+                }}
+              >
+                {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
+              </button>
             </div>
             {showCreateShortLink ? (
               <div className="create-short-link-content">
@@ -1026,12 +1065,17 @@ function MyLinks() {
                           borderRadius: '8px',
                           padding: '16px 20px',
                           display: 'flex',
+                          flexDirection: isRTL ? 'row-reverse' : 'row',
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           transition: 'all 0.2s',
                           cursor: 'pointer'
                         }}>
-                          <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
+                          <div className="link-info" style={{
+                            flex: 1,
+                            minWidth: 0,
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}>
                             <div className="link-title" style={{
                               fontSize: '15px',
                               fontWeight: '600',
@@ -1042,18 +1086,20 @@ function MyLinks() {
                               display: 'flex',
                               flexDirection: 'column',
                               gap: '4px',
-                              marginBottom: '8px'
+                              marginBottom: '8px',
+                              alignItems: isRTL ? 'flex-end' : 'flex-start'
                             }}>
-                              <a 
+                              <a
                                 href={link.domain && link.domain !== 'laghhu.link' ? `http://${link.domain}/${link.shortCode}` : `https://laghhu.link/${link.shortCode}`}
-                                target="_blank" 
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="short-url" 
+                                className="short-url"
                                 style={{
                                   fontSize: '14px',
                                   color: '#3B82F6',
                                   fontWeight: '500',
                                   display: 'flex',
+                                  flexDirection: isRTL ? 'row-reverse' : 'row',
                                   alignItems: 'center',
                                   gap: '6px',
                                   textDecoration: 'none'
@@ -1065,28 +1111,38 @@ function MyLinks() {
                                 </svg>
                                 {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
                               </a>
-                              <a 
-                                href={link.originalUrl} 
-                                target="_blank" 
+                              <a
+                                href={link.originalUrl}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="original-url" 
+                                className="original-url"
                                 style={{
                                   fontSize: '13px',
                                   color: '#6B7280',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  textDecoration: 'none'
+                                  textDecoration: 'none',
+                                  direction: 'ltr',
+                                  textAlign: isRTL ? 'right' : 'left',
+                                  width: '100%'
                                 }}
                               >{link.originalUrl}</a>
                             </div>
                             <div className="link-meta" style={{
                               display: 'flex',
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
                               gap: '16px',
                               fontSize: '12px',
-                              color: '#9CA3AF'
+                              color: '#9CA3AF',
+                              justifyContent: isRTL ? 'flex-end' : 'flex-start'
                             }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{
+                                display: 'flex',
+                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                   <line x1="16" y1="2" x2="16" y2="6"/>
@@ -1095,7 +1151,12 @@ function MyLinks() {
                                 </svg>
                                 {formatDate(link.createdAt)}
                               </span>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{
+                                display: 'flex',
+                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
                                 </svg>
@@ -1105,8 +1166,10 @@ function MyLinks() {
                           </div>
                           <div className="link-actions" style={{
                             display: 'flex',
+                            flexDirection: isRTL ? 'row-reverse' : 'row',
                             gap: '8px',
-                            marginLeft: '16px'
+                            marginLeft: isRTL ? '0' : '16px',
+                            marginRight: isRTL ? '16px' : '0'
                           }}>
                             <button onClick={() => handleCopyLink(link)} style={{
                               padding: '8px 16px',
@@ -1303,3 +1366,4 @@ function MyLinks() {
 }
 
 export default MyLinks;
+
