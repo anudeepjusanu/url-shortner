@@ -359,29 +359,60 @@ const CreateShortLink = () => {
     } catch (err) {
       console.error('Error creating short link:', err);
 
-      // Parse error message to determine which field has the error
-      const errorMessage = err.message || t('createLink.errors.general');
-      const errorLower = errorMessage.toLowerCase();
+      // Clear previous field errors
+      setUrlError('');
+      setCustomCodeError('');
+      setTitleError('');
 
-      // Check if error is about URL
-      if (errorLower.includes('url') && !errorLower.includes('alias')) {
-        setUrlError(errorMessage);
-      }
-      // Check if error is about alias/custom code
-      else if (errorLower.includes('alias') ||
-               errorLower.includes('reserved') ||
-               errorLower.includes('taken') ||
-               errorLower.includes('exists') ||
-               errorLower.includes('code')) {
-        setCustomCodeError(errorMessage);
-      }
-      // Check if error is about title
-      else if (errorLower.includes('title')) {
-        setTitleError(errorMessage);
-      }
+      // Check if error has structured validation errors from backend
+      if (err.response && err.response.errors && Array.isArray(err.response.errors)) {
+        // Map backend validation errors to field-level errors
+        err.response.errors.forEach(error => {
+          const field = error.field || error.path;
+          const message = error.message || error.msg;
 
-      // Set general error as well
-      setError(errorMessage);
+          switch (field) {
+            case 'originalUrl':
+              setUrlError(message);
+              break;
+            case 'customCode':
+              setCustomCodeError(message);
+              break;
+            case 'title':
+              setTitleError(message);
+              break;
+            default:
+              console.log(`Unhandled field error: ${field}`, message);
+          }
+        });
+
+        // Set general error message
+        setError(err.message || t('createLink.errors.general'));
+      } else {
+        // Fallback: Parse error message to determine which field has the error
+        const errorMessage = err.message || t('createLink.errors.general');
+        const errorLower = errorMessage.toLowerCase();
+
+        // Check if error is about URL
+        if (errorLower.includes('url') && !errorLower.includes('alias')) {
+          setUrlError(errorMessage);
+        }
+        // Check if error is about alias/custom code
+        else if (errorLower.includes('alias') ||
+                 errorLower.includes('reserved') ||
+                 errorLower.includes('taken') ||
+                 errorLower.includes('exists') ||
+                 errorLower.includes('code')) {
+          setCustomCodeError(errorMessage);
+        }
+        // Check if error is about title
+        else if (errorLower.includes('title')) {
+          setTitleError(errorMessage);
+        }
+
+        // Set general error as well
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

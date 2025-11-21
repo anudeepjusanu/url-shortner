@@ -117,8 +117,12 @@ class ApiClient {
           throw new Error(data.message || 'Authentication required. Please login to continue.');
         }
 
-        // Throw error with API response message
-        throw new Error(data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
+        // Create error object with full response data
+        const error = new Error(data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
+        // Attach the full error response for field-level error handling
+        error.response = data;
+        error.statusCode = response.status;
+        throw error;
       }
 
       return data;
