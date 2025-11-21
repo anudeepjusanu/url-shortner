@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
+import Toast from './Toast';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import './MyLinks.css';
@@ -126,6 +127,9 @@ function MyLinks() {
   const [urlError, setUrlError] = useState('');
   const [customCodeError, setCustomCodeError] = useState('');
 
+  // Toast notification state
+  const [toast, setToast] = useState(null);
+
   useEffect(() => {
     fetchLinks();
     fetchAvailableDomains();
@@ -200,8 +204,20 @@ function MyLinks() {
       await urlsAPI.delete(deleteDialog.linkId);
       setLinks(links.filter(link => (link.id || link._id) !== deleteDialog.linkId));
       setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('myLinks.deleteSuccess') || 'Link deleted successfully'
+      });
     } catch (err) {
-      alert(t('errors.generic'));
+      const errorMsg = t('errors.generic') || 'Failed to delete link';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     } finally {
       setDeleteLoading(null);
     }
@@ -389,12 +405,24 @@ function MyLinks() {
         setGenerateQR(false);
         setShowCreateShortLink(false);
         setError(null);
-        
+
         // Clear all field errors on success
         setUrlError('');
         setCustomCodeError('');
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('createLink.success.created') || 'Short link created successfully!'
+        });
       } else {
-        setError(t('createLink.errors.general'));
+        const errorMsg = t('createLink.errors.general') || 'Failed to create link';
+        setError(errorMsg);
+        // Show error toast
+        setToast({
+          type: 'error',
+          message: errorMsg
+        });
       }
     } catch (err) {
       console.error('Error creating short link:', err);
@@ -421,6 +449,12 @@ function MyLinks() {
 
       // Set general error as well
       setError(errorMessage);
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMessage
+      });
     }
   };
 
@@ -438,6 +472,15 @@ function MyLinks() {
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

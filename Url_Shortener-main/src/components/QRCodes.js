@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
+import Toast from "./Toast";
 import { qrCodeAPI, urlsAPI } from "../services/api";
 import { useLanguage } from "../contexts/LanguageContext";
 import "./Analytics.css";
@@ -45,6 +46,9 @@ const QRCodes = () => {
     activeQRCodes: 0,
     downloadsToday: 0
   });
+
+  // Toast notification state
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     loadLinks();
@@ -107,16 +111,27 @@ const QRCodes = () => {
     try {
       const response = await qrCodeAPI.generate(linkId, qrOptions);
       if (response && response.success) {
-        alert("QR Code generated successfully!");
         setShowGenerateModal(false);
         setShowCustomizeModal(false);
         setSelectedLink(null);
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.generateSuccess') || 'QR Code generated successfully!'
+        });
       }
     } catch (error) {
       console.error("Error generating QR code:", error);
-      alert(error.message || "Failed to generate QR code");
+      const errorMsg = error.message || t('qrCodes.generateFailed') || 'Failed to generate QR code';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -150,12 +165,24 @@ const QRCodes = () => {
         // Reload to update download stats
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
+        });
       } else {
         throw new Error('Download failed');
       }
     } catch (error) {
       console.error("Error downloading QR code:", error);
-      alert("Failed to download QR code: " + error.message);
+      const errorMsg = error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -172,15 +199,26 @@ const QRCodes = () => {
     try {
       const response = await qrCodeAPI.bulkGenerate(selectedLinks, qrOptions);
       if (response && response.success) {
-        alert(`Successfully generated ${response.data.count} QR code(s)!`);
         setSelectedLinks([]);
         setSelectAll(false);
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.bulkGenerateSuccess', { count: response.data.count }) || `Successfully generated ${response.data.count} QR code(s)!`
+        });
       }
     } catch (error) {
       console.error("Error bulk generating QR codes:", error);
-      alert("Failed to generate QR codes: " + error.message);
+      const errorMsg = error.message || t('qrCodes.bulkGenerateFailed') || 'Failed to generate QR codes';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -238,6 +276,15 @@ const QRCodes = () => {
 
   return (
     <div className="analytics-container">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <MainHeader />
       <div className="analytics-layout">
         <Sidebar />
@@ -1177,3 +1224,4 @@ const QRCodes = () => {
 };
 
 export default QRCodes;
+
