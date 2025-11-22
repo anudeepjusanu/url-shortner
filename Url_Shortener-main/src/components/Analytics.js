@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "../contexts/LanguageContext";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
-import { analyticsAPI } from "../services/api";
+import { analyticsAPI, urlsAPI } from "../services/api";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 
@@ -29,6 +29,7 @@ const Analytics = () => {
     }
   }, [id, timeFilter]);
 
+  // Update the fetchAnalyticsData function to properly extract recentClicks
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
@@ -44,6 +45,9 @@ const Analytics = () => {
 
       // Transform backend data to frontend format
       const backendData = response.data;
+      
+      // Extract recent clicks
+      const recentClicks = backendData.recentClicks || backendData.clicks || [];
       
       // Extract totals with multiple fallback options
       const overviewTotals = {
@@ -77,6 +81,7 @@ const Analytics = () => {
         overviewTotals,
         chartCalculated: { total: chartTotalClicks, unique: chartUniqueClicks },
         timeSeriesLength: clickActivity.length,
+        recentClicksLength: recentClicks.length,
         mismatch: {
           total: overviewTotals.totalClicks !== chartTotalClicks,
           unique: overviewTotals.uniqueClicks !== chartUniqueClicks
@@ -108,18 +113,24 @@ const Analytics = () => {
         });
       }
 
-      // Final verification
-      const finalTotalClicks = clickActivity.reduce((sum, item) => sum + (item.totalClicks || 0), 0);
-      const finalUniqueClicks = clickActivity.reduce((sum, item) => sum + (item.uniqueClicks || 0), 0);
-
-      console.log('Final Chart Data Verification:', {
-        overviewTotals,
-        finalChartTotals: { total: finalTotalClicks, unique: finalUniqueClicks },
-        dataPoints: clickActivity,
-        matches: {
-          total: overviewTotals.totalClicks === finalTotalClicks,
-          unique: overviewTotals.uniqueClicks === finalUniqueClicks
+      // Aggregate countries from recentClicks
+      const countryMap = {};
+      recentClicks.forEach(click => {
+        const country = click.countryName || click.country || 'Unknown';
+        if (!countryMap[country]) {
+          countryMap[country] = { country, name: country, clicks: 0 };
         }
+        countryMap[country].clicks++;
+      });
+      const clicksByCountry = Object.values(countryMap)
+        .sort((a, b) => b.clicks - a.clicks)
+        .slice(0, 10);
+
+      // Aggregate devices from recentClicks
+      const deviceMap = {};
+      recentClicks.forEach(click => {
+        const deviceType = (click.deviceType || click.device || 'unknown').toLowerCase();
+        deviceMap[deviceType] = (deviceMap[deviceType] || 0) + 1;
       });
 
       const transformedData = {
@@ -128,27 +139,18 @@ const Analytics = () => {
         clickThroughRate: overviewTotals.clickThroughRate,
         averageTime: overviewTotals.averageTime,
         clickActivity: clickActivity,
-        
-        // Transform country data
-        clicksByCountry: backendData.topStats?.countries?.map(item => ({
-          country: item.countryName || item.country || 'Unknown',
-          name: item.countryName || item.country || 'Unknown',
-          clicks: item.clicks || 0
-        })) || [],
-        
-        // Transform device data
-        clicksByDevice: backendData.topStats?.devices?.reduce((acc, item) => {
-          const deviceType = (item.type || item._id || 'unknown').toLowerCase();
-          acc[deviceType] = item.clicks || 0;
-          return acc;
-        }, {}) || {},
-        
-        // Store URL info if available
+        clicksByCountry: clicksByCountry,
+        clicksByDevice: deviceMap,
+        recentClicks: recentClicks, // Store recentClicks for other sections
+       
+       
+       
+       
         url: backendData.url || null
       };
 
       console.log('Transformed Analytics Data:', transformedData);
-      console.log('Click Activity for Chart:', transformedData.clickActivity);
+      console.log('Recent Clicks:', recentClicks.length);
 
       setAnalyticsData(transformedData);
 
@@ -201,6 +203,11 @@ const Analytics = () => {
       setLoading(true);
       setError(null);
 
+      // Fetch all links to calculate total clicks (same as MyLinks page)
+      const linksResponse = await urlsAPI.list({ page: 1, limit: 100 });
+      const linksData = linksResponse.data?.urls || linksResponse.data?.data?.urls || [];
+      const allTimeClicks = linksData.reduce((sum, link) => sum + (link.clickCount || 0), 0);
+
       // Fetch dashboard overview analytics
       const response = await analyticsAPI.getOverview({
         period: timeFilter
@@ -208,11 +215,21 @@ const Analytics = () => {
 
       // Transform backend data to match frontend expectations
       const backendData = response.data;
+      
+      // Transform devices array to object format for compatibility
+      const deviceMap = {};
+      if (backendData.topStats?.devices && Array.isArray(backendData.topStats.devices)) {
+        backendData.topStats.devices.forEach(device => {
+          const deviceType = (device.type || 'unknown').toLowerCase();
+          deviceMap[deviceType] = device.clicks || 0;
+        });
+      }
+
       const transformedData = {
         ...backendData,
-        totalClicks: backendData.overview?.totalClicks || 0,
+        totalClicks: allTimeClicks,
         uniqueClicks: backendData.overview?.totalUniqueClicks || 0,
-        totalUrls: backendData.overview?.totalUrls || 0,
+        totalUrls: linksData.length || backendData.overview?.totalUrls || 0,
         clickActivity: backendData.chartData?.clicksByDay?.map(item => ({
           date: item.date,
           label: formatDateLabel(item.date),
@@ -220,9 +237,16 @@ const Analytics = () => {
           uniqueClicks: 0 // Dashboard doesn't track unique clicks per day yet
         })) || [],
         clicksByCountry: backendData.topStats?.countries || [],
-        clicksByDevice: backendData.topStats?.devices || []
+        clicksByDevice: deviceMap,
+        topStats: {
+          browsers: backendData.topStats?.browsers || [],
+          operatingSystems: backendData.topStats?.operatingSystems || [],
+          cities: backendData.topStats?.cities || [],
+          referrers: backendData.topStats?.referrers || []
+        }
       };
 
+      console.log('Dashboard Analytics Transformed Data:', transformedData);
       setAnalyticsData(transformedData);
     } catch (err) {
       console.error('Error fetching dashboard analytics:', err);
@@ -750,7 +774,7 @@ const Analytics = () => {
                       justifyContent: 'center',
                       gap: '6px',
                       color: '#6B7280',
-                      transition: 'all 0.2s',
+                      transition: 'all 0.2s ease',
                       fontSize: '13px',
                       fontWeight: '500',
                       flexDirection: isRTL ? 'row-reverse' : 'row'

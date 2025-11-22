@@ -235,7 +235,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>UTM Builder</span>
           </div> */}
-          <div             className={`nav-item ${isActive("/content-filter") ? "active" : ""}`}
+          {/* <div             className={`nav-item ${isActive("/content-filter") ? "active" : ""}`}
             onClick={() => handleNavigation("/content-filter")}
 >
             <div className="nav-icon">
@@ -260,7 +260,7 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.contentFilter')}</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Account Section */}

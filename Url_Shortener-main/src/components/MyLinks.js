@@ -81,16 +81,21 @@ const validateCustomCode = (code, t) => {
     };
   }
 
-  // Check format: only alphanumeric, hyphens, and underscores
-  if (!/^[a-zA-Z0-9_-]+$/.test(trimmedCode)) {
+  // Check format: Allow all Unicode letters, numbers, hyphens, underscores, and Arabic characters
+  // This pattern explicitly allows international characters including Arabic (ا-ي), Chinese, etc.
+  const validPattern = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF_-]+$/;
+  
+  if (!validPattern.test(trimmedCode)) {
     return {
       valid: false,
       error: t('createLink.errors.aliasInvalidFormat') || 'Custom alias can only contain letters, numbers, hyphens, and underscores'
     };
   }
 
-  // Must start with letter or number (not hyphen or underscore)
-  if (!/^[a-zA-Z0-9]/.test(trimmedCode)) {
+  // Must start with letter or number (including Arabic)
+  const startsWithLetterOrNumber = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF]/;
+  
+  if (!startsWithLetterOrNumber.test(trimmedCode)) {
     return {
       valid: false,
       error: t('createLink.errors.aliasInvalidStart') || 'Custom alias must start with a letter or number'
@@ -170,6 +175,8 @@ function MyLinks() {
       const response = await urlsAPI.list({ page: 1, limit: 100 });
       const linksData = response.data?.urls || response.data?.data?.urls || [];
       setLinks(linksData);
+        console.log(linksData, "232323232")
+
     } catch (err) {
       setError(err.message || t('errors.generic'));
     } finally {
