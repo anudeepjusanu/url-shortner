@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
+import Toast from "./Toast";
 import { qrCodeAPI, urlsAPI } from "../services/api";
 import { useLanguage } from "../contexts/LanguageContext";
 import "./Analytics.css";
@@ -46,6 +47,9 @@ const QRCodes = () => {
     downloadsToday: 0
   });
 
+  // Toast notification state
+  const [toast, setToast] = useState(null);
+
   useEffect(() => {
     loadLinks();
     loadStats();
@@ -67,6 +71,11 @@ const QRCodes = () => {
       }
     } catch (error) {
       console.error("Error loading links:", error);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadLinks') || 'Failed to load links. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -85,6 +94,11 @@ const QRCodes = () => {
       }
     } catch (error) {
       console.error("Error loading stats:", error);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadStats') || 'Failed to load statistics. Please refresh the page.'
+      });
     }
   };
 
@@ -107,16 +121,27 @@ const QRCodes = () => {
     try {
       const response = await qrCodeAPI.generate(linkId, qrOptions);
       if (response && response.success) {
-        alert("QR Code generated successfully!");
         setShowGenerateModal(false);
         setShowCustomizeModal(false);
         setSelectedLink(null);
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.generateSuccess') || 'QR Code generated successfully!'
+        });
       }
     } catch (error) {
       console.error("Error generating QR code:", error);
-      alert(error.message || "Failed to generate QR code");
+      const errorMsg = error.message || t('qrCodes.generateFailed') || 'Failed to generate QR code';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -150,37 +175,67 @@ const QRCodes = () => {
         // Reload to update download stats
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
+        });
       } else {
         throw new Error('Download failed');
       }
     } catch (error) {
       console.error("Error downloading QR code:", error);
-      alert("Failed to download QR code: " + error.message);
+      const errorMsg = error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
   const bulkGenerateQRCodes = async () => {
     if (selectedLinks.length === 0) {
-      alert(t('errors.generic'));
+      // Show warning toast instead of alert
+      setToast({
+        type: 'warning',
+        message: t('errors.noLinksSelected') || 'Please select at least one link for bulk operation.'
+      });
       return;
     }
 
-    if (!window.confirm(t('notifications.success'))) {
+    // Use window.confirm for confirmation - can be improved with custom modal later
+    const confirmMessage = t('errors.confirmBulkGenerate', { count: selectedLinks.length }) ||
+                          `Are you sure you want to generate QR codes for ${selectedLinks.length} selected link(s)?`;
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
     try {
       const response = await qrCodeAPI.bulkGenerate(selectedLinks, qrOptions);
       if (response && response.success) {
-        alert(`Successfully generated ${response.data.count} QR code(s)!`);
         setSelectedLinks([]);
         setSelectAll(false);
         loadLinks();
         loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.bulkGenerateSuccess', { count: response.data.count }) || `Successfully generated ${response.data.count} QR code(s)!`
+        });
       }
     } catch (error) {
       console.error("Error bulk generating QR codes:", error);
-      alert("Failed to generate QR codes: " + error.message);
+      const errorMsg = error.message || t('qrCodes.bulkGenerateFailed') || 'Failed to generate QR codes';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -198,12 +253,21 @@ const QRCodes = () => {
   const handleConfirmDelete = async () => {
     try {
       await urlsAPI.deleteUrl(deleteDialog.linkId);
-      loadLinks();
-      loadStats();
+      await loadLinks();
+      await loadStats();
       setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('myLinks.deleteSuccess') || 'QR code and link deleted successfully!'
+      });
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("Failed to delete: " + error.message);
+      // Show error toast instead of alert
+      setToast({
+        type: 'error',
+        message: t('errors.qrCodeDeleteError') || `Failed to delete: ${error.message}`
+      });
     }
   };
 
@@ -238,6 +302,15 @@ const QRCodes = () => {
 
   return (
     <div className="analytics-container">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <MainHeader />
       <div className="analytics-layout">
         <Sidebar />
@@ -1177,3 +1250,4 @@ const QRCodes = () => {
 };
 
 export default QRCodes;
+

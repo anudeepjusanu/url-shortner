@@ -236,6 +236,34 @@
   margin: 0;
 }
 
+/* Form error styles */
+.form-input-error {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+}
+
+.form-input-error:focus {
+  border-color: #DC2626 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  color: #DC2626;
+  margin: 4px 0 0 0;
+}
+
+.form-error .error-icon {
+  flex-shrink: 0;
+  color: #DC2626;
+}
+
 /* UTM Section Styles */
 .utm-section {
   background-color: transparent;

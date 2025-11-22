@@ -404,18 +404,30 @@
       "createButton": "إنشاء رابط مختصر",
       "creating": "جاري الإنشاء...",
       "advancedOptions": "خيارات متقدمة",
-      "utmParameters": "معاملات UTM"
+      "utmParameters": "معاملات UTM",
+      "urlHint": "أدخل الرابط الطويل الذي تريد اختصاره",
+      "aliasHint": "اتركه فارغًا للحصول على رمز تلقائي"
     },
     "success": {
       "title": "تم إنشاء الرابط بنجاح!",
+      "created": "تم إنشاء رابط مختصر بنجاح!",
       "yourLink": "رابطك المختصر:",
       "copyLink": "نسخ الرابط",
       "viewAnalytics": "عرض التحليلات",
       "createAnother": "إنشاء رابط آخر"
     },
     "errors": {
-      "invalidUrl": "يرجى إدخال رابط صحيح",
+      "invalidUrl": "يرجى إدخال رابط صحيح (يجب أن يبدأ بـ http:// أو https://)",
+      "urlRequired": "الرابط الأصلي مطلوب",
+      "urlTooLong": "الرابط طويل جدًا (الحد الأقصى 2000 حرف)",
       "aliasExists": "هذا الاسم مستخدم بالفعل",
+      "aliasReserved": "هذا الاسم محجوز للنظام. يرجى اختيار اسم مختلف.",
+      "aliasInvalidFormat": "الاسم يمكن أن يحتوي فقط على حروف وأرقام وشرطات وشرطات سفلية",
+      "aliasInvalidLength": "يجب أن يكون الاسم بين 3 و 50 حرفًا",
+      "aliasInvalidStart": "يجب أن يبدأ الاسم بحرف أو رقم",
+      "titleTooLong": "العنوان طويل جدًا (الحد الأقصى 100 حرف)",
+      "titleInvalidChars": "العنوان يحتوي على أحرف غير صالحة",
+      "fixErrors": "يرجى إصلاح الأخطاء أدناه قبل الإرسال",
       "general": "فشل إنشاء الرابط. يرجى المحاولة مرة أخرى."
     }
   },
@@ -451,6 +463,7 @@
     },
     "confirmDelete": "هل أنت متأكد من حذف هذا الرابط؟",
     "deleteSuccess": "تم حذف الرابط بنجاح",
+    "deleteError": "فشل حذف الرابط",
     "noLinks": "لم يتم العثور على روابط",
     "createFirstLink": "أنشئ أول رابط مختصر لك للبدء"
   },
@@ -550,7 +563,13 @@
       "preview": "معاينة"
     },
     "noQRCodes": "لا توجد رموز QR بعد",
-    "createFirst": "أنشئ أول رمز QR لك للبدء"
+    "createFirst": "أنشئ أول رمز QR لك للبدء",
+    "generateSuccess": "تم إنشاء رمز QR بنجاح!",
+    "generateFailed": "فشل إنشاع رمز QR",
+    "downloadSuccess": "تم تحميل رمز QR بنجاح!",
+    "downloadFailed": "فشل تحميل رمز QR",
+    "bulkGenerateSuccess": "تم إنشاء {{count}} رمز QR بنجاح!",
+    "bulkGenerateFailed": "فشل إنشاء رموز QR"
   },
   "contentFilter": {
     "title": "تصفية المحتوى والأمان",
@@ -668,7 +687,11 @@
       "verifyButton": "التحقق من النطاق"
     },
     "noDomains": "لم تتم إضافة نطاقات مخصصة بعد",
-    "addFirst": "أضف أول نطاق مخصص لك للبدء"
+    "addFirst": "أضف أول نطاق مخصص لك للبدء",
+    "domainAdded": "تم إضافة النطاق بنجاح!",
+    "verificationSuccess": "تم التحقق من النطاق بنجاح!",
+    "verificationFailed": "فشل التحقق من النطاق",
+    "deleteSuccess": "تم حذف النطاق بنجاح"
   },
   "subscription": {
     "title": "الاشتراك والفواتير",
@@ -966,7 +989,20 @@
     "failedToRemoveKeyword": "فشل في إزالة الكلمة الرئيسية المحظورة: {{error}}",
     "failedToAddAllowedDomain": "فشل في إضافة النطاق المسموح: {{error}}",
     "failedToRemoveAllowedDomain": "فشل في إزالة النطاق المسموح: {{error}}",
-    "failedToRegenerateApiKey": "فشل في إعادة إنشاء مفتاح API: {{error}}"
+    "failedToRegenerateApiKey": "فشل في إعادة إنشاء مفتاح API: {{error}}",
+    "failedToLoadLinks": "فشل تحميل الروابط. يرجى المحاولة مرة أخرى.",
+    "failedToLoadDomains": "فشل تحميل النطاقات المتاحة. يرجى تحديث الصفحة.",
+    "failedToCopyLink": "فشل نسخ الرابط إلى الحافظة. يرجى المحاولة مرة أخرى.",
+    "failedToGenerateQR": "فشل في إنشاء رمز QR لهذا الرابط.",
+    "failedToLoadStats": "فشل تحميل الإحصائيات. يرجى تحديث الصفحة.",
+    "failedToVerifyDomain": "فشل التحقق من النطاق. يرجى التحقق من إعدادات DNS والمحاولة مرة أخرى.",
+    "failedToCopyText": "فشل النسخ إلى الحافظة. يرجى النسخ يدوياً.",
+    "noLinksSelected": "يرجى تحديد رابط واحد على الأقل للعملية الجماعية.",
+    "confirmBulkGenerate": "هل أنت متأكد من أنك تريد إنشاء رموز QR لـ {{count}} رابط محدد؟",
+    "domainVerificationError": "فشل التحقق من النطاق. يرجى التحقق من سجلات DNS الخاصة بك.",
+    "domainAddError": "فشل إضافة النطاق. يرجى التحقق من إدخالك والمحاولة مرة أخرى.",
+    "domainDeleteError": "فشل حذف النطاق. يرجى المحاولة مرة أخرى.",
+    "qrCodeDeleteError": "فشل حذف رمز QR. يرجى المحاولة مرة أخرى."
   },
   "sidebar": {
     "main": "الرئيسية",
