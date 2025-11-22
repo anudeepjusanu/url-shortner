@@ -208,27 +208,80 @@ const generateQRCode = async (req, res) => {
   try {
     const { shortCode } = req.params;
     const {
-      size,
-      format,
-      fgColor,
-      bgColor,
-      errorCorrection,
-      margin
+      size = 300,
+      format = 'png',
+      fgColor = '000000',
+      bgColor = 'ffffff',
+      errorCorrection = 'M',
+      margin = 1
     } = req.query;
 
-    const options = {};
-    if (size) options.size = parseInt(size);
-    if (format) options.format = format;
-    if (fgColor) options.fgColor = fgColor;
-    if (bgColor) options.bgColor = bgColor;
-    if (errorCorrection) options.errorCorrection = errorCorrection;
-    if (margin) options.margin = parseInt(margin);
+    // Validate format
+    const supportedFormats = ['png', 'svg'];
+    if (!supportedFormats.includes(format.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Unsupported format: ${format}. Supported formats are: ${supportedFormats.join(', ')}`,
+        supportedFormats
+      });
+    }
 
-    const qrData = await redirectService.generateQRCode(shortCode, options);
+    // Find URL by shortCode
+    const url = await redirectService.getUrlByShortCode(shortCode);
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        message: 'The requested URL was not found'
+      });
+    }
+
+    const QRCode = require('qrcode');
+    const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${shortCode}`;
+
+    // Build QR code options
+    const qrOptions = {
+      errorCorrectionLevel: errorCorrection,
+      type: format === 'svg' ? 'svg' : 'image/png',
+      quality: 0.92,
+      margin: parseInt(margin) || 1,
+      color: {
+        dark: `#${fgColor.replace('#', '')}`,
+        light: `#${bgColor.replace('#', '')}`
+      },
+      width: parseInt(size)
+    };
+
+    // Generate QR code
+    let qrCodeData;
+    if (format === 'svg') {
+      qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+    } else {
+      qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
+    }
+
+    // Store the generated QR code and customization
+    url.qrCode = qrCodeData;
+    url.qrCodeGenerated = true;
+    url.qrCodeGeneratedAt = new Date();
+    url.qrCodeCustomization = {
+      size: parseInt(size),
+      format,
+      errorCorrection,
+      foregroundColor: `#${fgColor.replace('#', '')}`,
+      backgroundColor: `#${bgColor.replace('#', '')}`,
+      includeMargin: parseInt(margin) > 0
+    };
+    await url.save();
 
     res.json({
       success: true,
-      data: qrData
+      data: {
+        qrCodeUrl: qrCodeData,
+        url: shortUrl,
+        shortCode,
+        originalUrl: url.originalUrl,
+        customization: url.qrCodeCustomization
+      }
     });
 
   } catch (error) {

@@ -14,6 +14,16 @@ const generateQRCode = async (req, res) => {
       includeMargin = true
     } = req.body;
 
+    // Validate format
+    const supportedFormats = ['png', 'svg'];
+    if (!supportedFormats.includes(format.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Unsupported format: ${format}. Supported formats are: ${supportedFormats.join(', ')}`,
+        supportedFormats
+      });
+    }
+
     // Find the URL
     const url = await Url.findById(id);
 
@@ -57,9 +67,18 @@ const generateQRCode = async (req, res) => {
       qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
     }
 
-    // Update URL with QR code info
+    // Store the generated QR code and customization options
+    url.qrCode = qrCodeData;
     url.qrCodeGenerated = true;
     url.qrCodeGeneratedAt = new Date();
+    url.qrCodeCustomization = {
+      size: parseInt(size),
+      format,
+      errorCorrection,
+      foregroundColor,
+      backgroundColor,
+      includeMargin
+    };
     await url.save();
 
     res.json({
@@ -85,6 +104,16 @@ const downloadQRCode = async (req, res) => {
     const { id } = req.params;
     const { format = 'png', size = 300 } = req.query;
 
+    // Validate format
+    const supportedFormats = ['png', 'svg'];
+    if (!supportedFormats.includes(format.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Unsupported format: ${format}. Supported formats are: ${supportedFormats.join(', ')}`,
+        supportedFormats
+      });
+    }
+
     // Find the URL
     const url = await Url.findById(id);
 
@@ -107,12 +136,17 @@ const downloadQRCode = async (req, res) => {
     // Build the short URL
     const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}`;
 
-    // Generate QR Code
+    // Use stored customization if available, otherwise use defaults
+    const customization = url.qrCodeCustomization || {};
     const qrOptions = {
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: customization.errorCorrection || 'M',
       type: format === 'svg' ? 'svg' : 'image/png',
       quality: 0.92,
-      margin: 4,
+      margin: customization.includeMargin !== undefined ? (customization.includeMargin ? 4 : 0) : 4,
+      color: {
+        dark: customization.foregroundColor || '#000000',
+        light: customization.backgroundColor || '#FFFFFF'
+      },
       width: parseInt(size)
     };
 
@@ -211,8 +245,21 @@ const bulkGenerateQRCodes = async (req, res) => {
     const {
       size = 300,
       format = 'png',
-      errorCorrection = 'M'
+      errorCorrection = 'M',
+      foregroundColor = '#000000',
+      backgroundColor = '#FFFFFF',
+      includeMargin = true
     } = options;
+
+    // Validate format
+    const supportedFormats = ['png', 'svg'];
+    if (!supportedFormats.includes(format.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Unsupported format: ${format}. Supported formats are: ${supportedFormats.join(', ')}`,
+        supportedFormats
+      });
+    }
 
     // Find all URLs
     const urls = await Url.find({
@@ -239,7 +286,11 @@ const bulkGenerateQRCodes = async (req, res) => {
           errorCorrectionLevel: errorCorrection,
           type: format === 'svg' ? 'svg' : 'image/png',
           quality: 0.92,
-          margin: 4,
+          margin: includeMargin ? 4 : 0,
+          color: {
+            dark: foregroundColor,
+            light: backgroundColor
+          },
           width: parseInt(size)
         };
 
@@ -250,9 +301,18 @@ const bulkGenerateQRCodes = async (req, res) => {
           qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
         }
 
-        // Update URL
+        // Store the generated QR code and customization
+        url.qrCode = qrCodeData;
         url.qrCodeGenerated = true;
         url.qrCodeGeneratedAt = new Date();
+        url.qrCodeCustomization = {
+          size: parseInt(size),
+          format,
+          errorCorrection,
+          foregroundColor,
+          backgroundColor,
+          includeMargin
+        };
         await url.save();
 
         return {

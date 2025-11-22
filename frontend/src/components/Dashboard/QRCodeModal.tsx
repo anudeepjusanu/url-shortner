@@ -161,9 +161,10 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ shortCode, shortUrl, onClose 
                   >
                     <option value="png">PNG</option>
                     <option value="svg">SVG</option>
-                    <option value="jpeg">JPEG</option>
-                    <option value="gif">GIF</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: PNG (recommended) and SVG (vector)
+                  </p>
                 </div>
 
                 {/* Error Correction */}

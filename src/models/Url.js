@@ -103,6 +103,14 @@ const urlSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  qrCodeCustomization: {
+    size: Number,
+    format: String,
+    errorCorrection: String,
+    foregroundColor: String,
+    backgroundColor: String,
+    includeMargin: Boolean
+  },
   metaData: {
     favicon: String,
     ogTitle: String,

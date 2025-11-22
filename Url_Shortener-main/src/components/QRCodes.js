@@ -606,14 +606,25 @@ const QRCodes = () => {
                           justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
-                            alt="QR Code"
-                            style={{
-                              width: '70px',
-                              height: '70px'
-                            }}
-                          />
+                          {link.qrCode ? (
+                            <img
+                              src={link.qrCode}
+                              alt="QR Code"
+                              style={{
+                                width: '70px',
+                                height: '70px'
+                              }}
+                            />
+                          ) : (
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
+                              alt="QR Code"
+                              style={{
+                                width: '70px',
+                                height: '70px'
+                              }}
+                            />
+                          )}
                         </div>
 
                         {/* Link Info */}
@@ -928,11 +939,16 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="png">{t('qrCodes.formats.png')}</option>
-                      <option value="svg">{t('qrCodes.formats.svg')}</option>
-                      <option value="pdf">{t('qrCodes.formats.pdf')}</option>
-                      <option value="jpg">{t('qrCodes.formats.jpg')}</option>
+                      <option value="png">PNG</option>
+                      <option value="svg">SVG</option>
                     </select>
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#6B7280',
+                      marginTop: '4px'
+                    }}>
+                      {t('qrCodes.formats.note') || 'Supported formats: PNG and SVG'}
+                    </p>
                   </div>
 
                   <div style={{
