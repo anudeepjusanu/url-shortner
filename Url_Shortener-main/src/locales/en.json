@@ -990,7 +990,20 @@
     "failedToRemoveKeyword": "Failed to remove blocked keyword: {{error}}",
     "failedToAddAllowedDomain": "Failed to add allowed domain: {{error}}",
     "failedToRemoveAllowedDomain": "Failed to remove allowed domain: {{error}}",
-    "failedToRegenerateApiKey": "Failed to regenerate API key: {{error}}"
+    "failedToRegenerateApiKey": "Failed to regenerate API key: {{error}}",
+    "failedToLoadLinks": "Failed to load links. Please try again.",
+    "failedToLoadDomains": "Failed to load available domains. Please refresh the page.",
+    "failedToCopyLink": "Failed to copy link to clipboard. Please try again.",
+    "failedToGenerateQR": "Failed to generate QR code for this link.",
+    "failedToLoadStats": "Failed to load statistics. Please refresh the page.",
+    "failedToVerifyDomain": "Failed to verify domain. Please check your DNS settings and try again.",
+    "failedToCopyText": "Failed to copy to clipboard. Please copy manually.",
+    "noLinksSelected": "Please select at least one link for bulk operation.",
+    "confirmBulkGenerate": "Are you sure you want to generate QR codes for {{count}} selected link(s)?",
+    "domainVerificationError": "Domain verification failed. Please check your DNS records.",
+    "domainAddError": "Failed to add domain. Please check your input and try again.",
+    "domainDeleteError": "Failed to delete domain. Please try again.",
+    "qrCodeDeleteError": "Failed to delete QR code. Please try again."
   },
   "sidebar": {
     "main": "MAIN",

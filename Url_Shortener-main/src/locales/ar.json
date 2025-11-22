@@ -989,7 +989,20 @@
     "failedToRemoveKeyword": "فشل في إزالة الكلمة الرئيسية المحظورة: {{error}}",
     "failedToAddAllowedDomain": "فشل في إضافة النطاق المسموح: {{error}}",
     "failedToRemoveAllowedDomain": "فشل في إزالة النطاق المسموح: {{error}}",
-    "failedToRegenerateApiKey": "فشل في إعادة إنشاء مفتاح API: {{error}}"
+    "failedToRegenerateApiKey": "فشل في إعادة إنشاء مفتاح API: {{error}}",
+    "failedToLoadLinks": "فشل تحميل الروابط. يرجى المحاولة مرة أخرى.",
+    "failedToLoadDomains": "فشل تحميل النطاقات المتاحة. يرجى تحديث الصفحة.",
+    "failedToCopyLink": "فشل نسخ الرابط إلى الحافظة. يرجى المحاولة مرة أخرى.",
+    "failedToGenerateQR": "فشل في إنشاء رمز QR لهذا الرابط.",
+    "failedToLoadStats": "فشل تحميل الإحصائيات. يرجى تحديث الصفحة.",
+    "failedToVerifyDomain": "فشل التحقق من النطاق. يرجى التحقق من إعدادات DNS والمحاولة مرة أخرى.",
+    "failedToCopyText": "فشل النسخ إلى الحافظة. يرجى النسخ يدوياً.",
+    "noLinksSelected": "يرجى تحديد رابط واحد على الأقل للعملية الجماعية.",
+    "confirmBulkGenerate": "هل أنت متأكد من أنك تريد إنشاء رموز QR لـ {{count}} رابط محدد؟",
+    "domainVerificationError": "فشل التحقق من النطاق. يرجى التحقق من سجلات DNS الخاصة بك.",
+    "domainAddError": "فشل إضافة النطاق. يرجى التحقق من إدخالك والمحاولة مرة أخرى.",
+    "domainDeleteError": "فشل حذف النطاق. يرجى المحاولة مرة أخرى.",
+    "qrCodeDeleteError": "فشل حذف رمز QR. يرجى المحاولة مرة أخرى."
   },
   "sidebar": {
     "main": "الرئيسية",

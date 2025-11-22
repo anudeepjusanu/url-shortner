@@ -163,6 +163,11 @@ function MyLinks() {
       }
     } catch (err) {
       console.error('Failed to fetch domains:', err);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadDomains') || 'Failed to load available domains. Please refresh the page.'
+      });
     } finally {
       setLoadingDomains(false);
     }
@@ -178,7 +183,13 @@ function MyLinks() {
         console.log(linksData, "232323232")
 
     } catch (err) {
-      setError(err.message || t('errors.generic'));
+      const errorMsg = err.message || t('errors.generic');
+      setError(errorMsg);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadLinks') || 'Failed to load links. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -196,7 +207,12 @@ function MyLinks() {
       setCopiedId(link.id || link._id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      alert(t('errors.generic'));
+      console.error('Failed to copy link:', err);
+      // Show error toast instead of alert
+      setToast({
+        type: 'error',
+        message: t('errors.failedToCopyLink') || 'Failed to copy link to clipboard. Please try again.'
+      });
     }
   };
 
@@ -407,7 +423,11 @@ function MyLinks() {
             });
           } catch (qrErr) {
             console.error('Error generating QR code:', qrErr);
-            // Don't fail the whole operation if QR generation fails
+            // Show warning toast but don't fail the whole operation
+            setToast({
+              type: 'warning',
+              message: t('errors.failedToGenerateQR') || 'Failed to generate QR code for this link.'
+            });
           }
         }
 
@@ -482,7 +502,11 @@ function MyLinks() {
       timestamp: new Date().toISOString()
     };
     localStorage.setItem('linkDraft', JSON.stringify(draft));
-    alert(t('notifications.draftSaved'));
+    // Show success toast instead of alert
+    setToast({
+      type: 'success',
+      message: t('notifications.draftSaved') || 'Draft saved!'
+    });
   };
 
   return (

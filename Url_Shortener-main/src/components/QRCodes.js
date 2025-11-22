@@ -71,6 +71,11 @@ const QRCodes = () => {
       }
     } catch (error) {
       console.error("Error loading links:", error);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadLinks') || 'Failed to load links. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -89,6 +94,11 @@ const QRCodes = () => {
       }
     } catch (error) {
       console.error("Error loading stats:", error);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadStats') || 'Failed to load statistics. Please refresh the page.'
+      });
     }
   };
 
@@ -188,11 +198,18 @@ const QRCodes = () => {
 
   const bulkGenerateQRCodes = async () => {
     if (selectedLinks.length === 0) {
-      alert(t('errors.generic'));
+      // Show warning toast instead of alert
+      setToast({
+        type: 'warning',
+        message: t('errors.noLinksSelected') || 'Please select at least one link for bulk operation.'
+      });
       return;
     }
 
-    if (!window.confirm(t('notifications.success'))) {
+    // Use window.confirm for confirmation - can be improved with custom modal later
+    const confirmMessage = t('errors.confirmBulkGenerate', { count: selectedLinks.length }) ||
+                          `Are you sure you want to generate QR codes for ${selectedLinks.length} selected link(s)?`;
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
@@ -236,12 +253,21 @@ const QRCodes = () => {
   const handleConfirmDelete = async () => {
     try {
       await urlsAPI.deleteUrl(deleteDialog.linkId);
-      loadLinks();
-      loadStats();
+      await loadLinks();
+      await loadStats();
       setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('myLinks.deleteSuccess') || 'QR code and link deleted successfully!'
+      });
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("Failed to delete: " + error.message);
+      // Show error toast instead of alert
+      setToast({
+        type: 'error',
+        message: t('errors.qrCodeDeleteError') || `Failed to delete: ${error.message}`
+      });
     }
   };
 

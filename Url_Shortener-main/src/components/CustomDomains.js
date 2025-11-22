@@ -48,7 +48,13 @@ const CustomDomains = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching domains:', err);
-      setError(err.response?.data?.message || err.message || t('errors.generic'));
+      const errorMsg = err.response?.data?.message || err.message || t('errors.generic');
+      setError(errorMsg);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadDomains') || 'Failed to load domains. Please refresh the page.'
+      });
     } finally {
       setLoading(false);
     }
@@ -159,6 +165,11 @@ const CustomDomains = () => {
       setTimeout(() => setCopiedField(null), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error('Failed to copy:', err);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToCopyText') || 'Failed to copy to clipboard. Please copy manually.'
+      });
     }
   };
 
