@@ -636,7 +636,8 @@ function MyLinks() {
           <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              // flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               marginBottom: showCreateShortLink ? '24px' : '24px'
@@ -1113,13 +1114,15 @@ function MyLinks() {
                               color: '#1F2937',
                               marginBottom: '8px'
                             }}>{link.title || t('myLinks.table.title')}</div>
-                            <div className="link-urls" style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '4px',
-                              marginBottom: '8px',
-                              alignItems: isRTL ? 'flex-end' : 'flex-start'
-                            }}>
+                            <div className="link-urls" 
+                            // style={{
+                            //   display: 'flex',
+                            //   flexDirection: 'column',
+                            //   gap: '4px',
+                            //   marginBottom: '8px',
+                            //   alignItems: isRTL ? 'flex-end' : 'flex-start'
+                            // }}
+                            >
                               <a
                                 href={link.domain && link.domain !== 'laghhu.link' ? `http://${link.domain}/${link.shortCode}` : `https://laghhu.link/${link.shortCode}`}
                                 target="_blank"
@@ -1130,7 +1133,7 @@ function MyLinks() {
                                   color: '#3B82F6',
                                   fontWeight: '500',
                                   display: 'flex',
-                                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                                  // flexDirection: isRTL ? 'row-reverse' : 'row',
                                   alignItems: 'center',
                                   gap: '6px',
                                   textDecoration: 'none'
@@ -1160,20 +1163,25 @@ function MyLinks() {
                                 }}
                               >{link.originalUrl}</a>
                             </div>
-                            <div className="link-meta" style={{
+                            <div  
+                            style={{
                               display: 'flex',
-                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              // flexDirection: isRTL ? 'row-reverse' : 'row',
                               gap: '16px',
                               fontSize: '12px',
                               color: '#9CA3AF',
-                              justifyContent: isRTL ? 'flex-end' : 'flex-start'
-                            }}>
-                              <span style={{
+                              // justifyContent: isRTL ? 'flex-end' : 'flex-start'
+                            }}
+                            >
+                              <span 
+                              style={{
                                 display: 'flex',
-                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                // flexDirection: isRTL ? 'row-reverse' : 'row',
+                                flexDirection: 'row',
                                 alignItems: 'center',
                                 gap: '4px'
-                              }}>
+                              }}
+                              >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                   <line x1="16" y1="2" x2="16" y2="6"/>
@@ -1182,12 +1190,14 @@ function MyLinks() {
                                 </svg>
                                 {formatDate(link.createdAt)}
                               </span>
-                              <span style={{
-                                display: 'flex',
-                                flexDirection: isRTL ? 'row-reverse' : 'row',
-                                alignItems: 'center',
+                              <span 
+                              style={{
+                                // display: 'flex',
+                                // flexDirection: isRTL ? 'row-reverse' : 'row',
+                                // alignItems: 'center',
                                 gap: '4px'
-                              }}>
+                              }}
+                              >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
                                 </svg>
