@@ -603,7 +603,7 @@ const Dashboard = () => {
                   alignItems: 'center',
                   paddingTop: '8px'
                 }}>
-                  <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings} style={{
+                  {/* <button type="button" className="advanced-settings-btn" onClick={handleAdvancedSettings} style={{
                     padding: '10px 16px',
                     backgroundColor: 'transparent',
                     color: '#3B82F6',
@@ -622,7 +622,7 @@ const Dashboard = () => {
                     <circle cx="8" cy="14" r="1" fill="#3B82F6"/>
                   </svg>
                   {t('dashboard.advancedSettings')}
-                </button>
+                </button> */}
                 <button type="submit" className="shorten-btn" style={{
                   padding: '10px 24px',
                   backgroundColor: '#3B82F6',

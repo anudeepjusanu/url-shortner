@@ -5,6 +5,96 @@ import MainHeader from './MainHeader';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import './CreateShortLink.css';
 
+// Reserved aliases that cannot be used for shortened URLs
+const RESERVED_ALIASES = [
+  // Frontend routes
+  'admin', 'dashboard', 'analytics', 'profile', 'settings',
+  'login', 'register', 'logout', 'signup', 'signin',
+  'my-links', 'mylinks', 'links', 'urls',
+  'create-short-link', 'create-link', 'create',
+  'qr-codes', 'qr', 'qrcode', 'qrcodes',
+  'utm-builder', 'utm', 'builder',
+  'custom-domains', 'domains', 'domain',
+  'subscription', 'billing', 'payment', 'pricing',
+  'team-members', 'team', 'members', 'users',
+  'content-filter', 'filter', 'content',
+
+  // Backend/API routes
+  'api', 'auth', 'v1', 'v2', 'v3',
+  'graphql', 'webhook', 'webhooks',
+  'oauth', 'callback', 'redirect',
+
+  // Common system pages
+  'about', 'contact', 'help', 'support',
+  'terms', 'privacy', 'legal', 'policy',
+  'docs', 'documentation', 'guide', 'tutorial',
+  'blog', 'news', 'updates', 'changelog',
+  'status', 'health', 'ping', 'test',
+
+  // Security/Admin
+  'root', 'administrator', 'superuser', 'moderator',
+  'system', 'config', 'configuration', 'setup',
+  'install', 'upgrade', 'migrate', 'backup',
+
+  // Common reserved words
+  'www', 'ftp', 'mail', 'smtp', 'pop3',
+  'assets', 'static', 'public', 'cdn',
+  'download', 'upload', 'file', 'files',
+  'img', 'image', 'images', 'css', 'js',
+  'favicon', 'robots', 'sitemap', 'feed', 'rss'
+];
+
+// Validation function for custom alias
+const validateCustomCode = (code, t) => {
+  // Empty is valid (will be auto-generated)
+  if (!code || code.trim() === '') {
+    return { valid: true, error: null };
+  }
+
+  const trimmedCode = code.trim();
+
+  // Check length (minimum 3, maximum 50 characters)
+  if (trimmedCode.length < 3) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength')
+    };
+  }
+
+  if (trimmedCode.length > 50) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength')
+    };
+  }
+
+  // Check format: only alphanumeric, hyphens, and underscores
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidFormat')
+    };
+  }
+
+  // Must start with letter or number (not hyphen or underscore)
+  if (!/^[a-zA-Z0-9]/.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidStart')
+    };
+  }
+
+  // Check if reserved
+  if (RESERVED_ALIASES.includes(trimmedCode.toLowerCase())) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasReserved')
+    };
+  }
+
+  return { valid: true, error: null };
+};
+
 const CreateShortLink = () => {
   const { t } = useTranslation();
   const [originalUrl, setOriginalUrl] = useState('');
@@ -20,6 +110,16 @@ const CreateShortLink = () => {
   const [copied, setCopied] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [downloadingQR, setDownloadingQR] = useState(false);
+
+  // Field-specific error states
+  const [urlError, setUrlError] = useState('');
+  const [customCodeError, setCustomCodeError] = useState('');
+  const [titleError, setTitleError] = useState('');
+
+  // Debug: Log error states whenever they change
+  useEffect(() => {
+    console.log('Error states updated:', { urlError, customCodeError, titleError });
+  }, [urlError, customCodeError, titleError]);
 
   useEffect(() => {
     fetchAvailableDomains();
@@ -49,12 +149,182 @@ const CreateShortLink = () => {
     }
   };
 
+  // Validate URL
+  const validateUrl = (url) => {
+    if (!url || url.trim() === '') {
+      return { valid: false, error: t('createLink.errors.urlRequired') };
+    }
+
+    const trimmedUrl = url.trim();
+
+    // Check length
+    if (trimmedUrl.length > 2000) {
+      return { valid: false, error: t('createLink.errors.urlTooLong') };
+    }
+
+    // Check if it's a valid URL format
+    try {
+      const urlObj = new URL(trimmedUrl);
+      // Must start with http or https
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return { valid: false, error: t('createLink.errors.invalidUrl') };
+      }
+      return { valid: true, error: null };
+    } catch (e) {
+      return { valid: false, error: t('createLink.errors.invalidUrl') };
+    }
+  };
+
+  // Validate title
+  const validateTitle = (titleValue) => {
+    if (!titleValue || titleValue.trim() === '') {
+      return { valid: true, error: null }; // Title is optional
+    }
+
+    const trimmedTitle = titleValue.trim();
+
+    // Check length
+    if (trimmedTitle.length > 100) {
+      return { valid: false, error: t('createLink.errors.titleTooLong') };
+    }
+
+    // Check for invalid characters (allow letters, numbers, spaces, and common punctuation)
+    if (!/^[a-zA-Z0-9\s\u0600-\u06FF\u0750-\u077F.,!?'"\-_()]+$/.test(trimmedTitle)) {
+      return { valid: false, error: t('createLink.errors.titleInvalidChars') };
+    }
+
+    return { valid: true, error: null };
+  };
+
+  // Handle URL input change with validation
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setOriginalUrl(value);
+
+    // Clear general error when user starts typing
+    if (error) setError('');
+
+    // Only validate if user has typed something (not empty)
+    // This prevents showing "required" error while typing
+    if (value.trim() !== '') {
+      const validation = validateUrl(value);
+      if (validation.valid) {
+        setUrlError('');
+      } else {
+        setUrlError(validation.error);
+      }
+    } else {
+      // Clear error if field is empty (will validate on blur/submit)
+      setUrlError('');
+    }
+  };
+
+  // Handle URL blur (when user leaves the field)
+  const handleUrlBlur = () => {
+    console.log('URL blur triggered, value:', originalUrl);
+    const validation = validateUrl(originalUrl);
+    console.log('URL validation result:', validation);
+    if (!validation.valid) {
+      setUrlError(validation.error);
+      console.log('Setting URL error:', validation.error);
+    }
+  };
+
+  // Handle custom code input change with validation
+  const handleCustomCodeChange = (e) => {
+    const value = e.target.value;
+    setCustomCode(value);
+
+    // Clear general error when user starts typing
+    if (error) setError('');
+
+    // Validate the custom code in real-time (including when empty since it's optional)
+    const validation = validateCustomCode(value, t);
+    if (validation.valid) {
+      setCustomCodeError('');
+    } else {
+      setCustomCodeError(validation.error);
+    }
+  };
+
+  // Handle custom code blur
+  const handleCustomCodeBlur = () => {
+    if (customCode) {
+      const validation = validateCustomCode(customCode, t);
+      if (!validation.valid) {
+        setCustomCodeError(validation.error);
+      }
+    }
+  };
+
+  // Handle title input change with validation
+  const handleTitleChange = (e) => {
+    const value = e.target.value;
+    setTitle(value);
+
+    // Clear general error when user starts typing
+    if (error) setError('');
+
+    // Validate the title in real-time (including when empty since it's optional)
+    const validation = validateTitle(value);
+    if (validation.valid) {
+      setTitleError('');
+    } else {
+      setTitleError(validation.error);
+    }
+  };
+
+  // Handle title blur
+  const handleTitleBlur = () => {
+    if (title) {
+      const validation = validateTitle(title);
+      if (!validation.valid) {
+        setTitleError(validation.error);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setShortenedUrl('');
     setSuccessMessage('');
+
+    // Validate all fields before submission
+    let hasError = false;
+
+    // Validate URL
+    const urlValidation = validateUrl(originalUrl);
+    if (!urlValidation.valid) {
+      setUrlError(urlValidation.error);
+      hasError = true;
+    }
+
+    // Validate custom code
+    if (customCode) {
+      const codeValidation = validateCustomCode(customCode, t);
+      if (!codeValidation.valid) {
+        setCustomCodeError(codeValidation.error);
+        hasError = true;
+      }
+    }
+
+    // Validate title
+    if (title) {
+      const titleValidation = validateTitle(title);
+      if (!titleValidation.valid) {
+        setTitleError(titleValidation.error);
+        hasError = true;
+      }
+    }
+
+    // If any validation failed, stop submission
+    if (hasError) {
+      setError('Please fix the errors below before submitting');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await urlsAPI.createUrl({
@@ -81,9 +351,37 @@ const CreateShortLink = () => {
       setShortenedUrl(shortUrl);
       setCreatedUrlId(createdUrl._id || createdUrl.id);
       setSuccessMessage(t('createLink.success.title'));
+
+      // Clear all field errors on success
+      setUrlError('');
+      setCustomCodeError('');
+      setTitleError('');
     } catch (err) {
       console.error('Error creating short link:', err);
-      setError(err.message || t('createLink.errors.general'));
+
+      // Parse error message to determine which field has the error
+      const errorMessage = err.message || t('createLink.errors.general');
+      const errorLower = errorMessage.toLowerCase();
+
+      // Check if error is about URL
+      if (errorLower.includes('url') && !errorLower.includes('alias')) {
+        setUrlError(errorMessage);
+      }
+      // Check if error is about alias/custom code
+      else if (errorLower.includes('alias') ||
+               errorLower.includes('reserved') ||
+               errorLower.includes('taken') ||
+               errorLower.includes('exists') ||
+               errorLower.includes('code')) {
+        setCustomCodeError(errorMessage);
+      }
+      // Check if error is about title
+      else if (errorLower.includes('title')) {
+        setTitleError(errorMessage);
+      }
+
+      // Set general error as well
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -166,6 +464,11 @@ const CreateShortLink = () => {
     setCopied(false);
     setDownloadingQR(false);
 
+    // Clear all field-specific errors
+    setUrlError('');
+    setCustomCodeError('');
+    setTitleError('');
+
     const defaultDomain = availableDomains.find(d => d.isDefault);
     if (defaultDomain) {
       setSelectedDomainId(defaultDomain.id);
@@ -217,12 +520,38 @@ const CreateShortLink = () => {
                   <input
                     id="originalUrl"
                     type="url"
-                    className="form-input"
+                    className={`form-input ${urlError ? 'form-input-error' : ''}`}
                     value={originalUrl}
-                    onChange={(e) => setOriginalUrl(e.target.value)}
+                    onChange={handleUrlChange}
+                    onBlur={handleUrlBlur}
                     placeholder={t('createLink.form.originalUrlPlaceholder')}
                     required
                   />
+                  {urlError && urlError.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      marginTop: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: '#FEE2E2',
+                      border: '1px solid #FCA5A5',
+                      borderRadius: '6px',
+                      color: '#DC2626',
+                      fontSize: '13px',
+                      fontWeight: '500'
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span>{urlError}</span>
+                    </div>
+                  )}
+                  {!urlError && (
+                    <p className="form-hint" style={{marginTop: '4px', color: '#6B7280', fontSize: '14px'}}>
+                      Enter the long URL you want to shorten
+                    </p>
+                  )}
                 </div>
 
                 {availableDomains.length > 0 && (
@@ -269,12 +598,37 @@ const CreateShortLink = () => {
                     <input
                       id="customCode"
                       type="text"
-                      className="form-input"
+                      className={`form-input ${customCodeError ? 'form-input-error' : ''}`}
                       value={customCode}
-                      onChange={(e) => setCustomCode(e.target.value)}
+                      onChange={handleCustomCodeChange}
+                      onBlur={handleCustomCodeBlur}
                       placeholder={t('createLink.form.customAliasPlaceholder')}
                     />
-                    <p className="form-hint">{t('createLink.form.customAlias')}</p>
+                    {customCodeError && customCodeError.length > 0 && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: '#FEE2E2',
+                        border: '1px solid #FCA5A5',
+                        borderRadius: '6px',
+                        color: '#DC2626',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>{customCodeError}</span>
+                      </div>
+                    )}
+                    {!customCodeError && (
+                      <p className="form-hint" style={{marginTop: '4px', color: '#6B7280', fontSize: '14px'}}>
+                        Leave empty for auto-generated code
+                      </p>
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -287,12 +641,37 @@ const CreateShortLink = () => {
                     <input
                       id="title"
                       type="text"
-                      className="form-input"
+                      className={`form-input ${titleError ? 'form-input-error' : ''}`}
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={handleTitleChange}
+                      onBlur={handleTitleBlur}
                       placeholder={t('createLink.form.titlePlaceholder')}
                     />
-                    <p className="form-hint">{t('createLink.form.title')}</p>
+                    {titleError && titleError.length > 0 && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: '#FEE2E2',
+                        border: '1px solid #FCA5A5',
+                        borderRadius: '6px',
+                        color: '#DC2626',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>{titleError}</span>
+                      </div>
+                    )}
+                    {!titleError && (
+                      <p className="form-hint" style={{marginTop: '4px', color: '#6B7280', fontSize: '14px'}}>
+                        Optional: Add a descriptive title for your link
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -300,7 +679,7 @@ const CreateShortLink = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={loading || !originalUrl}
+                    disabled={loading || !originalUrl || urlError || customCodeError || titleError}
                   >
                     {loading ? (
                       <>

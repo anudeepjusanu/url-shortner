@@ -1,12 +1,119 @@
+
+
+
+
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
+import Toast from './Toast';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import './MyLinks.css';
 
+// Reserved aliases that cannot be used for shortened URLs
+const RESERVED_ALIASES = [
+  // Frontend routes
+  'admin', 'dashboard', 'analytics', 'profile', 'settings',
+  'login', 'register', 'logout', 'signup', 'signin',
+  'my-links', 'mylinks', 'links', 'urls',
+  'create-short-link', 'create-link', 'create',
+  'qr-codes', 'qr', 'qrcode', 'qrcodes',
+  'utm-builder', 'utm', 'builder',
+  'custom-domains', 'domains', 'domain',
+  'subscription', 'billing', 'payment', 'pricing',
+  'team-members', 'team', 'members', 'users',
+  'content-filter', 'filter', 'content',
+
+  // Backend/API routes
+  'api', 'auth', 'v1', 'v2', 'v3',
+  'graphql', 'webhook', 'webhooks',
+  'oauth', 'callback', 'redirect',
+
+  // Common system pages
+  'about', 'contact', 'help', 'support',
+  'terms', 'privacy', 'legal', 'policy',
+  'docs', 'documentation', 'guide', 'tutorial',
+  'blog', 'news', 'updates', 'changelog',
+  'status', 'health', 'ping', 'test',
+
+  // Security/Admin
+  'root', 'administrator', 'superuser', 'moderator',
+  'system', 'config', 'configuration', 'setup',
+  'install', 'upgrade', 'migrate', 'backup',
+
+  // Common reserved words
+  'www', 'ftp', 'mail', 'smtp', 'pop3',
+  'assets', 'static', 'public', 'cdn',
+  'download', 'upload', 'file', 'files',
+  'img', 'image', 'images', 'css', 'js',
+  'favicon', 'robots', 'sitemap', 'feed', 'rss'
+];
+
+
+// Validation function for custom alias
+const validateCustomCode = (code, t) => {
+  // Empty is valid (will be auto-generated)
+  console.log('Validating custom code:', code);
+  if (!code || code.trim() === '') {
+    return { valid: true, error: null };
+  }
+
+  const trimmedCode = code.trim();
+
+  // Check length (minimum 3, maximum 50 characters)
+  if (trimmedCode.length < 3) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength') || 'Custom alias must be between 3 and 50 characters'
+    };
+  }
+
+  if (trimmedCode.length > 50) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidLength') || 'Custom alias must be between 3 and 50 characters'
+    };
+  }
+
+  // Check format: Allow all Unicode letters, numbers, hyphens, underscores, and Arabic characters
+  // This pattern explicitly allows international characters including Arabic (ا-ي), Chinese, etc.
+  const validPattern = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF_-]+$/;
+  
+  if (!validPattern.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidFormat') || 'Custom alias can only contain letters, numbers, hyphens, and underscores'
+    };
+  }
+
+  // Must start with letter or number (including Arabic)
+  const startsWithLetterOrNumber = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF]/;
+  
+  if (!startsWithLetterOrNumber.test(trimmedCode)) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasInvalidStart') || 'Custom alias must start with a letter or number'
+    };
+  }
+  
+  console.log('Custom code passed all validations:', trimmedCode);
+  
+  // Check if reserved
+  if (RESERVED_ALIASES.includes(trimmedCode.toLowerCase())) {
+    return {
+      valid: false,
+      error: t('createLink.errors.aliasReserved') || 'This alias is reserved and cannot be used'
+    };
+  }
+
+  return { valid: true, error: null };
+};
 
 function MyLinks() {
   const { t } = useTranslation();
@@ -28,6 +135,13 @@ function MyLinks() {
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
+  
+  // Field-specific error states
+  const [urlError, setUrlError] = useState('');
+  const [customCodeError, setCustomCodeError] = useState('');
+
+  // Toast notification state
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     fetchLinks();
@@ -49,6 +163,11 @@ function MyLinks() {
       }
     } catch (err) {
       console.error('Failed to fetch domains:', err);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadDomains') || 'Failed to load available domains. Please refresh the page.'
+      });
     } finally {
       setLoadingDomains(false);
     }
@@ -61,8 +180,16 @@ function MyLinks() {
       const response = await urlsAPI.list({ page: 1, limit: 100 });
       const linksData = response.data?.urls || response.data?.data?.urls || [];
       setLinks(linksData);
+        console.log(linksData, "232323232")
+
     } catch (err) {
-      setError(err.message || t('errors.generic'));
+      const errorMsg = err.message || t('errors.generic');
+      setError(errorMsg);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadLinks') || 'Failed to load links. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -80,7 +207,12 @@ function MyLinks() {
       setCopiedId(link.id || link._id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      alert(t('errors.generic'));
+      console.error('Failed to copy link:', err);
+      // Show error toast instead of alert
+      setToast({
+        type: 'error',
+        message: t('errors.failedToCopyLink') || 'Failed to copy link to clipboard. Please try again.'
+      });
     }
   };
 
@@ -103,8 +235,20 @@ function MyLinks() {
       await urlsAPI.delete(deleteDialog.linkId);
       setLinks(links.filter(link => (link.id || link._id) !== deleteDialog.linkId));
       setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('myLinks.deleteSuccess') || 'Link deleted successfully'
+      });
     } catch (err) {
-      alert(t('errors.generic'));
+      const errorMsg = t('errors.generic') || 'Failed to delete link';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     } finally {
       setDeleteLoading(null);
     }
@@ -138,13 +282,119 @@ function MyLinks() {
     );
   });
 
+  // Validate URL
+  const validateUrl = (url) => {
+    if (!url || url.trim() === '') {
+      return { valid: false, error: t('createLink.errors.urlRequired') || 'URL is required' };
+    }
+
+    const trimmedUrl = url.trim();
+
+    // Check length
+    if (trimmedUrl.length > 2000) {
+      return { valid: false, error: t('createLink.errors.urlTooLong') || 'URL is too long (max 2000 characters)' };
+    }
+
+    // Check if it's a valid URL format
+    try {
+      const urlObj = new URL(trimmedUrl);
+      // Must start with http or https
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return { valid: false, error: t('createLink.errors.invalidUrl') || 'URL must start with http:// or https://' };
+      }
+      return { valid: true, error: null };
+    } catch (e) {
+      return { valid: false, error: t('createLink.errors.invalidUrl') || 'Please enter a valid URL' };
+    }
+  };
+
+  // Handle URL input change with validation
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setLongUrl(value);
+
+    // Clear general error when user starts typing
+    if (error) setError(null);
+
+    // Only validate if user has typed something (not empty)
+    if (value.trim() !== '') {
+      const validation = validateUrl(value);
+      if (validation.valid) {
+        setUrlError('');
+      } else {
+        setUrlError(validation.error);
+      }
+    } else {
+      setUrlError('');
+    }
+  };
+
+  // Handle URL blur (when user leaves the field)
+  const handleUrlBlur = () => {
+    console.log('URL blur triggered, value:', longUrl);
+    const validation = validateUrl(longUrl);
+    console.log('URL validation result:', validation);
+    if (!validation.valid) {
+      setUrlError(validation.error);
+      console.log('Setting URL error:', validation.error);
+    }
+  };
+
+  // Handle custom code input change with validation
+  const handleCustomCodeChange = (e) => {
+    const value = e.target.value;
+    setCustomName(value);
+
+    // Clear general error when user starts typing
+    if (error) setError(null);
+
+    // Validate the custom code in real-time (including when empty since it's optional)
+    const validation = validateCustomCode(value, t);
+    if (validation.valid) {
+      setCustomCodeError('');
+    } else {
+      setCustomCodeError(validation.error);
+    }
+  };
+
+  // Handle custom code blur
+  const handleCustomCodeBlur = () => {
+    if (customName) {
+      const validation = validateCustomCode(customName, t);
+      if (!validation.valid) {
+        setCustomCodeError(validation.error);
+      }
+    }
+  };
+
   // Handlers for create short link form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    if (!longUrl.trim()) {
-      setError(t('createLink.errors.invalidUrl'));
+    // Validate all fields before submission
+    let hasError = false;
+
+    // Validate URL
+    const urlValidation = validateUrl(longUrl);
+    if (!urlValidation.valid) {
+      setUrlError(urlValidation.error);
+      hasError = true;
+    }
+
+    // Validate custom code
+    if (customName) {
+      const codeValidation = validateCustomCode(customName, t);
+      console.log('Custom code validation result:', codeValidation.error);
+      if (!codeValidation.valid) {
+        setCustomCodeError(codeValidation.error);
+        hasError = true;
+      }
+    }
+
+    // If any validation failed, stop submission
+    if (hasError) {
+      setError(t('createLink.errors.fixErrors') || 'Please fix the errors below before submitting');
       return;
     }
 
@@ -155,7 +405,7 @@ function MyLinks() {
         title: customName || undefined,
         domainId: selectedDomainId || undefined,
       });
-
+      console.log('Create URL response:', response);
       if (response.success && response.data && response.data.url) {
         const createdUrl = response.data.url;
         const urlId = createdUrl._id || createdUrl.id;
@@ -173,7 +423,11 @@ function MyLinks() {
             });
           } catch (qrErr) {
             console.error('Error generating QR code:', qrErr);
-            // Don't fail the whole operation if QR generation fails
+            // Show warning toast but don't fail the whole operation
+            setToast({
+              type: 'warning',
+              message: t('errors.failedToGenerateQR') || 'Failed to generate QR code for this link.'
+            });
           }
         }
 
@@ -186,12 +440,56 @@ function MyLinks() {
         setGenerateQR(false);
         setShowCreateShortLink(false);
         setError(null);
+
+        // Clear all field errors on success
+        setUrlError('');
+        setCustomCodeError('');
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('createLink.success.created') || 'Short link created successfully!'
+        });
       } else {
-        setError(t('createLink.errors.general'));
+        const errorMsg = t('createLink.errors.general') || 'Failed to create link';
+        setError(errorMsg);
+        // Show error toast
+        setToast({
+          type: 'error',
+          message: errorMsg
+        });
       }
     } catch (err) {
       console.error('Error creating short link:', err);
-      setError(err.message || t('createLink.errors.general'));
+      console.log('Error details:', err);
+      console.log('Error message:', err.message);
+      console.log('Error response data:', err.response);
+      
+      // Parse error message to determine which field has the error
+      const errorMessage = err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
+      const errorLower = errorMessage.toLowerCase();
+
+      // Check if error is about URL
+      if (errorLower.includes('url') && !errorLower.includes('alias')) {
+        setUrlError(errorMessage);
+      }
+      // Check if error is about alias/custom code
+      else if (errorLower.includes('alias') ||
+               errorLower.includes('reserved') ||
+               errorLower.includes('taken') ||
+               errorLower.includes('exists') ||
+               errorLower.includes('code')) {
+        setCustomCodeError(errorMessage);
+      }
+
+      // Set general error as well
+      setError(errorMessage);
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMessage
+      });
     }
   };
 
@@ -204,11 +502,24 @@ function MyLinks() {
       timestamp: new Date().toISOString()
     };
     localStorage.setItem('linkDraft', JSON.stringify(draft));
-    alert(t('notifications.draftSaved'));
+    // Show success toast instead of alert
+    setToast({
+      type: 'success',
+      message: t('notifications.draftSaved') || 'Draft saved!'
+    });
   };
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
@@ -241,6 +552,81 @@ function MyLinks() {
         .create-short-link-btn:active {
           transform: translateY(0);
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+          .page-header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px;
+          }
+
+          .page-header > div {
+            text-align: center !important;
+          }
+
+          .create-short-link-btn {
+            width: 100% !important;
+            min-width: auto !important;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+
+          .link-card {
+            flex-direction: column !important;
+            padding: 12px 16px !important;
+            gap: 12px;
+          }
+
+          .link-info {
+            width: 100%;
+            text-align: ${isRTL ? 'right' : 'left'} !important;
+          }
+
+          .link-urls {
+            align-items: ${isRTL ? 'flex-end' : 'flex-start'} !important;
+          }
+
+          .short-url {
+            flex-direction: ${isRTL ? 'row-reverse' : 'row'} !important;
+          }
+
+          .link-actions {
+            width: 100%;
+            flex-direction: ${isRTL ? 'row-reverse' : 'row'} !important;
+            margin: 0 !important;
+            gap: 6px !important;
+          }
+
+          .link-actions button {
+            flex: 1;
+            padding: 8px 10px !important;
+            font-size: 12px !important;
+            justify-content: center;
+          }
+
+          .link-actions button svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .link-actions {
+            flex-wrap: wrap;
+          }
+
+          .link-actions button {
+            min-width: calc(50% - 3px);
+          }
+
+          .link-actions button:nth-child(3) {
+            width: 100%;
+          }
+        }
       `}</style>
       <div className="analytics-container">
         <MainHeader />
@@ -250,92 +636,48 @@ function MyLinks() {
           <div className="analytics-content">
             <div className="page-header" style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: isRTL ? 'row-reverse' : 'row',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               marginBottom: showCreateShortLink ? '24px' : '24px'
             }}>
-              {isRTL ? (
-                <>
-                  <button
-                    className="create-short-link-btn"
-                    onClick={() => setShowCreateShortLink((prev) => !prev)}
-                    style={{
-                      minWidth: 180,
-                      color: "white",
-                      padding: "10px 16px",
-                      background: "#3B82F6",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      flexShrink: 0
-                    }}
-                  >
-                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
-                  </button>
-                  {!showCreateShortLink && (
-                    <div style={{
-                      margin: 0,
-                      textAlign: 'right'
-                    }}>
-                      <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: '700',
-                        color: '#111827',
-                        marginBottom: '4px',
-                        margin: '0 0 4px 0'
-                      }}>{t('myLinks.title')}</h1>
-                      <p style={{
-                        color: '#6B7280',
-                        fontSize: '14px',
-                        margin: 0
-                      }}>{t('myLinks.subtitle')}</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {!showCreateShortLink && (
-                    <div style={{
-                      margin: 0,
-                      textAlign: 'left'
-                    }}>
-                      <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: '700',
-                        color: '#111827',
-                        marginBottom: '4px',
-                        margin: '0 0 4px 0'
-                      }}>{t('myLinks.title')}</h1>
-                      <p style={{
-                        color: '#6B7280',
-                        fontSize: '14px',
-                        margin: 0
-                      }}>{t('myLinks.subtitle')}</p>
-                    </div>
-                  )}
-                  <button
-                    className="create-short-link-btn"
-                    onClick={() => setShowCreateShortLink((prev) => !prev)}
-                    style={{
-                      minWidth: 180,
-                      color: "white",
-                      padding: "10px 16px",
-                      background: "#3B82F6",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      flexShrink: 0
-                    }}
-                  >
-                    {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
-                  </button>
-                </>
+              {!showCreateShortLink && (
+                <div style={{
+                  margin: 0,
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>
+                  <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    color: '#111827',
+                    marginBottom: '4px',
+                    margin: '0 0 4px 0'
+                  }}>{t('myLinks.title')}</h1>
+                  <p style={{
+                    color: '#6B7280',
+                    fontSize: '14px',
+                    margin: 0
+                  }}>{t('myLinks.subtitle')}</p>
+                </div>
               )}
+              <button
+                className="create-short-link-btn"
+                onClick={() => setShowCreateShortLink((prev) => !prev)}
+                style={{
+                  minWidth: 180,
+                  color: "white",
+                  padding: "10px 16px",
+                  background: "#3B82F6",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  flexShrink: 0
+                }}
+              >
+                {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
+              </button>
             </div>
             {showCreateShortLink ? (
               <div className="create-short-link-content">
@@ -396,15 +738,19 @@ function MyLinks() {
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M10 3h4v4M6 11L14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        {t('createLink.form.originalUrl')}
+                        {t('createLink.form.originalUrl')} *
                       </label>
                       <div className="input-container">
                         <input
                           type="url"
                           value={longUrl}
-                          onChange={(e) => setLongUrl(e.target.value)}
+                          onChange={handleUrlChange}
+                          onBlur={handleUrlBlur}
                           placeholder={t('createLink.form.originalUrlPlaceholder')}
                           className="url-input"
+                          style={{
+                            borderColor: urlError ? '#EF4444' : '#D1D5DB'
+                          }}
                           required
                         />
                         <button type="button" className="paste-btn">
@@ -413,6 +759,31 @@ function MyLinks() {
                           </svg>
                         </button>
                       </div>
+                      {urlError && urlError.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#FEE2E2',
+                          border: '1px solid #FCA5A5',
+                          borderRadius: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{urlError}</span>
+                        </div>
+                      )}
+                      {!urlError && (
+                        <p style={{marginTop: '4px', color: '#6B7280', fontSize: '12px'}}>
+                          {t('createLink.form.urlHint') || 'Enter the long URL you want to shorten'}
+                        </p>
+                      )}
                     </div>
 
                     {/* Domain Selection */}
@@ -476,11 +847,40 @@ function MyLinks() {
                         <input
                           type="text"
                           value={customName}
-                          onChange={(e) => setCustomName(e.target.value)}
+                          onChange={handleCustomCodeChange}
+                          onBlur={handleCustomCodeBlur}
                           placeholder={t('createLink.form.customAliasPlaceholder')}
                           className="custom-input"
+                          style={{
+                            borderColor: customCodeError ? '#EF4444' : '#D1D5DB'
+                          }}
                         />
                       </div>
+                      {customCodeError && customCodeError.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#FEE2E2',
+                          border: '1px solid #FCA5A5',
+                          borderRadius: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{customCodeError}</span>
+                        </div>
+                      )}
+                      {!customCodeError && (
+                        <p style={{marginTop: '4px', color: '#6B7280', fontSize: '12px'}}>
+                          {t('createLink.form.aliasHint') || 'Leave empty for auto-generated code'}
+                        </p>
+                      )}
                     </div>
                     {/* UTM Parameters Section */}
                     <div className="utm-section">
@@ -538,7 +938,11 @@ function MyLinks() {
                     </div>
                     {/* Action Buttons */}
                     <div className="action-buttons">
-                      <button type="submit" className="create-link-btn">
+                      <button 
+                        type="submit" 
+                        className="create-link-btn"
+                        disabled={!longUrl || urlError || customCodeError}
+                      >
                         <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -692,12 +1096,17 @@ function MyLinks() {
                           borderRadius: '8px',
                           padding: '16px 20px',
                           display: 'flex',
+                          flexDirection: isRTL ? 'row-reverse' : 'row',
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           transition: 'all 0.2s',
                           cursor: 'pointer'
                         }}>
-                          <div className="link-info" style={{ flex: 1, minWidth: 0 }}>
+                          <div className="link-info" style={{
+                            flex: 1,
+                            minWidth: 0,
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}>
                             <div className="link-title" style={{
                               fontSize: '15px',
                               fontWeight: '600',
@@ -708,18 +1117,20 @@ function MyLinks() {
                               display: 'flex',
                               flexDirection: 'column',
                               gap: '4px',
-                              marginBottom: '8px'
+                              marginBottom: '8px',
+                              alignItems: isRTL ? 'flex-end' : 'flex-start'
                             }}>
-                              <a 
+                              <a
                                 href={link.domain && link.domain !== 'laghhu.link' ? `http://${link.domain}/${link.shortCode}` : `https://laghhu.link/${link.shortCode}`}
-                                target="_blank" 
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="short-url" 
+                                className="short-url"
                                 style={{
                                   fontSize: '14px',
                                   color: '#3B82F6',
                                   fontWeight: '500',
                                   display: 'flex',
+                                  flexDirection: isRTL ? 'row-reverse' : 'row',
                                   alignItems: 'center',
                                   gap: '6px',
                                   textDecoration: 'none'
@@ -731,28 +1142,38 @@ function MyLinks() {
                                 </svg>
                                 {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
                               </a>
-                              <a 
-                                href={link.originalUrl} 
-                                target="_blank" 
+                              <a
+                                href={link.originalUrl}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="original-url" 
+                                className="original-url"
                                 style={{
                                   fontSize: '13px',
                                   color: '#6B7280',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  textDecoration: 'none'
+                                  textDecoration: 'none',
+                                  direction: 'ltr',
+                                  textAlign: isRTL ? 'right' : 'left',
+                                  width: '100%'
                                 }}
                               >{link.originalUrl}</a>
                             </div>
                             <div className="link-meta" style={{
                               display: 'flex',
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
                               gap: '16px',
                               fontSize: '12px',
-                              color: '#9CA3AF'
+                              color: '#9CA3AF',
+                              justifyContent: isRTL ? 'flex-end' : 'flex-start'
                             }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{
+                                display: 'flex',
+                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                   <line x1="16" y1="2" x2="16" y2="6"/>
@@ -761,7 +1182,12 @@ function MyLinks() {
                                 </svg>
                                 {formatDate(link.createdAt)}
                               </span>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{
+                                display: 'flex',
+                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
                                 </svg>
@@ -771,8 +1197,10 @@ function MyLinks() {
                           </div>
                           <div className="link-actions" style={{
                             display: 'flex',
+                            flexDirection: isRTL ? 'row-reverse' : 'row',
                             gap: '8px',
-                            marginLeft: '16px'
+                            marginLeft: isRTL ? '0' : '16px',
+                            marginRight: isRTL ? '16px' : '0'
                           }}>
                             <button onClick={() => handleCopyLink(link)} style={{
                               padding: '8px 16px',
@@ -969,3 +1397,4 @@ function MyLinks() {
 }
 
 export default MyLinks;
+

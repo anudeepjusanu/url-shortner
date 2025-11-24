@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
+import Toast from './Toast';
 import { domainsAPI } from '../services/api';
 import './CustomDomains.css';
 
@@ -28,6 +29,9 @@ const CustomDomains = () => {
   const [verificationStatus, setVerificationStatus] = useState('idle'); // 'idle' | 'checking' | 'success' | 'failed'
   const [copiedField, setCopiedField] = useState(null); // Track which field was copied
 
+  // Toast notification state
+  const [toast, setToast] = useState(null);
+
   useEffect(() => {
     fetchDomains();
   }, []);
@@ -44,7 +48,13 @@ const CustomDomains = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching domains:', err);
-      setError(err.response?.data?.message || err.message || t('errors.generic'));
+      const errorMsg = err.response?.data?.message || err.message || t('errors.generic');
+      setError(errorMsg);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToLoadDomains') || 'Failed to load domains. Please refresh the page.'
+      });
     } finally {
       setLoading(false);
     }
@@ -124,10 +134,24 @@ const CustomDomains = () => {
       await fetchDomains();
       setError(null);
 
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('customDomains.domainAdded') || 'Domain added successfully!'
+      });
+
       return true; // Return success
     } catch (err) {
       console.error('Error adding domain:', err);
-      setError(err.response?.data?.message || err.message || t('errors.generic'));
+      const errorMsg = err.response?.data?.message || err.message || t('errors.generic');
+      setError(errorMsg);
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
+
       return false; // Return failure
     } finally {
       setIsAddingDomain(false);
@@ -141,6 +165,11 @@ const CustomDomains = () => {
       setTimeout(() => setCopiedField(null), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error('Failed to copy:', err);
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: t('errors.failedToCopyText') || 'Failed to copy to clipboard. Please copy manually.'
+      });
     }
   };
 
@@ -163,15 +192,35 @@ const CustomDomains = () => {
         await fetchDomains();
         setError(null);
         console.log('✅ Domain verified successfully');
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('customDomains.verificationSuccess') || 'Domain verified successfully!'
+        });
       } else {
         setVerificationStatus('failed');
-        setError(response.data?.message || response.message || t('errors.generic'));
-        console.error('❌ Verification failed:', response.data?.message);
+        const errorMsg = response.data?.message || response.message || t('errors.generic');
+        setError(errorMsg);
+        console.error('❌ Verification failed:', errorMsg);
+
+        // Show error toast
+        setToast({
+          type: 'error',
+          message: t('customDomains.verificationFailed') || 'Domain verification failed'
+        });
       }
     } catch (err) {
       console.error('Domain verification error:', err);
       setVerificationStatus('failed');
-      setError(err.response?.data?.message || err.message || t('errors.generic'));
+      const errorMsg = err.response?.data?.message || err.message || t('errors.generic');
+      setError(errorMsg);
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -203,9 +252,22 @@ const CustomDomains = () => {
       await domainsAPI.deleteDomain(deleteDialog.domainId);
       await fetchDomains();
       setDeleteDialog({ isOpen: false, domainId: null, domainName: '' });
+
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('customDomains.deleteSuccess') || 'Domain deleted successfully'
+      });
     } catch (err) {
       console.error('Error deleting domain:', err);
-      setError(err.response?.data?.message || err.message || t('errors.generic'));
+      const errorMsg = err.response?.data?.message || err.message || t('errors.generic');
+      setError(errorMsg);
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
     }
   };
 
@@ -1017,6 +1079,15 @@ const CustomDomains = () => {
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

@@ -404,18 +404,30 @@
       "createButton": "Create Short Link",
       "creating": "Creating...",
       "advancedOptions": "Advanced Options",
-      "utmParameters": "UTM Parameters"
+      "utmParameters": "UTM Parameters",
+      "urlHint": "Enter the long URL you want to shorten",
+      "aliasHint": "Leave empty for auto-generated code"
     },
     "success": {
       "title": "Link Created Successfully!",
+      "created": "Short link created successfully!",
       "yourLink": "Your Short Link:",
       "copyLink": "Copy Link",
       "viewAnalytics": "View Analytics",
       "createAnother": "Create Another Link"
     },
     "errors": {
-      "invalidUrl": "Please enter a valid URL",
+      "invalidUrl": "Please enter a valid URL (must start with http:// or https://)",
+      "urlRequired": "Original URL is required",
+      "urlTooLong": "URL is too long (maximum 2000 characters)",
       "aliasExists": "This alias is already taken",
+      "aliasReserved": "This alias is reserved for system use. Please choose a different alias.",
+      "aliasInvalidFormat": "Alias can only contain letters, numbers, hyphens, and underscores",
+      "aliasInvalidLength": "Alias must be between 3 and 50 characters",
+      "aliasInvalidStart": "Alias must start with a letter or number",
+      "titleTooLong": "Title is too long (maximum 100 characters)",
+      "titleInvalidChars": "Title contains invalid characters",
+      "fixErrors": "Please fix the errors below before submitting",
       "general": "Failed to create link. Please try again."
     }
   },
@@ -451,6 +463,7 @@
     },
     "confirmDelete": "Are you sure you want to delete this link?",
     "deleteSuccess": "Link deleted successfully",
+    "deleteError": "Failed to delete link",
     "noLinks": "No links found",
     "createFirstLink": "Create your first short link to get started"
   },
@@ -550,7 +563,13 @@
       "preview": "Preview"
     },
     "noQRCodes": "No QR Codes Yet",
-    "createFirst": "Generate your first QR code to get started"
+    "createFirst": "Generate your first QR code to get started",
+    "generateSuccess": "QR Code generated successfully!",
+    "generateFailed": "Failed to generate QR code",
+    "downloadSuccess": "QR Code downloaded successfully!",
+    "downloadFailed": "Failed to download QR code",
+    "bulkGenerateSuccess": "Successfully generated {{count}} QR code(s)!",
+    "bulkGenerateFailed": "Failed to generate QR codes"
   },
   "contentFilter": {
     "title": "Content Filter & Security",
@@ -668,7 +687,11 @@
       "verifyButton": "Verify Domain"
     },
     "noDomains": "No custom domains added yet",
-    "addFirst": "Add your first custom domain to get started"
+    "addFirst": "Add your first custom domain to get started",
+    "domainAdded": "Domain added successfully!",
+    "verificationSuccess": "Domain verified successfully!",
+    "verificationFailed": "Domain verification failed",
+    "deleteSuccess": "Domain deleted successfully"
   },
   "subscription": {
     "title": "Subscription & Billing",
@@ -967,7 +990,20 @@
     "failedToRemoveKeyword": "Failed to remove blocked keyword: {{error}}",
     "failedToAddAllowedDomain": "Failed to add allowed domain: {{error}}",
     "failedToRemoveAllowedDomain": "Failed to remove allowed domain: {{error}}",
-    "failedToRegenerateApiKey": "Failed to regenerate API key: {{error}}"
+    "failedToRegenerateApiKey": "Failed to regenerate API key: {{error}}",
+    "failedToLoadLinks": "Failed to load links. Please try again.",
+    "failedToLoadDomains": "Failed to load available domains. Please refresh the page.",
+    "failedToCopyLink": "Failed to copy link to clipboard. Please try again.",
+    "failedToGenerateQR": "Failed to generate QR code for this link.",
+    "failedToLoadStats": "Failed to load statistics. Please refresh the page.",
+    "failedToVerifyDomain": "Failed to verify domain. Please check your DNS settings and try again.",
+    "failedToCopyText": "Failed to copy to clipboard. Please copy manually.",
+    "noLinksSelected": "Please select at least one link for bulk operation.",
+    "confirmBulkGenerate": "Are you sure you want to generate QR codes for {{count}} selected link(s)?",
+    "domainVerificationError": "Domain verification failed. Please check your DNS records.",
+    "domainAddError": "Failed to add domain. Please check your input and try again.",
+    "domainDeleteError": "Failed to delete domain. Please try again.",
+    "qrCodeDeleteError": "Failed to delete QR code. Please try again."
   },
   "sidebar": {
     "main": "MAIN",
