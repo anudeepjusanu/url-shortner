@@ -94,8 +94,8 @@ const validateUrlCreation = [
     .optional()
     .isLength({ min: 3, max: 50 })
     .withMessage('Custom code must be between 3 and 50 characters')
-    .matches(/^[a-zA-Z0-9_-]+$/)
-    .withMessage('Custom code can only contain letters, numbers, hyphens, and underscores'),
+    .matches(/^[\p{L}\p{N}_-]+$/u)
+    .withMessage('Custom code can only contain letters (any language), numbers, hyphens, and underscores'),
   body('title')
     .optional()
     .trim()

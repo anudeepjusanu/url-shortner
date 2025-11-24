@@ -81,20 +81,19 @@ const validateCustomCode = (code, t) => {
     };
   }
 
-  // Check format: Allow all Unicode letters, numbers, hyphens, underscores, and Arabic characters
-  // This pattern explicitly allows international characters including Arabic (ا-ي), Chinese, etc.
-  const validPattern = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF_-]+$/;
-  
+  // Check format: Allow all Unicode letters, numbers, hyphens, underscores
+  // Unicode-aware regex: \p{L} = any kind of letter from any language, \p{N} = any kind of numeric digit
+  const validPattern = /^[\p{L}\p{N}_-]+$/u;
   if (!validPattern.test(trimmedCode)) {
     return {
       valid: false,
-      error: t('createLink.errors.aliasInvalidFormat') || 'Custom alias can only contain letters, numbers, hyphens, and underscores'
+      error: t('createLink.errors.aliasInvalidFormat') || 'Custom alias can only contain letters (any language), numbers, hyphens, and underscores'
     };
   }
 
   // Must start with letter or number (including Arabic)
-  const startsWithLetterOrNumber = /^[\u0600-\u06FFa-zA-Z0-9\u00C0-\u017F\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF]/;
-  
+  // Must start with a letter or number (Unicode)
+  const startsWithLetterOrNumber = /^[\p{L}\p{N}]/u;
   if (!startsWithLetterOrNumber.test(trimmedCode)) {
     return {
       valid: false,
