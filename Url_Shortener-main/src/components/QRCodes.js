@@ -745,6 +745,15 @@ const QRCodes = () => {
                               dangerouslySetInnerHTML={{ __html: link.qrCode.replace('width="300"', 'width="70"').replace('height="300"', 'height="70"') }}
                               style={{ display: 'inline-block', width: '70px', height: '70px' }}
                             />
+                          ) : link.qrCode && link.qrCode.startsWith('data:image/') ? (
+                            <img
+                              src={link.qrCode}
+                              alt="QR Code"
+                              style={{
+                                width: '70px',
+                                height: '70px'
+                              }}
+                            />
                           ) : (
                             <img
                               src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
