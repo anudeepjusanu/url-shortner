@@ -241,8 +241,8 @@ const validatePagination = [
 const validateAnalyticsQuery = [
   query('period')
     .optional()
-    .isIn(['7d', '30d', '90d'])
-    .withMessage('Period must be one of: 7d, 30d, 90d'),
+    .isIn(['24h', '7d', '30d', '90d', '1y'])
+    .withMessage('Period must be one of: 24h, 7d, 30d, 90d, 1y'),
   query('groupBy')
     .optional()
     .isIn(['day', 'hour'])
@@ -265,8 +265,8 @@ const validateExportQuery = [
     .withMessage('Format must be either json or csv'),
   query('period')
     .optional()
-    .isIn(['7d', '30d', '90d'])
-    .withMessage('Period must be one of: 7d, 30d, 90d'),
+    .isIn(['24h', '7d', '30d', '90d', '1y'])
+    .withMessage('Period must be one of: 24h, 7d, 30d, 90d, 1y'),
   handleValidationErrors
 ];
 

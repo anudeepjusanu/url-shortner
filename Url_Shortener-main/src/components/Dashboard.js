@@ -1220,7 +1220,15 @@ const Dashboard = () => {
                     minWidth: 0,
                     textAlign: 'left'
                   }}>
-                    <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
+                    {/* <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#3B82F6',
+                      textDecoration: 'none',
+                      display: 'block',
+                      marginBottom: '4px'
+                    }}>{getShortUrl(link)}</a> */}
+                    <a href={link.originalUrl} target="_blank" rel="noopener noreferrer" className="short-url" style={{
                       fontSize: '14px',
                       fontWeight: '600',
                       color: '#3B82F6',

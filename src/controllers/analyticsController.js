@@ -42,14 +42,20 @@ const getUrlAnalytics = async (req, res) => {
     
     let dateRange = {};
     const now = new Date();
-    
+
     if (startDate && endDate) {
       dateRange = {
         $gte: new Date(startDate),
         $lte: new Date(endDate)
       };
     } else {
-      const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 30;
+      const days = {
+        '24h': 1,
+        '7d': 7,
+        '30d': 30,
+        '90d': 90,
+        '1y': 365
+      }[period] || 30;
       const start = new Date(now);
       start.setDate(start.getDate() - days);
       dateRange = { $gte: start };
@@ -161,8 +167,14 @@ const getDashboardAnalytics = async (req, res) => {
         ...(organizationId ? [{ organization: organizationId }] : [])
       ]
     };
-    
-    const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 30;
+
+    const days = {
+      '24h': 1,
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      '1y': 365
+    }[period] || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
@@ -417,7 +429,13 @@ const exportAnalytics = async (req, res) => {
       });
     }
     
-    const days = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 30;
+    const days = {
+      '24h': 1,
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      '1y': 365
+    }[period] || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
