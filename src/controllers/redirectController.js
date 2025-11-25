@@ -52,8 +52,9 @@ const redirectToOriginalUrl = async (req, res) => {
     } catch (err) {
       requestData.country = 'US';
     }
-    
+
     requestData.deviceType = getDeviceType(requestData.userAgent);
+    requestData.clickSource = detectClickSource(req);
 
     const redirectResult = await redirectService.handleRedirect(shortCode, requestData);
     
@@ -252,7 +253,7 @@ const generateQRCode = async (req, res) => {
 // Helper function to detect device type
 const getDeviceType = (userAgent) => {
   const ua = userAgent.toLowerCase();
-  
+
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
     return 'mobile';
   } else if (ua.includes('tablet') || ua.includes('ipad')) {
@@ -260,6 +261,43 @@ const getDeviceType = (userAgent) => {
   } else {
     return 'desktop';
   }
+};
+
+// Helper function to detect click source
+const detectClickSource = (req) => {
+  const userAgent = req.get('user-agent') || '';
+  const referer = req.get('referer') || '';
+
+  // Check for QR tracking parameter (added when generating QR codes)
+  if (req.query.qr === '1' || req.query.source === 'qr') {
+    return 'qr_code';
+  }
+
+  // Check for QR code scanner apps in user-agent
+  const qrScannerPatterns = [
+    /qr/i,
+    /scanner/i,
+    /zxing/i,
+    /barcode/i,
+    /scan/i
+  ];
+
+  if (qrScannerPatterns.some(pattern => pattern.test(userAgent))) {
+    return 'qr_code';
+  }
+
+  // Check if coming from API (no browser user-agent patterns)
+  if (req.get('X-API-Key') || req.get('Authorization')?.includes('Bearer')) {
+    return 'api';
+  }
+
+  // Check referer
+  if (!referer || referer === '' || referer === 'direct') {
+    return 'direct';
+  }
+
+  // Default to browser
+  return 'browser';
 };
 
 module.exports = {

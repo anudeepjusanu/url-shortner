@@ -33,6 +33,12 @@ router.get('/:id',
   qrCodeController.getUrlQRCode
 );
 
+// Update QR code customization
+router.put('/customize/:id',
+  validateObjectId,
+  qrCodeController.updateQRCodeCustomization
+);
+
 // Bulk generate QR codes
 router.post('/bulk-generate',
   checkFeatureAccess('bulk_operations'),

@@ -1,5 +1,6 @@
 const { Click, DailySummary, MonthlySummary } = require('../models/Analytics');
 const Url = require('../models/Url');
+const QRCodeModel = require('../models/QRCode');
 const crypto = require('crypto');
 const geoip = require('geoip-lite');
 const useragent = require('user-agent-parser');
@@ -28,6 +29,7 @@ class AnalyticsService {
         language,
         screenResolution,
         domain = null,
+        clickSource = 'unknown',
         timestamp = new Date()
       } = clickData;
 
@@ -79,7 +81,8 @@ class AnalyticsService {
         isUnique,
         isBot,
         language,
-        screenResolution
+        screenResolution,
+        clickSource: clickSource
       };
       
       const click = await Click.createClick(clickRecord);
@@ -87,14 +90,45 @@ class AnalyticsService {
         clickId: click._id,
         urlId: url._id,
         isUnique,
-        isBot
+        isBot,
+        clickSource
       });
-      
-      await url.incrementClick(isUnique);
-      console.log('✅ URL click count incremented:', {
-        clickCount: url.clickCount + 1,
-        uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0)
-      });
+
+      // Handle QR code scans separately
+      if (clickSource === 'qr_code') {
+        await url.updateOne({
+          $inc: {
+            clickCount: 1,
+            qrCodeScanCount: 1,
+            ...(isUnique && { uniqueClickCount: 1, uniqueQRScanCount: 1 })
+          },
+          lastClickedAt: new Date(),
+          lastQRScanAt: new Date()
+        });
+
+        console.log('✅ QR scan tracked:', {
+          clickCount: url.clickCount + 1,
+          qrCodeScanCount: (url.qrCodeScanCount || 0) + 1,
+          uniqueQRScanCount: (url.uniqueQRScanCount || 0) + (isUnique ? 1 : 0)
+        });
+
+        // Update QRCode model scan count
+        try {
+          const qrCode = await QRCodeModel.findOne({ url: url._id });
+          if (qrCode) {
+            await qrCode.incrementScan(isUnique);
+            console.log('✅ QRCode model scan count updated');
+          }
+        } catch (qrError) {
+          console.error('❌ Error updating QRCode model scan count:', qrError);
+        }
+      } else {
+        await url.incrementClick(isUnique);
+        console.log('✅ URL click count incremented:', {
+          clickCount: url.clickCount + 1,
+          uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0)
+        });
+      }
       
       this.updateAnalyticsSummaries(url._id, shortCode, clickRecord);
       

@@ -80,6 +80,12 @@ const clickSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  clickSource: {
+    type: String,
+    enum: ['browser', 'qr_code', 'api', 'direct', 'unknown'],
+    default: 'unknown',
+    index: true
+  },
   language: String,
   screenResolution: String
 }, {
@@ -106,6 +112,14 @@ const dailySummarySchema = new mongoose.Schema({
     default: 0
   },
   uniqueClicks: {
+    type: Number,
+    default: 0
+  },
+  qrCodeScans: {
+    type: Number,
+    default: 0
+  },
+  uniqueQRScans: {
     type: Number,
     default: 0
   },
@@ -167,6 +181,14 @@ const monthlySummarySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  qrCodeScans: {
+    type: Number,
+    default: 0
+  },
+  uniqueQRScans: {
+    type: Number,
+    default: 0
+  },
   topCountries: [{
     country: String,
     countryName: String,
@@ -223,22 +245,32 @@ clickSchema.statics.createClick = async function(clickData) {
 clickSchema.statics.updateDailySummary = async function(clickData) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   try {
+    const updateData = {
+      $inc: {
+        totalClicks: 1,
+        uniqueClicks: clickData.isUnique ? 1 : 0
+      },
+      $setOnInsert: {
+        shortCode: clickData.shortCode
+      }
+    };
+
+    // Track QR code scans separately
+    if (clickData.clickSource === 'qr_code') {
+      updateData.$inc.qrCodeScans = 1;
+      if (clickData.isUnique) {
+        updateData.$inc.uniqueQRScans = 1;
+      }
+    }
+
     await mongoose.model('DailySummary').findOneAndUpdate(
       {
         url: clickData.url,
         date: today
       },
-      {
-        $inc: {
-          totalClicks: 1,
-          uniqueClicks: clickData.isUnique ? 1 : 0
-        },
-        $setOnInsert: {
-          shortCode: clickData.shortCode
-        }
-      },
+      updateData,
       {
         upsert: true,
         new: true

@@ -39,10 +39,14 @@ const QRCodes = () => {
   // Delete dialog
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
 
+  // Track if we're updating an existing QR code (vs generating new)
+  const [isUpdatingQR, setIsUpdatingQR] = useState(false);
+
   // Stats
   const [stats, setStats] = useState({
     totalQRCodes: 0,
     totalScans: 0,
+    uniqueScans: 0,
     activeQRCodes: 0,
     downloadsToday: 0
   });
@@ -88,6 +92,7 @@ const QRCodes = () => {
         setStats({
           totalQRCodes: response.data.totalQRCodes || 0,
           totalScans: response.data.totalScans || 0,
+          uniqueScans: response.data.uniqueScans || 0,
           activeQRCodes: response.data.activeQRCodes || 0,
           downloadsToday: response.data.downloadsToday || 0
         });
@@ -239,6 +244,90 @@ const QRCodes = () => {
     }
   };
 
+  const handleCustomizeClick = async (link) => {
+    try {
+      const linkId = link._id || link.id;
+
+      // Fetch existing QR code customization
+      const response = await qrCodeAPI.getUrlQRCode(linkId);
+
+      if (response && response.success && response.data) {
+        const customization = response.data.customization;
+
+        // Load existing customization or use defaults
+        if (customization) {
+          setQrOptions({
+            size: customization.size || 300,
+            format: customization.format || 'png',
+            errorCorrection: customization.errorCorrection || 'M',
+            foregroundColor: customization.foregroundColor || '#000000',
+            backgroundColor: customization.backgroundColor || '#FFFFFF',
+            includeMargin: customization.includeMargin !== undefined ? customization.includeMargin : true,
+            logo: null
+          });
+        }
+      }
+
+      // Set selected link and open modal
+      setSelectedLink(link);
+      setIsUpdatingQR(true);
+      setShowCustomizeModal(true);
+    } catch (error) {
+      console.error("Error loading QR customization:", error);
+
+      // If error loading, still open with defaults
+      setSelectedLink(link);
+      setIsUpdatingQR(true);
+      setShowCustomizeModal(true);
+
+      // Show warning toast
+      setToast({
+        type: 'warning',
+        message: t('errors.failedToLoadCustomization') || 'Could not load existing customization. Using defaults.'
+      });
+    }
+  };
+
+  const updateQRCodeCustomization = async (linkId) => {
+    try {
+      const response = await qrCodeAPI.updateCustomization(linkId, qrOptions);
+      if (response && response.success && response.data && response.data.qrCode) {
+        // Update the link in the links state with the new qrCode SVG
+        setLinks(prevLinks => prevLinks.map(link => {
+          if ((link._id || link.id) === linkId) {
+            return { ...link, qrCode: response.data.qrCode };
+          }
+          return link;
+        }));
+        setFilteredLinks(prevLinks => prevLinks.map(link => {
+          if ((link._id || link.id) === linkId) {
+            return { ...link, qrCode: response.data.qrCode };
+          }
+          return link;
+        }));
+        setShowCustomizeModal(false);
+        setSelectedLink(null);
+        setIsUpdatingQR(false);
+        loadStats();
+
+        // Show success toast
+        setToast({
+          type: 'success',
+          message: t('qrCodes.updateSuccess') || 'QR Code customization updated successfully!'
+        });
+      }
+    } catch (error) {
+      console.error("Error updating QR code customization:", error);
+      const errorMsg = error.message || t('qrCodes.updateFailed') || 'Failed to update QR code customization';
+
+      // Show error toast
+      setToast({
+        type: 'error',
+        message: errorMsg
+      });
+    }
+  };
+
   const handleDeleteClick = (link) => {
     const linkId = link._id || link.id;
     const shortUrl = getShortUrl(link);
@@ -362,7 +451,7 @@ const QRCodes = () => {
             <section style={{ marginBottom: '24px' }}>
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(5, 1fr)',
                 gap: '16px'
               }}>
                 <div style={{
@@ -400,6 +489,24 @@ const QRCodes = () => {
                     fontSize: '14px',
                     color: '#6B7280'
                   }}>{t('qrCodes.stats.totalScans')}</div>
+                </div>
+                <div style={{
+                  background: '#fff',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    color: '#8B5CF6',
+                    marginBottom: '8px'
+                  }}>{stats.uniqueScans.toLocaleString()}</div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#6B7280'
+                  }}>{t('qrCodes.stats.uniqueScans')}</div>
                 </div>
                 <div style={{
                   background: '#fff',
@@ -630,16 +737,24 @@ const QRCodes = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          flexShrink: 0
+                          flexShrink: 0,
+                          overflow: 'hidden'
                         }}>
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
-                            alt="QR Code"
-                            style={{
-                              width: '70px',
-                              height: '70px'
-                            }}
-                          />
+                          {link.qrCode && link.qrCode.startsWith('<svg') ? (
+                            <span
+                              dangerouslySetInnerHTML={{ __html: link.qrCode.replace('width="300"', 'width="70"').replace('height="300"', 'height="70"') }}
+                              style={{ display: 'inline-block', width: '70px', height: '70px' }}
+                            />
+                          ) : (
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
+                              alt="QR Code"
+                              style={{
+                                width: '70px',
+                                height: '70px'
+                              }}
+                            />
+                          )}
                         </div>
 
                         {/* Link Info */}
@@ -684,7 +799,7 @@ const QRCodes = () => {
                               fontSize: '18px',
                               fontWeight: '700',
                               color: '#111827'
-                            }}>{link.clickCount || 0}</div>
+                            }}>{link.qrCodeScanCount || 0}</div>
                             <div style={{
                               fontSize: '12px',
                               color: '#6B7280'
@@ -730,8 +845,7 @@ const QRCodes = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedLink(link);
-                              setShowCustomizeModal(true);
+                              handleCustomizeClick(link);
                             }}
                             style={{
                               padding: '8px 12px',
@@ -1071,6 +1185,7 @@ const QRCodes = () => {
                       onClick={() => {
                         setShowCustomizeModal(false);
                         setSelectedLink(null);
+                        setIsUpdatingQR(false);
                       }}
                       style={{
                         flex: 1,
@@ -1089,9 +1204,17 @@ const QRCodes = () => {
                     <button
                       onClick={() => {
                         if (selectedLink) {
-                          generateQRCode(selectedLink._id || selectedLink.id);
+                          const linkId = selectedLink._id || selectedLink.id;
+                          if (isUpdatingQR) {
+                            // Update existing QR code
+                            updateQRCodeCustomization(linkId);
+                          } else {
+                            // Generate new QR code
+                            generateQRCode(linkId);
+                          }
                         } else {
                           setShowCustomizeModal(false);
+                          setIsUpdatingQR(false);
                         }
                       }}
                       style={{
@@ -1106,7 +1229,7 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      {selectedLink ? t('qrCodes.generate.generateButton') : t('common.save')}
+                      {selectedLink ? (isUpdatingQR ? t('common.update') : t('qrCodes.generate.generateButton')) : t('common.save')}
                     </button>
                   </div>
                 </div>

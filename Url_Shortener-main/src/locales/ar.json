@@ -9,6 +9,7 @@
     "cancel": "إلغاء",
     "delete": "حذف",
     "edit": "تعديل",
+    "update": "تحديث",
     "close": "إغلاق",
     "confirm": "تأكيد",
     "back": "رجوع",
@@ -528,6 +529,7 @@
     "stats": {
       "totalQRCodes": "إجمالي رموز QR",
       "totalScans": "إجمالي المسح",
+      "uniqueScans": "المسح الفريد",
       "activeQRCodes": "رموز QR النشطة",
       "downloadsToday": "التنزيلات اليوم"
     },
@@ -569,7 +571,9 @@
     "downloadSuccess": "تم تحميل رمز QR بنجاح!",
     "downloadFailed": "فشل تحميل رمز QR",
     "bulkGenerateSuccess": "تم إنشاء {{count}} رمز QR بنجاح!",
-    "bulkGenerateFailed": "فشل إنشاء رموز QR"
+    "bulkGenerateFailed": "فشل إنشاء رموز QR",
+    "updateSuccess": "تم تحديث تخصيص رمز QR بنجاح!",
+    "updateFailed": "فشل تحديث تخصيص رمز QR"
   },
   "contentFilter": {
     "title": "تصفية المحتوى والأمان",
@@ -1002,7 +1006,8 @@
     "domainVerificationError": "فشل التحقق من النطاق. يرجى التحقق من سجلات DNS الخاصة بك.",
     "domainAddError": "فشل إضافة النطاق. يرجى التحقق من إدخالك والمحاولة مرة أخرى.",
     "domainDeleteError": "فشل حذف النطاق. يرجى المحاولة مرة أخرى.",
-    "qrCodeDeleteError": "فشل حذف رمز QR. يرجى المحاولة مرة أخرى."
+    "qrCodeDeleteError": "فشل حذف رمز QR. يرجى المحاولة مرة أخرى.",
+    "failedToLoadCustomization": "تعذر تحميل التخصيص الموجود. استخدام الإعدادات الافتراضية."
   },
   "sidebar": {
     "main": "الرئيسية",
