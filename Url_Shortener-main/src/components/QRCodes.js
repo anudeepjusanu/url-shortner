@@ -799,7 +799,7 @@ const QRCodes = () => {
                               fontSize: '18px',
                               fontWeight: '700',
                               color: '#111827'
-                            }}>{link.qrCodeScanCount || 0}</div>
+                            }}>{link.qrScanCount || 0}</div>
                             <div style={{
                               fontSize: '12px',
                               color: '#6B7280'

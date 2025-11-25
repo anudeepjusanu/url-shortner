@@ -99,17 +99,17 @@ class AnalyticsService {
         await url.updateOne({
           $inc: {
             clickCount: 1,
-            qrCodeScanCount: 1,
-            ...(isUnique && { uniqueClickCount: 1, uniqueQRScanCount: 1 })
+            qrScanCount: 1,
+            ...(isUnique && { uniqueClickCount: 1, uniqueQrScanCount: 1 })
           },
           lastClickedAt: new Date(),
-          lastQRScanAt: new Date()
+          lastQrScanAt: new Date()
         });
 
         console.log('✅ QR scan tracked:', {
           clickCount: url.clickCount + 1,
-          qrCodeScanCount: (url.qrCodeScanCount || 0) + 1,
-          uniqueQRScanCount: (url.uniqueQRScanCount || 0) + (isUnique ? 1 : 0)
+          qrScanCount: (url.qrScanCount || 0) + 1,
+          uniqueQrScanCount: (url.uniqueQrScanCount || 0) + (isUnique ? 1 : 0)
         });
 
         // Update QRCode model scan count

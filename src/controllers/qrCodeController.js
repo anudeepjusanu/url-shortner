@@ -37,6 +37,13 @@ const generateQRCode = async (req, res) => {
     // Build the short URL with QR tracking parameter
     const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
 
+    console.log('📱 Generating QR Code:', {
+      urlId: id,
+      shortCode: url.shortCode,
+      shortUrl: shortUrl,
+      hasQrParam: shortUrl.includes('?qr=1')
+    });
+
     // Generate QR Code options
     const qrOptions = {
       errorCorrectionLevel: errorCorrection,

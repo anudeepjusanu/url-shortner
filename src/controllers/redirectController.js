@@ -10,7 +10,10 @@ const redirectToOriginalUrl = async (req, res) => {
       shortCode,
       requestDomain,
       ip: req.ip,
-      userAgent: req.get('User-Agent')?.substring(0, 50)
+      userAgent: req.get('User-Agent')?.substring(0, 50),
+      queryParams: req.query,
+      qrParam: req.query.qr,
+      fullUrl: req.originalUrl
     });
 
     // Extract real IP address from various headers (for proxies, load balancers, CDNs)
@@ -268,8 +271,16 @@ const detectClickSource = (req) => {
   const userAgent = req.get('user-agent') || '';
   const referer = req.get('referer') || '';
 
+  console.log('🔍 Detecting Click Source:', {
+    qrQueryParam: req.query.qr,
+    sourceQueryParam: req.query.source,
+    userAgent: userAgent.substring(0, 100),
+    referer
+  });
+
   // Check for QR tracking parameter (added when generating QR codes)
   if (req.query.qr === '1' || req.query.source === 'qr') {
+    console.log('✅ QR Code detected via query parameter!');
     return 'qr_code';
   }
 
@@ -283,20 +294,24 @@ const detectClickSource = (req) => {
   ];
 
   if (qrScannerPatterns.some(pattern => pattern.test(userAgent))) {
+    console.log('✅ QR Code detected via user-agent!');
     return 'qr_code';
   }
 
   // Check if coming from API (no browser user-agent patterns)
   if (req.get('X-API-Key') || req.get('Authorization')?.includes('Bearer')) {
+    console.log('📡 API request detected');
     return 'api';
   }
 
   // Check referer
   if (!referer || referer === '' || referer === 'direct') {
+    console.log('🔗 Direct click detected');
     return 'direct';
   }
 
   // Default to browser
+  console.log('🌐 Browser click detected');
   return 'browser';
 };
 

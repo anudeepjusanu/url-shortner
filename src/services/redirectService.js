@@ -18,6 +18,13 @@ class RedirectService {
         clickSource
       } = requestData;
 
+      console.log('🔄 Redirect Service - handleRedirect:', {
+        shortCode,
+        clickSource,
+        domain,
+        ipAddress
+      });
+
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
         throw new Error(`IP blocked: ${blocked.reason}`);
