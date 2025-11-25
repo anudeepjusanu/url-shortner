@@ -359,8 +359,8 @@
     "shortenYourURL": "اختصر رابطك",
     "longURL": "الرابط الطويل",
     "longURLPlaceholder": "https://example.com/your-long-url",
-    "customBackhalf": "النهاية المخصصة",
-    "customBackhalfPlaceholder": "my-custom-link",
+    "customBackhalf":" اسم مخصص (اختياري)",
+    "customBackhalfPlaceholder": "أدخل اسمًا مخصصًا",
     "campaign": "الحملة",
     "campaignPlaceholder": "حملة الصيف 2024",
     "advancedSettings": "إعدادات متقدمة",
@@ -494,9 +494,11 @@
     },
     "filters": {
       "dateRange": "النطاق الزمني",
+      "last24Hours": "آخر 24 ساعة",
       "last7Days": "آخر 7 أيام",
       "last30Days": "آخر 30 يوم",
       "last90Days": "آخر 90 يوم",
+      "last1Year": "آخر سنة",
       "custom": "نطاق مخصص",
       "applyFilters": "تطبيق التصفية"
     },

@@ -70,6 +70,49 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // Session timeout - 30 minutes of inactivity (Bug #16)
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+
+    let inactivityTimer;
+
+    // Reset the inactivity timer
+    const resetInactivityTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+
+      // Set new timer for 30 minutes
+      inactivityTimer = setTimeout(() => {
+        console.log('Session expired due to inactivity');
+        logout();
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    // Activity event handlers
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    // Add event listeners for user activity
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetInactivityTimer);
+    });
+
+    // Start the timer
+    resetInactivityTimer();
+
+    // Cleanup on unmount
+    return () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetInactivityTimer);
+      });
+    };
+  }, [state.isAuthenticated]);
+
   // Check if user is authenticated on app start
   useEffect(() => {
     checkAuthStatus();

@@ -21,7 +21,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalClicks: 0,
-    uniqueVisitors: 0,
+    qrScans: 0,           // Changed from uniqueVisitors to qrScans
     clickRate: 0,
     totalLinks: 0
   });
@@ -108,13 +108,12 @@ const Dashboard = () => {
                              overviewData.total ||
                              0;
 
-          // Extract unique visitors/clicks with various possible keys
-          const uniqueVisitors = overviewData.totalUniqueClicks ||
-                                overviewData.uniqueClicks ||
-                                data.totalUniqueClicks ||
-                                data.uniqueClicks ||
-                                overviewData.unique ||
-                                0;
+          // Extract QR scans with various possible keys
+          const qrScans = overviewData.totalQRScans ||
+                         overviewData.qrScans ||
+                         data.totalQRScans ||
+                         data.qrScans ||
+                         0;
 
           // Extract total URLs/links
           const totalLinks = overviewData.totalUrls ||
@@ -128,20 +127,20 @@ const Dashboard = () => {
           if (overviewData.clickThroughRate) {
             // If CTR is provided as a percentage string like "63.3%"
             clickRate = parseFloat(overviewData.clickThroughRate);
-          } else if (totalClicks > 0 && uniqueVisitors > 0) {
-            // Calculate CTR as (unique / total) * 100
-            clickRate = ((uniqueVisitors / totalClicks) * 100).toFixed(1);
+          } else if (totalClicks > 0 && totalLinks > 0) {
+            // Calculate CTR as (clicks / links) * 100
+            clickRate = ((totalClicks / totalLinks)).toFixed(1);
           }
 
           console.log('=== EXTRACTED DASHBOARD STATS ===');
           console.log('Total Clicks:', totalClicks);
-          console.log('Unique Visitors:', uniqueVisitors);
+          console.log('QR Scans:', qrScans);
           console.log('Click Rate:', clickRate);
           console.log('Total Links:', totalLinks);
 
           setStats({
             totalClicks,
-            uniqueVisitors,
+            qrScans,      // Changed from uniqueVisitors to qrScans
             clickRate,
             totalLinks
           });
@@ -1081,13 +1080,13 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>{t('dashboard.uniqueVisitors')}</div>
+                  }}>Scanned QR Codes</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
                     color: '#1F2937',
                     marginBottom: '6px'
-                  }}>{loading ? '...' : stats.uniqueVisitors.toLocaleString()}</div>
+                  }}>{loading ? '...' : stats.qrScans.toLocaleString()}</div>
                   <div className="stats-change positive" style={{
                     fontSize: '12px',
                     color: '#10B981',
@@ -1221,7 +1220,15 @@ const Dashboard = () => {
                     minWidth: 0,
                     textAlign: 'left'
                   }}>
-                    <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
+                    {/* <a href={`https://${getShortUrl(link)}`} target="_blank" rel="noopener noreferrer" className="short-url" style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#3B82F6',
+                      textDecoration: 'none',
+                      display: 'block',
+                      marginBottom: '4px'
+                    }}>{getShortUrl(link)}</a> */}
+                    <a href={link.originalUrl} target="_blank" rel="noopener noreferrer" className="short-url" style={{
                       fontSize: '14px',
                       fontWeight: '600',
                       color: '#3B82F6',

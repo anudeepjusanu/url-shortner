@@ -306,7 +306,8 @@ export const qrCodeAPI = {
   download: (urlId, format) => apiClient.get(`/qr-codes/download/${urlId}`, { format }),
   getStats: () => apiClient.get('/qr-codes/stats'),
   bulkGenerate: (urlIds, options) => apiClient.post('/qr-codes/bulk-generate', { urlIds, options }),
-  getUrlQRCode: (urlId) => apiClient.get(`/qr-codes/${urlId}`)
+  getUrlQRCode: (urlId) => apiClient.get(`/qr-codes/${urlId}`),
+  updateCustomization: (urlId, options) => apiClient.put(`/qr-codes/customize/${urlId}`, options)
 };
 
 // Export the API client instance

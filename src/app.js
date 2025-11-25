@@ -89,12 +89,18 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
 
-// QR Code endpoint (e.g., /qr/mbtw7f)
+// QR Code generation endpoint (e.g., /qr/mbtw7f) - for generating QR code images
 app.get('/qr/:shortCode', redirectController.generateQRCode);
+
+// QR Code scan redirect endpoint (e.g., /q/mbtw7f) - for QR code scans
+// This route is specifically for QR codes and will track as QR scan
+app.get('/q/:shortCode', redirectController.redirectFromQRCode);
+app.get('/q/:shortCode/*', redirectController.redirectFromQRCode); // Handle extra paths
 
 // Handle shortened URL redirects (e.g., /mbtw7f)
 // TEMPORARILY DISABLED - Rate limiting paused until going live
 app.get('/:shortCode', /* redirectLimiter, */ redirectController.redirectToOriginalUrl);
+app.get('/:shortCode/*', /* redirectLimiter, */ redirectController.redirectToOriginalUrl); // Handle extra paths
 
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)
 app.get('/preview/:shortCode', redirectController.getPreview);
