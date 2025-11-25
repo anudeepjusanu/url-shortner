@@ -13,7 +13,7 @@ const urlSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^[a-zA-Z0-9_-]+$/, 'Short code can only contain letters, numbers, hyphens, and underscores']
+    match: [/^[\p{L}\p{N}_-]+$/u, 'Short code can only contain letters (any language), numbers, hyphens, and underscores']
   },
   customCode: {
     type: String,
@@ -21,9 +21,9 @@ const urlSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     sparse: true,
-    match: [/^[a-zA-Z0-9_-]+$/, 'Custom code can only contain letters, numbers, hyphens, and underscores']
+    match: [/^[\p{L}\p{N}_-]+$/u, 'Custom code can only contain letters (any language), numbers, hyphens, and underscores']
   },
-  title: {
+    title: {
     type: String,
     trim: true,
     maxlength: [200, 'Title cannot exceed 200 characters']
@@ -102,6 +102,48 @@ const urlSchema = new mongoose.Schema({
   lastQRCodeDownload: {
     type: Date,
     default: null
+  },
+  // QR Scan tracking - separate from regular clicks
+  qrScanCount: {
+    type: Number,
+    default: 0
+  },
+  uniqueQrScanCount: {
+    type: Number,
+    default: 0
+  },
+  lastQrScanAt: {
+    type: Date,
+    default: null
+  },
+  // Store QR customization settings
+  qrCodeSettings: {
+    size: {
+      type: Number,
+      default: 300
+    },
+    format: {
+      type: String,
+      enum: ['png', 'svg', 'pdf', 'jpg'],
+      default: 'png'
+    },
+    errorCorrection: {
+      type: String,
+      enum: ['L', 'M', 'Q', 'H'],
+      default: 'M'
+    },
+    foregroundColor: {
+      type: String,
+      default: '#000000'
+    },
+    backgroundColor: {
+      type: String,
+      default: '#FFFFFF'
+    },
+    includeMargin: {
+      type: Boolean,
+      default: true
+    }
   },
   metaData: {
     favicon: String,
@@ -188,16 +230,25 @@ urlSchema.pre('save', function(next) {
   next();
 });
 
-urlSchema.methods.incrementClick = async function(isUnique = false) {
-  const update = { 
+urlSchema.methods.incrementClick = async function(isUnique = false, isQrScan = false) {
+  const update = {
     $inc: { clickCount: 1 },
     lastClickedAt: new Date()
   };
-  
+
   if (isUnique) {
     update.$inc.uniqueClickCount = 1;
   }
-  
+
+  // Also increment QR scan count if this click came from a QR code
+  if (isQrScan) {
+    update.$inc.qrScanCount = 1;
+    update.lastQrScanAt = new Date();
+    if (isUnique) {
+      update.$inc.uniqueQrScanCount = 1;
+    }
+  }
+
   return this.updateOne(update);
 };
 
@@ -250,5 +301,9 @@ urlSchema.index({ createdAt: -1 });
 urlSchema.index({ tags: 1 });
 urlSchema.index({ clickCount: -1 });
 urlSchema.index({ domain: 1 });
+// QR code related indexes
+urlSchema.index({ qrCodeGenerated: 1 });
+urlSchema.index({ qrScanCount: -1 });
+urlSchema.index({ qrCodeGeneratedAt: -1 });
 
 module.exports = mongoose.model('Url', urlSchema);

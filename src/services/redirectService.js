@@ -14,9 +14,17 @@ class RedirectService {
         language,
         screenResolution,
         password,
-        domain
+        domain,
+        clickSource
       } = requestData;
-      
+
+      console.log('🔄 Redirect Service - handleRedirect:', {
+        shortCode,
+        clickSource,
+        domain,
+        ipAddress
+      });
+
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
         throw new Error(`IP blocked: ${blocked.reason}`);
@@ -26,19 +34,20 @@ class RedirectService {
       if (!url) {
         throw new Error('URL not found');
       }
-      
+
       const validationResult = await this.validateRedirect(url, requestData);
       if (!validationResult.allowed) {
         throw new Error(validationResult.reason);
       }
-      
+
       const clickData = {
         ipAddress,
         userAgent,
         referer,
         language,
         screenResolution,
-        domain // Pass the domain to analytics service
+        domain, // Pass the domain to analytics service
+        clickSource: clickSource || 'unknown' // Pass the click source
       };
       
       try {

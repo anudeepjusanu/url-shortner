@@ -156,7 +156,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>{t('sidebar.analytics')}</span>
           </div>
-          {/* <div
+          <div
             className={`nav-item ${isActive("/qr-codes") ? "active" : ""}`}
             onClick={() => handleNavigation("/qr-codes")}
           >
@@ -176,7 +176,7 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.qrCodes')}</span>
-          </div> */}
+          </div>
         </div>
 
         {/* Settings Section */}

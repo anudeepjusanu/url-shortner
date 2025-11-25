@@ -9,6 +9,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "update": "Update",
     "close": "Close",
     "confirm": "Confirm",
     "back": "Back",
@@ -528,6 +529,7 @@
     "stats": {
       "totalQRCodes": "Total QR Codes",
       "totalScans": "Total Scans",
+      "uniqueScans": "Unique Scans",
       "activeQRCodes": "Active QR Codes",
       "downloadsToday": "Downloads Today"
     },
@@ -569,7 +571,9 @@
     "downloadSuccess": "QR Code downloaded successfully!",
     "downloadFailed": "Failed to download QR code",
     "bulkGenerateSuccess": "Successfully generated {{count}} QR code(s)!",
-    "bulkGenerateFailed": "Failed to generate QR codes"
+    "bulkGenerateFailed": "Failed to generate QR codes",
+    "updateSuccess": "QR Code customization updated successfully!",
+    "updateFailed": "Failed to update QR code customization"
   },
   "contentFilter": {
     "title": "Content Filter & Security",
@@ -1003,7 +1007,8 @@
     "domainVerificationError": "Domain verification failed. Please check your DNS records.",
     "domainAddError": "Failed to add domain. Please check your input and try again.",
     "domainDeleteError": "Failed to delete domain. Please try again.",
-    "qrCodeDeleteError": "Failed to delete QR code. Please try again."
+    "qrCodeDeleteError": "Failed to delete QR code. Please try again.",
+    "failedToLoadCustomization": "Could not load existing customization. Using defaults."
   },
   "sidebar": {
     "main": "MAIN",

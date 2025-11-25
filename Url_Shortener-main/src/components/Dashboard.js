@@ -25,6 +25,7 @@ const Dashboard = () => {
     clickRate: 0,
     totalLinks: 0
   });
+  const [chartData, setChartData] = useState([]);
   const [recentLinks, setRecentLinks] = useState([]);
   const [userName, setUserName] = useState('User');
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
@@ -55,6 +56,23 @@ const Dashboard = () => {
     }
   };
 
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      // Handle hour format (YYYY-MM-DD-HH)
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}-\d{2}$/)) {
+        const [year, month, day, hour] = dateStr.split('-');
+        return `${hour}:00`;
+      }
+      // Handle day format (YYYY-MM-DD)
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -74,27 +92,118 @@ const Dashboard = () => {
       try {
         const period = timeFilter === 'Last 7 days' ? '7d' : timeFilter === 'Last 30 days' ? '30d' : '90d';
         const analyticsResponse = await analyticsAPI.getOverview({ period });
+
+        console.log('=== DASHBOARD ANALYTICS API RESPONSE ===');
+        console.log('Full Response:', analyticsResponse);
+
         if (analyticsResponse && analyticsResponse.data) {
+          const data = analyticsResponse.data;
+
+          // Extract analytics data with multiple fallback options
+          const overviewData = data.overview || data.summary || data;
+
+          // Extract total clicks with various possible keys
+          const totalClicks = overviewData.totalClicks ||
+                             data.totalClicks ||
+                             overviewData.total ||
+                             0;
+
+          // Extract unique visitors/clicks with various possible keys
+          const uniqueVisitors = overviewData.totalUniqueClicks ||
+                                overviewData.uniqueClicks ||
+                                data.totalUniqueClicks ||
+                                data.uniqueClicks ||
+                                overviewData.unique ||
+                                0;
+
+          // Extract total URLs/links
+          const totalLinks = overviewData.totalUrls ||
+                            data.totalUrls ||
+                            overviewData.totalLinks ||
+                            data.totalLinks ||
+                            0;
+
+          // Calculate click-through rate
+          let clickRate = 0;
+          if (overviewData.clickThroughRate) {
+            // If CTR is provided as a percentage string like "63.3%"
+            clickRate = parseFloat(overviewData.clickThroughRate);
+          } else if (totalClicks > 0 && uniqueVisitors > 0) {
+            // Calculate CTR as (unique / total) * 100
+            clickRate = ((uniqueVisitors / totalClicks) * 100).toFixed(1);
+          }
+
+          console.log('=== EXTRACTED DASHBOARD STATS ===');
+          console.log('Total Clicks:', totalClicks);
+          console.log('Unique Visitors:', uniqueVisitors);
+          console.log('Click Rate:', clickRate);
+          console.log('Total Links:', totalLinks);
+
           setStats({
-            totalClicks: analyticsResponse.data.totalClicks || 0,
-            uniqueVisitors: analyticsResponse.data.uniqueClicks || 0,
-            clickRate: analyticsResponse.data.clickThroughRate || 0,
-            totalLinks: analyticsResponse.data.totalUrls || 0
+            totalClicks,
+            uniqueVisitors,
+            clickRate,
+            totalLinks
           });
+
+          // Extract chart data with multiple fallback options (same as Analytics)
+          let clicksByDay = data.chartData?.clicksByDay ||
+                           data.clickActivity ||
+                           data.timeSeries ||
+                           [];
+
+          // Transform chart data for display (same format as Analytics component)
+          const transformedChartData = clicksByDay.map(item => {
+            const dateStr = item.date || item._id;
+            return {
+              date: dateStr,
+              label: formatDateLabel(dateStr),
+              totalClicks: item.clicks || item.totalClicks || 0,
+              uniqueClicks: item.uniqueClicks || item.unique || 0
+            };
+          }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+          console.log('=== EXTRACTED CHART DATA ===');
+          console.log('Chart Data Points:', transformedChartData.length);
+          console.log('Chart Data:', transformedChartData);
+
+          setChartData(transformedChartData);
         }
       } catch (err) {
         console.error('Error fetching analytics:', err);
+        // Set default values on error
+        setStats({
+          totalClicks: 0,
+          uniqueVisitors: 0,
+          clickRate: 0,
+          totalLinks: 0
+        });
+        setChartData([]);
       }
 
       // Fetch recent links
       try {
         const linksResponse = await urlsAPI.list({ page: 1, limit: 3, sortBy: 'createdAt', sortOrder: 'desc' });
+
+        console.log('=== RECENT LINKS API RESPONSE ===');
+        console.log('Full Response:', linksResponse);
+
         if (linksResponse && linksResponse.data) {
-          const links = linksResponse.data.urls || linksResponse.data.data?.urls || [];
+          // Extract URLs with multiple fallback options
+          const links = linksResponse.data.urls ||
+                       linksResponse.data.data?.urls ||
+                       linksResponse.data.links ||
+                       [];
+
+          console.log('=== EXTRACTED RECENT LINKS ===');
+          console.log('Number of links:', links.length);
+          console.log('Links:', links);
+
           setRecentLinks(links);
         }
       } catch (err) {
         console.error('Error fetching recent links:', err);
+        setRecentLinks([]);
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
@@ -683,48 +792,228 @@ const Dashboard = () => {
                   <option value="Last 90 days">{t('dashboard.last90Days')}</option>
                 </select>
               </div>
-              <div className="chart-container">
-                <svg width="100%" height="240" viewBox="0 0 600 240" className="analytics-chart">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1"/>
-                      <stop offset="100%" stopColor="#3B82F6" stopOpacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  {/* Chart line */}
-                  <polyline
-                    points="50,180 120,160 190,140 260,120 330,100 400,85 470,70 540,60"
-                    fill="none"
-                    stroke="#3B82F6"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  {/* Data points */}
-                  <circle cx="50" cy="180" r="4" fill="#3B82F6"/>
-                  <circle cx="120" cy="160" r="4" fill="#3B82F6"/>
-                  <circle cx="190" cy="140" r="4" fill="#3B82F6"/>
-                  <circle cx="260" cy="120" r="4" fill="#3B82F6"/>
-                  <circle cx="330" cy="100" r="4" fill="#3B82F6"/>
-                  <circle cx="400" cy="85" r="4" fill="#3B82F6"/>
-                  <circle cx="470" cy="70" r="4" fill="#3B82F6"/>
-                  <circle cx="540" cy="60" r="4" fill="#3B82F6"/>
+              {(chartData && chartData.length > 0) ? (
+              <div className="chart-container" style={{ width: '100%', height: '280px' }}>
+                <svg
+                  width="100%"
+                  height="280"
+                  viewBox="0 0 700 280"
+                  preserveAspectRatio="xMidYMid meet"
+                  style={{ display: 'block' }}
+                >
+                  {/* Axes */}
+                  <g stroke="#E5E7EB" strokeWidth="1.5">
+                    {/* Y-axis */}
+                    <line x1="50" y1="30" x2="50" y2="220" />
+                    {/* X-axis */}
+                    <line x1="50" y1="220" x2="660" y2="220" />
+                  </g>
+
+                  {/* Y-axis grid lines */}
+                  <g stroke="#F3F4F6" strokeWidth="1">
+                    <line x1="50" y1="30" x2="660" y2="30" />
+                    <line x1="50" y1="68" x2="660" y2="68" />
+                    <line x1="50" y1="106" x2="660" y2="106" />
+                    <line x1="50" y1="144" x2="660" y2="144" />
+                    <line x1="50" y1="182" x2="660" y2="182" />
+                    <line x1="50" y1="220" x2="660" y2="220" />
+                  </g>
+
+                  {/* Dynamic chart lines based on analytics data */}
+                  {(() => {
+                    if (chartData.length === 0) return null;
+
+                    console.log('Dashboard Chart Rendering - Data Points:', chartData);
+
+                    // Find the maximum value in the chart data
+                    const maxClicks = Math.max(
+                      ...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)),
+                      1 // Minimum value of 1
+                    );
+
+                    console.log('Y-axis calculation - maxClicks:', maxClicks);
+
+                    // Calculate appropriate Y-axis maximum (same logic as Analytics)
+                    let yAxisMax;
+
+                    if (maxClicks <= 5) {
+                      yAxisMax = 10;
+                    } else if (maxClicks <= 10) {
+                      yAxisMax = 10;
+                    } else if (maxClicks <= 20) {
+                      yAxisMax = 20;
+                    } else if (maxClicks <= 50) {
+                      yAxisMax = 50;
+                    } else if (maxClicks <= 100) {
+                      yAxisMax = 100;
+                    } else {
+                      yAxisMax = Math.ceil(maxClicks / 50) * 50;
+                    }
+
+                    console.log('Y-axis scale:', { maxClicks, yAxisMax });
+
+                    const chartWidth = 610; // 660 - 50 (margin)
+                    const chartHeight = 190; // 220 - 30 (margin)
+                    const spacing = chartData.length > 1 ? chartWidth / (chartData.length - 1) : 0;
+
+                    console.log('Dashboard Chart Scale:', {
+                      maxClicks,
+                      yAxisMax,
+                      chartWidth,
+                      chartHeight,
+                      spacing,
+                      dataPoints: chartData.length,
+                      totalClicksSum: chartData.reduce((sum, p) => sum + (p.totalClicks || 0), 0),
+                      uniqueClicksSum: chartData.reduce((sum, p) => sum + (p.uniqueClicks || 0), 0)
+                    });
+
+                    return (
+                      <>
+                        {/* Total Clicks Line */}
+                        <polyline
+                          points={chartData.map((point, index) => {
+                            const x = 50 + (index * spacing);
+                            const y = 220 - ((point.totalClicks || 0) / yAxisMax) * chartHeight;
+                            return `${x},${y}`;
+                          }).join(' ')}
+                          fill="none"
+                          stroke="#3B82F6"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Unique Clicks Line */}
+                        <polyline
+                          points={chartData.map((point, index) => {
+                            const x = 50 + (index * spacing);
+                            const y = 220 - ((point.uniqueClicks || 0) / yAxisMax) * chartHeight;
+                            return `${x},${y}`;
+                          }).join(' ')}
+                          fill="none"
+                          stroke="#10B981"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Data points - Total Clicks */}
+                        {chartData.map((point, index) => {
+                          const x = 50 + (index * spacing);
+                          const y = 220 - ((point.totalClicks || 0) / yAxisMax) * chartHeight;
+                          return <circle key={`total-${index}`} cx={x} cy={y} r="4" fill="#3B82F6" />;
+                        })}
+
+                        {/* Data points - Unique Clicks */}
+                        {chartData.map((point, index) => {
+                          const x = 50 + (index * spacing);
+                          const y = 220 - ((point.uniqueClicks || 0) / yAxisMax) * chartHeight;
+                          return <circle key={`unique-${index}`} cx={x} cy={y} r="4" fill="#10B981" />;
+                        })}
+                      </>
+                    );
+                  })()}
+
                   {/* X-axis labels */}
-                  <text x="50" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.mon')}</text>
-                  <text x="120" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.tue')}</text>
-                  <text x="190" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.wed')}</text>
-                  <text x="260" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.thu')}</text>
-                  <text x="330" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.fri')}</text>
-                  <text x="400" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.sat')}</text>
-                  <text x="470" y="210" fontSize="12" fill="#9CA3AF" textAnchor="middle">{t('dashboard.sun')}</text>
+                  <g
+                    fill="#9CA3AF"
+                    fontSize="12"
+                    textAnchor="middle"
+                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+                  >
+                    {(() => {
+                      const chartWidth = 610;
+                      const spacing = chartData.length > 1 ? chartWidth / (chartData.length - 1) : chartWidth;
+
+                      return chartData.map((point, index) => {
+                        const x = 50 + (index * spacing);
+                        const label = point.label || point.date || `Day ${index + 1}`;
+                        return (
+                          <text key={`label-${index}`} x={x} y="240">
+                            {label}
+                          </text>
+                        );
+                      });
+                    })()}
+                  </g>
+
                   {/* Y-axis labels */}
-                  <text x="30" y="185" fontSize="12" fill="#9CA3AF" textAnchor="end">100</text>
-                  <text x="30" y="155" fontSize="12" fill="#9CA3AF" textAnchor="end">125</text>
-                  <text x="30" y="125" fontSize="12" fill="#9CA3AF" textAnchor="end">150</text>
-                  <text x="30" y="95" fontSize="12" fill="#9CA3AF" textAnchor="end">175</text>
-                  <text x="30" y="65" fontSize="12" fill="#9CA3AF" textAnchor="end">200</text>
-                  <text x="30" y="35" fontSize="12" fill="#9CA3AF" textAnchor="end">225</text>
+                  <g
+                    fill="#9CA3AF"
+                    fontSize="12"
+                    textAnchor="end"
+                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+                  >
+                    {(() => {
+                      const maxClicks = Math.max(...chartData.map(p => Math.max(p.totalClicks || 0, p.uniqueClicks || 0)), 1);
+                      const chartHeight = 190;
+
+                      // Use the SAME Y-axis calculation as chart rendering
+                      let yAxisMax;
+
+                      if (maxClicks <= 5) {
+                        yAxisMax = 10;
+                      } else if (maxClicks <= 10) {
+                        yAxisMax = 10;
+                      } else if (maxClicks <= 20) {
+                        yAxisMax = 20;
+                      } else if (maxClicks <= 50) {
+                        yAxisMax = 50;
+                      } else if (maxClicks <= 100) {
+                        yAxisMax = 100;
+                      } else {
+                        yAxisMax = Math.ceil(maxClicks / 50) * 50;
+                      }
+
+                      const step = yAxisMax / 5;
+
+                      return [0, 1, 2, 3, 4, 5].map((i) => {
+                        const value = Math.round(i * step);
+                        const y = 220 - (i * (chartHeight / 5));
+                        return (
+                          <text key={`y-${i}`} x="45" y={y + 4}>
+                            {value}
+                          </text>
+                        );
+                      });
+                    })()}
+                  </g>
+
+                  {/* Legend */}
+                  <g fontSize="12" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif">
+                    <circle cx="250" cy="265" r="4" fill="#3B82F6" />
+                    <text x="260" y="269" fill="#6B7280" textAnchor="start">
+                      {t('dashboard.stats.totalClicks')}
+                    </text>
+                    <circle cx="400" cy="265" r="4" fill="#10B981" />
+                    <text x="410" y="269" fill="#6B7280" textAnchor="start">
+                      {t('dashboard.uniqueVisitors')}
+                    </text>
+                  </g>
                 </svg>
               </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '280px',
+                  textAlign: 'center',
+                  color: '#9CA3AF'
+                }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '12px' }}>
+                    <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 12l4-4 4 4 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: '#6B7280', margin: '0 0 6px 0' }}>
+                    {t('dashboard.noChartData') || 'No Analytics Data Available'}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0, maxWidth: '350px' }}>
+                    {t('dashboard.noChartDataDesc') || 'Start creating short links to see click analytics over time.'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Stats Cards */}
