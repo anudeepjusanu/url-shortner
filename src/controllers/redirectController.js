@@ -315,8 +315,110 @@ const detectClickSource = (req) => {
   return 'browser';
 };
 
+// New function specifically for QR code redirects
+const redirectFromQRCode = async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+    const requestDomain = req.get('host');
+
+    console.log('📱 QR Code Scan Redirect:', {
+      shortCode,
+      requestDomain,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')?.substring(0, 50),
+      path: req.path
+    });
+
+    // Extract real IP address
+    const getClientIP = () => {
+      const cfConnectingIP = req.get('CF-Connecting-IP');
+      const xRealIP = req.get('X-Real-IP');
+      const xForwardedFor = req.get('X-Forwarded-For');
+      const xClientIP = req.get('X-Client-IP');
+
+      if (cfConnectingIP) return cfConnectingIP;
+      if (xRealIP) return xRealIP;
+      if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
+      if (xClientIP) return xClientIP;
+
+      return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || '127.0.0.1';
+    };
+
+    const clientIP = getClientIP();
+
+    const requestData = {
+      ipAddress: clientIP,
+      userAgent: req.get('User-Agent') || '',
+      referer: req.get('Referer') || '',
+      language: req.get('Accept-Language') || '',
+      screenResolution: req.query.sr || '',
+      password: req.query.password || req.body?.password,
+      domain: requestDomain,
+      clickSource: 'qr_code' // Always set as QR code for this route
+    };
+
+    try {
+      const locationData = geoLocation.getLocationData(requestData.ipAddress);
+      requestData.country = locationData?.country || 'US';
+    } catch (err) {
+      requestData.country = 'US';
+    }
+
+    requestData.deviceType = getDeviceType(requestData.userAgent);
+
+    console.log('✅ Processing as QR Code scan (via /q/ route)');
+
+    const redirectResult = await redirectService.handleRedirect(shortCode, requestData);
+
+    if (!redirectResult.success) {
+      return res.status(404).json({
+        success: false,
+        message: 'URL not found or access denied'
+      });
+    }
+
+    // Perform the redirect
+    const redirectType = redirectResult.redirectType || 302;
+    res.status(redirectType).redirect(redirectResult.redirectUrl);
+
+  } catch (error) {
+    console.error('QR Code redirect error:', error);
+
+    if (error.message === 'URL not found') {
+      return res.status(404).json({
+        success: false,
+        message: 'The requested URL was not found',
+        error: 'URL_NOT_FOUND'
+      });
+    }
+
+    if (error.message.includes('blocked') || error.message.includes('restricted')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access to this URL is restricted',
+        error: 'ACCESS_RESTRICTED'
+      });
+    }
+
+    if (error.message === 'Password required') {
+      return res.status(401).json({
+        success: false,
+        message: 'Password required to access this URL',
+        error: 'PASSWORD_REQUIRED'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during redirect',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'INTERNAL_ERROR'
+    });
+  }
+};
+
 module.exports = {
   redirectToOriginalUrl,
+  redirectFromQRCode,
   getPreview,
   getRedirectStats,
   checkUrlSafety,

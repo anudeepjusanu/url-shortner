@@ -88,29 +88,23 @@ const Analytics = () => {
         }
       });
 
-      // Create synthetic data if no time series exists OR if totals don't match
-      if (clickActivity.length === 0 || 
-          Math.abs(overviewTotals.totalClicks - chartTotalClicks) > 0 || 
-          Math.abs(overviewTotals.uniqueClicks - chartUniqueClicks) > 0) {
-        
-        console.log('Creating synthetic chart data to match overview totals');
-        
-        // Determine number of data points based on time filter
-        const days = timeFilter === '7d' ? 7 : timeFilter === '30d' ? 30 : timeFilter === '90d' ? 90 : 7;
-        
-        // Create new time series data with the correct totals
-        clickActivity = Array.from({ length: Math.min(days, 7) }, (_, index) => {
-          const date = new Date();
-          date.setDate(date.getDate() - (Math.min(days, 7) - 1 - index));
-          
-          return {
-            label: formatDateLabel(date.toISOString().split('T')[0]),
-            date: date.toISOString().split('T')[0],
-            // Put all clicks on the last day for clear visualization
-            totalClicks: index === Math.min(days, 7) - 1 ? overviewTotals.totalClicks : 0,
-            uniqueClicks: index === Math.min(days, 7) - 1 ? overviewTotals.uniqueClicks : 0
-          };
-        });
+      // Only create synthetic data if there's NO time series data at all
+      // DO NOT create synthetic data based on totals mismatch - this causes Bug #3
+      // where clicks from past dates show up as today's date
+      if (clickActivity.length === 0 && overviewTotals.totalClicks > 0) {
+        console.log('No time series data available, but clicks exist. Using historical placeholder.');
+
+        // Create a single data point showing that clicks exist, but we don't have daily breakdown
+        // Use a date from 7 days ago to indicate these are historical clicks
+        const date = new Date();
+        date.setDate(date.getDate() - 7);
+
+        clickActivity = [{
+          label: 'Historical',
+          date: date.toISOString().split('T')[0],
+          totalClicks: overviewTotals.totalClicks,
+          uniqueClicks: overviewTotals.uniqueClicks
+        }];
       }
 
       // Aggregate countries from recentClicks
@@ -1234,11 +1228,11 @@ const Analytics = () => {
                     outline: 'none'
                   }}
                 >
-                  <option value="24h">{t('analytics.filters.last7Days')}</option>
+                  <option value="24h">{t('analytics.filters.last24Hours') || 'Last 24 Hours'}</option>
                   <option value="7d">{t('analytics.filters.last7Days')}</option>
                   <option value="30d">{t('analytics.filters.last30Days')}</option>
                   <option value="90d">{t('analytics.filters.last90Days')}</option>
-                  <option value="1y">{t('analytics.filters.dateRange')}</option>
+                  <option value="1y">{t('analytics.filters.last1Year') || 'Last 1 Year'}</option>
                 </select>
               </div>
               {(analyticsData?.clickActivity && analyticsData.clickActivity.length > 0) ? (

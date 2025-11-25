@@ -451,7 +451,7 @@ const QRCodes = () => {
             <section style={{ marginBottom: '24px' }}>
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
+                gridTemplateColumns: 'repeat(4, 1fr)',
                 gap: '16px'
               }}>
                 <div style={{
@@ -484,13 +484,13 @@ const QRCodes = () => {
                     fontWeight: '700',
                     color: '#10B981',
                     marginBottom: '8px'
-                  }}>{stats.totalScans.toLocaleString()}</div>
+                  }}>{links.reduce((sum, link) => sum + (link.qrScanCount || 0), 0).toLocaleString()}</div>
                   <div style={{
                     fontSize: '14px',
                     color: '#6B7280'
                   }}>{t('qrCodes.stats.totalScans')}</div>
                 </div>
-                <div style={{
+                {/* <div style={{
                   background: '#fff',
                   border: '1px solid #E5E7EB',
                   borderRadius: '12px',
@@ -507,7 +507,7 @@ const QRCodes = () => {
                     fontSize: '14px',
                     color: '#6B7280'
                   }}>{t('qrCodes.stats.uniqueScans')}</div>
-                </div>
+                </div> */}
                 <div style={{
                   background: '#fff',
                   border: '1px solid #E5E7EB',

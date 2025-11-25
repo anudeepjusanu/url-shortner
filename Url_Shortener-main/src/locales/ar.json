@@ -494,9 +494,11 @@
     },
     "filters": {
       "dateRange": "النطاق الزمني",
+      "last24Hours": "آخر 24 ساعة",
       "last7Days": "آخر 7 أيام",
       "last30Days": "آخر 30 يوم",
       "last90Days": "آخر 90 يوم",
+      "last1Year": "آخر سنة",
       "custom": "نطاق مخصص",
       "applyFilters": "تطبيق التصفية"
     },

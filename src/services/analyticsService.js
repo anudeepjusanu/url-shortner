@@ -341,17 +341,38 @@ class AnalyticsService {
       }
       
       const dateRange = this.getDateRange(period, startDate, endDate);
-      
-      const [clicks, topStats, timeSeriesData] = await Promise.all([
+
+      const [clicks, topStats, timeSeriesData, clickCounts] = await Promise.all([
         this.getClicksInRange(urlId, dateRange),
         this.getTopStats(urlId, dateRange),
-        this.getTimeSeriesData(urlId, dateRange, groupBy)
+        this.getTimeSeriesData(urlId, dateRange, groupBy),
+        // Get total and unique clicks within date range (Bug #17 fix)
+        Click.aggregate([
+          {
+            $match: {
+              url: urlId,
+              timestamp: dateRange,
+              isBot: { $ne: true }
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              totalClicks: { $sum: 1 },
+              uniqueClicks: {
+                $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] }
+              }
+            }
+          }
+        ])
       ]);
-      
+
+      const counts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
+
       const analyticsData = {
         overview: {
-          totalClicks: url.clickCount,
-          uniqueClicks: url.uniqueClickCount,
+          totalClicks: counts.totalClicks,
+          uniqueClicks: counts.uniqueClicks,
           averageClicksPerDay: this.calculateAverageClicksPerDay(clicks, dateRange),
           lastClicked: url.lastClickedAt
         },
@@ -376,17 +397,19 @@ class AnalyticsService {
         $lte: new Date(endDate)
       };
     }
-    
+
     const now = new Date();
     const days = {
+      '24h': 1,
       '7d': 7,
       '30d': 30,
-      '90d': 90
+      '90d': 90,
+      '1y': 365
     }[period] || 30;
-    
+
     const start = new Date(now);
     start.setDate(start.getDate() - days);
-    
+
     return { $gte: start };
   }
   
@@ -597,13 +620,14 @@ class AnalyticsService {
         ];
       }
       
-      const urls = await Url.find(filter).select('_id clickCount uniqueClickCount createdAt');
+      const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
       const urlIds = urls.map(url => url._id);
-      
+
       const dateRange = this.getDateRange(period);
-      
+
       const [
         totalClicks,
+        uniqueClicksData,
         clicksByDay,
         topCountries,
         topCities,
@@ -617,6 +641,23 @@ class AnalyticsService {
           timestamp: dateRange,
           isBot: { $ne: true }
         }),
+        // Count unique clicks within the date range (Bug #17 fix)
+        Click.aggregate([
+          {
+            $match: {
+              url: { $in: urlIds },
+              timestamp: dateRange,
+              isBot: { $ne: true },
+              isUnique: true
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 }
+            }
+          }
+        ]),
         this.getClicksByDay(urlIds, dateRange),
         this.getTopCountriesForUrls(urlIds, dateRange),
         this.getTopCitiesForUrls(urlIds, dateRange),
@@ -625,15 +666,19 @@ class AnalyticsService {
         this.getTopOSForUrls(urlIds, dateRange),
         this.getTopReferrersForUrls(urlIds, dateRange)
       ]);
-      
+
       const totalUrls = urls.length;
-      const totalUniqueClicks = urls.reduce((sum, url) => sum + (url.uniqueClickCount || 0), 0);
-      
+      const totalUniqueClicks = uniqueClicksData[0]?.count || 0;
+      const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
+      const totalUniqueQRScans = urls.reduce((sum, url) => sum + (url.uniqueQrScanCount || 0), 0);
+
       return {
         overview: {
           totalUrls,
           totalClicks,
           totalUniqueClicks,
+          totalQRScans,           // NEW: Total QR scans
+          totalUniqueQRScans,     // NEW: Unique QR scans
           averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0
         },
         chartData: {
