@@ -2,6 +2,22 @@ const Url = require('../models/Url');
 const QRCode = require('qrcode');
 const QRCodeModel = require('../models/QRCode');
 
+// Helper function to get the correct protocol for a domain
+const getProtocolForDomain = (domain) => {
+  // If domain already has protocol, don't add one
+  if (domain.startsWith('http://') || domain.startsWith('https://')) {
+    return '';
+  }
+
+  // For localhost or domains with ports (development), use http://
+  if (domain.includes('localhost') || domain.match(/:\d+$/)) {
+    return 'http://';
+  }
+
+  // For production domains, use https://
+  return 'https://';
+};
+
 // Generate QR Code for a URL
 const generateQRCode = async (req, res) => {
   try {
@@ -34,12 +50,15 @@ const generateQRCode = async (req, res) => {
       });
     }
 
-    // Build the short URL with QR tracking parameter
-    const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
+    // Build the short URL with QR tracking parameter using the URL's actual domain
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const protocol = getProtocolForDomain(urlDomain);
+    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
 
     console.log('📱 Generating QR Code:', {
       urlId: id,
       shortCode: url.shortCode,
+      domain: url.domain,
       shortUrl: shortUrl,
       hasQrParam: shortUrl.includes('?qr=1')
     });
@@ -136,8 +155,10 @@ const downloadQRCode = async (req, res) => {
       });
     }
 
-    // Build the short URL with QR tracking parameter
-    const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
+    // Build the short URL with QR tracking parameter using the URL's actual domain
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const protocol = getProtocolForDomain(urlDomain);
+    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
 
     // Generate QR Code
     const qrOptions = {
@@ -203,8 +224,10 @@ const getUrlQRCode = async (req, res) => {
       });
     }
 
-    // Build the short URL with QR tracking parameter
-    const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
+    // Build the short URL with QR tracking parameter using the URL's actual domain
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const protocol = getProtocolForDomain(urlDomain);
+    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
 
     // Get QR customization from QRCode model
     const qrCodeDoc = await QRCodeModel.findByUrl(id);
@@ -280,7 +303,9 @@ const bulkGenerateQRCodes = async (req, res) => {
     // Generate QR codes for all URLs
     const qrCodes = await Promise.all(
       urls.map(async (url) => {
-        const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
+        const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+        const protocol = getProtocolForDomain(urlDomain);
+        const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
 
         const qrOptions = {
           errorCorrectionLevel: errorCorrection,
@@ -450,8 +475,10 @@ const updateQRCodeCustomization = async (req, res) => {
       });
     }
 
-    // Build the short URL with QR tracking parameter
-    const shortUrl = `${process.env.SHORT_DOMAIN || 'https://laghhu.link'}/${url.shortCode}?qr=1`;
+    // Build the short URL with QR tracking parameter using the URL's actual domain
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const protocol = getProtocolForDomain(urlDomain);
+    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
 
     // Generate QR Code options
     const qrOptions = {

@@ -152,51 +152,46 @@ const QRCodes = () => {
 
   const downloadQRCode = async (linkId, format = 'png') => {
     try {
-      // Create a temporary form to trigger download
-      const downloadUrl = `${process.env.REACT_APP_API_URL || 'https://laghhu.link/api'}/qr-codes/download/${linkId}?format=${format}`;
       const token = localStorage.getItem('accessToken');
-
-      // Create a link element and trigger download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', `qrcode-${linkId}.${format}`);
-
-      // Add auth header via fetch and create blob
-      const response = await fetch(downloadUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
+      if (!token) {
+        setToast({
+          type: 'error',
+          message: t('errors.authRequired') || 'Please login to download QR codes.'
+        });
+        return;
+      }
+      // Use qrCodeAPI.download for all formats
+      const response = await qrCodeAPI.download(linkId, format);
+      if (response && response.success !== false) {
+        // Determine MIME type for file extension
+        let mimeType = 'image/png';
+        if (format === 'svg') mimeType = 'image/svg+xml';
+        if (format === 'pdf') mimeType = 'application/pdf';
+        if (format === 'jpg' || format === 'jpeg') mimeType = 'image/jpeg';
+        // Convert response to blob
+        const blob = new Blob([response], { type: mimeType });
         const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
         link.href = url;
+        link.setAttribute('download', `qrcode-${linkId}.${format}`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
-        // Reload to update download stats
-        loadLinks();
-        loadStats();
-
-        // Show success toast
         setToast({
           type: 'success',
           message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
         });
+        loadLinks();
+        loadStats();
       } else {
-        throw new Error('Download failed');
+        throw new Error(response.message || 'Download failed');
       }
     } catch (error) {
-      console.error("Error downloading QR code:", error);
-      const errorMsg = error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code';
-
-      // Show error toast
+      console.error('Error downloading QR code:', error);
       setToast({
         type: 'error',
-        message: errorMsg
+        message: error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code'
       });
     }
   };
