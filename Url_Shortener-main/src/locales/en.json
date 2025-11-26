@@ -44,7 +44,11 @@
     "english": "English",
     "arabic": "Arabic",
     "hide": "Hide",
-    "show": "Show"
+    "show": "Show" ,
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "generating": "Generating...",
+    "updated": "Updated"
   },
   "dates": {
     "today": "Today",

@@ -44,7 +44,12 @@
     "english": "English",
     "arabic": "العربية",
     "hide": "إخفاء",
-    "show": "عرض"
+    "show": "عرض",
+    "creating": "جاري الإنشاء...",
+    "updating": "جاري التحديث...",
+    "generating": "جاري الإنشاء...",
+    "updated": "تم التحديث"
+
   },
   "dates": {
     "today": "اليوم",

@@ -20,6 +20,10 @@ const QRCodes = () => {
   const [selectedLink, setSelectedLink] = useState(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [customizeLoading, setCustomizeLoading] = useState(false);
 
   // QR Code customization options
   const [qrOptions, setQrOptions] = useState({
@@ -123,6 +127,7 @@ const QRCodes = () => {
   };
 
   const generateQRCode = async (linkId) => {
+    setGenerateLoading(true);
     try {
       const response = await qrCodeAPI.generate(linkId, qrOptions);
       if (response && response.success) {
@@ -147,10 +152,13 @@ const QRCodes = () => {
         type: 'error',
         message: errorMsg
       });
+    } finally {
+      setGenerateLoading(false);
     }
   };
 
   const downloadQRCode = async (linkId, format = 'png') => {
+    setDownloadLoading(linkId);
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -158,6 +166,7 @@ const QRCodes = () => {
           type: 'error',
           message: t('errors.authRequired') || 'Please login to download QR codes.'
         });
+        setDownloadLoading(null);
         return;
       }
       // Use qrCodeAPI.download for all formats
@@ -193,6 +202,8 @@ const QRCodes = () => {
         type: 'error',
         message: error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code'
       });
+    } finally {
+      setDownloadLoading(null);
     }
   };
 
@@ -213,6 +224,7 @@ const QRCodes = () => {
       return;
     }
 
+    setBulkLoading(true);
     try {
       const response = await qrCodeAPI.bulkGenerate(selectedLinks, qrOptions);
       if (response && response.success) {
@@ -236,6 +248,8 @@ const QRCodes = () => {
         type: 'error',
         message: errorMsg
       });
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -284,6 +298,7 @@ const QRCodes = () => {
   };
 
   const updateQRCodeCustomization = async (linkId) => {
+    setCustomizeLoading(true);
     try {
       const response = await qrCodeAPI.updateCustomization(linkId, qrOptions);
       if (response && response.success && response.data && response.data.qrCode) {
@@ -320,6 +335,8 @@ const QRCodes = () => {
         type: 'error',
         message: errorMsg
       });
+    } finally {
+      setCustomizeLoading(false);
     }
   };
 
@@ -385,17 +402,23 @@ const QRCodes = () => {
   };
 
   return (
-    <div className="analytics-container">
-      {/* Toast Notification */}
-      {toast && (
-        <Toast
-          type={toast.type}
-          message={toast.message}
-          onClose={() => setToast(null)}
-        />
-      )}
+    <>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+      <div className="analytics-container">
+        {/* Toast Notification */}
+        {toast && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        )}
 
-      <MainHeader />
+        <MainHeader />
       <div className="analytics-layout">
         <Sidebar />
         <div className="analytics-main">
@@ -575,19 +598,32 @@ const QRCodes = () => {
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <button
                       onClick={bulkGenerateQRCodes}
-                      disabled={selectedLinks.length === 0}
+                      disabled={selectedLinks.length === 0 || bulkLoading}
                       style={{
                         padding: '10px 16px',
                         borderRadius: '8px',
                         fontSize: '14px',
                         fontWeight: '600',
                         border: '1px solid #E5E7EB',
-                        background: selectedLinks.length === 0 ? '#F9FAFB' : '#fff',
-                        color: selectedLinks.length === 0 ? '#9CA3AF' : '#374151',
-                        cursor: selectedLinks.length === 0 ? 'not-allowed' : 'pointer'
+                        background: (selectedLinks.length === 0 || bulkLoading) ? '#F9FAFB' : '#fff',
+                        color: (selectedLinks.length === 0 || bulkLoading) ? '#9CA3AF' : '#374151',
+                        cursor: (selectedLinks.length === 0 || bulkLoading) ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}
                     >
-                      {t('qrCodes.generate.bulkGenerate')} ({selectedLinks.length})
+                      {bulkLoading ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
+                            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
+                            <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          {t('common.generating') || 'Generating...'}
+                        </>
+                      ) : (
+                        `${t('qrCodes.generate.bulkGenerate')} (${selectedLinks.length})`
+                      )}
                     </button>
                     <button
                       onClick={() => setShowCustomizeModal(true)}
@@ -1221,6 +1257,7 @@ const QRCodes = () => {
                           setIsUpdatingQR(false);
                         }
                       }}
+                      disabled={generateLoading || customizeLoading}
                       style={{
                         flex: 1,
                         padding: '10px',
@@ -1228,12 +1265,27 @@ const QRCodes = () => {
                         fontSize: '14px',
                         fontWeight: '600',
                         border: 'none',
-                        background: '#3B82F6',
+                        background: (generateLoading || customizeLoading) ? '#9CA3AF' : '#3B82F6',
                         color: '#fff',
-                        cursor: 'pointer'
+                        cursor: (generateLoading || customizeLoading) ? 'not-allowed' : 'pointer',
+                        opacity: (generateLoading || customizeLoading) ? 0.7 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
                       }}
                     >
-                      {selectedLink ? (isUpdatingQR ? t('common.update') : t('qrCodes.generate.generateButton')) : t('common.save')}
+                      {(generateLoading || customizeLoading) ? (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
+                            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
+                            <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          {isUpdatingQR ? (t('common.updating') || 'Updating...') : (t('common.generating') || 'Generating...')}
+                        </>
+                      ) : (
+                        selectedLink ? (isUpdatingQR ? t('common.update') : t('qrCodes.generate.generateButton')) : t('common.save')
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1373,6 +1425,7 @@ const QRCodes = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
