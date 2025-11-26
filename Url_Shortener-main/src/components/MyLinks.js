@@ -134,6 +134,7 @@ function MyLinks() {
   const [copiedId, setCopiedId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
+  const [createLoading, setCreateLoading] = useState(false);
   
   // Field-specific error states
   const [urlError, setUrlError] = useState('');
@@ -370,6 +371,7 @@ function MyLinks() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setCreateLoading(true);
 
     // Validate all fields before submission
     let hasError = false;
@@ -394,6 +396,7 @@ function MyLinks() {
     // If any validation failed, stop submission
     if (hasError) {
       setError(t('createLink.errors.fixErrors') || 'Please fix the errors below before submitting');
+      setCreateLoading(false);
       return;
     }
 
@@ -449,6 +452,7 @@ function MyLinks() {
           type: 'success',
           message: t('createLink.success.created') || 'Short link created successfully!'
         });
+        setCreateLoading(false);
       } else {
         const errorMsg = t('createLink.errors.general') || 'Failed to create link';
         setError(errorMsg);
@@ -457,13 +461,14 @@ function MyLinks() {
           type: 'error',
           message: errorMsg
         });
+        setCreateLoading(false);
       }
     } catch (err) {
       console.error('Error creating short link:', err);
       console.log('Error details:', err);
       console.log('Error message:', err.message);
       console.log('Error response data:', err.response);
-      
+
       // Parse error message to determine which field has the error
       const errorMessage = err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
       const errorLower = errorMessage.toLowerCase();
@@ -489,6 +494,7 @@ function MyLinks() {
         type: 'error',
         message: errorMessage
       });
+      setCreateLoading(false);
     }
   };
 
@@ -938,15 +944,28 @@ function MyLinks() {
                     </div>
                     {/* Action Buttons */}
                     <div className="action-buttons">
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         className="create-link-btn"
-                        disabled={!longUrl || urlError || customCodeError}
+                        disabled={!longUrl || urlError || customCodeError || createLoading}
+                        style={{ opacity: createLoading ? 0.7 : 1 }}
                       >
-                        <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {t('createLink.form.createButton')}
+                        {createLoading ? (
+                          <>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
+                              <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
+                              <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                            {t('common.creating') || 'Creating...'}
+                          </>
+                        ) : (
+                          <>
+                            <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 8h18M12 1l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            {t('createLink.form.createButton')}
+                          </>
+                        )}
                       </button>
                       <button
                         type="button"

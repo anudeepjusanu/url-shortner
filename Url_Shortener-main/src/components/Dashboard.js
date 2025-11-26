@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +34,20 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardData();
     fetchAvailableDomains();
+    fetchTotalQRScans(); // Add this line
   }, [timeFilter]);
+
+  // Fetch and sum qrScanCount from all URLs
+  const fetchTotalQRScans = async () => {
+    try {
+      const response = await urlsAPI.getUrls();
+      const urls = response.data?.urls || [];
+      const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
+      setStats(prev => ({ ...prev, qrScans: totalQRScans }));
+    } catch (err) {
+      console.error('Failed to fetch QR scan counts:', err);
+    }
+  };
 
   const fetchAvailableDomains = async () => {
     try {
@@ -74,136 +86,79 @@ const Dashboard = () => {
 
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // Fetch user profile
-      try {
-        const profileResponse = await authAPI.getProfile();
-        if (profileResponse && profileResponse.data && profileResponse.data.user) {
-          const user = profileResponse.data.user;
-          setUserName(user.name || user.username || user.email?.split('@')[0] || 'User');
-        }
-      } catch (err) {
-        console.error('Error fetching profile:', err);
+      // Map UI filter to backend period
+      let period = timeFilter;
+      const periodMap = {
+        'Last 24 hours': '24h',
+        'Last 7 days': '7d',
+        'Last 30 days': '30d',
+        'Last 90 days': '90d',
+        'Last 1 year': '1y',
+        '24h': '24h',
+        '7d': '7d',
+        '30d': '30d',
+        '90d': '90d',
+        '1y': '1y'
+      };
+      if (periodMap[timeFilter]) {
+        period = periodMap[timeFilter];
       }
-
       // Fetch analytics overview
-      try {
-        const period = timeFilter === 'Last 7 days' ? '7d' : timeFilter === 'Last 30 days' ? '30d' : '90d';
-        const analyticsResponse = await analyticsAPI.getOverview({ period });
+      const analyticsResponse = await analyticsAPI.getOverview({ period });
+      const data = analyticsResponse.data;
+      const overviewData = data.overview || data.summary || data;
 
-        console.log('=== DASHBOARD ANALYTICS API RESPONSE ===');
-        console.log('Full Response:', analyticsResponse);
+      // Fetch all URLs for qrScanCount
+      const urlsResponse = await urlsAPI.getUrls();
+      const urls = urlsResponse.data?.urls || [];
+      const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
 
-        if (analyticsResponse && analyticsResponse.data) {
-          const data = analyticsResponse.data;
-
-          // Extract analytics data with multiple fallback options
-          const overviewData = data.overview || data.summary || data;
-
-          // Extract total clicks with various possible keys
-          const totalClicks = overviewData.totalClicks ||
-                             data.totalClicks ||
-                             overviewData.total ||
-                             0;
-
-          // Extract QR scans with various possible keys
-          const qrScans = overviewData.totalQRScans ||
-                         overviewData.qrScans ||
-                         data.totalQRScans ||
-                         data.qrScans ||
-                         0;
-
-          // Extract total URLs/links
-          const totalLinks = overviewData.totalUrls ||
-                            data.totalUrls ||
-                            overviewData.totalLinks ||
-                            data.totalLinks ||
-                            0;
-
-          // Calculate click-through rate
-          let clickRate = 0;
-          if (overviewData.clickThroughRate) {
-            // If CTR is provided as a percentage string like "63.3%"
-            clickRate = parseFloat(overviewData.clickThroughRate);
-          } else if (totalClicks > 0 && totalLinks > 0) {
-            // Calculate CTR as (clicks / links) * 100
-            clickRate = ((totalClicks / totalLinks)).toFixed(1);
-          }
-
-          console.log('=== EXTRACTED DASHBOARD STATS ===');
-          console.log('Total Clicks:', totalClicks);
-          console.log('QR Scans:', qrScans);
-          console.log('Click Rate:', clickRate);
-          console.log('Total Links:', totalLinks);
-
-          setStats({
-            totalClicks,
-            qrScans,      // Changed from uniqueVisitors to qrScans
-            clickRate,
-            totalLinks
-          });
-
-          // Extract chart data with multiple fallback options (same as Analytics)
-          let clicksByDay = data.chartData?.clicksByDay ||
-                           data.clickActivity ||
-                           data.timeSeries ||
-                           [];
-
-          // Transform chart data for display (same format as Analytics component)
-          const transformedChartData = clicksByDay.map(item => {
-            const dateStr = item.date || item._id;
-            return {
-              date: dateStr,
-              label: formatDateLabel(dateStr),
-              totalClicks: item.clicks || item.totalClicks || 0,
-              uniqueClicks: item.uniqueClicks || item.unique || 0
-            };
-          }).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-          console.log('=== EXTRACTED CHART DATA ===');
-          console.log('Chart Data Points:', transformedChartData.length);
-          console.log('Chart Data:', transformedChartData);
-
-          setChartData(transformedChartData);
-        }
-      } catch (err) {
-        console.error('Error fetching analytics:', err);
-        // Set default values on error
-        setStats({
-          totalClicks: 0,
-          uniqueVisitors: 0,
-          clickRate: 0,
-          totalLinks: 0
-        });
-        setChartData([]);
+      // Extract total clicks
+      const totalClicks = overviewData.totalClicks || data.totalClicks || overviewData.total || 0;
+      // Extract total links
+      const totalLinks = overviewData.totalUrls || data.totalUrls || overviewData.totalLinks || data.totalLinks || 0;
+      // Calculate click-through rate
+      let clickRate = 0;
+      if (overviewData.clickThroughRate) {
+        clickRate = parseFloat(overviewData.clickThroughRate);
+      } else if (totalClicks > 0 && totalLinks > 0) {
+        clickRate = ((totalClicks / totalLinks)).toFixed(1);
       }
 
-      // Fetch recent links
-      try {
-        const linksResponse = await urlsAPI.list({ page: 1, limit: 3, sortBy: 'createdAt', sortOrder: 'desc' });
+      setStats({
+        totalClicks,
+        qrScans: totalQRScans,
+        clickRate,
+        totalLinks
+      });
 
-        console.log('=== RECENT LINKS API RESPONSE ===');
-        console.log('Full Response:', linksResponse);
-
-        if (linksResponse && linksResponse.data) {
-          // Extract URLs with multiple fallback options
-          const links = linksResponse.data.urls ||
-                       linksResponse.data.data?.urls ||
-                       linksResponse.data.links ||
+      // Extract chart data with multiple fallback options (same as Analytics)
+      let clicksByDay = data.chartData?.clicksByDay ||
+                       data.clickActivity ||
+                       data.timeSeries ||
                        [];
 
-          console.log('=== EXTRACTED RECENT LINKS ===');
-          console.log('Number of links:', links.length);
-          console.log('Links:', links);
+      // Transform chart data for display (same format as Analytics component)
+      const transformedChartData = clicksByDay.map(item => {
+        const dateStr = item.date || item._id;
+        return {
+          date: dateStr,
+          label: formatDateLabel(dateStr),
+          totalClicks: item.clicks || item.totalClicks || 0,
+          uniqueClicks: item.uniqueClicks || item.unique || 0
+        };
+      }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-          setRecentLinks(links);
-        }
-      } catch (err) {
-        console.error('Error fetching recent links:', err);
-        setRecentLinks([]);
-      }
+      console.log('=== EXTRACTED CHART DATA ===');
+      console.log('Chart Data Points:', transformedChartData.length);
+      console.log('Chart Data:', transformedChartData);
+
+      setChartData(transformedChartData);
+
+      // Set recent links (latest 5 URLs)
+      setRecentLinks(urls.slice(0, 5));
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
     } finally {
