@@ -3,11 +3,16 @@ const geoLocation = require('../utils/geoLocation');
 
 const redirectToOriginalUrl = async (req, res) => {
   try {
-    const { shortCode } = req.params;
+    // URL-decode the shortCode to handle international characters (Arabic, Chinese, etc.)
+    let { shortCode } = req.params;
+    shortCode = decodeURIComponent(shortCode);
+
     const requestDomain = req.get('host');
 
     console.log('🔗 Redirect Request:', {
       shortCode,
+      shortCodeRaw: req.params.shortCode,
+      shortCodeDecoded: shortCode,
       requestDomain,
       ip: req.ip,
       userAgent: req.get('User-Agent')?.substring(0, 50),
@@ -109,8 +114,10 @@ const redirectToOriginalUrl = async (req, res) => {
 
 const getPreview = async (req, res) => {
   try {
-    const { shortCode } = req.params;
-    
+    // URL-decode the shortCode to handle international characters
+    let { shortCode } = req.params;
+    shortCode = decodeURIComponent(shortCode);
+
     const requestData = {
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent') || '',
@@ -210,7 +217,10 @@ const checkUrlSafety = async (req, res) => {
 
 const generateQRCode = async (req, res) => {
   try {
-    const { shortCode } = req.params;
+    // URL-decode the shortCode to handle international characters
+    let { shortCode } = req.params;
+    shortCode = decodeURIComponent(shortCode);
+
     const {
       size,
       format,
@@ -318,11 +328,16 @@ const detectClickSource = (req) => {
 // New function specifically for QR code redirects
 const redirectFromQRCode = async (req, res) => {
   try {
-    const { shortCode } = req.params;
+    // URL-decode the shortCode to handle international characters
+    let { shortCode } = req.params;
+    shortCode = decodeURIComponent(shortCode);
+
     const requestDomain = req.get('host');
 
     console.log('📱 QR Code Scan Redirect:', {
       shortCode,
+      shortCodeRaw: req.params.shortCode,
+      shortCodeDecoded: shortCode,
       requestDomain,
       ip: req.ip,
       userAgent: req.get('User-Agent')?.substring(0, 50),
