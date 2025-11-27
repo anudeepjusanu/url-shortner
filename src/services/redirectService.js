@@ -94,10 +94,15 @@ class RedirectService {
   
   async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
+      // Normalize domain to ASCII (Punycode) for consistent database lookup
+      const { domainToASCII } = require('../utils/punycode');
+      const normalizedDomain = requestDomain ? domainToASCII(requestDomain.toLowerCase()) : null;
+
       console.log('getUrlByShortCode debug:', {
         shortCode,
         requestDomain,
-        isMainDomain: this.isMainDomain(requestDomain)
+        normalizedDomain,
+        isMainDomain: this.isMainDomain(normalizedDomain)
       });
 
       let url = await cacheGet(`url:${shortCode}`);
@@ -108,8 +113,8 @@ class RedirectService {
         };
 
         // If a custom domain is being used, ensure the URL belongs to that domain
-        if (requestDomain && !this.isMainDomain(requestDomain)) {
-          query.domain = requestDomain;
+        if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
+          query.domain = normalizedDomain;
           console.log('Custom domain query:', query);
         } else {
           console.log('Main domain or no domain specified, query:', query);

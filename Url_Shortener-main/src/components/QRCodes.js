@@ -130,11 +130,45 @@ const QRCodes = () => {
     setGenerateLoading(true);
     try {
       const response = await qrCodeAPI.generate(linkId, qrOptions);
-      if (response && response.success) {
+      if (response && response.success && response.data && response.data.qrCode) {
+        // Update the link in state immediately with the new QR code data
+        const updatedSettings = {
+          size: qrOptions.size,
+          format: qrOptions.format,
+          errorCorrection: qrOptions.errorCorrection,
+          foregroundColor: qrOptions.foregroundColor,
+          backgroundColor: qrOptions.backgroundColor,
+          includeMargin: qrOptions.includeMargin
+        };
+
+        setLinks(prevLinks => prevLinks.map(link => {
+          if ((link._id || link.id) === linkId) {
+            return {
+              ...link,
+              qrCode: response.data.qrCode,
+              qrCodeSettings: updatedSettings,
+              qrCodeGenerated: true,
+              qrCodeGeneratedAt: new Date()
+            };
+          }
+          return link;
+        }));
+        setFilteredLinks(prevLinks => prevLinks.map(link => {
+          if ((link._id || link.id) === linkId) {
+            return {
+              ...link,
+              qrCode: response.data.qrCode,
+              qrCodeSettings: updatedSettings,
+              qrCodeGenerated: true,
+              qrCodeGeneratedAt: new Date()
+            };
+          }
+          return link;
+        }));
+
         setShowGenerateModal(false);
         setShowCustomizeModal(false);
         setSelectedLink(null);
-        loadLinks();
         loadStats();
 
         // Show success toast
@@ -157,7 +191,7 @@ const QRCodes = () => {
     }
   };
 
-  const downloadQRCode = async (linkId, format = 'png') => {
+  const downloadQRCode = async (linkId, format) => {
     setDownloadLoading(linkId);
     try {
       const token = localStorage.getItem('accessToken');
@@ -297,21 +331,44 @@ const QRCodes = () => {
     }
   };
 
+  console.log(filteredLinks, "98789789")
+
   const updateQRCodeCustomization = async (linkId) => {
     setCustomizeLoading(true);
     try {
       const response = await qrCodeAPI.updateCustomization(linkId, qrOptions);
       if (response && response.success && response.data && response.data.qrCode) {
-        // Update the link in the links state with the new qrCode SVG
+        // Update the link in the links state with the new qrCode data AND settings
+        const updatedSettings = {
+          size: qrOptions.size,
+          format: qrOptions.format,
+          errorCorrection: qrOptions.errorCorrection,
+          foregroundColor: qrOptions.foregroundColor,
+          backgroundColor: qrOptions.backgroundColor,
+          includeMargin: qrOptions.includeMargin
+        };
+
         setLinks(prevLinks => prevLinks.map(link => {
           if ((link._id || link.id) === linkId) {
-            return { ...link, qrCode: response.data.qrCode };
+            return {
+              ...link,
+              qrCode: response.data.qrCode,
+              qrCodeSettings: updatedSettings,
+              qrCodeGenerated: true,
+              qrCodeGeneratedAt: new Date()
+            };
           }
           return link;
         }));
         setFilteredLinks(prevLinks => prevLinks.map(link => {
           if ((link._id || link.id) === linkId) {
-            return { ...link, qrCode: response.data.qrCode };
+            return {
+              ...link,
+              qrCode: response.data.qrCode,
+              qrCodeSettings: updatedSettings,
+              qrCodeGenerated: true,
+              qrCodeGeneratedAt: new Date()
+            };
           }
           return link;
         }));
@@ -732,6 +789,7 @@ const QRCodes = () => {
                   </div>
                 ) : (
                   <div style={{ padding: '0' }}>
+
                     {filteredLinks.map((link, index) => (
                       <div
                         key={link._id || link.id || index}
@@ -773,16 +831,19 @@ const QRCodes = () => {
                         }}>
                           {link.qrCode && link.qrCode.startsWith('<svg') ? (
                             <span
+                              key={`qr-svg-${link._id || link.id}-${link.qrCodeGeneratedAt}`}
                               dangerouslySetInnerHTML={{ __html: link.qrCode.replace('width="300"', 'width="70"').replace('height="300"', 'height="70"') }}
                               style={{ display: 'inline-block', width: '70px', height: '70px' }}
                             />
-                          ) : link.qrCode && link.qrCode.startsWith('data:image/') ? (
+                          ) : link.qrCode && (link.qrCode.startsWith('data:image/') || link.qrCode.startsWith('data:application/')) ? (
                             <img
+                              key={`qr-img-${link._id || link.id}-${link.qrCodeGeneratedAt}`}
                               src={link.qrCode}
                               alt="QR Code"
                               style={{
                                 width: '70px',
-                                height: '70px'
+                                height: '70px',
+                                objectFit: 'contain'
                               }}
                             />
                           ) : (
@@ -857,7 +918,7 @@ const QRCodes = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              downloadQRCode(link._id || link.id, 'png');
+                              downloadQRCode(link._id || link.id, link?.qrCodeSettings?.format || 'png');
                             }}
                             style={{
                               padding: '8px 12px',
@@ -1108,11 +1169,16 @@ const QRCodes = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="png">{t('qrCodes.formats.png')}</option>
-                      <option value="svg">{t('qrCodes.formats.svg')}</option>
-                      <option value="pdf">{t('qrCodes.formats.pdf')}</option>
-                      <option value="jpg">{t('qrCodes.formats.jpg')}</option>
-                    </select>
+                    <option value="png">PNG (Best for web)</option>
+                    <option value="jpeg">JPEG (Smaller file size)</option>
+                    <option value="gif">GIF (Animated support)</option>
+                    <option value="webp">WebP (Modern format)</option>
+                    <option value="svg">SVG (Scalable vector)</option>
+                    <option value="pdf">PDF (Print ready)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose the format that best suits your needs
+                  </p>
                   </div>
 
                   <div style={{

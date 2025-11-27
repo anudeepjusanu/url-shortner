@@ -32,7 +32,7 @@ const qrCodeSchema = new mongoose.Schema({
     },
     format: {
       type: String,
-      enum: ['png', 'svg', 'pdf', 'jpg'],
+      enum: ['png', 'jpeg', 'jpg', 'gif', 'webp', 'svg', 'pdf'],
       default: 'png'
     },
     errorCorrection: {

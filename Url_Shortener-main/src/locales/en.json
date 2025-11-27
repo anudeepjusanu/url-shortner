@@ -390,6 +390,7 @@
   "createLink": {
     "title": "Create Short Link",
     "subtitle": "Convert your long URL into a short, shareable link",
+    "customCode": "Custom Code",
     "form": {
       "originalUrl": "Original URL",
       "originalUrlPlaceholder": "https://example.com/your-long-url",
@@ -440,6 +441,7 @@
     "title": "My Links",
     "subtitle": "Manage all your shortened URLs",
     "searchPlaceholder": "Search by title, URL, or short code...",
+    "editLink": "Edit Link",
     "filters": {
       "all": "All Links",
       "active": "Active",

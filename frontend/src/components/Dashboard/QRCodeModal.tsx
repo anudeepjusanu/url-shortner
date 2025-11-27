@@ -159,11 +159,16 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ shortCode, shortUrl, onClose 
                     onChange={(e) => setFormat(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
-                    <option value="png">PNG</option>
-                    <option value="svg">SVG</option>
-                    <option value="jpeg">JPEG</option>
-                    <option value="gif">GIF</option>
+                    <option value="png">PNG (Best for web)</option>
+                    <option value="jpeg">JPEG (Smaller file size)</option>
+                    <option value="gif">GIF (Animated support)</option>
+                    <option value="webp">WebP (Modern format)</option>
+                    <option value="svg">SVG (Scalable vector)</option>
+                    <option value="pdf">PDF (Print ready)</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose the format that best suits your needs
+                  </p>
                 </div>
 
                 {/* Error Correction */}

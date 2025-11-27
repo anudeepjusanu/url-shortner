@@ -305,36 +305,33 @@ const Analytics = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://laghhu.link/api'}/urls/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({
-          title: editFormData.title,
-          shortCode: editFormData.customCode
-        })
+      // Use the proper API client with authentication
+      const response = await urlsAPI.update(id, {
+        title: editFormData.title,
+        customCode: editFormData.customCode
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          // Refresh link data
-          setLinkData(result.data);
-          setShowEditDialog(false);
-          // Optionally refresh analytics data
-          if (id) {
-            fetchAnalyticsData();
-          }
+      if (response && response.success) {
+        // Refresh link data with updated information
+        // Extract the url object from response.data.url (backend wraps it)
+        setLinkData(response.data.url);
+        setShowEditDialog(false);
+
+        // Refresh analytics data to show updated title
+        if (id) {
+          fetchAnalyticsData();
         }
+
+        // Show success message instead of alert
+        console.log('Link updated successfully:', response.data.url);
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || t('errors.generic') || 'Failed to update link');
+        const errorMessage = response?.message || t('errors.generic') || 'Failed to update link';
+        alert(errorMessage);
       }
     } catch (err) {
       console.error('Error updating link:', err);
-      alert(t('errors.generic') || 'Failed to update link');
+      const errorMessage = err.message || t('errors.generic') || 'Failed to update link. Please check your connection and try again.';
+      alert(errorMessage);
     }
   };
 

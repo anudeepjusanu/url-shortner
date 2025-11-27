@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { domainToASCII, validateDomain } = require('../utils/punycode');
 
 const domainSchema = new mongoose.Schema({
   domain: {
@@ -6,8 +7,14 @@ const domainSchema = new mongoose.Schema({
     required: [true, 'Domain name is required'],
     unique: true,
     lowercase: true,
+    trim: true
+    // Removed restrictive regex - validation now handled by custom validator
+  },
+  unicodeDomain: {
+    type: String,
     trim: true,
-    match: [/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, 'Please enter a valid domain name']
+    lowercase: true
+    // Stores the original Unicode version (e.g., "مثال.com")
   },
   subdomain: {
     type: String,
@@ -179,7 +186,30 @@ domainSchema.virtual('setupInstructions').get(function() {
   };
 });
 
+// Pre-save hook to convert international domains to Punycode
 domainSchema.pre('save', function(next) {
+  // Store original Unicode domain before conversion
+  if (this.isModified('domain') || this.isNew) {
+    const originalDomain = this.domain;
+
+    // Validate the domain
+    const validation = validateDomain(originalDomain);
+    if (!validation.isValid) {
+      return next(new Error(validation.message));
+    }
+
+    // Store Unicode version for display purposes
+    this.unicodeDomain = validation.unicodeDomain || originalDomain;
+
+    // Convert to ASCII (Punycode) for storage and DNS compatibility
+    this.domain = validation.normalizedDomain || domainToASCII(originalDomain);
+  }
+
+  // Handle subdomain conversion too
+  if (this.isModified('subdomain') && this.subdomain) {
+    this.subdomain = domainToASCII(this.subdomain);
+  }
+
   if (this.subdomain && this.domain) {
     this.fullDomain = `${this.subdomain}.${this.domain}`;
   } else if (!this.subdomain && this.domain) {
