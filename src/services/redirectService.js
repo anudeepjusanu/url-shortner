@@ -7,6 +7,7 @@ const config = require('../config/environment');
 class RedirectService {
   async handleRedirect(shortCode, requestData) {
     try {
+      console.log('\n========== REDIRECT SERVICE START ==========');
       const {
         ipAddress,
         userAgent,
@@ -20,25 +21,36 @@ class RedirectService {
 
       console.log('🔄 Redirect Service - handleRedirect:', {
         shortCode,
+        shortCodeType: typeof shortCode,
+        shortCodeLength: shortCode?.length,
         clickSource,
         domain,
-        ipAddress
+        ipAddress,
+        userAgent: userAgent?.substring(0, 50)
       });
 
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
+        console.error('🚫 IP Blocked:', { ipAddress, reason: blocked.reason });
         throw new Error(`IP blocked: ${blocked.reason}`);
       }
+      console.log('✅ IP not blocked:', ipAddress);
 
       const url = await this.getUrlByShortCode(shortCode, domain);
       if (!url) {
+        console.error('❌ URL not found for shortCode:', shortCode);
+        console.log('========== REDIRECT SERVICE FAILED (URL NOT FOUND) ==========\n');
         throw new Error('URL not found');
       }
+      console.log('✅ URL retrieved successfully');
 
       const validationResult = await this.validateRedirect(url, requestData);
       if (!validationResult.allowed) {
+        console.error('❌ Validation failed:', validationResult.reason);
+        console.log('========== REDIRECT SERVICE FAILED (VALIDATION) ==========\n');
         throw new Error(validationResult.reason);
       }
+      console.log('✅ Validation passed');
 
       const clickData = {
         ipAddress,
@@ -57,7 +69,13 @@ class RedirectService {
       }
       
       const redirectUrl = this.processRedirectUrl(url);
-      
+
+      console.log('🎯 Processing redirect:', {
+        originalUrl: url.originalUrl,
+        redirectUrl,
+        hasUTM: redirectUrl !== url.originalUrl
+      });
+
       await securityService.logSecurityEvent({
         type: 'URL_REDIRECT',
         level: 'INFO',
@@ -69,7 +87,14 @@ class RedirectService {
           redirectUrl
         }
       });
-      
+
+      console.log('✅ Redirect successful:', {
+        shortCode,
+        redirectType: url.redirectType || 302,
+        redirectUrl
+      });
+      console.log('========== REDIRECT SERVICE SUCCESS ==========\n');
+
       return {
         success: true,
         redirectUrl,
@@ -77,6 +102,17 @@ class RedirectService {
         metadata: this.getRedirectMetadata(url)
       };
     } catch (error) {
+      console.error('❌ REDIRECT SERVICE ERROR:');
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('ShortCode:', shortCode);
+      console.error('RequestData:', {
+        ipAddress: requestData.ipAddress,
+        domain: requestData.domain,
+        clickSource: requestData.clickSource
+      });
+      console.log('========== REDIRECT SERVICE ERROR ==========\n');
+
       await securityService.logSecurityEvent({
         type: 'REDIRECT_ERROR',
         level: 'WARNING',
@@ -87,19 +123,22 @@ class RedirectService {
           error: error.message
         }
       });
-      
+
       throw error;
     }
   }
   
   async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
+      console.log('\n===== GET URL BY SHORT CODE START =====');
       // Normalize domain to ASCII (Punycode) for consistent database lookup
       const { domainToASCII } = require('../utils/punycode');
       const normalizedDomain = requestDomain ? domainToASCII(requestDomain.toLowerCase()) : null;
 
-      console.log('getUrlByShortCode debug:', {
+      console.log('🔍 Looking up URL:', {
         shortCode,
+        shortCodeType: typeof shortCode,
+        shortCodeLength: shortCode?.length,
         requestDomain,
         normalizedDomain,
         isMainDomain: this.isMainDomain(normalizedDomain)
@@ -107,7 +146,11 @@ class RedirectService {
 
       let url = await cacheGet(`url:${shortCode}`);
 
-      if (!url) {
+      if (url) {
+        console.log('💾 Cache HIT:', { shortCode, cacheKey: `url:${shortCode}` });
+      } else {
+        console.log('💾 Cache MISS - querying database');
+
         const query = {
           $or: [{ shortCode }, { customCode: shortCode }]
         };
@@ -115,29 +158,48 @@ class RedirectService {
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
           query.domain = normalizedDomain;
-          console.log('Custom domain query:', query);
+          console.log('🌐 Custom domain query:', JSON.stringify(query, null, 2));
         } else {
-          console.log('Main domain or no domain specified, query:', query);
+          console.log('🌐 Main domain query:', JSON.stringify(query, null, 2));
         }
 
         url = await Url.findOne(query)
           .populate('creator', 'firstName lastName email')
           .populate('organization', 'name slug');
 
-        console.log('Found URL:', url ? { shortCode: url.shortCode, domain: url.domain, originalUrl: url.originalUrl } : 'null');
+        if (url) {
+          console.log('✅ URL FOUND in database:', {
+            _id: url._id,
+            shortCode: url.shortCode,
+            customCode: url.customCode,
+            domain: url.domain,
+            originalUrl: url.originalUrl,
+            isActive: url.isActive
+          });
+        } else {
+          console.log('❌ URL NOT FOUND in database');
+          console.log('Query was:', JSON.stringify(query, null, 2));
+        }
 
         if (url && url.isActive) {
           try {
             await cacheSet(`url:${shortCode}`, url, config.CACHE_TTL.URL_CACHE);
+            console.log('💾 Cached URL:', { shortCode, ttl: config.CACHE_TTL.URL_CACHE });
           } catch (cacheError) {
+            console.warn('⚠️  Cache set failed:', cacheError.message);
             // Continue anyway, just without caching
           }
         }
       }
 
+      console.log('===== GET URL BY SHORT CODE END =====\n');
       return url;
     } catch (error) {
-      console.error('Error fetching URL:', error);
+      console.error('❌ ERROR in getUrlByShortCode:');
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('ShortCode:', shortCode);
+      console.log('===== GET URL BY SHORT CODE FAILED =====\n');
       return null;
     }
   }
