@@ -1,6 +1,9 @@
 const Url = require('../models/Url');
 const QRCode = require('qrcode');
 const QRCodeModel = require('../models/QRCode');
+const sharp = require('sharp');
+const PDFDocument = require('pdfkit');
+const { domainToASCII } = require('../utils/punycode');
 
 // Helper function to get the correct protocol for a domain
 const getProtocolForDomain = (domain) => {
@@ -16,6 +19,70 @@ const getProtocolForDomain = (domain) => {
 
   // For production domains, use https://
   return 'https://';
+};
+
+// Helper function to convert PNG buffer to other image formats
+const convertImageFormat = async (pngBuffer, format) => {
+  const sharpInstance = sharp(pngBuffer);
+
+  switch (format.toLowerCase()) {
+    case 'jpeg':
+    case 'jpg':
+      return await sharpInstance.jpeg({ quality: 92 }).toBuffer();
+    case 'gif':
+      return await sharpInstance.gif().toBuffer();
+    case 'webp':
+      return await sharpInstance.webp({ quality: 92 }).toBuffer();
+    case 'png':
+    default:
+      return pngBuffer;
+  }
+};
+
+// Helper function to get content type for format
+const getContentType = (format) => {
+  const contentTypes = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    'pdf': 'application/pdf'
+  };
+  return contentTypes[format.toLowerCase()] || 'image/png';
+};
+
+// Helper function to generate PDF with QR code
+const generateQRCodePDF = async (qrCodeBuffer, shortCode, size) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: [size + 100, size + 100],
+        margins: { top: 50, bottom: 50, left: 50, right: 50 }
+      });
+
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      // Add title
+      doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: 'center' });
+      doc.moveDown();
+
+      // Add QR code image
+      doc.image(qrCodeBuffer, {
+        fit: [size, size],
+        align: 'center',
+        valign: 'center'
+      });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 // Generate QR Code for a URL
@@ -51,9 +118,11 @@ const generateQRCode = async (req, res) => {
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
+    // Convert to ASCII (Punycode) for international domain support in QR codes
     const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
-    const protocol = getProtocolForDomain(urlDomain);
-    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
+    const asciiDomain = domainToASCII(urlDomain);
+    const protocol = getProtocolForDomain(asciiDomain);
+    const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
     console.log('📱 Generating QR Code:', {
       urlId: id,
@@ -80,8 +149,17 @@ const generateQRCode = async (req, res) => {
     let qrCodeData;
     if (format === 'svg') {
       qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+    } else if (format === 'pdf') {
+      // For PDF, generate PNG buffer first, convert to PDF, then to base64
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
+      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
     } else {
-      qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
+      // For other image formats, generate PNG first then convert
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      const convertedBuffer = await convertImageFormat(pngBuffer, format);
+      const mimeType = getContentType(format);
+      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
     }
 
     // Save QR customization to QRCode model
@@ -156,9 +234,11 @@ const downloadQRCode = async (req, res) => {
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
+    // Convert to ASCII (Punycode) for international domain support in QR codes
     const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
-    const protocol = getProtocolForDomain(urlDomain);
-    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
+    const asciiDomain = domainToASCII(urlDomain);
+    const protocol = getProtocolForDomain(asciiDomain);
+    const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
     // Generate QR Code
     const qrOptions = {
@@ -169,16 +249,33 @@ const downloadQRCode = async (req, res) => {
       width: parseInt(size)
     };
 
+    let finalBuffer;
+    let fileExtension = format.toLowerCase();
+
     if (format === 'svg') {
+      // Handle SVG format
       const svg = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Content-Disposition', `attachment; filename="qr-${url.shortCode}.svg"`);
       res.send(svg);
+    } else if (format === 'pdf') {
+      // Handle PDF format
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      finalBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="qr-${url.shortCode}.pdf"`);
+      res.send(finalBuffer);
     } else {
-      const buffer = await QRCode.toBuffer(shortUrl, qrOptions);
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Disposition', `attachment; filename="qr-${url.shortCode}.png"`);
-      res.send(buffer);
+      // Handle image formats (PNG, JPEG, GIF, WebP)
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      finalBuffer = await convertImageFormat(pngBuffer, format);
+
+      // Normalize extension for JPEG
+      if (format === 'jpg') fileExtension = 'jpeg';
+
+      res.setHeader('Content-Type', getContentType(format));
+      res.setHeader('Content-Disposition', `attachment; filename="qr-${url.shortCode}.${fileExtension}"`);
+      res.send(finalBuffer);
     }
 
     // Track download in URL model
@@ -225,9 +322,11 @@ const getUrlQRCode = async (req, res) => {
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
+    // Convert to ASCII (Punycode) for international domain support in QR codes
     const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
-    const protocol = getProtocolForDomain(urlDomain);
-    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
+    const asciiDomain = domainToASCII(urlDomain);
+    const protocol = getProtocolForDomain(asciiDomain);
+    const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
     // Get QR customization from QRCode model
     const qrCodeDoc = await QRCodeModel.findByUrl(id);
@@ -304,8 +403,9 @@ const bulkGenerateQRCodes = async (req, res) => {
     const qrCodes = await Promise.all(
       urls.map(async (url) => {
         const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
-        const protocol = getProtocolForDomain(urlDomain);
-        const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
+        const asciiDomain = domainToASCII(urlDomain);
+        const protocol = getProtocolForDomain(asciiDomain);
+        const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
         const qrOptions = {
           errorCorrectionLevel: errorCorrection,
@@ -318,8 +418,15 @@ const bulkGenerateQRCodes = async (req, res) => {
         let qrCodeData;
         if (format === 'svg') {
           qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+        } else if (format === 'pdf') {
+          const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+          const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
+          qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
         } else {
-          qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
+          const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+          const convertedBuffer = await convertImageFormat(pngBuffer, format);
+          const mimeType = getContentType(format);
+          qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
         }
 
         // Save QR customization to QRCode model
@@ -476,9 +583,11 @@ const updateQRCodeCustomization = async (req, res) => {
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
+    // Convert to ASCII (Punycode) for international domain support in QR codes
     const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
-    const protocol = getProtocolForDomain(urlDomain);
-    const shortUrl = `${protocol}${urlDomain}/${url.shortCode}?qr=1`;
+    const asciiDomain = domainToASCII(urlDomain);
+    const protocol = getProtocolForDomain(asciiDomain);
+    const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
     // Generate QR Code options
     const qrOptions = {
@@ -497,8 +606,15 @@ const updateQRCodeCustomization = async (req, res) => {
     let qrCodeData;
     if (format === 'svg') {
       qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+    } else if (format === 'pdf') {
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
+      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
     } else {
-      qrCodeData = await QRCode.toDataURL(shortUrl, qrOptions);
+      const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+      const convertedBuffer = await convertImageFormat(pngBuffer, format);
+      const mimeType = getContentType(format);
+      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
     }
 
     // Find existing QR code document

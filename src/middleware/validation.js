@@ -294,12 +294,29 @@ const validateDomain = [
   body('domain')
     .notEmpty()
     .withMessage('Domain name is required')
-    .matches(/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/)
-    .withMessage('Invalid domain format'),
+    .custom((value) => {
+      const { validateDomain } = require('../utils/punycode');
+      const validation = validateDomain(value);
+      if (!validation.isValid) {
+        throw new Error(validation.message);
+      }
+      return true;
+    })
+    .withMessage('Invalid domain format - supports international domains'),
   body('subdomain')
     .optional()
-    .matches(/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$/)
-    .withMessage('Invalid subdomain format'),
+    .custom((value) => {
+      if (!value) return true;
+      const { validateDomain } = require('../utils/punycode');
+      // Temporarily create a full domain to validate subdomain
+      const tempDomain = `${value}.example.com`;
+      const validation = validateDomain(tempDomain);
+      if (!validation.isValid) {
+        throw new Error('Invalid subdomain format');
+      }
+      return true;
+    })
+    .withMessage('Invalid subdomain format - supports international subdomains'),
   body('isDefault')
     .optional()
     .isBoolean()

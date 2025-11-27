@@ -313,7 +313,8 @@ const updateUrl = async (req, res) => {
       password,
       utm,
       restrictions,
-      redirectType
+      redirectType,
+      customCode
     } = req.body;
     
     const url = await Url.findById(id);
@@ -333,6 +334,21 @@ const updateUrl = async (req, res) => {
       });
     }
     
+    // Check if custom code is being updated and if it's already taken
+    if (customCode !== undefined && customCode !== url.customCode) {
+      const existingUrl = await Url.findOne({
+        customCode: customCode.toLowerCase().trim(),
+        _id: { $ne: id }
+      });
+
+      if (existingUrl) {
+        return res.status(400).json({
+          success: false,
+          message: 'This custom code is already in use. Please choose a different one.'
+        });
+      }
+    }
+
     const updateData = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -343,13 +359,25 @@ const updateUrl = async (req, res) => {
     if (utm !== undefined) updateData.utm = utm;
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
+    if (customCode !== undefined) updateData.customCode = customCode.toLowerCase().trim();
     
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
-    
+
+    // Clear cache for short code
     await cacheDel(`url:${url.shortCode}`);
+
+    // If custom code was changed, clear old custom code cache
+    if (customCode !== undefined && url.customCode && customCode !== url.customCode) {
+      await cacheDel(`url:${url.customCode}`);
+    }
+
+    // Set new cache
     await cacheSet(`url:${url.shortCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+    if (updatedUrl.customCode) {
+      await cacheSet(`url:${updatedUrl.customCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+    }
     
     res.json({
       success: true,

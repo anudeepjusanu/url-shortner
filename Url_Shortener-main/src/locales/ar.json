@@ -391,6 +391,7 @@
   "createLink": {
     "title": "إنشاء رابط مختصر",
     "subtitle": "حول رابطك الطويل إلى رابط قصير وقابل للمشاركة",
+    "customCode": "رمز مخصص",
     "form": {
       "originalUrl": "الرابط الأصلي",
       "originalUrlPlaceholder": "https://example.com/your-long-url",
@@ -441,6 +442,7 @@
     "title": "روابطي",
     "subtitle": "إدارة جميع روابطك المختصرة",
     "searchPlaceholder": "ابحث بالعنوان أو الرابط أو الرمز المختصر...",
+    "editLink": "تعديل الرابط",
     "filters": {
       "all": "كل الروابط",
       "active": "نشط",

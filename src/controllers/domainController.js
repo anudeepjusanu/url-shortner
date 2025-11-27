@@ -62,14 +62,19 @@ const addDomain = async (req, res) => {
       });
     }
 
-    // Validate domain format
-    const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
-    if (!domainRegex.test(domain)) {
+    // Validate domain format using Punycode-aware validator
+    const { validateDomain, domainToASCII } = require('../utils/punycode');
+    const validation = validateDomain(domain);
+
+    if (!validation.isValid) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid domain format'
+        message: validation.message
       });
     }
+
+    // Use the normalized (ASCII/Punycode) domain for storage
+    domain = validation.normalizedDomain;
 
     const fullDomain = subdomain ? `${subdomain}.${domain}` : domain;
 

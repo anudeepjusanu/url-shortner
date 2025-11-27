@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { domainToASCII } = require('../utils/punycode');
 
 const urlSchema = new mongoose.Schema({
   originalUrl: {
@@ -124,7 +125,7 @@ const urlSchema = new mongoose.Schema({
     },
     format: {
       type: String,
-      enum: ['png', 'svg', 'pdf', 'jpg'],
+      enum: ['png', 'jpeg', 'jpg', 'gif', 'webp', 'svg', 'pdf'],
       default: 'png'
     },
     errorCorrection: {
@@ -219,6 +220,16 @@ urlSchema.virtual('daysUntilExpiry').get(function() {
 });
 
 urlSchema.pre('save', function(next) {
+  // Convert international domains to Punycode for consistent storage
+  if (this.isModified('domain') && this.domain) {
+    try {
+      this.domain = domainToASCII(this.domain.toLowerCase());
+    } catch (error) {
+      console.error('Error converting domain to ASCII:', error);
+    }
+  }
+
+  // Auto-generate title from URL if not provided
   if (this.isNew && !this.title && this.originalUrl) {
     try {
       const url = new URL(this.originalUrl);

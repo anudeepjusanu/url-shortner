@@ -193,14 +193,10 @@ class UrlValidator {
       };
     }
     
-    if (parsedUrl.hostname.includes('xn--')) {
-      return {
-        isValid: false,
-        message: 'Punycode domains are not allowed for security reasons',
-        warning: 'PUNYCODE_DOMAIN'
-      };
-    }
-    
+    // Punycode domains are now supported for international domain names (IDN)
+    // Example: xn--mgbal82c.com represents مثال.com in ASCII-compatible encoding
+    // This allows QR codes and URLs to work universally across all devices
+
     const ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
     if (ipRegex.test(parsedUrl.hostname)) {
       const octets = parsedUrl.hostname.split('.').map(Number);
