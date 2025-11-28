@@ -22,11 +22,13 @@ export const PermissionProvider = ({ children }) => {
       const response = await apiClient.get('/roles/my-permissions');
 
       if (response.success) {
+        console.log('✅ Permissions loaded:', response.data);
+        console.log('👤 User Role:', response.data.role);
         setPermissions(response.data);
         setError(null);
       }
     } catch (err) {
-      console.error('Error fetching permissions:', err);
+      console.error('❌ Error fetching permissions:', err);
       setError(err.message);
       // Set default permissions for unauthenticated users
       setPermissions(null);
@@ -52,11 +54,25 @@ export const PermissionProvider = ({ children }) => {
    * @returns {boolean}
    */
   const hasPermission = (resource, action) => {
-    if (!permissions || !permissions.canAccess) {
+    if (!permissions) {
       return false;
     }
 
-    return permissions.canAccess[resource]?.[action] || false;
+    // Check both permissions.role and permissions.data.role for flexibility
+    const userRole = permissions.role || permissions.data?.role || permissions.user?.role;
+
+    // Admin and super_admin have all permissions
+    if (userRole === 'admin' || userRole === 'super_admin') {
+      return true;
+    }
+
+    // Check specific permissions for other roles
+    const canAccess = permissions.canAccess || permissions.data?.canAccess;
+    if (!canAccess) {
+      return false;
+    }
+
+    return canAccess[resource]?.[action] || false;
   };
 
   /**
