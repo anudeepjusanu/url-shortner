@@ -4,15 +4,20 @@ import { useLanguage } from '../contexts/LanguageContext';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import Toast from './Toast';
+import AccessDenied from './AccessDenied';
 import { domainsAPI } from '../services/api';
+import { usePermissions } from '../contexts/PermissionContext';
 import './CustomDomains.css';
 
 const CustomDomains = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { hasPermission } = usePermissions();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [deniedAction, setDeniedAction] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [showDNSModal, setShowDNSModal] = useState(false);
@@ -103,6 +108,13 @@ const CustomDomains = () => {
   const handleAddDomain = async () => {
     console.log('handleAddDomain called. Current step:', currentStep);
 
+    // Check permission before adding domain
+    if (!hasPermission('domains', 'create')) {
+      setDeniedAction('add custom domains');
+      setShowAccessDenied(true);
+      return false;
+    }
+
     console.log('Creating domain...');
     // Validate input
     if (!baseDomain.trim()) {
@@ -174,6 +186,13 @@ const CustomDomains = () => {
   };
 
   const handleVerifyDomain = async (domainId) => {
+    // Check permission before verifying domain
+    if (!hasPermission('domains', 'update')) {
+      setDeniedAction('verify domains');
+      setShowAccessDenied(true);
+      return;
+    }
+
     const targetId = domainId || addedDomain?.id;
     if (!targetId) {
       console.warn('No domain ID provided for verification');
@@ -248,6 +267,14 @@ const CustomDomains = () => {
   };
 
   const handleConfirmDelete = async () => {
+    // Check permission before deleting domain
+    if (!hasPermission('domains', 'delete')) {
+      setDeniedAction('delete domains');
+      setShowAccessDenied(true);
+      setDeleteDialog({ isOpen: false, domainId: null, domainName: '' });
+      return;
+    }
+
     try {
       await domainsAPI.deleteDomain(deleteDialog.domainId);
       await fetchDomains();
@@ -1128,7 +1155,15 @@ const CustomDomains = () => {
               </div>
               <button
                 // className="create-link-btn"
-                onClick={() => setShowAddModal(true)}
+                onClick={() => {
+                  if (!hasPermission('domains', 'create')) {
+                    setDeniedAction('add custom domains');
+                    setShowAccessDenied(true);
+                    return;
+                  }
+                  setShowAddModal(true);
+                }}
+                disabled={!hasPermission('domains', 'create')}
                 style={{
                   // minWidth: 180,
                   color: "white",
@@ -1136,10 +1171,12 @@ const CustomDomains = () => {
                   background: "#3B82F6",
                   border: "none",
                   borderRadius: "6px",
-                  cursor: "pointer",
+                  cursor: hasPermission('domains', 'create') ? "pointer" : "not-allowed",
                   fontSize: "14px",
-                  fontWeight: "500"
+                  fontWeight: "500",
+                  opacity: hasPermission('domains', 'create') ? 1 : 0.6
                 }}
+                title={!hasPermission('domains', 'create') ? "You don't have permission to add custom domains" : ""}
               >
                 {t('customDomains.addDomain.title')}
               </button>
@@ -1419,7 +1456,15 @@ const CustomDomains = () => {
                           </button>
                           {(!domain.verified && domain.verificationStatus !== 'verified') && (
                             <button
-                              onClick={() => handleVerifyDomain(domainId)}
+                              onClick={() => {
+                                if (!hasPermission('domains', 'update')) {
+                                  setDeniedAction('verify domains');
+                                  setShowAccessDenied(true);
+                                  return;
+                                }
+                                handleVerifyDomain(domainId);
+                              }}
+                              disabled={!hasPermission('domains', 'update')}
                               className="action-btn analytics"
                               style={{
                                 display: 'flex',
@@ -1433,11 +1478,13 @@ const CustomDomains = () => {
                                 borderRadius: '6px',
                                 fontSize: '14px',
                                 fontWeight: '500',
-                                cursor: 'pointer',
+                                cursor: hasPermission('domains', 'update') ? 'pointer' : 'not-allowed',
                                 whiteSpace: 'nowrap',
                                 minWidth: '100px',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                opacity: hasPermission('domains', 'update') ? 1 : 0.6
                               }}
+                              title={!hasPermission('domains', 'update') ? "You don't have permission to verify domains" : ""}
                             >
                               <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1446,7 +1493,15 @@ const CustomDomains = () => {
                             </button>
                           )}
                           <button
-                            onClick={() => handleDeleteClick(domain)}
+                            onClick={() => {
+                              if (!hasPermission('domains', 'delete')) {
+                                setDeniedAction('delete domains');
+                                setShowAccessDenied(true);
+                                return;
+                              }
+                              handleDeleteClick(domain);
+                            }}
+                            disabled={!hasPermission('domains', 'delete')}
                             className="action-btn delete"
                             style={{
                               display: 'flex',
@@ -1460,11 +1515,13 @@ const CustomDomains = () => {
                               borderRadius: '6px',
                               fontSize: '14px',
                               fontWeight: '500',
-                              cursor: 'pointer',
+                              cursor: hasPermission('domains', 'delete') ? 'pointer' : 'not-allowed',
                               whiteSpace: 'nowrap',
                               minWidth: '100px',
-                              transition: 'all 0.2s ease'
+                              transition: 'all 0.2s ease',
+                              opacity: hasPermission('domains', 'delete') ? 1 : 0.6
                             }}
+                            title={!hasPermission('domains', 'delete') ? "You don't have permission to delete domains" : ""}
                           >
                             <svg className="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1615,6 +1672,14 @@ const CustomDomains = () => {
         </div>
       </div>
     </div>
+
+      {/* Access Denied Modal */}
+      {showAccessDenied && (
+        <AccessDenied
+          action={deniedAction}
+          onClose={() => setShowAccessDenied(false)}
+        />
+      )}
     </>
   );
 };

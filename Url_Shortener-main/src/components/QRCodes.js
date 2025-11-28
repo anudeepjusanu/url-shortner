@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import Toast from "./Toast";
+import AccessDenied from "./AccessDenied";
 import { qrCodeAPI, urlsAPI } from "../services/api";
 import { useLanguage } from "../contexts/LanguageContext";
+import { usePermissions } from "../contexts/PermissionContext";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 import "./QRCodes.css";
@@ -13,6 +15,7 @@ import "./DashboardLayout.css";
 const QRCodes = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { hasPermission } = usePermissions();
   const [links, setLinks] = useState([]);
   const [filteredLinks, setFilteredLinks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,8 @@ const QRCodes = () => {
   const [downloadLoading, setDownloadLoading] = useState(null);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [customizeLoading, setCustomizeLoading] = useState(false);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [deniedAction, setDeniedAction] = useState('');
 
   // QR Code customization options
   const [qrOptions, setQrOptions] = useState({
@@ -127,6 +132,13 @@ const QRCodes = () => {
   };
 
   const generateQRCode = async (linkId) => {
+    // Check permission before generating QR code
+    if (!hasPermission('qrCodes', 'create')) {
+      setDeniedAction('create QR codes');
+      setShowAccessDenied(true);
+      return;
+    }
+
     setGenerateLoading(true);
     try {
       const response = await qrCodeAPI.generate(linkId, qrOptions);
@@ -288,6 +300,13 @@ const QRCodes = () => {
   };
 
   const handleCustomizeClick = async (link) => {
+    // Check permission before customizing QR code
+    if (!hasPermission('qrCodes', 'customize')) {
+      setDeniedAction('customize QR codes');
+      setShowAccessDenied(true);
+      return;
+    }
+
     try {
       const linkId = link._id || link.id;
 
@@ -503,7 +522,15 @@ const QRCodes = () => {
                 }}>{t('qrCodes.subtitle')}</p>
               </div>
               <button
-                onClick={() => setShowGenerateModal(true)}
+                onClick={() => {
+                  if (!hasPermission('qrCodes', 'create')) {
+                    setDeniedAction('create QR codes');
+                    setShowAccessDenied(true);
+                    return;
+                  }
+                  setShowGenerateModal(true);
+                }}
+                disabled={!hasPermission('qrCodes', 'create')}
                 style={{
                   padding: '10px 20px',
                   borderRadius: '8px',
@@ -512,7 +539,8 @@ const QRCodes = () => {
                   border: 'none',
                   background: '#3B82F6',
                   color: '#fff',
-                  cursor: 'pointer',
+                  cursor: hasPermission('qrCodes', 'create') ? 'pointer' : 'not-allowed',
+                  opacity: hasPermission('qrCodes', 'create') ? 1 : 0.6,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
@@ -946,8 +974,14 @@ const QRCodes = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (!hasPermission('qrCodes', 'customize')) {
+                                setDeniedAction('customize QR codes');
+                                setShowAccessDenied(true);
+                                return;
+                              }
                               handleCustomizeClick(link);
                             }}
+                            disabled={!hasPermission('qrCodes', 'customize')}
                             style={{
                               padding: '8px 12px',
                               borderRadius: '6px',
@@ -956,12 +990,14 @@ const QRCodes = () => {
                               border: '1px solid #E5E7EB',
                               background: '#fff',
                               color: '#374151',
-                              cursor: 'pointer',
+                              cursor: hasPermission('qrCodes', 'customize') ? 'pointer' : 'not-allowed',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '6px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row'
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              opacity: hasPermission('qrCodes', 'customize') ? 1 : 0.6
                             }}
+                            title={!hasPermission('qrCodes', 'customize') ? "You don't have permission to customize QR codes" : ""}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -1491,6 +1527,14 @@ const QRCodes = () => {
         </div>
       </div>
     </div>
+
+      {/* Access Denied Modal */}
+      {showAccessDenied && (
+        <AccessDenied
+          action={deniedAction}
+          onClose={() => setShowAccessDenied(false)}
+        />
+      )}
     </>
   );
 };

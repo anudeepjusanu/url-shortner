@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { PermissionProvider } from './contexts/PermissionContext';
 import './App.css';
 import './rtl.css';
 import LandingPage from './components/LandingPage';
@@ -29,10 +30,11 @@ const TeamMembers = () => <div>Team Members Page</div>;
 function App() {
   return (
     <AuthProvider>
-      <LanguageProvider>
-        <Router>
-          <div className="App">
-            <Routes>
+      <PermissionProvider>
+        <LanguageProvider>
+          <Router>
+            <div className="App">
+              <Routes>
             {/* Landing page route */}
             <Route path="/" element={<LandingPage />} />
 
@@ -147,7 +149,8 @@ function App() {
           </Routes>
         </div>
       </Router>
-      </LanguageProvider>
+        </LanguageProvider>
+      </PermissionProvider>
     </AuthProvider>
   );
 }
