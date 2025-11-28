@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, LinkIcon } from 'lucide-react';
+import { Mail, Lock, User, LinkIcon, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
@@ -10,6 +10,7 @@ const Register: React.FC = () => {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
@@ -42,6 +43,7 @@ const Register: React.FC = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
+        phone: formData.phone || undefined,
         password: formData.password,
       });
       navigate('/dashboard');
@@ -113,7 +115,18 @@ const Register: React.FC = () => {
                 icon={<Mail className="h-5 w-5" />}
                 placeholder="john@example.com"
               />
-              
+
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                label="Phone number (optional, for OTP)"
+                value={formData.phone}
+                onChange={handleChange}
+                icon={<Phone className="h-5 w-5" />}
+                placeholder="+966 5X XXX XXXX"
+              />
+
               <Input
                 id="password"
                 name="password"

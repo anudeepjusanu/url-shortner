@@ -17,6 +17,11 @@ const redisConfig = {
 
 const redis = new Redis(redisConfig);
 
+// Connect immediately
+redis.connect().catch((err) => {
+  console.error('❌ Failed to connect to Redis:', err.message);
+});
+
 redis.on('connect', () => {
   console.log('🔗 Redis connecting...');
 });

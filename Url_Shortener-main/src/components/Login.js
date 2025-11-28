@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import OTPDialog from "./OTPDialog";
 import "./Login.css";
 
 const Login = () => {
@@ -17,6 +18,8 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [otpData, setOtpData] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -70,14 +73,58 @@ const Login = () => {
     try {
       // Call login API
       const result = await login(formData.email.trim().toLowerCase(), formData.password);
+      console.log('Login result:', result);
+
+      // Check if OTP is required
+      if (result.otpRequired && result.otpData) {
+        console.log('OTP required, showing dialog');
+        setOtpData(result.otpData);
+        setShowOTPDialog(true);
+        return;
+      }
 
       if (result.success) {
         // Login successful - navigate to dashboard
+        console.log('Login successful, navigating to dashboard');
         navigate("/dashboard");
       }
       // Errors are handled by the AuthContext and displayed in the UI
     } catch (error) {
       console.error('Login error:', error);
+    }
+  };
+
+  const handleVerifyOTP = async (otp) => {
+    console.log('Verifying OTP:', otp);
+    try {
+      const result = await login(formData.email.trim().toLowerCase(), formData.password, otp);
+      console.log('OTP verification result:', result);
+
+      if (result.success) {
+        console.log('OTP verified, login successful');
+        setShowOTPDialog(false);
+        navigate("/dashboard");
+      } else {
+        throw new Error(result.error || 'OTP verification failed');
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      throw error;
+    }
+  };
+
+  const handleResendOTP = async () => {
+    console.log('Resending OTP');
+    try {
+      const result = await login(formData.email.trim().toLowerCase(), formData.password);
+
+      if (result.otpRequired && result.otpData) {
+        console.log('OTP resent successfully');
+        setOtpData(result.otpData);
+      }
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      throw error;
     }
   };
 
@@ -464,6 +511,16 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Dialog */}
+      <OTPDialog
+        isOpen={showOTPDialog}
+        onClose={() => setShowOTPDialog(false)}
+        onVerify={handleVerifyOTP}
+        onResend={handleResendOTP}
+        email={otpData?.email || formData.email}
+        loading={loading}
+      />
     </div>
   );
 };
