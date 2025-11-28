@@ -85,7 +85,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -109,6 +109,45 @@ const login = async (req, res) => {
         success: false,
         message: 'Invalid credentials'
       });
+    }
+
+    // OTP logic
+    const otpService = require('../services/otpService');
+    // If OTP not provided, send OTP and ask for verification
+    if (!otp) {
+      try {
+        // Use user's phone and email
+        const phone = user.phone || req.body.phone;
+        const emailAddr = user.email;
+        // Generate random OTP or use static for testing
+        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        await otpService.sendOtp({ phone, email: emailAddr, otp: generatedOtp });
+        // Optionally, store OTP in cache/db for later verification
+        return res.status(202).json({
+          success: true,
+          message: 'OTP sent. Please verify.',
+          data: { otpSent: true, phone, email: emailAddr }
+        });
+      } catch (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send OTP',
+          error: err.message
+        });
+      }
+    } else {
+      // Verify OTP
+      try {
+        const phone = user.phone || req.body.phone;
+        const emailAddr = user.email;
+        await otpService.verifyOtp({ phone, email: emailAddr, otp });
+      } catch (err) {
+        return res.status(401).json({
+          success: false,
+          message: 'OTP verification failed',
+          error: err.message
+        });
+      }
     }
     console.log('Authenticated user:', user);
     if (!user.isActive) {
