@@ -12,8 +12,10 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import Toast from './Toast';
+import AccessDenied from './AccessDenied';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
+import { usePermissions } from '../contexts/PermissionContext';
 import './MyLinks.css';
 
 // Reserved aliases that cannot be used for shortened URLs
@@ -118,8 +120,11 @@ function MyLinks() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
   const [links, setLinks] = useState([]);
   const [showCreateShortLink, setShowCreateShortLink] = useState(false);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [deniedAction, setDeniedAction] = useState('');
   // State for create short link form
   const [longUrl, setLongUrl] = useState('');
   const [customName, setCustomName] = useState('');
@@ -230,6 +235,14 @@ function MyLinks() {
   };
 
   const handleConfirmDelete = async () => {
+    // Check permission before deleting
+    if (!hasPermission('urls', 'delete')) {
+      setDeniedAction('delete URLs');
+      setShowAccessDenied(true);
+      setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
+      return;
+    }
+
     try {
       setDeleteLoading(deleteDialog.linkId);
       await urlsAPI.delete(deleteDialog.linkId);
@@ -370,6 +383,15 @@ function MyLinks() {
   // Handlers for create short link form
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check permission before creating
+    if (!hasPermission('urls', 'create')) {
+      setDeniedAction('create URLs');
+      setShowAccessDenied(true);
+      setCreateLoading(false);
+      return;
+    }
+
     setError(null);
     setCreateLoading(true);
 
@@ -668,7 +690,15 @@ function MyLinks() {
               )}
               <button
                 className="create-short-link-btn"
-                onClick={() => setShowCreateShortLink((prev) => !prev)}
+                onClick={() => {
+                  if (!hasPermission('urls', 'create')) {
+                    setDeniedAction('create URLs');
+                    setShowAccessDenied(true);
+                    return;
+                  }
+                  setShowCreateShortLink((prev) => !prev);
+                }}
+                disabled={!hasPermission('urls', 'create')}
                 style={{
                   minWidth: 180,
                   color: "white",
@@ -676,11 +706,13 @@ function MyLinks() {
                   background: "#3B82F6",
                   border: "none",
                   borderRadius: "6px",
-                  cursor: "pointer",
+                  cursor: hasPermission('urls', 'create') ? "pointer" : "not-allowed",
                   fontSize: "14px",
                   fontWeight: "500",
-                  flexShrink: 0
+                  flexShrink: 0,
+                  opacity: hasPermission('urls', 'create') ? 1 : 0.6
                 }}
+                title={!hasPermission('urls', 'create') ? "You don't have permission to create URLs" : ""}
               >
                 {showCreateShortLink ? `← ${t('common.back')} ${t('myLinks.title')}` : t('createLink.title')}
               </button>
@@ -947,8 +979,12 @@ function MyLinks() {
                       <button
                         type="submit"
                         className="create-link-btn"
-                        disabled={!longUrl || urlError || customCodeError || createLoading}
-                        style={{ opacity: createLoading ? 0.7 : 1 }}
+                        disabled={!longUrl || urlError || customCodeError || createLoading || !hasPermission('urls', 'create')}
+                        style={{
+                          opacity: (createLoading || !hasPermission('urls', 'create')) ? 0.7 : 1,
+                          cursor: !hasPermission('urls', 'create') ? 'not-allowed' : 'pointer'
+                        }}
+                        title={!hasPermission('urls', 'create') ? "You don't have permission to create URLs" : ""}
                       >
                         {createLoading ? (
                           <>
@@ -1303,21 +1339,33 @@ function MyLinks() {
                               </svg>
                               {t('myLinks.actions.analytics')}
                             </button>
-                            <button onClick={() => handleDeleteClick(link)} disabled={deleteLoading === linkId} style={{
-                              padding: '8px 16px',
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              color: '#EF4444',
-                              backgroundColor: '#FEE2E2',
-                              border: 'none',
-                              borderRadius: '6px',
-                              cursor: deleteLoading === linkId ? 'not-allowed' : 'pointer',
-                              opacity: deleteLoading === linkId ? 0.6 : 1,
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}>
+                            <button
+                              onClick={() => {
+                                if (!hasPermission('urls', 'delete')) {
+                                  setDeniedAction('delete URLs');
+                                  setShowAccessDenied(true);
+                                  return;
+                                }
+                                handleDeleteClick(link);
+                              }}
+                              disabled={deleteLoading === linkId || !hasPermission('urls', 'delete')}
+                              style={{
+                                padding: '8px 16px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                color: '#EF4444',
+                                backgroundColor: '#FEE2E2',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: (deleteLoading === linkId || !hasPermission('urls', 'delete')) ? 'not-allowed' : 'pointer',
+                                opacity: (deleteLoading === linkId || !hasPermission('urls', 'delete')) ? 0.6 : 1,
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                              title={!hasPermission('urls', 'delete') ? "You don't have permission to delete URLs" : ""}
+                            >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -1441,6 +1489,14 @@ function MyLinks() {
         </div>
       </div>
     </div>
+
+      {/* Access Denied Modal */}
+      {showAccessDenied && (
+        <AccessDenied
+          action={deniedAction}
+          onClose={() => setShowAccessDenied(false)}
+        />
+      )}
     </>
   );
 }

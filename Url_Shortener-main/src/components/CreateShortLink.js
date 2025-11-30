@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
+import AccessDenied from './AccessDenied';
 import { urlsAPI, qrCodeAPI } from '../services/api';
+import { usePermissions } from '../contexts/PermissionContext';
 import './CreateShortLink.css';
 
 // Reserved aliases that cannot be used for shortened URLs
@@ -97,6 +99,7 @@ const validateCustomCode = (code, t) => {
 
 const CreateShortLink = () => {
   const { t } = useTranslation();
+  const { hasPermission } = usePermissions();
   const [originalUrl, setOriginalUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [title, setTitle] = useState('');
@@ -110,6 +113,8 @@ const CreateShortLink = () => {
   const [copied, setCopied] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [downloadingQR, setDownloadingQR] = useState(false);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [deniedAction, setDeniedAction] = useState('');
 
   // Field-specific error states
   const [urlError, setUrlError] = useState('');
@@ -286,6 +291,14 @@ const CreateShortLink = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check permission before creating
+    if (!hasPermission('urls', 'create')) {
+      setDeniedAction('create URLs');
+      setShowAccessDenied(true);
+      return;
+    }
+
     setLoading(true);
     setError('');
     setShortenedUrl('');
@@ -476,6 +489,7 @@ const CreateShortLink = () => {
   };
 
   return (
+    <>
     <div className="analytics-container">
       <MainHeader />
       <div className="analytics-layout">
@@ -790,6 +804,15 @@ const CreateShortLink = () => {
         </div>
       </div>
     </div>
+
+      {/* Access Denied Modal */}
+      {showAccessDenied && (
+        <AccessDenied
+          action={deniedAction}
+          onClose={() => setShowAccessDenied(false)}
+        />
+      )}
+    </>
   );
 };
 

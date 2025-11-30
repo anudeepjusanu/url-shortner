@@ -7,6 +7,32 @@ require('dotenv').config();
 
 const app = express();
 
+app.use((req, res, next) => {
+  try {
+    req.url = decodeURIComponent(req.url);
+  } catch (err) {}
+  next();
+});
+
+// Trust proxy
+app.set('trust proxy', true);
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
 // Trust proxy - CRITICAL for getting real IP addresses behind reverse proxies (nginx, cloudflare, etc.)
 app.set('trust proxy', true);
 
@@ -81,6 +107,7 @@ app.use('/api/urls', require('./routes/urls'));
 app.use('/api/domains', require('./routes/domains'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/qr-codes', require('./routes/qrCodes'));
+app.use('/api/roles', require('./routes/roles'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/super-admin', require('./routes/superAdmin'));

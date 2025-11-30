@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'super_admin'],
+    enum: ['user', 'admin', 'super_admin', 'editor', 'viewer'],
     default: 'user'
   },
   plan: {
@@ -250,8 +250,56 @@ userSchema.methods.resetLoginAttempts = function() {
 
 userSchema.methods.canCreateUrl = function() {
   if (this.role === 'admin') return true;
-  
+
   return true;
+};
+
+// Check if user has specific permission
+userSchema.methods.hasPermission = function(resource, action) {
+  // Admin and super_admin have all permissions
+  if (this.role === 'admin' || this.role === 'super_admin') {
+    return true;
+  }
+
+  // Define role-based permissions
+  const rolePermissions = {
+    editor: {
+      urls: { create: true, read: true, update: true, delete: true },
+      domains: { create: true, read: true, update: true, delete: true, verify: true },
+      analytics: { view: true, export: true },
+      qrCodes: { create: true, download: true, customize: true },
+      users: { create: false, read: false, update: false, delete: false },
+      settings: { update: true }
+    },
+    viewer: {
+      urls: { create: false, read: true, update: false, delete: false },
+      domains: { create: false, read: true, update: false, delete: false, verify: false },
+      analytics: { view: true, export: false },
+      qrCodes: { create: false, download: true, customize: false },
+      users: { create: false, read: false, update: false, delete: false },
+      settings: { update: false }
+    },
+    user: {
+      urls: { create: true, read: true, update: true, delete: true },
+      domains: { create: false, read: true, update: false, delete: false, verify: false },
+      analytics: { view: true, export: false },
+      qrCodes: { create: true, download: true, customize: true },
+      users: { create: false, read: false, update: false, delete: false },
+      settings: { update: true }
+    }
+  };
+
+  // Check custom permissions first (if set)
+  if (this.permissions && this.permissions[resource] && this.permissions[resource][action] !== undefined) {
+    return this.permissions[resource][action];
+  }
+
+  // Check role-based permissions
+  if (rolePermissions[this.role] && rolePermissions[this.role][resource]) {
+    return rolePermissions[this.role][resource][action] || false;
+  }
+
+  return false;
 };
 
 userSchema.index({ email: 1 });

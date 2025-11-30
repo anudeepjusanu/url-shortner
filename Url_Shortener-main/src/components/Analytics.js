@@ -4,13 +4,16 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "../contexts/LanguageContext";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
+import AccessDenied from "./AccessDenied";
 import { analyticsAPI, urlsAPI } from "../services/api";
+import { usePermissions } from "../contexts/PermissionContext";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 
 const Analytics = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { hasPermission } = usePermissions();
   const { id } = useParams(); // Get URL ID from route params
   const [timeFilter, setTimeFilter] = useState("7d");
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -20,6 +23,8 @@ const Analytics = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({ title: '', customCode: '' });
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [deniedAction, setDeniedAction] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -341,6 +346,13 @@ const Analytics = () => {
   };
 
   const exportData = async () => {
+    // Check permission before exporting
+    if (!hasPermission('analytics', 'export')) {
+      setDeniedAction('export analytics');
+      setShowAccessDenied(true);
+      return;
+    }
+
     try {
       // For now, create a simple CSV export from the current data
       let csvContent = '';
@@ -495,7 +507,15 @@ const Analytics = () => {
                   }}>{t('analytics.subtitle')}</p>
                 </div>
                 <button
-                  onClick={exportData}
+                  onClick={() => {
+                    if (!hasPermission('analytics', 'export')) {
+                      setDeniedAction('export analytics');
+                      setShowAccessDenied(true);
+                      return;
+                    }
+                    exportData();
+                  }}
+                  disabled={!hasPermission('analytics', 'export')}
                   style={{
                     padding: '10px 20px',
                     borderRadius: '8px',
@@ -504,11 +524,13 @@ const Analytics = () => {
                     border: 'none',
                     background: '#3B82F6',
                     color: '#fff',
-                    cursor: 'pointer',
+                    cursor: hasPermission('analytics', 'export') ? 'pointer' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '8px',
+                    opacity: hasPermission('analytics', 'export') ? 1 : 0.6
                   }}
+                  title={!hasPermission('analytics', 'export') ? "You don't have permission to export analytics" : ""}
                 >
                   <svg
                     width="16"
@@ -2583,6 +2605,14 @@ const Analytics = () => {
     </div>
     </div>
     </div>
+
+      {/* Access Denied Modal */}
+      {showAccessDenied && (
+        <AccessDenied
+          action={deniedAction}
+          onClose={() => setShowAccessDenied(false)}
+        />
+      )}
     </>
   );
 };
