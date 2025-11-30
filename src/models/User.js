@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Last name cannot exceed 50 characters']
   },
+  phone: {
+    type: String,
+    trim: true,
+    sparse: true,
+    match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number in E.164 format']
+  },
   role: {
     type: String,
     enum: ['user', 'admin', 'super_admin'],

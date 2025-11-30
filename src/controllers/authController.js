@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const config = require('../config/environment');
-const { cacheSet, cacheDel } = require('../config/redis');
+const { cacheSet, cacheDel, cacheGet } = require('../config/redis');
 const emailService = require('../services/emailService');
 const { UsageTracker } = require('../middleware/usageTracker');
 
@@ -85,7 +85,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -109,6 +109,85 @@ const login = async (req, res) => {
         success: false,
         message: 'Invalid credentials'
       });
+    }
+
+    // OTP logic
+    const otpService = require('../services/otpService');
+    // If OTP not provided, send OTP and ask for verification
+    if (!otp) {
+      try {
+        // Use user's phone or email - phone is preferred
+        const phone = user.phone || req.body.phone;
+        const emailAddr = user.email;
+
+        if (!phone && !emailAddr) {
+          return res.status(400).json({
+            success: false,
+            message: 'Phone number or email required for OTP'
+          });
+        }
+
+        // Generate random 6-digit OTP
+        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store OTP in cache for 5 minutes
+        const otpKey = `otp:${user._id}`;
+        await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
+
+        // Determine method based on available contact info
+        const method = phone ? 'sms' : 'email';
+
+        // Send OTP via Authentica
+        await otpService.sendOtp({ email: emailAddr, otp: generatedOtp, method });
+
+        return res.status(202).json({
+          success: true,
+          message: 'OTP sent. Please verify.',
+          data: {
+            otpSent: true,
+            phone: phone ? phone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2') : undefined, // Mask phone
+            email: emailAddr
+          }
+        });
+      } catch (err) {
+        console.error('Send OTP error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send OTP',
+          error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+      }
+    } else {
+      // Verify OTP
+      try {
+        // Get stored OTP from cache
+        const otpKey = `otp:${user._id}`;
+        const storedOtp = await cacheGet(otpKey);
+
+        if (!storedOtp) {
+          return res.status(401).json({
+            success: false,
+            message: 'OTP expired or invalid. Please request a new one.'
+          });
+        }
+
+        if (storedOtp !== otp) {
+          return res.status(401).json({
+            success: false,
+            message: 'Invalid OTP. Please try again.'
+          });
+        }
+
+        // Clear OTP from cache after successful verification
+        await cacheDel(otpKey);
+      } catch (err) {
+        console.error('OTP verification error:', err);
+        return res.status(401).json({
+          success: false,
+          message: 'OTP verification failed',
+          error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+      }
     }
     console.log('Authenticated user:', user);
     if (!user.isActive) {

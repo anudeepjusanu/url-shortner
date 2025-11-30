@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LinkIcon } from 'lucide-react';
+import { Mail, Lock, LinkIcon, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
+import OTPDialog from './OTPDialog';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [otpData, setOtpData] = useState<{ phone?: string; email: string } | null>(null);
 
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -27,10 +31,57 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      const result = await login(email, password, undefined, phone);
+      console.log('Login result:', result);
+
+      if (result.otpRequired && result.otpData) {
+        // Show OTP dialog
+        console.log('OTP required, showing dialog with data:', result.otpData);
+        setOtpData(result.otpData);
+        setShowOTPDialog(true);
+      } else {
+        // Login successful
+        console.log('Login successful, navigating to dashboard');
+        navigate('/dashboard');
+      }
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (otp: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await login(email, password, otp, phone);
+
+      if (!result.otpRequired) {
+        // Login successful
+        setShowOTPDialog(false);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setLoading(false);
+      throw err; // Let OTPDialog handle the error display
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await login(email, password, undefined, phone);
+
+      if (result.otpRequired && result.otpData) {
+        setOtpData(result.otpData);
+      }
+    } catch (err: any) {
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -70,7 +121,17 @@ const Login: React.FC = () => {
                 icon={<Mail className="h-5 w-5" />}
                 placeholder="Enter your email"
               />
-              
+
+              <Input
+                id="phone"
+                type="tel"
+                label="Phone number (optional)"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                icon={<Phone className="h-5 w-5" />}
+                placeholder="+966 5X XXX XXXX"
+              />
+
               <Input
                 id="password"
                 type="password"
@@ -134,6 +195,16 @@ const Login: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <OTPDialog
+        isOpen={showOTPDialog}
+        onClose={() => setShowOTPDialog(false)}
+        onVerify={handleVerifyOTP}
+        onResend={handleResendOTP}
+        email={otpData?.email || email}
+        phone={otpData?.phone}
+        loading={loading}
+      />
     </div>
   );
 };

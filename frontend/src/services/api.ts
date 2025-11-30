@@ -113,14 +113,15 @@ export interface QRCodeOptions {
 
 // Auth API
 export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+  login: (email: string, password: string, otp?: string, phone?: string) =>
+    api.post('/auth/login', { email, password, otp, phone }),
 
   register: (userData: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
+    phone?: string;
   }) => api.post('/auth/register', userData),
 
   logout: () => api.post('/auth/logout'),

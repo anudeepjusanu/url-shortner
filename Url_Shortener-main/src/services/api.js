@@ -190,18 +190,52 @@ export const authAPI = {
   },
 
   login: async (credentials) => {
-    const response = await apiClient.post(endpoints.auth.login, credentials);
+    const url = `${apiClient.baseURL}${endpoints.auth.login}`;
+    const token = apiClient.getToken();
 
-    // Store tokens if login is successful
-    if (response.success && response.data) {
-      const { accessToken, refreshToken } = response.data;
-      if (accessToken) {
-        apiClient.setToken(accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+    const config = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...( token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify(credentials)
+    };
+
+    try {
+      const res = await fetch(url, config);
+      const response = await res.json();
+
+      // Handle OTP required (status 202)
+      if (res.status === 202 && response.data && response.data.otpSent) {
+        return {
+          ...response,
+          otpRequired: true,
+          otpData: response.data
+        };
       }
-    }
 
-    return response;
+      // Handle successful login (status 200)
+      if (res.ok && response.success && response.data) {
+        const { accessToken, refreshToken } = response.data;
+        if (accessToken) {
+          apiClient.setToken(accessToken);
+          if (refreshToken) {
+            localStorage.setItem('refreshToken', refreshToken);
+          }
+        }
+      }
+
+      // Handle errors
+      if (!res.ok) {
+        throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
 
   logout: async () => {

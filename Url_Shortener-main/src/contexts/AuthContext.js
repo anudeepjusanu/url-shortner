@@ -149,13 +149,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Login function
-  const login = async (email, password) => {
+  const login = async (email, password, otp = null) => {
     dispatch({ type: actionTypes.SET_LOADING, payload: true });
     dispatch({ type: actionTypes.CLEAR_ERROR });
 
     try {
-      const response = await authAPI.login({ email, password });
+      const credentials = { email, password };
+      if (otp) {
+        credentials.otp = otp;
+      }
 
+      const response = await authAPI.login(credentials);
+
+      // Check if OTP is required (status 202)
+      if (response.otpRequired && response.otpData) {
+        dispatch({ type: actionTypes.SET_LOADING, payload: false });
+        return {
+          success: false,
+          otpRequired: true,
+          otpData: response.otpData
+        };
+      }
+
+      // Login successful
       if (response.success && response.data) {
         dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
         return { success: true, user: response.data.user };

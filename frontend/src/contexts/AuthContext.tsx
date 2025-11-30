@@ -2,14 +2,21 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User } from '../types';
 import { authAPI } from '../services/api';
 
+interface OTPResponse {
+  otpSent: boolean;
+  phone?: string;
+  email: string;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, otp?: string, phone?: string) => Promise<{ otpRequired?: boolean; otpData?: OTPResponse }>;
   register: (data: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
+    phone?: string;
   }) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -50,13 +57,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, otp?: string, phone?: string) => {
     try {
-      const response = await authAPI.login(email, password);
-      const { user, accessToken } = response.data.data;
+      const response = await authAPI.login(email, password, otp, phone);
 
+      // Check if OTP is required (status 202)
+      if (response.status === 202) {
+        return {
+          otpRequired: true,
+          otpData: response.data.data as OTPResponse,
+        };
+      }
+
+      // Login successful
+      const { user, accessToken } = response.data.data;
       localStorage.setItem('authToken', accessToken);
       setUser(user);
+
+      return { otpRequired: false };
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Login failed');
     }
