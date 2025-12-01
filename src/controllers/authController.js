@@ -30,17 +30,18 @@ const register = async (req, res) => {
         message: 'Email already registered'
       });
     }
-    
+    console.log('Creating user with email:', req.body);
     const user = new User({
       email,
       password,
       firstName,
       lastName,
-      emailVerificationToken: crypto.randomBytes(32).toString('hex')
+      emailVerificationToken: crypto.randomBytes(32).toString('hex'),
+      role: 'admin'
     });
 
     await user.save();
-
+    console.log('User created:', user);
     // Send welcome email to user
     try {
       await emailService.sendWelcomeEmail(user);
