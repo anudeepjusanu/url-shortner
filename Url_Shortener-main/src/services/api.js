@@ -175,18 +175,52 @@ const apiClient = new ApiClient();
 // Auth API methods
 export const authAPI = {
   register: async (userData) => {
-    const response = await apiClient.post(endpoints.auth.register, userData);
+    const url = `${apiClient.baseURL}${endpoints.auth.register}`;
+    const token = apiClient.getToken();
 
-    // Store tokens if registration is successful
-    if (response.success && response.data) {
-      const { accessToken, refreshToken } = response.data;
-      if (accessToken) {
-        apiClient.setToken(accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+    const config = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...( token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify(userData)
+    };
+
+    try {
+      const res = await fetch(url, config);
+      const response = await res.json();
+
+      // Handle OTP required (status 202)
+      if (res.status === 202 && response.data && response.data.otpSent) {
+        return {
+          ...response,
+          otpRequired: true,
+          otpData: response.data
+        };
       }
-    }
 
-    return response;
+      // Handle successful registration (status 201 or 200)
+      if (res.ok && response.success && response.data) {
+        const { accessToken, refreshToken } = response.data;
+        if (accessToken) {
+          apiClient.setToken(accessToken);
+          if (refreshToken) {
+            localStorage.setItem('refreshToken', refreshToken);
+          }
+        }
+      }
+
+      // Handle errors
+      if (!res.ok) {
+        throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Register API error:', error);
+      throw error;
+    }
   },
 
   login: async (credentials) => {

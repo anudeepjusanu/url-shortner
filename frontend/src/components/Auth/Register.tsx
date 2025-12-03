@@ -4,6 +4,7 @@ import { Mail, Lock, User, LinkIcon, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
+import OTPDialog from './OTPDialog';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const Register: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [otpData, setOtpData] = useState<{ email: string } | null>(null);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -39,16 +42,76 @@ const Register: React.FC = () => {
     }
 
     try {
-      await register({
+      const result = await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone || undefined,
         password: formData.password,
       });
-      navigate('/dashboard');
+
+      console.log('Registration result:', result);
+
+      if (result.otpRequired && result.otpData) {
+        // Show OTP dialog
+        console.log('OTP required, showing dialog with data:', result.otpData);
+        setOtpData(result.otpData);
+        setShowOTPDialog(true);
+      } else {
+        // Registration successful
+        console.log('Registration successful, navigating to dashboard');
+        navigate('/dashboard');
+      }
     } catch (err: any) {
+      console.error('Registration error:', err);
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (otp: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        password: formData.password,
+      }, otp);
+
+      if (!result.otpRequired) {
+        // Registration successful
+        setShowOTPDialog(false);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setLoading(false);
+      throw err; // Let OTPDialog handle the error display
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        password: formData.password,
+      });
+
+      if (result.otpRequired && result.otpData) {
+        setOtpData(result.otpData);
+      }
+    } catch (err: any) {
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -203,6 +266,15 @@ const Register: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <OTPDialog
+        isOpen={showOTPDialog}
+        onClose={() => setShowOTPDialog(false)}
+        onVerify={handleVerifyOTP}
+        onResend={handleResendOTP}
+        email={otpData?.email || formData.email}
+        loading={loading}
+      />
     </div>
   );
 };

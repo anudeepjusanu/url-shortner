@@ -482,6 +482,7 @@
       "totalClicks": "Total Clicks",
       "uniqueClicks": "Unique Clicks",
       "clickRate": "Click Rate",
+      "qrScans": "Scanned QR Codes",
       "avgClicksPerDay": "Avg. Clicks/Day"
     },
     "charts": {

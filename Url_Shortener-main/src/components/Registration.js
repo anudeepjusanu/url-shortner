@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import OTPDialog from "./OTPDialog";
 import "./Registration.css";
 
 const Registration = () => {
@@ -23,6 +24,8 @@ const Registration = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [otpData, setOtpData] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -114,10 +117,68 @@ const Registration = () => {
       if (result.success) {
         // Registration successful - navigate to dashboard
         navigate("/dashboard");
+      } else if (result.otpRequired && result.otpData) {
+        // OTP is required - show OTP dialog
+        console.log('OTP required, showing dialog with data:', result.otpData);
+        setOtpData(result.otpData);
+        setShowOTPDialog(true);
       }
       // Errors are handled by the AuthContext and displayed in the UI
     } catch (error) {
       console.error('Registration error:', error);
+    }
+  };
+
+  const handleVerifyOTP = async (otp) => {
+    try {
+      // Prepare registration data with OTP
+      const registrationData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
+        otp: otp
+      };
+
+      // Call registration API with OTP
+      const result = await register(registrationData);
+
+      if (result.success) {
+        // Registration successful - close dialog and navigate to dashboard
+        setShowOTPDialog(false);
+        navigate("/dashboard");
+      } else if (result.error) {
+        // Throw error to be caught by OTPDialog
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      // Re-throw to let OTPDialog handle it
+      throw error;
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      // Prepare registration data without OTP to resend
+      const registrationData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
+      };
+
+      // Call registration API again to resend OTP
+      const result = await register(registrationData);
+
+      if (result.otpRequired && result.otpData) {
+        setOtpData(result.otpData);
+      }
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      throw error;
     }
   };
 
@@ -593,6 +654,16 @@ const Registration = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Dialog */}
+      <OTPDialog
+        isOpen={showOTPDialog}
+        onClose={() => setShowOTPDialog(false)}
+        onVerify={handleVerifyOTP}
+        onResend={handleResendOTP}
+        email={otpData?.email || formData.email}
+        loading={loading}
+      />
     </div>
   );
 };

@@ -17,7 +17,7 @@ interface AuthContextType {
     firstName: string;
     lastName: string;
     phone?: string;
-  }) => Promise<void>;
+  }, otp?: string) => Promise<{ otpRequired?: boolean; otpData?: OTPResponse }>;
   logout: () => void;
   loading: boolean;
 }
@@ -85,13 +85,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string;
     firstName: string;
     lastName: string;
-  }) => {
+  }, otp?: string) => {
     try {
-      const response = await authAPI.register(data);
-      const { user, accessToken } = response.data.data;
+      const response = await authAPI.register({ ...data, otp });
+      
+      console.log('Register API response:', response);
+      console.log('Response status:', response.status);
+      console.log('Response data:', response.data);
 
+      // Check if OTP is required (status 202)
+      if (response.status === 202) {
+        console.log('OTP required, returning otpData:', response.data.data);
+        return {
+          otpRequired: true,
+          otpData: response.data.data as OTPResponse,
+        };
+      }
+
+      // Registration successful
+      const { user, accessToken } = response.data.data;
       localStorage.setItem('authToken', accessToken);
       setUser(user);
+
+      return { otpRequired: false };
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Registration failed');
     }
