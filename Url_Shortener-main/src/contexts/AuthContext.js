@@ -195,6 +195,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.register(userData);
 
+      // Check if OTP is required (status 202)
+      if (response.otpRequired && response.otpData) {
+        dispatch({ type: actionTypes.SET_LOADING, payload: false });
+        return {
+          success: false,
+          otpRequired: true,
+          otpData: response.otpData
+        };
+      }
+
+      // Registration successful
       if (response.success && response.data) {
         dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
         return { success: true, user: response.data.user };

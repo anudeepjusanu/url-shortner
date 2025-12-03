@@ -5,6 +5,7 @@ const config = require('../config/environment');
 const { cacheSet, cacheDel, cacheGet } = require('../config/redis');
 const emailService = require('../services/emailService');
 const { UsageTracker } = require('../middleware/usageTracker');
+const otpService = require('../services/otpService');
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
@@ -18,11 +19,18 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
-const register = async (req, res) => {
-  console.log('Registration request body:', req.body);
+const sendRegistrationOTP = async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
-    
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -30,50 +38,158 @@ const register = async (req, res) => {
         message: 'Email already registered'
       });
     }
-    console.log('Creating user with email:', req.body);
-    const user = new User({
-      email,
-      password,
-      firstName,
-      lastName,
-      emailVerificationToken: crypto.randomBytes(32).toString('hex'),
-      role: 'admin'
-    });
 
-    await user.save();
-    console.log('User created:', user);
-    // Send welcome email to user
-    try {
-      await emailService.sendWelcomeEmail(user);
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-    }
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Send admin notification
-    try {
-      await emailService.sendAdminNotification(user);
-    } catch (emailError) {
-      console.error('Failed to send admin notification:', emailError);
-    }
+    // Store OTP in cache with email as key for 5 minutes
+    const otpKey = `registration_otp:${email}`;
+    await cacheSet(otpKey, otp, 5 * 60); // 5 minutes TTL
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
-    
-    res.status(201).json({
+    // Send OTP via email
+    await otpService.sendOtp({ email, otp, method: 'email' });
+
+    return res.status(200).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'OTP sent to your email. Please verify to complete registration.',
       data: {
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isEmailVerified: user.isEmailVerified
-        },
-        accessToken,
-        refreshToken
+        email,
+        otpSent: true
       }
     });
+  } catch (error) {
+    console.error('Send registration OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send OTP',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+const register = async (req, res) => {
+  console.log('Registration request body:', req.body);
+  try {
+    const { email, password, firstName, lastName, phone, otp } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already registered'
+      });
+    }
+
+    // If OTP not provided, store registration data and send OTP
+    if (!otp) {
+      try {
+        // Generate 6-digit OTP
+        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store both OTP and registration data in cache for 5 minutes
+        const otpKey = `registration_otp:${email}`;
+        const dataKey = `registration_data:${email}`;
+        
+        await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
+        await cacheSet(dataKey, JSON.stringify({ email, password, firstName, lastName, phone }), 5 * 60);
+
+        // Send OTP via email
+        await otpService.sendOtp({ email, otp: generatedOtp, method: 'email' });
+
+        return res.status(202).json({
+          success: true,
+          message: 'OTP sent to your email. Please verify to complete registration.',
+          data: {
+            otpSent: true,
+            email
+          }
+        });
+      } catch (err) {
+        console.error('Send registration OTP error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send OTP',
+          error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+      }
+    } else {
+      // Verify OTP from cache
+      const otpKey = `registration_otp:${email}`;
+      const dataKey = `registration_data:${email}`;
+      
+      const storedOtp = await cacheGet(otpKey);
+      const storedData = await cacheGet(dataKey);
+
+      if (!storedOtp || !storedData) {
+        return res.status(401).json({
+          success: false,
+          message: 'OTP expired or invalid. Please request a new one.'
+        });
+      }
+
+      if (storedOtp !== otp) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid OTP. Please try again.'
+        });
+      }
+
+      // Parse stored registration data
+      const registrationData = JSON.parse(storedData);
+
+      // Clear OTP and data from cache after successful verification
+      await cacheDel(otpKey);
+      await cacheDel(dataKey);
+
+      console.log('Creating user with email:', registrationData.email);
+      const user = new User({
+        email: registrationData.email,
+        password: registrationData.password,
+        firstName: registrationData.firstName,
+        lastName: registrationData.lastName,
+        phone: registrationData.phone,
+        isEmailVerified: true, // Mark email as verified since OTP is verified
+        role: 'admin'
+      });
+
+      await user.save();
+      console.log('User created:', user);
+      
+      // Send welcome email to user
+      try {
+        await emailService.sendWelcomeEmail(user);
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+      }
+
+      // Send admin notification
+      try {
+        await emailService.sendAdminNotification(user);
+      } catch (emailError) {
+        console.error('Failed to send admin notification:', emailError);
+      }
+
+      const { accessToken, refreshToken } = generateTokens(user._id);
+      
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone,
+            role: user.role,
+            isEmailVerified: user.isEmailVerified
+          },
+          accessToken,
+          refreshToken
+        }
+      });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({
@@ -466,6 +582,7 @@ const resetPassword = async (req, res) => {
 };
 
 module.exports = {
+  sendRegistrationOTP,
   register,
   login,
   refreshToken,

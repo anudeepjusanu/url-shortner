@@ -483,6 +483,7 @@
       "totalClicks": "إجمالي النقرات",
       "uniqueClicks": "النقرات الفريدة",
       "clickRate": "معدل النقر",
+      "qrScans": "مسح رمز الاستجابة السريعة",
       "avgClicksPerDay": "متوسط النقرات/يوم"
     },
     "charts": {

@@ -58,7 +58,8 @@ const Analytics = () => {
       const overviewTotals = {
         totalClicks: backendData.overview?.totalClicks || backendData.summary?.totalClicks || backendData.stats?.totalClicks || backendData.totalClicks || 0,
         uniqueClicks: backendData.overview?.uniqueClicks || backendData.summary?.uniqueClicks || backendData.stats?.uniqueClicks || backendData.uniqueClicks || 0,
-        clickThroughRate: backendData.overview?.clickThroughRate || '0%',
+        qrScans: backendData.url?.qrScanCount || backendData.overview?.qrScans || 0,
+        uniqueQrScans: backendData.url?.uniqueQrScanCount || backendData.overview?.uniqueQrScans || 0,
         averageTime: backendData.overview?.averageClicksPerDay ? `${backendData.overview.averageClicksPerDay}/day` : '0/day'
       };
 
@@ -206,6 +207,8 @@ const Analytics = () => {
       const linksResponse = await urlsAPI.list({ page: 1, limit: 100 });
       const linksData = linksResponse.data?.urls || linksResponse.data?.data?.urls || [];
       const allTimeClicks = linksData.reduce((sum, link) => sum + (link.clickCount || 0), 0);
+      const allTimeQrScans = linksData.reduce((sum, link) => sum + (link.qrScanCount || 0), 0);
+      const allTimeUniqueQrScans = linksData.reduce((sum, link) => sum + (link.uniqueQrScanCount || 0), 0);
 
       // Fetch dashboard overview analytics
       const response = await analyticsAPI.getOverview({
@@ -228,6 +231,8 @@ const Analytics = () => {
         ...backendData,
         totalClicks: allTimeClicks,
         uniqueClicks: backendData.overview?.totalUniqueClicks || 0,
+        qrScans: allTimeQrScans,
+        uniqueQrScans: allTimeUniqueQrScans,
         totalUrls: linksData.length || backendData.overview?.totalUrls || 0,
         clickActivity: backendData.chartData?.clicksByDay?.map(item => ({
           date: item.date,
@@ -1052,15 +1057,15 @@ const Analytics = () => {
                       marginBottom: '8px',
                       fontWeight: '400',
                       margin: 0
-                    }}>{t('analytics.overview.clickRate')}</p>
+                    }}>{t('analytics.overview.qrScans') || 'QR Code Scans'}</p>
                     <h3 className="stats-value" style={{
                       fontSize: '28px',
                       fontWeight: '600',
                       color: '#1F2937',
                       margin: '8px 0'
-                    }}>{analyticsData?.clickThroughRate || '0%'}</h3>
-                    {analyticsData?.clickThroughRateChange && (
-                      <div className={`stats-change ${analyticsData.clickThroughRateChange >= 0 ? 'positive' : 'negative'}`} style={{
+                    }}>{analyticsData?.qrScans || 0}</h3>
+                    {analyticsData?.qrScansChange && (
+                      <div className={`stats-change ${analyticsData.qrScansChange >= 0 ? 'positive' : 'negative'}`} style={{
                         display: 'flex',
                         flexDirection: isRTL ? 'row-reverse' : 'row',
                         alignItems: 'center',
@@ -1079,11 +1084,11 @@ const Analytics = () => {
                             d="M5.5 1L1 5.5H4V13H7V5.5H10L5.5 1Z"
                             fill="currentColor"
                             style={{
-                              transform: analyticsData.clickThroughRateChange < 0 ? 'rotate(180deg)' : 'none'
+                              transform: analyticsData.qrScansChange < 0 ? 'rotate(180deg)' : 'none'
                             }}
                           />
                         </svg>
-                        <span style={{ margin: 0 }}>{analyticsData.clickThroughRateChange >= 0 ? '+' : ''}{analyticsData.clickThroughRateChange}%</span>
+                        <span style={{ margin: 0 }}>{analyticsData.qrScansChange >= 0 ? '+' : ''}{analyticsData.qrScansChange}%</span>
                       </div>
                     )}
                   </div>
@@ -1104,13 +1109,11 @@ const Analytics = () => {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <path
-                        d="M10 1L13 7L19 7L14.5 11L16 17L10 14L4 17L5.5 11L1 7L7 7L10 1Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                      <rect x="2" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+                      <rect x="12" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+                      <rect x="2" y="12" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+                      <rect x="13" y="13" width="4" height="4" fill="currentColor"/>
+                      <circle cx="15" cy="15" r="1.5" fill="#FEF3C7"/>
                     </svg>
                   </div>
                 </div>

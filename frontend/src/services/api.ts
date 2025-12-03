@@ -122,6 +122,7 @@ export const authAPI = {
     firstName: string;
     lastName: string;
     phone?: string;
+    otp?: string;
   }) => api.post('/auth/register', userData),
 
   logout: () => api.post('/auth/logout'),
