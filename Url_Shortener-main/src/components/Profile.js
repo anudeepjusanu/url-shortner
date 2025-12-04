@@ -157,23 +157,70 @@ const Profile = () => {
     }
   };
 
+  // Password field errors
+  const [passwordFieldErrors, setPasswordFieldErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   // Handle Password Change
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPasswordLoading(true);
     setPasswordError("");
     setPasswordSuccess("");
+    
+    // Reset field errors
+    const fieldErrors = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    };
+    let hasError = false;
+    let firstErrorField = null;
 
-    // Validation
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError(t('auth.register.errorPasswordMismatch'));
-      setPasswordLoading(false);
-      return;
+    // Validate current password
+    if (!passwordData.currentPassword) {
+      fieldErrors.currentPassword = t('profile.security.errorCurrentPasswordRequired') || 'Current password is required';
+      hasError = true;
+      if (!firstErrorField) firstErrorField = 'currentPassword';
     }
 
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError(t('auth.register.errorPasswordLength'));
+    // Validate new password
+    if (!passwordData.newPassword) {
+      fieldErrors.newPassword = t('profile.security.errorNewPasswordRequired') || 'New password is required';
+      hasError = true;
+      if (!firstErrorField) firstErrorField = 'newPassword';
+    } else if (passwordData.newPassword.length < 8) {
+      fieldErrors.newPassword = t('profile.security.errorPasswordLength') || 'Password must be at least 8 characters';
+      hasError = true;
+      if (!firstErrorField) firstErrorField = 'newPassword';
+    }
+
+    // Validate confirm password
+    if (!passwordData.confirmPassword) {
+      fieldErrors.confirmPassword = t('profile.security.errorConfirmPasswordRequired') || 'Please confirm your new password';
+      hasError = true;
+      if (!firstErrorField) firstErrorField = 'confirmPassword';
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      fieldErrors.confirmPassword = t('profile.security.errorPasswordMismatch') || 'Passwords do not match';
+      hasError = true;
+      if (!firstErrorField) firstErrorField = 'confirmPassword';
+    }
+
+    setPasswordFieldErrors(fieldErrors);
+
+    if (hasError) {
       setPasswordLoading(false);
+      // Focus the first field with an error
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
       return;
     }
 
@@ -184,6 +231,7 @@ const Profile = () => {
       });
       setPasswordSuccess(t('notifications.passwordChanged'));
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordFieldErrors({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setTimeout(() => setPasswordSuccess(""), 3000);
     } catch (error) {
       setPasswordError(error.message || t('errors.generic'));
@@ -671,17 +719,25 @@ const Profile = () => {
                       fontWeight: '500',
                       color: '#374151',
                       marginBottom: '8px'
-                    }}>{t('profile.security.currentPassword')}</label>
+                    }}>{t('profile.security.currentPassword')} *</label>
                     <div style={{ position: 'relative' }}>
                       <input
+                        id="currentPassword"
                         type={showPasswords.current ? "text" : "password"}
                         value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                        required
+                        onChange={(e) => {
+                          setPasswordData({...passwordData, currentPassword: e.target.value});
+                          // Clear field error when user starts typing
+                          if (passwordFieldErrors.currentPassword) {
+                            setPasswordFieldErrors({...passwordFieldErrors, currentPassword: ''});
+                          }
+                          // Clear general error when user starts typing
+                          if (passwordError) setPasswordError('');
+                        }}
                         style={{
                           width: '100%',
                           padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
+                          border: passwordFieldErrors.currentPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
                           borderRadius: '8px',
                           fontSize: '14px'
                         }}
@@ -704,6 +760,21 @@ const Profile = () => {
                         {showPasswords.current ? '👁️' : '👁️‍🗨️'}
                       </button>
                     </div>
+                    {passwordFieldErrors.currentPassword && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '6px',
+                        color: '#DC2626',
+                        fontSize: '13px'
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>{passwordFieldErrors.currentPassword}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{
@@ -719,17 +790,25 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>{t('profile.security.newPassword')}</label>
+                      }}>{t('profile.security.newPassword')} *</label>
                       <div style={{ position: 'relative' }}>
                         <input
+                          id="newPassword"
                           type={showPasswords.new ? "text" : "password"}
                           value={passwordData.newPassword}
-                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                          required
+                          onChange={(e) => {
+                            setPasswordData({...passwordData, newPassword: e.target.value});
+                            // Clear field error when user starts typing
+                            if (passwordFieldErrors.newPassword) {
+                              setPasswordFieldErrors({...passwordFieldErrors, newPassword: ''});
+                            }
+                            // Clear general error when user starts typing
+                            if (passwordError) setPasswordError('');
+                          }}
                           style={{
                             width: '100%',
                             padding: '10px 14px',
-                            border: '1px solid #D1D5DB',
+                            border: passwordFieldErrors.newPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
                             borderRadius: '8px',
                             fontSize: '14px'
                           }}
@@ -752,6 +831,21 @@ const Profile = () => {
                           {showPasswords.new ? '👁️' : '👁️‍🗨️'}
                         </button>
                       </div>
+                      {passwordFieldErrors.newPassword && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px'
+                        }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{passwordFieldErrors.newPassword}</span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label style={{
@@ -760,17 +854,25 @@ const Profile = () => {
                         fontWeight: '500',
                         color: '#374151',
                         marginBottom: '8px'
-                      }}>{t('profile.security.confirmPassword')}</label>
+                      }}>{t('profile.security.confirmPassword')} *</label>
                       <div style={{ position: 'relative' }}>
                         <input
+                          id="confirmPassword"
                           type={showPasswords.confirm ? "text" : "password"}
                           value={passwordData.confirmPassword}
-                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                          required
+                          onChange={(e) => {
+                            setPasswordData({...passwordData, confirmPassword: e.target.value});
+                            // Clear field error when user starts typing
+                            if (passwordFieldErrors.confirmPassword) {
+                              setPasswordFieldErrors({...passwordFieldErrors, confirmPassword: ''});
+                            }
+                            // Clear general error when user starts typing
+                            if (passwordError) setPasswordError('');
+                          }}
                           style={{
                             width: '100%',
                             padding: '10px 14px',
-                            border: '1px solid #D1D5DB',
+                            border: passwordFieldErrors.confirmPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
                             borderRadius: '8px',
                             fontSize: '14px'
                           }}
@@ -793,6 +895,21 @@ const Profile = () => {
                           {showPasswords.confirm ? '👁️' : '👁️‍🗨️'}
                         </button>
                       </div>
+                      {passwordFieldErrors.confirmPassword && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginTop: '6px',
+                          color: '#DC2626',
+                          fontSize: '13px'
+                        }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{passwordFieldErrors.confirmPassword}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -209,19 +209,9 @@ const CreateShortLink = () => {
     // Clear general error when user starts typing
     if (error) setError('');
 
-    // Only validate if user has typed something (not empty)
-    // This prevents showing "required" error while typing
-    if (value.trim() !== '') {
-      const validation = validateUrl(value);
-      if (validation.valid) {
-        setUrlError('');
-      } else {
-        setUrlError(validation.error);
-      }
-    } else {
-      // Clear error if field is empty (will validate on blur/submit)
-      setUrlError('');
-    }
+    // Clear field error immediately when user starts typing
+    // Validation will happen on blur or submit
+    if (urlError) setUrlError('');
   };
 
   // Handle URL blur (when user leaves the field)
@@ -243,13 +233,9 @@ const CreateShortLink = () => {
     // Clear general error when user starts typing
     if (error) setError('');
 
-    // Validate the custom code in real-time (including when empty since it's optional)
-    const validation = validateCustomCode(value, t);
-    if (validation.valid) {
-      setCustomCodeError('');
-    } else {
-      setCustomCodeError(validation.error);
-    }
+    // Clear field error immediately when user starts typing
+    // Validation will happen on blur or submit
+    if (customCodeError) setCustomCodeError('');
   };
 
   // Handle custom code blur
@@ -270,13 +256,9 @@ const CreateShortLink = () => {
     // Clear general error when user starts typing
     if (error) setError('');
 
-    // Validate the title in real-time (including when empty since it's optional)
-    const validation = validateTitle(value);
-    if (validation.valid) {
-      setTitleError('');
-    } else {
-      setTitleError(validation.error);
-    }
+    // Clear field error immediately when user starts typing
+    // Validation will happen on blur or submit
+    if (titleError) setTitleError('');
   };
 
   // Handle title blur
@@ -306,12 +288,14 @@ const CreateShortLink = () => {
 
     // Validate all fields before submission
     let hasError = false;
+    let firstErrorField = null;
 
-    // Validate URL
+    // Validate URL (required field)
     const urlValidation = validateUrl(originalUrl);
     if (!urlValidation.valid) {
-      setUrlError(urlValidation.error);
+      setUrlError(urlValidation.error || t('common.fieldRequired') || 'This field is required');
       hasError = true;
+      if (!firstErrorField) firstErrorField = 'originalUrl';
     }
 
     // Validate custom code
@@ -320,6 +304,7 @@ const CreateShortLink = () => {
       if (!codeValidation.valid) {
         setCustomCodeError(codeValidation.error);
         hasError = true;
+        if (!firstErrorField) firstErrorField = 'customCode';
       }
     }
 
@@ -329,13 +314,22 @@ const CreateShortLink = () => {
       if (!titleValidation.valid) {
         setTitleError(titleValidation.error);
         hasError = true;
+        if (!firstErrorField) firstErrorField = 'title';
       }
     }
 
-    // If any validation failed, stop submission
+    // If any validation failed, focus the first error field and stop submission
     if (hasError) {
-      setError('Please fix the errors below before submitting');
+      setError(t('createLink.errors.fixErrors') || 'Please fix the errors below before submitting');
       setLoading(false);
+      // Focus the first field with an error
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
       return;
     }
 
@@ -693,7 +687,7 @@ const CreateShortLink = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={loading || !originalUrl || urlError || customCodeError || titleError}
+                    disabled={loading || urlError || customCodeError || titleError}
                   >
                     {loading ? (
                       <>

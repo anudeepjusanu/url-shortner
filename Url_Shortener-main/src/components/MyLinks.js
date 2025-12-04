@@ -329,17 +329,9 @@ function MyLinks() {
     // Clear general error when user starts typing
     if (error) setError(null);
 
-    // Only validate if user has typed something (not empty)
-    if (value.trim() !== '') {
-      const validation = validateUrl(value);
-      if (validation.valid) {
-        setUrlError('');
-      } else {
-        setUrlError(validation.error);
-      }
-    } else {
-      setUrlError('');
-    }
+    // Clear field error immediately when user starts typing
+    // Validation will happen on blur or submit
+    if (urlError) setUrlError('');
   };
 
   // Handle URL blur (when user leaves the field)
@@ -361,13 +353,9 @@ function MyLinks() {
     // Clear general error when user starts typing
     if (error) setError(null);
 
-    // Validate the custom code in real-time (including when empty since it's optional)
-    const validation = validateCustomCode(value, t);
-    if (validation.valid) {
-      setCustomCodeError('');
-    } else {
-      setCustomCodeError(validation.error);
-    }
+    // Clear field error immediately when user starts typing
+    // Validation will happen on blur or submit
+    if (customCodeError) setCustomCodeError('');
   };
 
   // Handle custom code blur
@@ -397,12 +385,14 @@ function MyLinks() {
 
     // Validate all fields before submission
     let hasError = false;
+    let firstErrorField = null;
 
-    // Validate URL
+    // Validate URL (required field)
     const urlValidation = validateUrl(longUrl);
     if (!urlValidation.valid) {
-      setUrlError(urlValidation.error);
+      setUrlError(urlValidation.error || t('common.fieldRequired') || 'This field is required');
       hasError = true;
+      if (!firstErrorField) firstErrorField = 'mylinks-longUrl';
     }
 
     // Validate custom code
@@ -412,13 +402,24 @@ function MyLinks() {
       if (!codeValidation.valid) {
         setCustomCodeError(codeValidation.error);
         hasError = true;
+        if (!firstErrorField) firstErrorField = 'mylinks-customName';
       }
     }
 
-    // If any validation failed, stop submission
+    // If any validation failed, focus the first error field and stop submission
     if (hasError) {
       setError(t('createLink.errors.fixErrors') || 'Please fix the errors below before submitting');
       setCreateLoading(false);
+      // Focus the first field with an error
+      if (firstErrorField) {
+        setTimeout(() => {
+          const element = document.getElementById(firstErrorField);
+          if (element) {
+            element.focus();
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 0);
+      }
       return;
     }
 
@@ -780,6 +781,7 @@ function MyLinks() {
                       </label>
                       <div className="input-container">
                         <input
+                          id="mylinks-longUrl"
                           type="url"
                           value={longUrl}
                           onChange={handleUrlChange}
@@ -789,7 +791,6 @@ function MyLinks() {
                           style={{
                             borderColor: urlError ? '#EF4444' : '#D1D5DB'
                           }}
-                          required
                         />
                         <button type="button" className="paste-btn">
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -883,6 +884,7 @@ function MyLinks() {
                           {availableDomains.find(d => d.id === selectedDomainId)?.fullDomain || 'laghhu.link'}/
                         </span>
                         <input
+                          id="mylinks-customName"
                           type="text"
                           value={customName}
                           onChange={handleCustomCodeChange}
@@ -979,7 +981,7 @@ function MyLinks() {
                       <button
                         type="submit"
                         className="create-link-btn"
-                        disabled={!longUrl || urlError || customCodeError || createLoading || !hasPermission('urls', 'create')}
+                        disabled={urlError || customCodeError || createLoading || !hasPermission('urls', 'create')}
                         style={{
                           opacity: (createLoading || !hasPermission('urls', 'create')) ? 0.7 : 1,
                           cursor: !hasPermission('urls', 'create') ? 'not-allowed' : 'pointer'

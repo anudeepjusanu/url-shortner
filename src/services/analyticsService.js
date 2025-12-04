@@ -410,7 +410,7 @@ class AnalyticsService {
     const start = new Date(now);
     start.setDate(start.getDate() - days);
 
-    return { $gte: start };
+    return { $gte: start, $lte: now };
   }
   
   async getClicksInRange(urlId, dateRange) {
@@ -554,7 +554,8 @@ class AnalyticsService {
   async getTimeSeriesData(urlId, dateRange, groupBy) {
     const format = groupBy === 'hour' ? '%Y-%m-%d-%H' : '%Y-%m-%d';
     
-    return await Click.aggregate([
+    // Get actual click data from database
+    const clickData = await Click.aggregate([
       {
         $match: {
           url: urlId,
@@ -582,6 +583,55 @@ class AnalyticsService {
       },
       { $sort: { date: 1 } }
     ]);
+
+    // Create a map of existing data for quick lookup
+    const dataMap = new Map();
+    clickData.forEach(item => {
+      dataMap.set(item.date, {
+        date: item.date,
+        clicks: item.clicks,
+        uniqueClicks: item.uniqueClicks
+      });
+    });
+
+    // Generate all dates/hours in the range and fill gaps with zeros
+    const filledData = [];
+    const startDate = dateRange.$gte || new Date();
+    const endDate = dateRange.$lte || new Date();
+    
+    if (groupBy === 'hour') {
+      // Generate hourly data points
+      const current = new Date(startDate);
+      while (current <= endDate) {
+        const dateStr = current.toISOString().slice(0, 13).replace('T', '-');
+        const existing = dataMap.get(dateStr);
+        filledData.push({
+          date: dateStr,
+          clicks: existing ? existing.clicks : 0,
+          uniqueClicks: existing ? existing.uniqueClicks : 0
+        });
+        current.setHours(current.getHours() + 1);
+      }
+    } else {
+      // Generate daily data points
+      const current = new Date(startDate);
+      current.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      while (current <= end) {
+        const dateStr = current.toISOString().slice(0, 10);
+        const existing = dataMap.get(dateStr);
+        filledData.push({
+          date: dateStr,
+          clicks: existing ? existing.clicks : 0,
+          uniqueClicks: existing ? existing.uniqueClicks : 0
+        });
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    return filledData;
   }
   
   calculateAverageClicksPerDay(clicks, dateRange) {

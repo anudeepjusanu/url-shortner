@@ -48,6 +48,7 @@
     "creating": "Creating...",
     "updating": "Updating...",
     "generating": "Generating...",
+    "fieldRequired": "This field is required",
     "updated": "Updated"
   },
   "dates": {
@@ -704,7 +705,13 @@
     "domainAdded": "Domain added successfully!",
     "verificationSuccess": "Domain verified successfully!",
     "verificationFailed": "Domain verification failed",
-    "deleteSuccess": "Domain deleted successfully"
+    "deleteSuccess": "Domain deleted successfully",
+    "errors": {
+      "domainRequired": "Domain name is required",
+      "domainInvalid": "Please enter a valid domain name (e.g., example.com)",
+      "domainExists": "This domain is already registered",
+      "subdomainInvalid": "Subdomain can only contain letters, numbers, and hyphens"
+    }
   },
   "subscription": {
     "title": "Subscription & Billing",
@@ -916,7 +923,12 @@
       "enable2FA": "Enable 2FA",
       "disable2FA": "Disable 2FA",
       "sessions": "Active Sessions",
-      "revokeAll": "Revoke All Sessions"
+      "revokeAll": "Revoke All Sessions",
+      "errorCurrentPasswordRequired": "Current password is required",
+      "errorNewPasswordRequired": "New password is required",
+      "errorConfirmPasswordRequired": "Please confirm your new password",
+      "errorPasswordLength": "Password must be at least 8 characters",
+      "errorPasswordMismatch": "Passwords do not match"
     },
     "preferences": {
       "language": "Language",

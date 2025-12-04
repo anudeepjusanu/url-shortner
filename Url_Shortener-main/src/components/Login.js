@@ -43,18 +43,34 @@ const Login = () => {
   // Form validation
   const validateForm = () => {
     const errors = {};
+    let firstErrorField = null;
 
     if (!formData.email.trim()) {
-      errors.email = t('auth.login.errorEmailRequired');
+      errors.email = t('auth.login.errorEmailRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'email';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = t('auth.login.errorEmailInvalid');
+      if (!firstErrorField) firstErrorField = 'email';
     }
 
     if (!formData.password) {
-      errors.password = t('auth.login.errorPasswordRequired');
+      errors.password = t('auth.login.errorPasswordRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'password';
     }
 
     setFormErrors(errors);
+    
+    // Focus the first field with an error
+    if (firstErrorField) {
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 0);
+    }
+    
     return Object.keys(errors).length === 0;
   };
 
