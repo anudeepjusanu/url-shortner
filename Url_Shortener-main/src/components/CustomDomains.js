@@ -78,9 +78,16 @@ const CustomDomains = () => {
     console.log('Next button clicked. Current step:', currentStep);
 
     if (currentStep === 1) {
-      // Step 1 -> Step 2: Create domain and move to DNS configuration
+      // Step 1 -> Step 2: Validate and create domain, then move to DNS configuration
       if (!baseDomain.trim()) {
-        setError(t('errors.validationError'));
+        setDomainFieldError(t('customDomains.errors.domainRequired') || 'Domain name is required');
+        setError(t('customDomains.errors.domainRequired') || 'Domain name is required');
+        // Focus the domain input field
+        const element = document.getElementById('baseDomain');
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         return;
       }
 
@@ -118,7 +125,8 @@ const CustomDomains = () => {
     console.log('Creating domain...');
     // Validate input
     if (!baseDomain.trim()) {
-      setError(t('errors.validationError'));
+      setDomainFieldError(t('customDomains.errors.domainRequired') || 'Domain name is required');
+      setError(t('customDomains.errors.domainRequired') || 'Domain name is required');
       return false;
     }
 
@@ -252,6 +260,7 @@ const CustomDomains = () => {
     setVerificationStatus('idle');
     setCopiedField(null);
     setError(null);
+    setDomainFieldError('');
     console.log('Wizard reset');
   };
 
@@ -342,6 +351,9 @@ const CustomDomains = () => {
     </div>
   );
 
+  // Domain field error state
+  const [domainFieldError, setDomainFieldError] = useState('');
+
   // Step 1: Enter Domain Information
   const renderStep1 = () => (
     <div>
@@ -351,26 +363,46 @@ const CustomDomains = () => {
 
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-          {t('customDomains.addDomain.domainName')}
+          {t('customDomains.addDomain.domainName')} *
         </label>
         <input
+          id="baseDomain"
           type="text"
           value={baseDomain}
-          onChange={(e) => setBaseDomain(e.target.value)}
+          onChange={(e) => {
+            setBaseDomain(e.target.value);
+            if (domainFieldError) setDomainFieldError('');
+            if (error) setError(null);
+          }}
           placeholder={t('customDomains.addDomain.domainPlaceholder')}
           style={{
             width: '100%',
             padding: '0.75rem',
-            border: '1px solid #d1d5db',
+            border: domainFieldError ? '1px solid #DC2626' : '1px solid #d1d5db',
             borderRadius: '4px',
             fontSize: '1rem',
             boxSizing: 'border-box'
           }}
-          required
         />
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
-          {t('customDomains.addDomain.domainName')}
-        </p>
+        {domainFieldError ? (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '0.5rem',
+            color: '#DC2626',
+            fontSize: '0.8125rem'
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{domainFieldError}</span>
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+            {t('customDomains.addDomain.domainName')}
+          </p>
+        )}
       </div>
 
       <div style={{ marginBottom: '1.5rem' }}>
@@ -378,6 +410,7 @@ const CustomDomains = () => {
           {t('customDomains.addDomain.subdomain')}
         </label>
         <input
+          id="subdomain"
           type="text"
           value={subdomain}
           onChange={(e) => setSubdomain(e.target.value)}

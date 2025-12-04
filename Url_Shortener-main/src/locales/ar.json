@@ -48,6 +48,7 @@
     "creating": "جاري الإنشاء...",
     "updating": "جاري التحديث...",
     "generating": "جاري الإنشاء...",
+    "fieldRequired": "هذا الحقل مطلوب",
     "updated": "تم التحديث"
 
   },
@@ -705,7 +706,13 @@
     "domainAdded": "تم إضافة النطاق بنجاح!",
     "verificationSuccess": "تم التحقق من النطاق بنجاح!",
     "verificationFailed": "فشل التحقق من النطاق",
-    "deleteSuccess": "تم حذف النطاق بنجاح"
+    "deleteSuccess": "تم حذف النطاق بنجاح",
+    "errors": {
+      "domainRequired": "اسم النطاق مطلوب",
+      "domainInvalid": "يرجى إدخال اسم نطاق صالح (مثال: example.com)",
+      "domainExists": "هذا النطاق مسجل بالفعل",
+      "subdomainInvalid": "يمكن أن يحتوي النطاق الفرعي على أحرف وأرقام وشرطات فقط"
+    }
   },
   "subscription": {
     "title": "الاشتراك والفواتير",
@@ -916,7 +923,12 @@
       "enable2FA": "تفعيل المصادقة الثنائية",
       "disable2FA": "تعطيل المصادقة الثنائية",
       "sessions": "الجلسات النشطة",
-      "revokeAll": "إلغاء جميع الجلسات"
+      "revokeAll": "إلغاء جميع الجلسات",
+      "errorCurrentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+      "errorNewPasswordRequired": "كلمة المرور الجديدة مطلوبة",
+      "errorConfirmPasswordRequired": "يرجى تأكيد كلمة المرور الجديدة",
+      "errorPasswordLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+      "errorPasswordMismatch": "كلمات المرور غير متطابقة"
     },
     "preferences": {
       "language": "اللغة",

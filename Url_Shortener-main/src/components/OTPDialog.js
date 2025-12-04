@@ -92,14 +92,25 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
     const otpValue = otp.join('');
 
     if (otpValue.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError('Please enter all 6 digits of the verification code');
       return;
     }
 
     try {
       await onVerify(otpValue);
     } catch (err) {
-      setError(err.message || 'Invalid OTP. Please try again.');
+      // Provide more specific error messages based on error type
+      let errorMessage = 'Invalid verification code. Please check and try again.';
+      if (err.message?.includes('expired') || err.message?.includes('Expired')) {
+        errorMessage = 'Verification code has expired. Please request a new one.';
+      } else if (err.message?.includes('invalid') || err.message?.includes('Invalid')) {
+        errorMessage = 'Invalid verification code. Please check and try again.';
+      } else if (err.message?.includes('attempts') || err.message?.includes('Attempts')) {
+        errorMessage = 'Too many failed attempts. Please request a new code.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
       // Clear OTP on error
       setOtp(['', '', '', '', '', '']);
       if (inputRefs.current[0]) {
@@ -134,7 +145,16 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
         inputRefs.current[0].focus();
       }
     } catch (err) {
-      setError(err.message || 'Failed to resend OTP');
+      // Provide more specific error messages based on error type
+      let errorMessage = 'Failed to resend verification code. Please try again.';
+      if (err.message?.includes('rate') || err.message?.includes('Rate') || err.message?.includes('limit')) {
+        errorMessage = 'Too many requests. Please wait a moment before trying again.';
+      } else if (err.message?.includes('network') || err.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     }
   };
 

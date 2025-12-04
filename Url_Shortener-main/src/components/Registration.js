@@ -49,43 +49,66 @@ const Registration = () => {
   // Form validation
   const validateForm = () => {
     const errors = {};
+    let firstErrorField = null;
 
     // Required fields validation
     if (!formData.firstName.trim()) {
-      errors.firstName = t('auth.register.errorFirstNameRequired');
+      errors.firstName = t('auth.register.errorFirstNameRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'firstName';
     }
 
     if (!formData.lastName.trim()) {
-      errors.lastName = t('auth.register.errorLastNameRequired');
+      errors.lastName = t('auth.register.errorLastNameRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'lastName';
     }
 
     if (!formData.email.trim()) {
-      errors.email = t('auth.register.errorEmailRequired');
+      errors.email = t('auth.register.errorEmailRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'email';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = t('auth.register.errorEmailInvalid');
+      if (!firstErrorField) firstErrorField = 'email';
     }
 
     if (!formData.password) {
-      errors.password = t('auth.register.errorPasswordRequired');
+      errors.password = t('auth.register.errorPasswordRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'password';
     } else if (formData.password.length < 8) {
       errors.password = t('auth.register.errorPasswordLength');
+      if (!firstErrorField) firstErrorField = 'password';
     }
 
     if (!formData.confirmPassword) {
-      errors.confirmPassword = t('auth.register.errorConfirmPasswordRequired');
+      errors.confirmPassword = t('auth.register.errorConfirmPasswordRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'confirmPassword';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = t('auth.register.errorPasswordMismatch');
+      if (!firstErrorField) firstErrorField = 'confirmPassword';
     }
 
     if (!formData.agreeToTerms) {
-      errors.agreeToTerms = t('auth.register.errorTermsRequired');
+      errors.agreeToTerms = t('auth.register.errorTermsRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'agreeToTerms';
     }
 
     if (!formData.agreeToData) {
-      errors.agreeToData = t('auth.register.errorDataConsentRequired');
+      errors.agreeToData = t('auth.register.errorDataConsentRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'agreeToData';
     }
 
     setFormErrors(errors);
+    
+    // Focus the first field with an error
+    if (firstErrorField) {
+      setTimeout(() => {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 0);
+    }
+    
     return Object.keys(errors).length === 0;
   };
 

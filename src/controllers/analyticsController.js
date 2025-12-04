@@ -58,10 +58,10 @@ const getUrlAnalytics = async (req, res) => {
       }[period] || 30;
       const start = new Date(now);
       start.setDate(start.getDate() - days);
-      dateRange = { $gte: start };
+      dateRange = { $gte: start, $lte: now };
     }
     
-    const [clicks, topStats, timeSeriesData] = await Promise.all([
+    const [clicks, topStats, rawTimeSeriesData] = await Promise.all([
       Click.find({
         url: id,
         timestamp: dateRange,
@@ -102,6 +102,50 @@ const getUrlAnalytics = async (req, res) => {
         { $sort: { date: 1 } }
       ])
     ]);
+
+    // Fill in missing dates with zero values
+    const dataMap = new Map();
+    rawTimeSeriesData.forEach(item => {
+      dataMap.set(item.date, {
+        date: item.date,
+        clicks: item.clicks,
+        uniqueClicks: item.uniqueClicks
+      });
+    });
+
+    const timeSeriesData = [];
+    const rangeStart = dateRange.$gte;
+    const rangeEnd = dateRange.$lte || now;
+
+    if (groupBy === 'hour') {
+      const current = new Date(rangeStart);
+      while (current <= rangeEnd) {
+        const dateStr = current.toISOString().slice(0, 13).replace('T', '-');
+        const existing = dataMap.get(dateStr);
+        timeSeriesData.push({
+          date: dateStr,
+          clicks: existing ? existing.clicks : 0,
+          uniqueClicks: existing ? existing.uniqueClicks : 0
+        });
+        current.setHours(current.getHours() + 1);
+      }
+    } else {
+      const current = new Date(rangeStart);
+      current.setHours(0, 0, 0, 0);
+      const end = new Date(rangeEnd);
+      end.setHours(23, 59, 59, 999);
+      
+      while (current <= end) {
+        const dateStr = current.toISOString().slice(0, 10);
+        const existing = dataMap.get(dateStr);
+        timeSeriesData.push({
+          date: dateStr,
+          clicks: existing ? existing.clicks : 0,
+          uniqueClicks: existing ? existing.uniqueClicks : 0
+        });
+        current.setDate(current.getDate() + 1);
+      }
+    }
     
     const analyticsData = {
       url: {

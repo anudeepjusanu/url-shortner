@@ -185,10 +185,13 @@ const Analytics = () => {
   const formatDateLabel = (dateStr) => {
     if (!dateStr) return '';
     try {
-      // Handle hour format (YYYY-MM-DD-HH)
+      // Handle hour format (YYYY-MM-DD-HH) - show only date, not time
       if (dateStr.match(/^\d{4}-\d{2}-\d{2}-\d{2}$/)) {
-        const [year, month, day, hour] = dateStr.split('-');
-        return `${hour}:00`;
+        const [year, month, day /*, hour */] = dateStr.split('-');
+        const date = new Date(year, month - 1, day);
+        const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+        return `${monthName} ${parseInt(day)}`;
+        // return `${monthName} ${parseInt(day)} ${hour}:00`; // Commented out: time display
       }
       // Handle day format (YYYY-MM-DD)
       const date = new Date(dateStr);
@@ -1739,7 +1742,35 @@ const Analytics = () => {
                     const centerY = 128;
                     const innerRadius = 55;
 
+                    const polarToCartesian = (cx, cy, r, angleInDegrees) => {
+                      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+                      return {
+                        x: cx + (r * Math.cos(angleInRadians)),
+                        y: cy + (r * Math.sin(angleInRadians))
+                      };
+                    };
+
+                    // Create arc path - handles full circle (360 degrees) case
                     const createArc = (startAngle, endAngle) => {
+                      // Handle full circle case (single device with 100%)
+                      if (endAngle - startAngle >= 359.99) {
+                        // Draw two half circles to create a full donut
+                        return [
+                          // Outer arc - first half
+                          "M", centerX, centerY - radius,
+                          "A", radius, radius, 0, 1, 1, centerX, centerY + radius,
+                          // Outer arc - second half
+                          "A", radius, radius, 0, 1, 1, centerX, centerY - radius,
+                          // Move to inner circle
+                          "M", centerX, centerY - innerRadius,
+                          // Inner arc - first half (reverse direction)
+                          "A", innerRadius, innerRadius, 0, 1, 0, centerX, centerY + innerRadius,
+                          // Inner arc - second half
+                          "A", innerRadius, innerRadius, 0, 1, 0, centerX, centerY - innerRadius,
+                          "Z"
+                        ].join(" ");
+                      }
+
                       const start = polarToCartesian(centerX, centerY, radius, endAngle);
                       const end = polarToCartesian(centerX, centerY, radius, startAngle);
                       const innerStart = polarToCartesian(centerX, centerY, innerRadius, endAngle);
@@ -1753,14 +1784,6 @@ const Analytics = () => {
                         "A", innerRadius, innerRadius, 0, largeArcFlag, 1, innerStart.x, innerStart.y,
                         "Z"
                       ].join(" ");
-                    };
-
-                    const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
-                      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
-                      return {
-                        x: centerX + (radius * Math.cos(angleInRadians)),
-                        y: centerY + (radius * Math.sin(angleInRadians))
-                      };
                     };
 
                     let currentAngle = 0;

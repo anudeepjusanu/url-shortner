@@ -33,7 +33,16 @@ function UserManagement() {
       }
     } catch (err) {
       console.error('Error loading users:', err);
-      setError(err.message || 'Failed to load users');
+      // Provide more specific error messages based on error type
+      let errorMessage = 'Failed to load users. Please try again.';
+      if (err.message?.includes('network') || err.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message?.includes('unauthorized') || err.message?.includes('Unauthorized')) {
+        errorMessage = 'You are not authorized to view users. Please contact an administrator.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -64,7 +73,18 @@ function UserManagement() {
       }
     } catch (err) {
       console.error('Error updating role:', err);
-      setError(err.message || 'Failed to update user role');
+      // Provide more specific error messages based on error type
+      let errorMessage = `Failed to update role for ${userEmail}. Please try again.`;
+      if (err.message?.includes('permission') || err.message?.includes('Permission')) {
+        errorMessage = `You do not have permission to change the role of ${userEmail}.`;
+      } else if (err.message?.includes('not found') || err.message?.includes('Not found')) {
+        errorMessage = `User ${userEmail} was not found. They may have been deleted.`;
+      } else if (err.message?.includes('network') || err.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     }
   };
 
