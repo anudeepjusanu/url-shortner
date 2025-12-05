@@ -41,9 +41,10 @@ const Analytics = () => {
       setError(null);
 
       // Fetch URL-specific analytics
+      // Always use 'day' groupBy to match dashboard chart style
       const response = await analyticsAPI.getUrlAnalytics(id, {
         period: timeFilter,
-        groupBy: timeFilter === '7d' ? 'hour' : 'day'
+        groupBy: 'day'
       });
 
       console.log('Analytics API Response:', response);
@@ -55,13 +56,18 @@ const Analytics = () => {
       const recentClicks = backendData.recentClicks || backendData.clicks || [];
       
       // Extract totals with multiple fallback options
+      // Use URL model's clickCount as ultimate fallback
       const overviewTotals = {
-        totalClicks: backendData.overview?.totalClicks || backendData.summary?.totalClicks || backendData.stats?.totalClicks || backendData.totalClicks || 0,
-        uniqueClicks: backendData.overview?.uniqueClicks || backendData.summary?.uniqueClicks || backendData.stats?.uniqueClicks || backendData.uniqueClicks || 0,
+        totalClicks: backendData.overview?.totalClicks || backendData.url?.clickCount || backendData.summary?.totalClicks || backendData.stats?.totalClicks || backendData.totalClicks || 0,
+        uniqueClicks: backendData.overview?.uniqueClicks || backendData.url?.uniqueClickCount || backendData.summary?.uniqueClicks || backendData.stats?.uniqueClicks || backendData.uniqueClicks || 0,
         qrScans: backendData.url?.qrScanCount || backendData.overview?.qrScans || 0,
         uniqueQrScans: backendData.url?.uniqueQrScanCount || backendData.overview?.uniqueQrScans || 0,
         averageTime: backendData.overview?.averageClicksPerDay ? `${backendData.overview.averageClicksPerDay}/day` : '0/day'
       };
+      
+      console.log('📊 Overview Totals:', overviewTotals);
+      console.log('📊 Backend URL data:', backendData.url);
+      console.log('📊 Backend Overview:', backendData.overview);
 
       // Extract time series data with multiple fallback options
       let timeSeries = backendData.timeSeries || backendData.clickActivity || backendData.activity || [];
@@ -113,39 +119,88 @@ const Analytics = () => {
         }];
       }
 
-      // Aggregate countries from recentClicks
-      const countryMap = {};
-      recentClicks.forEach(click => {
-        const country = click.countryName || click.country || 'Unknown';
-        if (!countryMap[country]) {
-          countryMap[country] = { country, name: country, clicks: 0 };
-        }
-        countryMap[country].clicks++;
-      });
-      const clicksByCountry = Object.values(countryMap)
-        .sort((a, b) => b.clicks - a.clicks)
-        .slice(0, 10);
+      // Use topStats from backend if available, otherwise aggregate from recentClicks
+      let clicksByCountry = [];
+      let clicksByCity = [];
+      let deviceMap = {};
+      let browsersList = [];
+      let osList = [];
+      let referrersList = [];
 
-      // Aggregate devices from recentClicks
-      const deviceMap = {};
-      recentClicks.forEach(click => {
-        const deviceType = (click.deviceType || click.device || 'unknown').toLowerCase();
-        deviceMap[deviceType] = (deviceMap[deviceType] || 0) + 1;
-      });
+      if (backendData.topStats) {
+        // Use backend aggregated data (more accurate)
+        clicksByCountry = (backendData.topStats.countries || []).map(item => ({
+          country: item._id?.country || item.country || 'Unknown',
+          name: item._id?.countryName || item.countryName || item._id?.country || item.country || 'Unknown',
+          clicks: item.count || item.clicks || 0
+        }));
+
+        clicksByCity = (backendData.topStats.cities || []).map(item => ({
+          city: item._id?.city || item.city || 'Unknown',
+          region: item._id?.region || item.region || '',
+          country: item._id?.country || item.country || '',
+          clicks: item.count || item.clicks || 0
+        }));
+
+        // Convert devices array to object format
+        (backendData.topStats.devices || []).forEach(item => {
+          const deviceType = (item._id || item.type || 'unknown').toLowerCase();
+          deviceMap[deviceType] = item.count || item.clicks || 0;
+        });
+
+        browsersList = (backendData.topStats.browsers || []).map(item => ({
+          browser: item._id || item.browser || 'Unknown',
+          clicks: item.count || item.clicks || 0
+        }));
+
+        osList = (backendData.topStats.operatingSystems || []).map(item => ({
+          os: item._id || item.os || 'Unknown',
+          clicks: item.count || item.clicks || 0
+        }));
+
+        referrersList = (backendData.topStats.referrers || []).map(item => ({
+          domain: item._id || item.domain || 'Direct',
+          clicks: item.count || item.clicks || 0
+        }));
+      } else {
+        // Fallback: Aggregate from recentClicks
+        const countryMap = {};
+        recentClicks.forEach(click => {
+          const country = click.countryName || click.country || 'Unknown';
+          if (!countryMap[country]) {
+            countryMap[country] = { country, name: country, clicks: 0 };
+          }
+          countryMap[country].clicks++;
+        });
+        clicksByCountry = Object.values(countryMap)
+          .sort((a, b) => b.clicks - a.clicks)
+          .slice(0, 10);
+
+        // Aggregate devices from recentClicks
+        recentClicks.forEach(click => {
+          const deviceType = (click.deviceType || click.device || 'unknown').toLowerCase();
+          deviceMap[deviceType] = (deviceMap[deviceType] || 0) + 1;
+        });
+      }
 
       const transformedData = {
         totalClicks: overviewTotals.totalClicks,
         uniqueClicks: overviewTotals.uniqueClicks,
+        qrScans: overviewTotals.qrScans,
+        uniqueQrScans: overviewTotals.uniqueQrScans,
         clickThroughRate: overviewTotals.clickThroughRate,
         averageTime: overviewTotals.averageTime,
         clickActivity: clickActivity,
         clicksByCountry: clicksByCountry,
+        clicksByCity: clicksByCity,
         clicksByDevice: deviceMap,
-        recentClicks: recentClicks, // Store recentClicks for other sections
-       
-       
-       
-       
+        recentClicks: recentClicks,
+        topStats: {
+          browsers: browsersList,
+          operatingSystems: osList,
+          referrers: referrersList,
+          cities: clicksByCity
+        },
         url: backendData.url || null
       };
 
@@ -1342,6 +1397,17 @@ const Analytics = () => {
 
                     return (
                       <>
+                        {/* Total Clicks Area Fill */}
+                        <path
+                          d={`M 60,250 ${chartData.map((point, index) => {
+                            const x = 60 + (index * spacing);
+                            const y = 250 - ((point.totalClicks || 0) / yAxisMax) * chartHeight;
+                            return `L ${x},${y}`;
+                          }).join(' ')} L ${60 + ((chartData.length - 1) * spacing)},250 Z`}
+                          fill="#3B82F6"
+                          fillOpacity="0.1"
+                        />
+
                         {/* Total Clicks Line */}
                         <polyline
                           points={chartData.map((point, index) => {
@@ -1351,9 +1417,20 @@ const Analytics = () => {
                           }).join(' ')}
                           fill="none"
                           stroke="#3B82F6"
-                          strokeWidth="2.5"
+                          strokeWidth={chartData.length > 100 ? "2" : "2.5"}
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                        />
+
+                        {/* Unique Clicks Area Fill */}
+                        <path
+                          d={`M 60,250 ${chartData.map((point, index) => {
+                            const x = 60 + (index * spacing);
+                            const y = 250 - ((point.uniqueClicks || 0) / yAxisMax) * chartHeight;
+                            return `L ${x},${y}`;
+                          }).join(' ')} L ${60 + ((chartData.length - 1) * spacing)},250 Z`}
+                          fill="#10B981"
+                          fillOpacity="0.08"
                         />
 
                         {/* Unique Clicks Line */}
@@ -1365,20 +1442,20 @@ const Analytics = () => {
                           }).join(' ')}
                           fill="none"
                           stroke="#10B981"
-                          strokeWidth="2.5"
+                          strokeWidth={chartData.length > 100 ? "2" : "2.5"}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
 
-                        {/* Data points - Total Clicks */}
-                        {chartData.map((point, index) => {
+                        {/* Data points - Total Clicks (only show for smaller datasets) */}
+                        {chartData.length <= 50 && chartData.map((point, index) => {
                           const x = 60 + (index * spacing);
                           const y = 250 - ((point.totalClicks || 0) / yAxisMax) * chartHeight;
                           return <circle key={`total-${index}`} cx={x} cy={y} r="4" fill="#3B82F6" />;
                         })}
 
-                        {/* Data points - Unique Clicks */}
-                        {chartData.map((point, index) => {
+                        {/* Data points - Unique Clicks (only show for smaller datasets) */}
+                        {chartData.length <= 50 && chartData.map((point, index) => {
                           const x = 60 + (index * spacing);
                           const y = 250 - ((point.uniqueClicks || 0) / yAxisMax) * chartHeight;
                           return <circle key={`unique-${index}`} cx={x} cy={y} r="4" fill="#10B981" />;
@@ -1390,7 +1467,7 @@ const Analytics = () => {
                   {/* X-axis labels */}
                   <g
                     fill="#9CA3AF"
-                    fontSize="12"
+                    fontSize="11"
                     textAnchor="middle"
                     fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
                   >
@@ -1403,7 +1480,29 @@ const Analytics = () => {
                       const chartWidth = 700;
                       const spacing = chartData.length > 1 ? chartWidth / (chartData.length - 1) : chartWidth;
 
+                      // Determine how many labels to show based on data length
+                      // Show max 7-10 labels to avoid overlap
+                      // For year view (365 days), show approximately 12 labels (monthly)
+                      let maxLabels;
+                      if (chartData.length > 300) {
+                        maxLabels = 12; // Monthly for year view
+                      } else if (chartData.length > 60) {
+                        maxLabels = 10; // For 90 days
+                      } else {
+                        maxLabels = 8; // For shorter periods
+                      }
+                      const step = chartData.length > maxLabels ? Math.ceil(chartData.length / maxLabels) : 1;
+
                       return chartData.map((point, index) => {
+                        // Only show label at regular intervals, plus first and last
+                        const isFirst = index === 0;
+                        const isLast = index === chartData.length - 1;
+                        const isInterval = index % step === 0;
+                        
+                        if (!isFirst && !isLast && !isInterval) {
+                          return null;
+                        }
+
                         const x = 60 + (index * spacing);
                         const label = point.label || point.date || `Day ${index + 1}`;
                         return (
@@ -1411,7 +1510,7 @@ const Analytics = () => {
                             {label}
                           </text>
                         );
-                      });
+                      }).filter(Boolean);
                     })()}
                   </g>
 

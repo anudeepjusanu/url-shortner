@@ -285,6 +285,8 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
   
+  console.log('📊 getTopStats called:', { urlId, days, startDate });
+  
   const pipeline = [
     {
       $match: {
@@ -297,10 +299,34 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
       $facet: {
         countries: [
           {
+            $match: { 
+              'location.country': { $exists: true, $ne: null, $ne: '' }
+            }
+          },
+          {
             $group: {
               _id: {
                 country: '$location.country',
-                countryName: '$location.countryName'
+                countryName: { $ifNull: ['$location.countryName', '$location.country'] }
+              },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { count: -1 } },
+          { $limit: 10 }
+        ],
+        cities: [
+          {
+            $match: { 
+              'location.city': { $exists: true, $ne: null, $ne: '' }
+            }
+          },
+          {
+            $group: {
+              _id: {
+                city: '$location.city',
+                region: '$location.region',
+                country: { $ifNull: ['$location.countryName', '$location.country'] }
               },
               count: { $sum: 1 }
             }
@@ -310,7 +336,7 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
         ],
         referrers: [
           {
-            $match: { referer: { $ne: null, $ne: '' } }
+            $match: { referer: { $exists: true, $ne: null, $ne: '' } }
           },
           {
             $addFields: {
@@ -337,7 +363,7 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
         devices: [
           {
             $group: {
-              _id: '$device.type',
+              _id: { $ifNull: ['$device.type', 'unknown'] },
               count: { $sum: 1 }
             }
           },
@@ -345,11 +371,24 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
         ],
         browsers: [
           {
-            $match: { 'device.browser.name': { $ne: null } }
+            $match: { 'device.browser.name': { $exists: true, $ne: null, $ne: '' } }
           },
           {
             $group: {
               _id: '$device.browser.name',
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { count: -1 } },
+          { $limit: 10 }
+        ],
+        operatingSystems: [
+          {
+            $match: { 'device.os.name': { $exists: true, $ne: null, $ne: '' } }
+          },
+          {
+            $group: {
+              _id: '$device.os.name',
               count: { $sum: 1 }
             }
           },
@@ -360,7 +399,15 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
     }
   ];
   
-  return await this.aggregate(pipeline);
+  const results = await this.aggregate(pipeline);
+  console.log('📊 getTopStats results:', {
+    countries: results[0]?.countries?.length || 0,
+    cities: results[0]?.cities?.length || 0,
+    devices: results[0]?.devices?.length || 0,
+    browsers: results[0]?.browsers?.length || 0,
+    operatingSystems: results[0]?.operatingSystems?.length || 0
+  });
+  return results;
 };
 
 const Click = mongoose.model('Click', clickSchema);
