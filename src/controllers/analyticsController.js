@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Click, DailySummary } = require('../models/Analytics');
 const Url = require('../models/Url');
 const { cacheGet, cacheSet } = require('../config/redis');
@@ -13,7 +14,18 @@ const getUrlAnalytics = async (req, res) => {
       groupBy = 'day'
     } = req.query;
     
-    const url = await Url.findById(id);
+    // Convert string ID to ObjectId for MongoDB queries
+    let urlObjectId;
+    try {
+      urlObjectId = new mongoose.Types.ObjectId(id);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid URL ID format'
+      });
+    }
+    
+    const url = await Url.findById(urlObjectId);
     
     if (!url) {
       return res.status(404).json({
@@ -34,11 +46,15 @@ const getUrlAnalytics = async (req, res) => {
     const cachedData = await cacheGet(cacheKey);
     
     if (cachedData) {
+      console.log('📊 Returning CACHED analytics data for:', cacheKey);
+      console.log('📊 Cached overview:', cachedData.overview);
       return res.json({
         success: true,
         data: cachedData
       });
     }
+    
+    console.log('📊 No cache found, fetching fresh data for:', cacheKey);
     
     let dateRange = {};
     const now = new Date();
@@ -61,19 +77,35 @@ const getUrlAnalytics = async (req, res) => {
       dateRange = { $gte: start, $lte: now };
     }
     
-    const [clicks, topStats, rawTimeSeriesData] = await Promise.all([
+    console.log('📊 Analytics Query:', {
+      urlId: urlObjectId,
+      urlIdString: id,
+      period,
+      dateRange,
+      groupBy
+    });
+    
+    // First, check if there are any clicks for this URL at all (without date filter)
+    const totalClicksEver = await Click.countDocuments({ url: urlObjectId });
+    console.log('📊 Total clicks ever for this URL:', totalClicksEver);
+    
+    // Also try with shortCode in case url field has issues
+    const clicksByShortCode = await Click.countDocuments({ shortCode: url.shortCode });
+    console.log('📊 Clicks by shortCode:', clicksByShortCode);
+    
+    const [clicks, topStats, rawTimeSeriesData, clickCounts] = await Promise.all([
       Click.find({
-        url: id,
+        url: urlObjectId,
         timestamp: dateRange,
         isBot: { $ne: true }
       }).sort({ timestamp: -1 }).limit(1000),
       
-      Click.getTopStats(id, 30),
+      Click.getTopStats(urlObjectId, 30),
       
       Click.aggregate([
         {
           $match: {
-            url: url._id,
+            url: urlObjectId,
             timestamp: dateRange,
             isBot: { $ne: true }
           }
@@ -100,8 +132,35 @@ const getUrlAnalytics = async (req, res) => {
           }
         },
         { $sort: { date: 1 } }
+      ]),
+      
+      // Get accurate click counts within the date range
+      Click.aggregate([
+        {
+          $match: {
+            url: urlObjectId,
+            timestamp: dateRange,
+            isBot: { $ne: true }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalClicks: { $sum: 1 },
+            uniqueClicks: {
+              $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] }
+            }
+          }
+        }
       ])
     ]);
+    
+    console.log('📊 Analytics Results:', {
+      clicksFound: clicks.length,
+      timeSeriesPoints: rawTimeSeriesData.length,
+      rawTimeSeriesData: rawTimeSeriesData.slice(0, 5), // Log first 5 entries
+      clickCounts: clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 }
+    });
 
     // Fill in missing dates with zero values
     const dataMap = new Map();
@@ -147,6 +206,24 @@ const getUrlAnalytics = async (req, res) => {
       }
     }
     
+    // Use accurate counts from aggregation for the selected period
+    // Fall back to URL model counts if aggregation returns nothing
+    const aggregatedCounts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
+    const daysDiff = Math.ceil((dateRange.$lte - dateRange.$gte) / (1000 * 60 * 60 * 24)) || 1;
+    
+    // Use aggregated counts if available, otherwise use URL model counts
+    const totalClicks = aggregatedCounts.totalClicks > 0 ? aggregatedCounts.totalClicks : (url.clickCount || 0);
+    const uniqueClicks = aggregatedCounts.uniqueClicks > 0 ? aggregatedCounts.uniqueClicks : (url.uniqueClickCount || 0);
+    
+    console.log('📊 Final counts:', {
+      aggregatedTotal: aggregatedCounts.totalClicks,
+      aggregatedUnique: aggregatedCounts.uniqueClicks,
+      urlModelTotal: url.clickCount,
+      urlModelUnique: url.uniqueClickCount,
+      finalTotal: totalClicks,
+      finalUnique: uniqueClicks
+    });
+    
     const analyticsData = {
       url: {
         _id: url._id,
@@ -155,13 +232,20 @@ const getUrlAnalytics = async (req, res) => {
         originalUrl: url.originalUrl,
         title: url.title,
         domain: url.domain,
-        createdAt: url.createdAt
+        createdAt: url.createdAt,
+        clickCount: url.clickCount || 0,
+        uniqueClickCount: url.uniqueClickCount || 0,
+        qrScanCount: url.qrScanCount || 0,
+        uniqueQrScanCount: url.uniqueQrScanCount || 0
       },
       overview: {
-        totalClicks: url.clickCount,
-        uniqueClicks: url.uniqueClickCount,
-        averageClicksPerDay: Math.round(clicks.length / 30),
-        lastClicked: url.lastClickedAt
+        totalClicks: totalClicks,
+        uniqueClicks: uniqueClicks,
+        averageClicksPerDay: Math.round(totalClicks / daysDiff),
+        lastClicked: url.lastClickedAt,
+        // Include all-time stats as well
+        allTimeTotalClicks: url.clickCount || 0,
+        allTimeUniqueClicks: url.uniqueClickCount || 0
       },
       timeSeries: timeSeriesData,
       topStats: topStats[0] || {
@@ -174,13 +258,17 @@ const getUrlAnalytics = async (req, res) => {
       },
       recentClicks: clicks.slice(0, 20).map(click => ({
         timestamp: click.timestamp,
-        country: click.location.countryName || '',
-        region: click.location.region || '',
-        city: click.location.city || '',
-        device: click.device.type || '',
-        browser: click.device.browser.name || '',
-        os: click.device.os.name || '',
-        referer: click.referer || ''
+        country: click.location?.countryName || click.location?.country || '',
+        countryName: click.location?.countryName || click.location?.country || '',
+        region: click.location?.region || '',
+        city: click.location?.city || '',
+        device: click.device?.type || '',
+        deviceType: click.device?.type || '',
+        browser: click.device?.browser?.name || '',
+        os: click.device?.os?.name || '',
+        referer: click.referer || '',
+        language: click.language || '',
+        clickSource: click.clickSource || 'unknown'
       }))
     };
     
@@ -205,10 +293,30 @@ const getDashboardAnalytics = async (req, res) => {
     const userId = req.user.id;
     const organizationId = req.user.organization;
     
+    // Convert user ID to ObjectId for proper MongoDB queries
+    let userObjectId;
+    try {
+      userObjectId = new mongoose.Types.ObjectId(userId);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+    
+    let orgObjectId = null;
+    if (organizationId) {
+      try {
+        orgObjectId = new mongoose.Types.ObjectId(organizationId);
+      } catch (err) {
+        // Ignore invalid org ID, just don't filter by it
+      }
+    }
+    
     const filter = {
       $or: [
-        { creator: userId },
-        ...(organizationId ? [{ organization: organizationId }] : [])
+        { creator: userObjectId },
+        ...(orgObjectId ? [{ organization: orgObjectId }] : [])
       ]
     };
 
@@ -222,8 +330,17 @@ const getDashboardAnalytics = async (req, res) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
-    const urls = await Url.find(filter).select('_id clickCount uniqueClickCount createdAt');
+    console.log('📊 Dashboard Analytics Query:', {
+      userId: userObjectId,
+      organizationId: orgObjectId,
+      period,
+      startDate
+    });
+    
+    const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
     const urlIds = urls.map(url => url._id);
+    
+    console.log('📊 Found URLs:', urlIds.length);
     
     const [
       totalClicks,
@@ -395,6 +512,17 @@ const getDashboardAnalytics = async (req, res) => {
     
     const totalUrls = urls.length;
     const totalUniqueClicks = urls.reduce((sum, url) => sum + (url.uniqueClickCount || 0), 0);
+    const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
+    const totalUniqueQRScans = urls.reduce((sum, url) => sum + (url.uniqueQrScanCount || 0), 0);
+    
+    console.log('📊 Dashboard Analytics Results:', {
+      totalUrls,
+      totalClicks,
+      totalUniqueClicks,
+      totalQRScans,
+      clicksByDayCount: clicksByDay.length,
+      topCountriesCount: topCountries.length
+    });
     
     res.json({
       success: true,
@@ -403,6 +531,8 @@ const getDashboardAnalytics = async (req, res) => {
           totalUrls,
           totalClicks,
           totalUniqueClicks,
+          totalQRScans,
+          totalUniqueQRScans,
           averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0
         },
         chartData: {
@@ -413,30 +543,30 @@ const getDashboardAnalytics = async (req, res) => {
         },
         topStats: {
           countries: topCountries.map(item => ({
-            country: item._id.country,
-            countryName: item._id.countryName || item._id.country,
+            country: item._id?.country || 'Unknown',
+            countryName: item._id?.countryName || item._id?.country || 'Unknown',
             clicks: item.clicks
           })),
           cities: topCities.map(item => ({
-            city: item._id.city,
-            region: item._id.region,
-            country: item._id.country,
+            city: item._id?.city || 'Unknown',
+            region: item._id?.region || '',
+            country: item._id?.country || '',
             clicks: item.clicks
           })),
           devices: topDevices.map(item => ({
-            type: item._id,
+            type: item._id || 'unknown',
             clicks: item.clicks
           })),
           browsers: topBrowsers.map(item => ({
-            browser: item._id,
+            browser: item._id || 'Unknown',
             clicks: item.clicks
           })),
           operatingSystems: topOS.map(item => ({
-            os: item._id,
+            os: item._id || 'Unknown',
             clicks: item.clicks
           })),
           referrers: topReferrers.map(item => ({
-            domain: item._id,
+            domain: item._id || 'Direct',
             clicks: item.clicks
           }))
         }
@@ -444,6 +574,7 @@ const getDashboardAnalytics = async (req, res) => {
     });
   } catch (error) {
     console.error('Get dashboard analytics error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch dashboard analytics'
@@ -456,7 +587,18 @@ const exportAnalytics = async (req, res) => {
     const { id } = req.params;
     const { format = 'json', period = '30d' } = req.query;
     
-    const url = await Url.findById(id);
+    // Convert string ID to ObjectId
+    let urlObjectId;
+    try {
+      urlObjectId = new mongoose.Types.ObjectId(id);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid URL ID format'
+      });
+    }
+    
+    const url = await Url.findById(urlObjectId);
     
     if (!url) {
       return res.status(404).json({
@@ -484,7 +626,7 @@ const exportAnalytics = async (req, res) => {
     startDate.setDate(startDate.getDate() - days);
     
     const clicks = await Click.find({
-      url: id,
+      url: urlObjectId,
       timestamp: { $gte: startDate },
       isBot: { $ne: true }
     }).sort({ timestamp: -1 });
