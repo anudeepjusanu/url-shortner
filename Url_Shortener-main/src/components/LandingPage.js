@@ -757,17 +757,17 @@ const LandingPage = () => {
               <h4>{t('footer.legal')}</h4>
               <ul>
                 <li>
-                  <a href="#">{t('footer.privacy')}</a>
+                  <a href="/privacy-policy">{t('footer.privacy')}</a>
                 </li>
                 <li>
-                  <a href="#">{t('footer.terms')}</a>
+                  <a href="/terms-and-conditions">{t('footer.terms')}</a>
                 </li>
-                <li>
+                {/* <li>
                   <a href="#">{t('footer.pdplCompliance')}</a>
                 </li>
                 <li>
                   <a href="#">{t('footer.security')}</a>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>

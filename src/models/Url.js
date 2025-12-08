@@ -13,14 +13,12 @@ const urlSchema = new mongoose.Schema({
     required: [true, 'Short code is required'],
     unique: true,
     trim: true,
-    lowercase: true,
     match: [/^[\p{L}\p{N}_-]+$/u, 'Short code can only contain letters (any language), numbers, hyphens, and underscores']
   },
   customCode: {
     type: String,
     default: null,
     trim: true,
-    lowercase: true,
     sparse: true,
     match: [/^[\p{L}\p{N}_-]+$/u, 'Custom code can only contain letters (any language), numbers, hyphens, and underscores']
   },

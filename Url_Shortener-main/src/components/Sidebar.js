@@ -2,6 +2,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../contexts/PermissionContext';
 import "./Sidebar.css";
 import "./CreateLinkHeader.css"
 
@@ -9,6 +10,7 @@ const Sidebar = ({ activeItem }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { hasRole } = usePermissions();
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -263,6 +265,45 @@ const Sidebar = ({ activeItem }) => {
           </div> */}
         </div>
 
+        {/* Admin Section - Only for admin and super_admin */}
+        {/* {hasRole(['admin', 'super_admin']) && (
+          <div className="nav-section">
+            <div className="nav-label">{t('sidebar.admin') || 'Admin'}</div>
+            <div
+              className={`nav-item ${isActive("/user-management") ? "active" : ""}`}
+              onClick={() => handleNavigation("/user-management")}
+            >
+              <div className="nav-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <path
+                    d="M11 8C11 9.65685 9.65685 11 8 11C6.34315 11 5 9.65685 5 8C5 6.34315 6.34315 5 8 5C9.65685 5 11 6.34315 11 8Z"
+                    fill="#6B7280"
+                  />
+                  <path
+                    d="M3 8C3 9.65685 1.65685 11 0 11C-1.65685 11 -3 9.65685 -3 8C-3 6.34315 -1.65685 5 0 5C1.65685 5 3 6.34315 3 8Z"
+                    fill="#6B7280"
+                  />
+                  <path
+                    d="M19 8C19 9.65685 17.6569 11 16 11C14.3431 11 13 9.65685 13 8C13 6.34315 14.3431 5 16 5C17.6569 5 19 6.34315 19 8Z"
+                    fill="#6B7280"
+                  />
+                  <path
+                    d="M2 13C2 12.4477 2.44772 12 3 12H13C13.5523 12 14 12.4477 14 13V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V13Z"
+                    fill="#6B7280"
+                  />
+                </svg>
+              </div>
+              <span>{t('sidebar.userManagement') || 'User Management'}</span>
+            </div>
+          </div>
+        )}
+ */}
         {/* Account Section */}
         <div className="nav-section">
           <div className="nav-label">{t('sidebar.account')}</div>

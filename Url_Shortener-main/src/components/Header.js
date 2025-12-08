@@ -8,6 +8,26 @@ const Header = ({ isLanding = false, onGetStarted }) => {
   const { currentLanguage, toggleLanguage } = useLanguage();
 
   const scrollToSection = (sectionId) => {
+    // Check if we're on the landing page
+    const isOnLandingPage = window.location.pathname === '/';
+    const isOnPrivacyPage = window.location.pathname === '/privacy-policy';
+    const isOnTermsPage = window.location.pathname === '/terms-and-conditions';
+
+    // If we're on a different page, navigate to landing page with hash
+    if (!isOnLandingPage && !isOnPrivacyPage && !isOnTermsPage) {
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+
+    // If we're on privacy or terms page and clicking features/about/pricing/contact
+    // navigate to landing page
+    if ((isOnPrivacyPage || isOnTermsPage) && 
+        ['features', 'about', 'pricing', 'contact'].includes(sectionId)) {
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+
+    // Otherwise, scroll to the section on current page
     const element = document.getElementById(sectionId);
     if (element) {
       const headerOffset = 80; // Account for fixed header
