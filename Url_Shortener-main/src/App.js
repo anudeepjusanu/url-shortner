@@ -21,6 +21,8 @@ import ContentFilter from './components/ContentFilter';
 import Subscription from './components/SubscriptionPage';
 import Profile from './components/Profile';
 import BillingManagement from './components/BillingManagement';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsAndConditions from './components/TermsAndConditions';
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
@@ -37,6 +39,10 @@ function App() {
               <Routes>
             {/* Landing page route */}
             <Route path="/" element={<LandingPage />} />
+
+            {/* Public pages */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
             {/* Authentication routes */}
             <Route path="/register" element={<Registration />} />

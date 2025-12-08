@@ -1046,5 +1046,218 @@
     "freePlan": "Free Plan",
     "billing": "Billing & Payments",
     "upgradeNow": "Upgrade Now"
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last Updated: January 13, 2025",
+    "preamble": {
+      "title": "Preamble",
+      "content": "This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: \"we,\" \"the Company,\" \"the Service,\" or \"this Contract\" refer to Snip Company. \"The Second Party\" refers to the person who requested the service."
+    },
+    "introduction": {
+      "title": "Introduction",
+      "content": "These terms and conditions apply to all our technical services and applications provided through our website. By accessing the website or using any of our services or applications, you agree to comply with these terms and conditions. If you do not agree to these terms, you must stop using the website and services."
+    },
+    "definitions": {
+      "title": "1. Definitions and Terms",
+      "services": "Services: Refers to all technical solutions and applications provided by the Company to government and private entities, including consulting or other technical services.",
+      "client": "Client: Means any government or private entity or individual who uses the services provided by us.",
+      "applications": "Applications: Means any software or technical systems provided by the Company, which can be used online or downloaded from the website.",
+      "website": "Website: The electronic platform through which the Company provides its services and products.",
+      "document": "Document: Refers to the general terms and conditions of use."
+    },
+    "acceptance": {
+      "title": "2. Acceptance of Terms",
+      "content": "By accessing the website and using our services, you agree to the terms and conditions stated in this document and to comply with all regulations and laws. If you do not agree to any of the terms, you must stop using the website and services."
+    },
+    "access": {
+      "title": "3. Access to Services",
+      "content": "To obtain our services, you may need to register through the website and provide accurate and complete information. The Client is responsible for the accuracy of this information and updating it periodically."
+    },
+    "usage": {
+      "title": "4. Use of Services",
+      "item1": "Our services are provided for personal or institutional use only.",
+      "item2": "The Client must use the services within a legal framework and in accordance with authorized uses.",
+      "item3": "It is prohibited to use the services for any illegal purpose or any activity that may lead to violation of others' rights or harm to the website or the Company.",
+      "item4": "It is prohibited to resell, distribute, or exploit the services for any unauthorized purpose without prior written consent from the Company."
+    },
+    "commencement": {
+      "title": "5. Commencement of Service Contract",
+      "content": "The service contract begins from the date of service activation for the Client."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellectual Property Rights",
+      "item1": "The website contains materials protected by intellectual property rights, including texts, software, images, graphics, names, logos, colors, applications, software, and audio files (\"Content\"). They are protected under copyright, trademark rights, and applicable laws in the Kingdom of Saudi Arabia.",
+      "item2": "All intellectual property rights related to applications, software, and designs are the exclusive property of Snip Company or authorized service providers.",
+      "item3": "The Client may not copy, distribute, or modify any of these materials without prior written permission from the Company."
+    },
+    "pricing": {
+      "title": "7. Pricing and Payment",
+      "pricingDesc": "Pricing: Prices are determined based on contracts and agreements concluded between us and the Client. Prices are not publicly displayed on the website.",
+      "paymentDesc": "Payment: The Client must pay the agreed amounts in accordance with the contract or prior written agreement."
+    },
+    "obligations": {
+      "title": "8. Obligations and Responsibilities",
+      "ourObligations": "Our Obligations:",
+      "ourObligationsDesc": "We are committed to providing technical services in accordance with the standards and contracts agreed upon with the Client, implementing requirements accurately and professionally.",
+      "clientResponsibility": "Client Responsibility:",
+      "item1": "Maintaining account and password confidentiality and not sharing them with third parties.",
+      "item2": "Financial and legal obligations resulting from service use.",
+      "item3": "Accuracy of provided data and commitment to updating it when necessary.",
+      "item4": "Providing government licenses if the service requires it, and renewing them on time to ensure continued service delivery.",
+      "item5": "The Client agrees that failure to renew licenses may lead to service interruption."
+    },
+    "dataProtection": {
+      "title": "9. Privacy and Data Protection",
+      "item1": "We are committed to protecting all personal data we collect from the Client in accordance with the Privacy Policy.",
+      "item2": "Data is collected and used in accordance with local and international laws.",
+      "item3": "Data is used to improve services, communicate with clients, and analyze usage.",
+      "item4": "We apply appropriate security measures to protect data from unauthorized access.",
+      "item5": "We will not sell or rent Client data, nor will we share it except with their explicit consent or as required by law."
+    },
+    "modifications": {
+      "title": "10. Modifications to Services and Terms",
+      "item1": "We reserve the right to modify or update the terms or add or remove services at any time.",
+      "item2": "Clients will be notified of any material changes."
+    },
+    "support": {
+      "title": "11. Support and Maintenance",
+      "item1": "We provide technical support through official support channels.",
+      "item2": "Some services may require periodic maintenance, and the Company has the right to perform it at any time."
+    },
+    "limitations": {
+      "title": "12. Limitations and Compensation",
+      "item1": "We are not responsible for any direct or indirect damages resulting from the use of the website or services.",
+      "item2": "The Client agrees to compensate the Company for any losses or claims arising from their illegal use of the services."
+    },
+    "termination": {
+      "title": "13. Termination and Cancellation",
+      "item1": "The Client may terminate the service in accordance with the terms specified in the contract.",
+      "item2": "The Company reserves the right to terminate the service upon violation of any terms."
+    },
+    "forceMajeure": {
+      "title": "14. Force Majeure",
+      "content": "We are not responsible for any delay or disruption resulting from circumstances beyond the Company's control such as natural disasters, government decisions, cyber attacks, and others."
+    },
+    "laws": {
+      "title": "15. Applicable Laws and Dispute Resolution",
+      "item1": "These terms are subject to the laws of the Kingdom of Saudi Arabia.",
+      "item2": "Disputes are resolved through the competent court in Riyadh.",
+      "item3": "If any clause is found to be unenforceable, the other clauses remain in effect."
+    },
+    "delivery": {
+      "title": "16. Delivery and Shipping",
+      "item1": "In case of physical products or licenses, they are delivered according to the agreement with the Client.",
+      "item2": "Licenses may be provided via email or through the Client's account."
+    },
+    "communication": {
+      "title": "17. Client Communication",
+      "intro": "You can contact us via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: 01151083470"
+    },
+    "externalLinks": {
+      "title": "18. External Links",
+      "content": "The website may contain links to external websites, which are beyond our control, and we are not responsible for their content."
+    },
+    "refund": {
+      "title": "19. Cancellation and Refund Policy",
+      "item1": "The Client has the right to request a refund within (20 days) before using or activating the service.",
+      "item2": "The refund request must be submitted in writing with supporting documents.",
+      "item3": "Refunds are processed within (14 days) of approval.",
+      "item4": "The Company has the right to impose administrative fees.",
+      "item5": "No refunds are made after using or activating the service."
+    },
+    "notices": {
+      "title": "20. Notices and Communications",
+      "item1": "By registering and using the website, the Client agrees to receive notifications via email or website notifications.",
+      "item2": "The Client is responsible for updating their data to ensure receipt of notifications."
+    },
+    "specialTerms": {
+      "title": "Special Terms",
+      "content": "The Client is obligated to provide accurate information for communication, technical support, and assistance in providing the service."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: January 13, 2025",
+    "intro": {
+      "title": "Clause 1: Introduction",
+      "content": "Snip respects your privacy and is committed to providing excellent service to all our customers. This Privacy Notice has been drafted in accordance with the Personal Data Protection Law and its regulations in the Kingdom of Saudi Arabia to help you understand the nature of the data we collect from you and how this data will be handled by Snip. Out of Snip's commitment to the privacy and confidentiality of user data, we are dedicated to maintaining the security and confidentiality of this information and using it to deliver the expected level of service in compliance with the applicable terms and conditions in the Kingdom of Saudi Arabia. By using the Snip website, the user consents to this Privacy Policy."
+    },
+    "dataCollection": {
+      "title": "Clause 2: Data to Be Collected and Purpose of Collection",
+      "item1": "Data required upon registration for our services (such as name, email address, physical address, phone number, date of birth, nationality, and gender).",
+      "item2": "Data required for using our services, websites, or mobile applications (such as cookies and usage data).",
+      "item3": "Data exchanged during communication with you (such as customer support requests and feedback)."
+    },
+    "purpose": {
+      "title": "Clause 3: Purpose of Collecting Personal Data",
+      "intro": "To provide the highest level of service and products, we collect and use your personal data for the following purposes:",
+      "item1": "Enabling us to develop, improve, and/or market products and services.",
+      "item2": "Facilitating and supporting our operations and systems to ensure continuity and quality of our services.",
+      "item3": "Understanding customer needs, assessing your eligibility for products and services, and recommending relevant products and services.",
+      "item4": "Notifying you about new products and services.",
+      "item5": "Responding to and following up on inquiries, suggestions, or complaints submitted by the user."
+    },
+    "methods": {
+      "title": "Clause 4: Methods of Data Collection",
+      "item1": "Data provided directly by the user through registration on the website.",
+      "item2": "Data collected through cookies during website visits."
+    },
+    "storage": {
+      "title": "Clause 5: Storage and Destruction of Personal Data",
+      "content": "Personal data is stored within the Kingdom of Saudi Arabia on servers protected by advanced technologies in compliance with the policies and controls of the National Cybersecurity Authority and international standards to prevent unauthorized access and mitigate cybersecurity risks. When the data is no longer needed and as per the regulations, it will be destroyed securely to ensure it cannot be accessed or recovered, in accordance with Snip's policies."
+    },
+    "legalBasis": {
+      "title": "Clause 6: Legal Basis for Collecting and Processing Personal Data",
+      "content": "Personal data is collected and processed based on the consent of the data subject. The data subject may withdraw their consent to collect and process their data at any time, unless there is another legal basis. To do so, please contact Snip's support team via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "rights": {
+      "title": "Clause 7: Rights of the Data Subject",
+      "rightToKnow": {
+        "title": "Right to Information:",
+        "content": "The data subject has the right to know the methods of data collection, the legal basis for collecting and processing it, how it is processed, stored, and destroyed, and with whom it will be shared. Details are provided in this Privacy Policy or can be obtained by contacting us via the information in Clause 9."
+      },
+      "rightToAccess": {
+        "title": "Right to Access Personal Data:",
+        "content": "The data subject may request a copy of their personal data via the email provided in Clause 9. The data will be provided free of charge within 30 working days via email."
+      },
+      "rightToCorrect": {
+        "title": "Right to Correct Personal Data:",
+        "content": "The data subject has the right to request correction of inaccurate, incorrect, or incomplete personal data via the email provided in Clause 9. Requests will be reviewed and decided upon within 30 working days, and the data subject will be notified via email."
+      },
+      "rightToDelete": {
+        "title": "Right to Destroy Personal Data:",
+        "content": "The data subject may request the destruction of their personal data unless there are legal, regulatory, or contractual requirements for retention."
+      },
+      "rightToWithdraw": {
+        "title": "Right to Withdraw Consent for Processing Personal Data:",
+        "content": "The data subject may withdraw their consent for processing personal data at any time, unless there are legitimate purposes requiring otherwise."
+      },
+      "note": "Some requests (such as destruction or withdrawal of consent) may be restricted if legal or regulatory obligations require data retention."
+    },
+    "sharing": {
+      "title": "Clause 8: Sharing/Exchanging Personal Data",
+      "content": "Personal data will not be disclosed to third parties without your consent or a legal basis, as applicable under the law."
+    },
+    "exercising": {
+      "title": "Clause 9: Exercising the Rights of the Data Subject",
+      "content": "The data subject may request access, correction, or destruction of their data by contacting us via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "complaints": {
+      "title": "Clause 10: Complaints and Inquiries",
+      "content": "For any complaints or inquiries related to the Privacy Policy or the handling of personal data, please contact the website management via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "updates": {
+      "title": "Clause 11: Updates to the Privacy Policy",
+      "content": "The Privacy Policy was last updated on January 13, 2025. Snip reserves the right to add or modify any terms of the Privacy Policy. The website management will notify the data subject of any changes, and the data subject's account may be terminated if they do not accept the updated Privacy Policy after being notified."
+    }
   }
 }
