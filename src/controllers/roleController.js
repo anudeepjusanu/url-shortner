@@ -316,17 +316,9 @@ const getUsersWithRoles = async (req, res) => {
 
     const query = {};
 
-    // Admin can only see users in their organization
-    if (req.user.role === 'admin') {
-      if (!req.user.organization) {
-        return res.json({
-          success: true,
-          data: {
-            users: [],
-            pagination: { page: 1, limit: 20, total: 0, pages: 0 }
-          }
-        });
-      }
+    // Admin can only see users in their organization (if organization feature is enabled)
+    // Super admin can see all users
+    if (req.user.role === 'admin' && req.user.organization) {
       query.organization = req.user.organization;
     }
 
@@ -346,13 +338,15 @@ const getUsersWithRoles = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const users = await User.find(query)
-      .select('email firstName lastName role isActive createdAt lastLogin organization')
+      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .populate('organization', 'name slug');
 
     const total = await User.countDocuments(query);
+
+    console.log(`Found ${total} users matching query:`, query);
 
     res.json({
       success: true,

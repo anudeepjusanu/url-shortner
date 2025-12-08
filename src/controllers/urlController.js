@@ -7,6 +7,13 @@ const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
 
+// Helper function to normalize short codes (preserve case for international characters)
+const normalizeShortCode = (code) => {
+  if (!code) return code;
+  // Trim whitespace and preserve case for international characters
+  return code.trim();
+};
+
 const createUrl = async (req, res) => {
   try {
     const {
@@ -92,11 +99,11 @@ const createUrl = async (req, res) => {
       }
     }
     
-    let shortCode = customCode;
+    let shortCode = customCode ? normalizeShortCode(customCode) : null;
     
-    if (customCode) {
+    if (shortCode) {
       const existingUrl = await Url.findOne({
-        $or: [{ shortCode: customCode }, { customCode: customCode }]
+        $or: [{ shortCode: shortCode }, { customCode: shortCode }]
       });
       
       if (existingUrl) {
@@ -336,8 +343,9 @@ const updateUrl = async (req, res) => {
     
     // Check if custom code is being updated and if it's already taken
     if (customCode !== undefined && customCode !== url.customCode) {
+      const normalizedCode = normalizeShortCode(customCode);
       const existingUrl = await Url.findOne({
-        customCode: customCode.toLowerCase().trim(),
+        customCode: normalizedCode,
         _id: { $ne: id }
       });
 
@@ -359,7 +367,7 @@ const updateUrl = async (req, res) => {
     if (utm !== undefined) updateData.utm = utm;
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
-    if (customCode !== undefined) updateData.customCode = customCode.toLowerCase().trim();
+    if (customCode !== undefined) updateData.customCode = normalizeShortCode(customCode);
     
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')

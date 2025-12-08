@@ -378,5 +378,41 @@ export const qrCodeAPI = {
   updateCustomization: (urlId, options) => apiClient.put(`/qr-codes/customize/${urlId}`, options)
 };
 
+// Roles and User Management API methods
+export const rolesAPI = {
+  // Get current user's permissions
+  getMyPermissions: () => apiClient.get('/roles/my-permissions'),
+
+  // Get all available roles
+  getAllRoles: () => apiClient.get('/roles'),
+
+  // Get all users with their roles (admin/super_admin only)
+  getUsersWithRoles: (params) => apiClient.get('/roles/users', params),
+
+  // Update user role (admin/super_admin only)
+  updateUserRole: (userId, role) => apiClient.put(`/roles/users/${userId}/role`, { role }),
+
+  // Update user permissions (admin/super_admin only)
+  updateUserPermissions: (userId, permissions) => apiClient.put(`/roles/users/${userId}/permissions`, { permissions })
+};
+
+// User Management API methods (for super_admin and admin)
+export const userManagementAPI = {
+  // Get all users with filters
+  getAllUsers: (params) => apiClient.get('/users', params),
+
+  // Get single user details
+  getUser: (userId) => apiClient.get(`/users/${userId}`),
+
+  // Update user status (activate/deactivate)
+  updateUserStatus: (userId, data) => apiClient.put(`/users/${userId}/status`, data),
+
+  // Delete user
+  deleteUser: (userId) => apiClient.delete(`/users/${userId}`),
+
+  // Get user statistics
+  getUserStats: () => apiClient.get('/users/stats')
+};
+
 // Export the API client instance
 export default apiClient;

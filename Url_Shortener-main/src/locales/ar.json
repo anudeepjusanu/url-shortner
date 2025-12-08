@@ -1040,6 +1040,8 @@
     "settings": "الإعدادات",
     "customDomains": "النطاقات المخصصة",
     "contentFilter": "تصفية المحتوى",
+    "admin": "الإدارة",
+    "userManagement": "إدارة المستخدمين",
     "account": "الحساب",
     "profile": "الملف الشخصي",
     "upgradePlan": "ترقية الخطة",

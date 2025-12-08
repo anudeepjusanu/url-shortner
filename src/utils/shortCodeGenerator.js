@@ -157,10 +157,10 @@ class ShortCodeGenerator {
       };
     }
     
-    if (!/^[a-zA-Z0-9_-]+$/.test(code)) {
+    if (!/^[\p{L}\p{N}_-]+$/u.test(code)) {
       return { 
         valid: false, 
-        reason: 'Code can only contain letters, numbers, hyphens, and underscores' 
+        reason: 'Code can only contain letters (any language), numbers, hyphens, and underscores' 
       };
     }
     

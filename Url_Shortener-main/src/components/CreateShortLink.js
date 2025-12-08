@@ -70,8 +70,8 @@ const validateCustomCode = (code, t) => {
     };
   }
 
-  // Check format: only alphanumeric, hyphens, and underscores
-  if (!/^[a-zA-Z0-9_-]+$/.test(trimmedCode)) {
+  // Check format: Unicode letters, numbers, hyphens, and underscores (supports Arabic, Chinese, etc.)
+  if (!/^[\p{L}\p{N}_-]+$/u.test(trimmedCode)) {
     return {
       valid: false,
       error: t('createLink.errors.aliasInvalidFormat')

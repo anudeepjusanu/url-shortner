@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePermissions } from '../contexts/PermissionContext';
-import { rolesAPI } from '../services/api';
+import { rolesAPI, userManagementAPI } from '../services/api';
 import './UserManagement.css';
 
 function UserManagement() {
@@ -10,30 +10,57 @@ function UserManagement() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [stats, setStats] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserDetails, setShowUserDetails] = useState(false);
 
   useEffect(() => {
     if (hasRole(['admin', 'super_admin'])) {
       loadUsers();
+      loadStats();
     } else {
       setLoading(false);
     }
   }, [hasRole]);
+
+  useEffect(() => {
+    if (hasRole(['admin', 'super_admin'])) {
+      const delayDebounceFn = setTimeout(() => {
+        loadUsers();
+      }, 500);
+
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [searchTerm, filter]);
 
   const loadUsers = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await rolesAPI.getUsersWithRoles({
+      const params = {
         limit: 100
-      });
+      };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      if (filter !== 'all') {
+        params.role = filter;
+      }
+
+      console.log('Loading users with params:', params);
+      const response = await rolesAPI.getUsersWithRoles(params);
+      console.log('Users response:', response);
 
       if (response.success) {
         setUsers(response.data.users);
+        console.log('Loaded users:', response.data.users.length);
       }
     } catch (err) {
       console.error('Error loading users:', err);
-      // Provide more specific error messages based on error type
       let errorMessage = 'Failed to load users. Please try again.';
       if (err.message?.includes('network') || err.message?.includes('Network')) {
         errorMessage = 'Network error. Please check your connection and try again.';
@@ -48,8 +75,22 @@ function UserManagement() {
     }
   };
 
+  const loadStats = async () => {
+    try {
+      console.log('Loading user stats...');
+      const response = await userManagementAPI.getUserStats();
+      console.log('Stats response:', response);
+      if (response.success) {
+        setStats(response.data);
+        console.log('Loaded stats:', response.data);
+      }
+    } catch (err) {
+      console.error('Error loading stats:', err);
+      // Don't show error for stats, just log it
+    }
+  };
+
   const handleRoleChange = async (userId, newRole, userEmail) => {
-    // Confirmation dialog
     const confirmed = window.confirm(
       `Are you sure you want to change the role of ${userEmail} to ${newRole.toUpperCase()}?`
     );
@@ -66,14 +107,13 @@ function UserManagement() {
 
       if (response.success) {
         setSuccess(`Successfully updated role for ${userEmail} to ${newRole}`);
-        loadUsers(); // Refresh the list
+        loadUsers();
+        loadStats();
 
-        // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
       }
     } catch (err) {
       console.error('Error updating role:', err);
-      // Provide more specific error messages based on error type
       let errorMessage = `Failed to update role for ${userEmail}. Please try again.`;
       if (err.message?.includes('permission') || err.message?.includes('Permission')) {
         errorMessage = `You do not have permission to change the role of ${userEmail}.`;
@@ -88,11 +128,81 @@ function UserManagement() {
     }
   };
 
-  // Filter users based on selected filter
-  const filteredUsers = users.filter(user => {
-    if (filter === 'all') return true;
-    return user.role === filter;
-  });
+  const handleStatusToggle = async (userId, currentStatus, userEmail) => {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} ${userEmail}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError(null);
+      setSuccess(null);
+
+      const response = await userManagementAPI.updateUserStatus(userId, {
+        isActive: !currentStatus
+      });
+
+      if (response.success) {
+        setSuccess(`Successfully ${action}d ${userEmail}`);
+        loadUsers();
+        loadStats();
+
+        setTimeout(() => setSuccess(null), 3000);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      setError(err.message || `Failed to ${action} user`);
+    }
+  };
+
+  const handleViewDetails = async (userId) => {
+    try {
+      setError(null);
+      const response = await userManagementAPI.getUser(userId);
+      if (response.success) {
+        setSelectedUser(response.data);
+        setShowUserDetails(true);
+      }
+    } catch (err) {
+      console.error('Error loading user details:', err);
+      setError(err.message || 'Failed to load user details');
+    }
+  };
+
+  const handleDeleteUser = async (userId, userEmail) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to DELETE ${userEmail}? This action cannot be undone and will delete all their URLs and data.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError(null);
+      setSuccess(null);
+
+      const response = await userManagementAPI.deleteUser(userId);
+
+      if (response.success) {
+        setSuccess(`Successfully deleted ${userEmail}`);
+        loadUsers();
+        loadStats();
+
+        setTimeout(() => setSuccess(null), 3000);
+      }
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.message || 'Failed to delete user');
+    }
+  };
+
+  // Users are already filtered by the API
+  const filteredUsers = users;
 
   const getRoleColor = (role) => {
     const colors = {
@@ -139,6 +249,40 @@ function UserManagement() {
         <p className="subtitle">Manage user roles and permissions</p>
       </div>
 
+      {/* Statistics Cards */}
+      {stats && (
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon">👥</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.totalUsers}</div>
+              <div className="stat-label">Total Users</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">✅</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.activeUsers}</div>
+              <div className="stat-label">Active Users</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">❌</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.inactiveUsers}</div>
+              <div className="stat-label">Inactive Users</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">📈</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.recentSignups}</div>
+              <div className="stat-label">New (30 days)</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Alerts */}
       {error && (
         <div className="alert alert-error">
@@ -155,6 +299,17 @@ function UserManagement() {
           <button className="alert-close" onClick={() => setSuccess(null)}>×</button>
         </div>
       )}
+
+      {/* Search Bar */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+      </div>
 
       {/* Role Filter */}
       <div className="user-filters">
@@ -253,10 +408,7 @@ function UserManagement() {
                       value={user.role}
                       onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
                       disabled={
-                        // Disable if:
-                        // 1. User is super_admin and current user is not super_admin
                         (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
-                        // 2. Target is admin and current user is not super_admin
                         (user.role === 'admin' && permissions?.role !== 'super_admin')
                       }
                     >
@@ -269,12 +421,137 @@ function UserManagement() {
                       )}
                     </select>
                   </div>
+
+                  <div className="user-action-buttons">
+                    <button
+                      className="btn-action btn-view"
+                      onClick={() => handleViewDetails(user._id)}
+                      title="View Details"
+                    >
+                      👁️ View
+                    </button>
+                    <button
+                      className={`btn-action ${user.isActive ? 'btn-deactivate' : 'btn-activate'}`}
+                      onClick={() => handleStatusToggle(user._id, user.isActive, user.email)}
+                      title={user.isActive ? 'Deactivate User' : 'Activate User'}
+                      disabled={
+                        (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
+                        (user.role === 'admin' && permissions?.role !== 'super_admin')
+                      }
+                    >
+                      {user.isActive ? '🚫 Deactivate' : '✅ Activate'}
+                    </button>
+                    {permissions?.role === 'super_admin' && (
+                      <button
+                        className="btn-action btn-delete"
+                        onClick={() => handleDeleteUser(user._id, user.email)}
+                        title="Delete User"
+                        disabled={user.role === 'super_admin'}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* User Details Modal */}
+      {showUserDetails && selectedUser && (
+        <div className="modal-overlay" onClick={() => setShowUserDetails(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>User Details</h3>
+              <button className="modal-close" onClick={() => setShowUserDetails(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-section">
+                <h4>Personal Information</h4>
+                <div className="detail-row">
+                  <span className="detail-label">Name:</span>
+                  <span className="detail-value">{selectedUser.user.firstName} {selectedUser.user.lastName}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Email:</span>
+                  <span className="detail-value">{selectedUser.user.email}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Phone:</span>
+                  <span className="detail-value">{selectedUser.user.phone || 'N/A'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Role:</span>
+                  <span className="detail-value">
+                    <span
+                      className="user-role-badge"
+                      style={{ backgroundColor: getRoleColor(selectedUser.user.role) }}
+                    >
+                      {getRoleDisplay(selectedUser.user.role)}
+                    </span>
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Plan:</span>
+                  <span className="detail-value">{selectedUser.user.plan?.toUpperCase() || 'FREE'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Status:</span>
+                  <span className="detail-value">
+                    <span className={`status-indicator ${selectedUser.user.isActive ? 'active' : 'inactive'}`}>
+                      {selectedUser.user.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h4>Account Statistics</h4>
+                <div className="detail-row">
+                  <span className="detail-label">URLs Created:</span>
+                  <span className="detail-value">{selectedUser.stats?.urlCount || 0}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Custom Domains:</span>
+                  <span className="detail-value">{selectedUser.stats?.domainCount || 0}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Total Clicks:</span>
+                  <span className="detail-value">{selectedUser.stats?.totalClicks || 0}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Joined:</span>
+                  <span className="detail-value">{new Date(selectedUser.user.createdAt).toLocaleString()}</span>
+                </div>
+                {selectedUser.user.lastLogin && (
+                  <div className="detail-row">
+                    <span className="detail-label">Last Login:</span>
+                    <span className="detail-value">{new Date(selectedUser.user.lastLogin).toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+
+              {selectedUser.user.subscription && (
+                <div className="detail-section">
+                  <h4>Subscription</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">{selectedUser.user.subscription.status?.toUpperCase() || 'INACTIVE'}</span>
+                  </div>
+                  {selectedUser.user.subscription.currentPeriodEnd && (
+                    <div className="detail-row">
+                      <span className="detail-label">Period End:</span>
+                      <span className="detail-value">{new Date(selectedUser.user.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

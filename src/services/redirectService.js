@@ -473,7 +473,16 @@ class RedirectService {
         throw new Error('URL not found');
       }
 
-      const shortUrl = `${config.BASE_URL}/${shortCode}`;
+      // Properly encode the short code for international characters (Arabic, Chinese, etc.)
+      const encodedShortCode = encodeURIComponent(shortCode);
+      const shortUrl = `${config.BASE_URL}/${encodedShortCode}`;
+
+      console.log('🔗 Generating QR Code:', {
+        shortCode,
+        encodedShortCode,
+        shortUrl,
+        hasInternationalChars: /[^\x00-\x7F]/.test(shortCode)
+      });
 
       // Build QR code URL with customization parameters
       const qrParams = new URLSearchParams({
