@@ -19,7 +19,7 @@ const AnalyticsHeader = () => {
   </defs>
 </svg>
             </div>
-            <span className="brand-text">LinkSA</span>
+            <span className="brand-text">Snip</span>
           </div>
         </div>
         <div className="header-right">

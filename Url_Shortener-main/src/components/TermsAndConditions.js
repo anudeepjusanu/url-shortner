@@ -233,7 +233,7 @@ const TermsAndConditions = () => {
           <div className="footer-content">
             <div className="footer-section">
               <div className="brand-logo">
-                <span className="brand-name">LinkSA</span>
+                <span className="brand-name">Snip</span>
               </div>
               <p className="footer-description">{t('footer.description')}</p>
             </div>
@@ -295,7 +295,7 @@ const TermsAndConditions = () => {
                       </defs>
                     </svg>
                   </div> */}
-                  <span className="brand-name">LinkSA</span>
+                  <span className="brand-name">Snip</span>
                 </div>
                 <p className="footer-description">
                   {t('footer.description')}
@@ -336,9 +336,9 @@ const TermsAndConditions = () => {
                 <li>
                   <a href="#">{t('footer.features')}</a>
                 </li>
-                <li>
+                {/* <li>
                   <a href="#">{t('footer.pricing')}</a>
-                </li>
+                </li> */}
                 <li>
                   <a href="#">{t('footer.api')}</a>
                 </li>

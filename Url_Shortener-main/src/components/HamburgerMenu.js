@@ -111,7 +111,7 @@ const HamburgerMenu = ({ sidebarItems, headerItems }) => {
                 </defs>
               </svg>
             </div>
-            <span className="mobile-logo-text">LinkSA</span>
+            <span className="mobile-logo-text">Snip</span>
           </div>
           <button
             className="mobile-menu-close"

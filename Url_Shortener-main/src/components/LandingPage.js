@@ -66,7 +66,7 @@ const LandingPage = () => {
                 >
                   {t('landing.hero.cta')}
                 </button>
-                <button className="btn-secondary">{t('landing.hero.tryDemo')}</button>
+                {/* <button className="btn-secondary">{t('landing.hero.tryDemo')}</button> */}
               </div>
             </div>
 
@@ -494,7 +494,7 @@ const LandingPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="pricing-section">
+      {/* <section id="pricing" className="pricing-section">
         <div className="container">
           <div className="section-header">
             <h2>{t('landing.pricing.title')}</h2>
@@ -568,10 +568,10 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials Section */}
-      <section className="testimonials-section">
+      {/* <section className="testimonials-section">
         <div className="container">
           <div className="section-header">
             <h2>{t('landing.testimonials.title')}</h2>
@@ -652,7 +652,7 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
       <footer id="contact" className="footer">
@@ -682,7 +682,7 @@ const LandingPage = () => {
                       </defs>
                     </svg>
                   </div> */}
-                  <span className="brand-name">LinkSA</span>
+                  <span className="brand-name">Snip</span>
                 </div>
                 <p className="footer-description">
                   {t('footer.description')}
@@ -723,9 +723,9 @@ const LandingPage = () => {
                 <li>
                   <a href="#">{t('footer.features')}</a>
                 </li>
-                <li>
+                {/* <li>
                   <a href="#">{t('footer.pricing')}</a>
-                </li>
+                </li> */}
                 <li>
                   <a href="#">{t('footer.api')}</a>
                 </li>
