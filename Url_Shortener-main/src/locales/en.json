@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "URL Shortener",
-    "brandName": "LinkSA",
+    "brandName": "Snip",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -128,7 +128,7 @@
       }
     },
     "whyChoose": {
-      "title": "Why Businesses Choose LinkSA",
+      "title": "Why Businesses Choose Snip",
       "subtitle": "The smart choice for Saudi marketers and businesses"
     },
     "benefits": {
@@ -171,9 +171,9 @@
     },
     "testimonials": {
       "title": "Trusted by Saudi Businesses",
-      "subtitle": "See what our customers say about LinkSA",
+      "subtitle": "See what our customers say about Snip",
       "testimonial1": {
-        "text": "LinkSA's PDPL compliance gives us peace of mind. The analytics are incredibly detailed and help us optimize our campaigns.",
+        "text": "Snip's PDPL compliance gives us peace of mind. The analytics are incredibly detailed and help us optimize our campaigns.",
         "author": "Sarah Al-Rashid",
         "role": "Marketing Director, TechCorp KSA"
       },
@@ -183,7 +183,7 @@
         "role": "Digital Marketing Manager"
       },
       "testimonial3": {
-        "text": "LinkSA has revolutionized how we track our social media campaigns. The QR codes are a game-changer!",
+        "text": "Snip has revolutionized how we track our social media campaigns. The QR codes are a game-changer!",
         "author": "Fatima Al-Zahra",
         "role": "E-commerce Director"
       },

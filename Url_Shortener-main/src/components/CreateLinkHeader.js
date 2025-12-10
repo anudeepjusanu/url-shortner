@@ -28,7 +28,7 @@ const CreateLinkHeader = () => {
                 </defs>
               </svg>
             </div>
-            <span className="create-link-logo-text">LinkSA</span>
+            <span className="create-link-logo-text">Snip</span>
           </div>
         </div>
         <div className="create-link-header-right">

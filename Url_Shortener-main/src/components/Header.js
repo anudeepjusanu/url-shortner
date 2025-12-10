@@ -46,7 +46,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
         label: t('header.navigation'),
         items: [
           { label: t('header.features'), path: 'features', icon: null },
-          { label: t('header.pricing'), path: 'pricing', icon: null },
+          // { label: t('header.pricing'), path: 'pricing', icon: null },
           { label: t('header.about'), path: 'about', icon: null },
           { label: t('header.contact'), path: 'contact', icon: null }
         ]
@@ -102,14 +102,14 @@ const Header = ({ isLanding = false, onGetStarted }) => {
                   </defs>
                 </svg>
               </div>
-              <span className="logo-text landing">LinkSA</span>
+              <span className="logo-text landing">Snip</span>
             </div>
           </div>
           <div className="header-center">
             <nav className="landing-nav">
               <button onClick={() => scrollToSection('features')} className="nav-link">{t('header.features')}</button>
               <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
-              <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button>
+              {/* <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button> */}
               <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
             </nav>
           </div>
@@ -162,7 +162,7 @@ const Header = ({ isLanding = false, onGetStarted }) => {
               <path d="M8.75 7L1.75 1L15.75 1L8.75 7Z" fill="white" />
             </svg>
           </div>
-          <span className="logo-text">LinkSA</span>
+          <span className="logo-text">Snip</span>
         </div>
         
         <div className="header-actions">
