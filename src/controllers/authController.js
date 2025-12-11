@@ -427,8 +427,19 @@ const getProfile = async (req, res) => {
       });
     }
     
+    // Return user data directly for frontend compatibility
     res.json({
       success: true,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone || '',
+      company: user.organization?.name || '',
+      jobTitle: user.role || '',
+      role: user.role,
+      plan: user.plan || 'free',
+      isEmailVerified: user.isEmailVerified,
+      createdAt: user.createdAt,
       data: { user }
     });
   } catch (error) {
@@ -442,7 +453,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, preferences } = req.body;
+    const { firstName, lastName, phone, company, jobTitle, preferences } = req.body;
     
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -454,6 +465,7 @@ const updateProfile = async (req, res) => {
     
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
     if (preferences) {
       user.preferences = { ...user.preferences, ...preferences };
     }
@@ -462,9 +474,16 @@ const updateProfile = async (req, res) => {
     
     await cacheDel(`user:${user._id}`);
     
+    // Return updated user data directly for frontend compatibility
     res.json({
       success: true,
       message: 'Profile updated successfully',
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone || '',
+      company: company || '',
+      jobTitle: jobTitle || user.role,
       data: { user }
     });
   } catch (error) {
@@ -581,6 +600,179 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// Get user's API key
+const getApiKey = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Find active API key or return empty
+    const activeKey = user.apiKeys?.find(k => k.isActive);
+    
+    res.json({
+      success: true,
+      apiKey: activeKey ? activeKey.key : null
+    });
+  } catch (error) {
+    console.error('Get API key error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch API key'
+    });
+  }
+};
+
+// Regenerate API key
+const regenerateApiKey = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Generate new API key
+    const newApiKey = crypto.randomBytes(32).toString('hex');
+    
+    // Deactivate all existing keys
+    if (user.apiKeys && user.apiKeys.length > 0) {
+      user.apiKeys.forEach(key => {
+        key.isActive = false;
+      });
+    }
+    
+    // Add new key
+    if (!user.apiKeys) {
+      user.apiKeys = [];
+    }
+    
+    user.apiKeys.push({
+      name: 'Default API Key',
+      key: newApiKey,
+      isActive: true,
+      createdAt: new Date()
+    });
+    
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'API key regenerated successfully',
+      apiKey: newApiKey
+    });
+  } catch (error) {
+    console.error('Regenerate API key error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to regenerate API key'
+    });
+  }
+};
+
+// Get user preferences
+const getPreferences = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Return preferences with defaults
+    res.json({
+      success: true,
+      emailNotifications: user.preferences?.emailNotifications?.usageAlerts !== false,
+      marketingEmails: user.preferences?.emailNotifications?.newsletter || false,
+      weeklyReports: user.preferences?.emailNotifications?.paymentReminders !== false,
+      language: user.preferences?.language || 'en',
+      timezone: user.preferences?.timezone || 'Asia/Riyadh',
+      theme: user.preferences?.theme || 'light'
+    });
+  } catch (error) {
+    console.error('Get preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch preferences'
+    });
+  }
+};
+
+// Update user preferences
+const updatePreferences = async (req, res) => {
+  try {
+    const { emailNotifications, marketingEmails, weeklyReports, language, timezone, theme } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Initialize preferences if not exists
+    if (!user.preferences) {
+      user.preferences = {};
+    }
+    
+    if (!user.preferences.emailNotifications) {
+      user.preferences.emailNotifications = {};
+    }
+    
+    // Update preferences
+    if (emailNotifications !== undefined) {
+      user.preferences.emailNotifications.usageAlerts = emailNotifications;
+    }
+    if (marketingEmails !== undefined) {
+      user.preferences.emailNotifications.newsletter = marketingEmails;
+    }
+    if (weeklyReports !== undefined) {
+      user.preferences.emailNotifications.paymentReminders = weeklyReports;
+    }
+    if (language !== undefined) {
+      user.preferences.language = language;
+    }
+    if (timezone !== undefined) {
+      user.preferences.timezone = timezone;
+    }
+    if (theme !== undefined) {
+      user.preferences.theme = theme;
+    }
+    
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      emailNotifications: user.preferences.emailNotifications?.usageAlerts !== false,
+      marketingEmails: user.preferences.emailNotifications?.newsletter || false,
+      weeklyReports: user.preferences.emailNotifications?.paymentReminders !== false,
+      language: user.preferences.language || 'en',
+      timezone: user.preferences.timezone || 'Asia/Riyadh',
+      theme: user.preferences.theme || 'light'
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update preferences'
+    });
+  }
+};
+
 module.exports = {
   sendRegistrationOTP,
   register,
@@ -591,5 +783,9 @@ module.exports = {
   updateProfile,
   changePassword,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getApiKey,
+  regenerateApiKey,
+  getPreferences,
+  updatePreferences
 };

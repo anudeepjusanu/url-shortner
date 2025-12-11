@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../contexts/LanguageContext';
 import { usePermissions } from '../contexts/PermissionContext';
 import { rolesAPI, userManagementAPI } from '../services/api';
+import Sidebar from './Sidebar';
+import MainHeader from './MainHeader';
 import './UserManagement.css';
+import './DashboardLayout.css';
 
 function UserManagement() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const { permissions, hasRole } = usePermissions();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -216,14 +223,14 @@ function UserManagement() {
   };
 
   const getRoleDisplay = (role) => {
-    const displays = {
-      super_admin: 'Super Admin',
-      admin: 'Admin',
-      editor: 'Editor',
-      viewer: 'Viewer',
-      user: 'User'
+    const roleKeys = {
+      super_admin: 'superAdmin',
+      admin: 'admin',
+      editor: 'editor',
+      viewer: 'viewer',
+      user: 'user'
     };
-    return displays[role] || role;
+    return t(`userManagement.roles.${roleKeys[role] || role}`);
   };
 
   // Only admins and super_admins can access this
@@ -233,325 +240,861 @@ function UserManagement() {
 
   if (loading) {
     return (
-      <div className="user-management">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading users...</p>
+      <div className="analytics-container">
+        <MainHeader />
+        <div className="analytics-layout">
+          <Sidebar />
+          <div className="analytics-main">
+            <div className="analytics-content">
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>{t('userManagement.loading')}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="user-management">
-      <div className="user-management-header">
-        <h2>User Management</h2>
-        <p className="subtitle">Manage user roles and permissions</p>
-      </div>
-
-      {/* Statistics Cards */}
-      {stats && (
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <div className="stat-value">{stats.totalUsers}</div>
-              <div className="stat-label">Total Users</div>
+    <div className="analytics-container">
+      <MainHeader />
+      <div className="analytics-layout">
+        <Sidebar />
+        <div className="analytics-main">
+          <div className="analytics-content">
+            {/* Page Header */}
+            <div className="page-header" style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '24px',
+              direction: isRTL ? 'rtl' : 'ltr'
+            }}>
+              <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: '#111827',
+                  marginBottom: '4px',
+                  margin: '0 0 4px 0'
+                }}>{t('userManagement.title')}</h1>
+                <p style={{
+                  color: '#6B7280',
+                  fontSize: '14px',
+                  margin: 0
+                }}>{t('userManagement.subtitle')}</p>
+              </div>
             </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">✅</div>
-            <div className="stat-content">
-              <div className="stat-value">{stats.activeUsers}</div>
-              <div className="stat-label">Active Users</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">❌</div>
-            <div className="stat-content">
-              <div className="stat-value">{stats.inactiveUsers}</div>
-              <div className="stat-label">Inactive Users</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-content">
-              <div className="stat-value">{stats.recentSignups}</div>
-              <div className="stat-label">New (30 days)</div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Alerts */}
-      {error && (
-        <div className="alert alert-error">
-          <span className="alert-icon">⚠️</span>
-          <span className="alert-message">{error}</span>
-          <button className="alert-close" onClick={() => setError(null)}>×</button>
-        </div>
-      )}
-
-      {success && (
-        <div className="alert alert-success">
-          <span className="alert-icon">✓</span>
-          <span className="alert-message">{success}</span>
-          <button className="alert-close" onClick={() => setSuccess(null)}>×</button>
-        </div>
-      )}
-
-      {/* Search Bar */}
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-      </div>
-
-      {/* Role Filter */}
-      <div className="user-filters">
-        <label>Filter by role:</label>
-        <div className="filter-buttons">
-          <button
-            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            All ({users.length})
-          </button>
-          <button
-            className={`filter-btn ${filter === 'super_admin' ? 'active' : ''}`}
-            onClick={() => setFilter('super_admin')}
-          >
-            Super Admin ({users.filter(u => u.role === 'super_admin').length})
-          </button>
-          <button
-            className={`filter-btn ${filter === 'admin' ? 'active' : ''}`}
-            onClick={() => setFilter('admin')}
-          >
-            Admin ({users.filter(u => u.role === 'admin').length})
-          </button>
-          <button
-            className={`filter-btn ${filter === 'editor' ? 'active' : ''}`}
-            onClick={() => setFilter('editor')}
-          >
-            Editor ({users.filter(u => u.role === 'editor').length})
-          </button>
-          <button
-            className={`filter-btn ${filter === 'viewer' ? 'active' : ''}`}
-            onClick={() => setFilter('viewer')}
-          >
-            Viewer ({users.filter(u => u.role === 'viewer').length})
-          </button>
-          <button
-            className={`filter-btn ${filter === 'user' ? 'active' : ''}`}
-            onClick={() => setFilter('user')}
-          >
-            User ({users.filter(u => u.role === 'user').length})
-          </button>
-        </div>
-      </div>
-
-      {/* Users List */}
-      <div className="users-list">
-        {filteredUsers.length === 0 ? (
-          <div className="empty-state">
-            <p>No users found{filter !== 'all' ? ` with role: ${getRoleDisplay(filter)}` : ''}.</p>
-          </div>
-        ) : (
-          <div className="users-grid">
-            {filteredUsers.map(user => (
-              <div key={user._id} className="user-card">
-                <div className="user-card-header">
-                  <div className="user-info">
-                    <h3 className="user-name">{user.firstName} {user.lastName}</h3>
-                    <p className="user-email">{user.email}</p>
+            {/* Statistics Cards */}
+            {stats && (
+              <div className="stats-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '16px',
+                marginBottom: '24px',
+                direction: isRTL ? 'rtl' : 'ltr'
+              }}>
+                <div className="stat-card" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div className="stat-icon" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#EFF6FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    flexShrink: 0
+                  }}>👥</div>
+                  <div className="stat-content" style={{ textAlign: isRTL ? 'right' : 'left', flex: 1 }}>
+                    <div className="stat-value" style={{
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: '#111827'
+                    }}>{stats.totalUsers}</div>
+                    <div className="stat-label" style={{
+                      fontSize: '14px',
+                      color: '#6B7280'
+                    }}>{t('userManagement.stats.totalUsers')}</div>
                   </div>
-                  <span
-                    className="user-role-badge"
-                    style={{ backgroundColor: getRoleColor(user.role) }}
-                  >
-                    {getRoleDisplay(user.role)}
-                  </span>
                 </div>
+                <div className="stat-card" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div className="stat-icon" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#D1FAE5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    flexShrink: 0
+                  }}>✅</div>
+                  <div className="stat-content" style={{ textAlign: isRTL ? 'right' : 'left', flex: 1 }}>
+                    <div className="stat-value" style={{
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: '#111827'
+                    }}>{stats.activeUsers}</div>
+                    <div className="stat-label" style={{
+                      fontSize: '14px',
+                      color: '#6B7280'
+                    }}>{t('userManagement.stats.activeUsers')}</div>
+                  </div>
+                </div>
+                <div className="stat-card" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div className="stat-icon" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#FEE2E2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    flexShrink: 0
+                  }}>❌</div>
+                  <div className="stat-content" style={{ textAlign: isRTL ? 'right' : 'left', flex: 1 }}>
+                    <div className="stat-value" style={{
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: '#111827'
+                    }}>{stats.inactiveUsers}</div>
+                    <div className="stat-label" style={{
+                      fontSize: '14px',
+                      color: '#6B7280'
+                    }}>{t('userManagement.stats.inactiveUsers')}</div>
+                  </div>
+                </div>
+                <div className="stat-card" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div className="stat-icon" style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#EDE9FE',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    flexShrink: 0
+                  }}>📈</div>
+                  <div className="stat-content" style={{ textAlign: isRTL ? 'right' : 'left', flex: 1 }}>
+                    <div className="stat-value" style={{
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: '#111827'
+                    }}>{stats.recentSignups}</div>
+                    <div className="stat-label" style={{
+                      fontSize: '14px',
+                      color: '#6B7280'
+                    }}>{t('userManagement.stats.newUsers')}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                <div className="user-card-body">
-                  <div className="user-meta">
-                    <div className="meta-item">
-                      <span className="meta-label">Status:</span>
-                      <span className={`status-indicator ${user.isActive ? 'active' : 'inactive'}`}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Joined:</span>
-                      <span className="meta-value">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {user.lastLogin && (
-                      <div className="meta-item">
-                        <span className="meta-label">Last Login:</span>
-                        <span className="meta-value">
-                          {new Date(user.lastLogin).toLocaleDateString()}
+            {/* Alerts */}
+            {error && (
+              <div className="alert alert-error" style={{
+                backgroundColor: '#FEF2F2',
+                border: '1px solid #FECACA',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }}>
+                <span className="alert-icon">⚠️</span>
+                <span className="alert-message" style={{ flex: 1, color: '#991B1B', textAlign: isRTL ? 'right' : 'left' }}>{error}</span>
+                <button className="alert-close" onClick={() => setError(null)} style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: '#991B1B'
+                }}>×</button>
+              </div>
+            )}
+
+            {success && (
+              <div className="alert alert-success" style={{
+                backgroundColor: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }}>
+                <span className="alert-icon">✓</span>
+                <span className="alert-message" style={{ flex: 1, color: '#166534', textAlign: isRTL ? 'right' : 'left' }}>{success}</span>
+                <button className="alert-close" onClick={() => setSuccess(null)} style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: '#166534'
+                }}>×</button>
+              </div>
+            )}
+
+            {/* Search and Filter Section */}
+            <div style={{
+              backgroundColor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '24px',
+              direction: isRTL ? 'rtl' : 'ltr'
+            }}>
+              {/* Search Bar */}
+              <div className="search-bar" style={{ marginBottom: '16px' }}>
+                <input
+                  type="text"
+                  placeholder={t('userManagement.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '1px solid #D1D5DB',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    textAlign: isRTL ? 'right' : 'left'
+                  }}
+                />
+              </div>
+
+              {/* Role Filter */}
+              <div className="user-filters" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexWrap: 'wrap'
+              }}>
+                <label style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151'
+                }}>{t('userManagement.filterByRole')}</label>
+                <div className="filter-buttons" style={{
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap'
+                }}>
+                  <button
+                    className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+                    onClick={() => setFilter('all')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'all' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'all' ? '#3B82F6' : 'white',
+                      color: filter === 'all' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.all')} ({users.length})
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === 'super_admin' ? 'active' : ''}`}
+                    onClick={() => setFilter('super_admin')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'super_admin' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'super_admin' ? '#3B82F6' : 'white',
+                      color: filter === 'super_admin' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.superAdmin')} ({users.filter(u => u.role === 'super_admin').length})
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === 'admin' ? 'active' : ''}`}
+                    onClick={() => setFilter('admin')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'admin' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'admin' ? '#3B82F6' : 'white',
+                      color: filter === 'admin' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.admin')} ({users.filter(u => u.role === 'admin').length})
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === 'editor' ? 'active' : ''}`}
+                    onClick={() => setFilter('editor')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'editor' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'editor' ? '#3B82F6' : 'white',
+                      color: filter === 'editor' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.editor')} ({users.filter(u => u.role === 'editor').length})
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === 'viewer' ? 'active' : ''}`}
+                    onClick={() => setFilter('viewer')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'viewer' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'viewer' ? '#3B82F6' : 'white',
+                      color: filter === 'viewer' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.viewer')} ({users.filter(u => u.role === 'viewer').length})
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === 'user' ? 'active' : ''}`}
+                    onClick={() => setFilter('user')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: filter === 'user' ? 'none' : '1px solid #D1D5DB',
+                      backgroundColor: filter === 'user' ? '#3B82F6' : 'white',
+                      color: filter === 'user' ? 'white' : '#374151',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t('userManagement.roles.user')} ({users.filter(u => u.role === 'user').length})
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Users List */}
+            <div className="users-list">
+              {filteredUsers.length === 0 ? (
+                <div className="empty-state" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  padding: '48px 24px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ color: '#6B7280', fontSize: '14px' }}>
+                    {filter !== 'all' ? t('userManagement.noUsersWithRole', { role: getRoleDisplay(filter) }) : t('userManagement.noUsersFound')}
+                  </p>
+                </div>
+              ) : (
+                <div className="users-grid" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                  gap: '16px'
+                }}>
+                  {filteredUsers.map(user => (
+                    <div key={user._id} className="user-card" style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      transition: 'all 0.2s ease',
+                      direction: isRTL ? 'rtl' : 'ltr'
+                    }}>
+                      <div className="user-card-header" style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '16px'
+                      }}>
+                        <div className="user-info" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          <h3 className="user-name" style={{
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            color: '#111827',
+                            margin: '0 0 4px 0',
+                            direction: 'ltr',
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}>{user.firstName} {user.lastName}</h3>
+                          <p className="user-email" style={{
+                            fontSize: '13px',
+                            color: '#6B7280',
+                            margin: 0,
+                            direction: 'ltr',
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}>{user.email}</p>
+                        </div>
+                        <span
+                          className="user-role-badge"
+                          style={{
+                            backgroundColor: getRoleColor(user.role),
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            flexShrink: 0
+                          }}
+                        >
+                          {getRoleDisplay(user.role)}
                         </span>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="user-actions">
-                    <label className="action-label">Change Role:</label>
-                    <select
-                      className="role-select"
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
-                      disabled={
-                        (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
-                        (user.role === 'admin' && permissions?.role !== 'super_admin')
-                      }
-                    >
-                      <option value="user">User</option>
-                      <option value="viewer">Viewer</option>
-                      <option value="editor">Editor</option>
-                      <option value="admin">Admin</option>
-                      {permissions?.role === 'super_admin' && (
-                        <option value="super_admin">Super Admin</option>
-                      )}
-                    </select>
-                  </div>
+                      <div className="user-card-body" style={{ direction: isRTL ? 'rtl' : 'ltr' }}>
+                        <div className="user-meta" style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          marginBottom: '16px',
+                          padding: '12px',
+                          backgroundColor: '#F9FAFB',
+                          borderRadius: '8px'
+                        }}>
+                          <div className="meta-item" style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span className="meta-label" style={{ fontSize: '13px', color: '#6B7280', textAlign: isRTL ? 'right' : 'left' }}>{t('userManagement.userCard.status')}</span>
+                            <span className={`status-indicator ${user.isActive ? 'active' : 'inactive'}`} style={{
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: user.isActive ? '#10B981' : '#EF4444',
+                              textAlign: isRTL ? 'left' : 'right'
+                            }}>
+                              {user.isActive ? t('userManagement.userCard.active') : t('userManagement.userCard.inactive')}
+                            </span>
+                          </div>
+                          <div className="meta-item" style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span className="meta-label" style={{ fontSize: '13px', color: '#6B7280', textAlign: isRTL ? 'right' : 'left' }}>{t('userManagement.userCard.joined')}</span>
+                            <span className="meta-value" style={{ fontSize: '13px', color: '#374151', textAlign: isRTL ? 'left' : 'right', direction: 'ltr' }}>
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {user.lastLogin && (
+                            <div className="meta-item" style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}>
+                              <span className="meta-label" style={{ fontSize: '13px', color: '#6B7280', textAlign: isRTL ? 'right' : 'left' }}>{t('userManagement.userCard.lastLogin')}</span>
+                              <span className="meta-value" style={{ fontSize: '13px', color: '#374151', textAlign: isRTL ? 'left' : 'right', direction: 'ltr' }}>
+                                {new Date(user.lastLogin).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
-                  <div className="user-action-buttons">
-                    <button
-                      className="btn-action btn-view"
-                      onClick={() => handleViewDetails(user._id)}
-                      title="View Details"
-                    >
-                      👁️ View
-                    </button>
-                    <button
-                      className={`btn-action ${user.isActive ? 'btn-deactivate' : 'btn-activate'}`}
-                      onClick={() => handleStatusToggle(user._id, user.isActive, user.email)}
-                      title={user.isActive ? 'Deactivate User' : 'Activate User'}
-                      disabled={
-                        (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
-                        (user.role === 'admin' && permissions?.role !== 'super_admin')
-                      }
-                    >
-                      {user.isActive ? '🚫 Deactivate' : '✅ Activate'}
-                    </button>
-                    {permissions?.role === 'super_admin' && (
-                      <button
-                        className="btn-action btn-delete"
-                        onClick={() => handleDeleteUser(user._id, user.email)}
-                        title="Delete User"
-                        disabled={user.role === 'super_admin'}
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                        <div className="user-actions" style={{ marginBottom: '16px' }}>
+                          <label className="action-label" style={{
+                            display: 'block',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            color: '#374151',
+                            marginBottom: '8px',
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}>{t('userManagement.userCard.changeRole')}</label>
+                          <select
+                            className="role-select"
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
+                            disabled={
+                              (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
+                              (user.role === 'admin' && permissions?.role !== 'super_admin')
+                            }
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              border: '1px solid #D1D5DB',
+                              borderRadius: '8px',
+                              fontSize: '14px',
+                              backgroundColor: 'white',
+                              cursor: 'pointer',
+                              direction: isRTL ? 'rtl' : 'ltr',
+                              textAlign: isRTL ? 'right' : 'left'
+                            }}
+                          >
+                            <option value="user">{t('userManagement.roles.user')}</option>
+                            <option value="viewer">{t('userManagement.roles.viewer')}</option>
+                            <option value="editor">{t('userManagement.roles.editor')}</option>
+                            <option value="admin">{t('userManagement.roles.admin')}</option>
+                            {permissions?.role === 'super_admin' && (
+                              <option value="super_admin">{t('userManagement.roles.superAdmin')}</option>
+                            )}
+                          </select>
+                        </div>
 
-      {/* User Details Modal */}
-      {showUserDetails && selectedUser && (
-        <div className="modal-overlay" onClick={() => setShowUserDetails(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>User Details</h3>
-              <button className="modal-close" onClick={() => setShowUserDetails(false)}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="detail-section">
-                <h4>Personal Information</h4>
-                <div className="detail-row">
-                  <span className="detail-label">Name:</span>
-                  <span className="detail-value">{selectedUser.user.firstName} {selectedUser.user.lastName}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Email:</span>
-                  <span className="detail-value">{selectedUser.user.email}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Phone:</span>
-                  <span className="detail-value">{selectedUser.user.phone || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Role:</span>
-                  <span className="detail-value">
-                    <span
-                      className="user-role-badge"
-                      style={{ backgroundColor: getRoleColor(selectedUser.user.role) }}
-                    >
-                      {getRoleDisplay(selectedUser.user.role)}
-                    </span>
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Plan:</span>
-                  <span className="detail-value">{selectedUser.user.plan?.toUpperCase() || 'FREE'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Status:</span>
-                  <span className="detail-value">
-                    <span className={`status-indicator ${selectedUser.user.isActive ? 'active' : 'inactive'}`}>
-                      {selectedUser.user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="detail-section">
-                <h4>Account Statistics</h4>
-                <div className="detail-row">
-                  <span className="detail-label">URLs Created:</span>
-                  <span className="detail-value">{selectedUser.stats?.urlCount || 0}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Custom Domains:</span>
-                  <span className="detail-value">{selectedUser.stats?.domainCount || 0}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Total Clicks:</span>
-                  <span className="detail-value">{selectedUser.stats?.totalClicks || 0}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Joined:</span>
-                  <span className="detail-value">{new Date(selectedUser.user.createdAt).toLocaleString()}</span>
-                </div>
-                {selectedUser.user.lastLogin && (
-                  <div className="detail-row">
-                    <span className="detail-label">Last Login:</span>
-                    <span className="detail-value">{new Date(selectedUser.user.lastLogin).toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-
-              {selectedUser.user.subscription && (
-                <div className="detail-section">
-                  <h4>Subscription</h4>
-                  <div className="detail-row">
-                    <span className="detail-label">Status:</span>
-                    <span className="detail-value">{selectedUser.user.subscription.status?.toUpperCase() || 'INACTIVE'}</span>
-                  </div>
-                  {selectedUser.user.subscription.currentPeriodEnd && (
-                    <div className="detail-row">
-                      <span className="detail-label">Period End:</span>
-                      <span className="detail-value">{new Date(selectedUser.user.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                        <div className="user-action-buttons" style={{
+                          display: 'flex',
+                          gap: '8px',
+                          flexDirection: isRTL ? 'row-reverse' : 'row'
+                        }}>
+                          <button
+                            className="btn-action btn-view"
+                            onClick={() => handleViewDetails(user._id)}
+                            title={t('userManagement.actions.viewDetails')}
+                            style={{
+                              flex: 1,
+                              padding: '10px 16px',
+                              borderRadius: '8px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              border: '1px solid #D1D5DB',
+                              backgroundColor: 'white',
+                              color: '#374151',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {t('userManagement.actions.view')}
+                          </button>
+                          <button
+                            className={`btn-action ${user.isActive ? 'btn-deactivate' : 'btn-activate'}`}
+                            onClick={() => handleStatusToggle(user._id, user.isActive, user.email)}
+                            title={user.isActive ? t('userManagement.actions.deactivateUser') : t('userManagement.actions.activateUser')}
+                            disabled={
+                              (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
+                              (user.role === 'admin' && permissions?.role !== 'super_admin')
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '10px 16px',
+                              borderRadius: '8px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              border: 'none',
+                              backgroundColor: user.isActive ? '#FEF2F2' : '#F0FDF4',
+                              color: user.isActive ? '#991B1B' : '#166534',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {user.isActive ? t('userManagement.actions.deactivate') : t('userManagement.actions.activate')}
+                          </button>
+                          {permissions?.role === 'super_admin' && (
+                            <button
+                              className="btn-action btn-delete"
+                              onClick={() => handleDeleteUser(user._id, user.email)}
+                              title={t('userManagement.actions.deleteUser')}
+                              disabled={user.role === 'super_admin'}
+                              style={{
+                                padding: '10px 16px',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                border: 'none',
+                                backgroundColor: '#EF4444',
+                                color: 'white',
+                                cursor: user.role === 'super_admin' ? 'not-allowed' : 'pointer',
+                                opacity: user.role === 'super_admin' ? 0.5 : 1
+                              }}
+                            >
+                              {t('userManagement.actions.delete')}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
+
+            {/* User Details Modal */}
+            {showUserDetails && selectedUser && (
+              <div className="modal-overlay" onClick={() => setShowUserDetails(false)} style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+              }}>
+                <div className="modal-content user-details-modal" onClick={(e) => e.stopPropagation()} style={{
+                  backgroundColor: 'white',
+                  borderRadius: '16px',
+                  width: '90%',
+                  maxWidth: '600px',
+                  maxHeight: '90vh',
+                  overflow: 'auto',
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                  direction: isRTL ? 'rtl' : 'ltr'
+                }}>
+                  <div className="modal-header" style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '20px 24px',
+                    borderBottom: '1px solid #E5E7EB'
+                  }}>
+                    <div className="modal-header-info" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px'
+                    }}>
+                      <div className="user-avatar" style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: '#3B82F6',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        flexShrink: 0
+                      }}>
+                        {selectedUser.user.firstName?.charAt(0)}{selectedUser.user.lastName?.charAt(0)}
+                      </div>
+                      <div className="modal-header-text" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                        <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '600', color: '#111827', direction: 'ltr', textAlign: isRTL ? 'right' : 'left' }}>
+                          {selectedUser.user.firstName} {selectedUser.user.lastName}
+                        </h3>
+                        <p className="modal-subtitle" style={{ margin: 0, fontSize: '14px', color: '#6B7280', direction: 'ltr', textAlign: isRTL ? 'right' : 'left' }}>
+                          {selectedUser.user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <button className="modal-close" onClick={() => setShowUserDetails(false)} style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      color: '#6B7280',
+                      padding: '4px'
+                    }}>×</button>
+                  </div>
+                  <div className="modal-body" style={{ padding: '24px' }}>
+                    {/* Status Badges Row */}
+                    <div className="status-badges-row" style={{
+                      display: 'flex',
+                      gap: '12px',
+                      marginBottom: '24px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <span
+                        className="user-role-badge"
+                        style={{
+                          backgroundColor: getRoleColor(selectedUser.user.role),
+                          color: 'white',
+                          padding: '6px 16px',
+                          borderRadius: '20px',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}
+                      >
+                        {getRoleDisplay(selectedUser.user.role)}
+                      </span>
+                      <span className={`status-indicator ${selectedUser.user.isActive ? 'active' : 'inactive'}`} style={{
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        backgroundColor: selectedUser.user.isActive ? '#D1FAE5' : '#FEE2E2',
+                        color: selectedUser.user.isActive ? '#166534' : '#991B1B'
+                      }}>
+                        {selectedUser.user.isActive ? t('userManagement.userCard.active') : t('userManagement.userCard.inactive')}
+                      </span>
+                      <span className="plan-badge" style={{
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        backgroundColor: '#EFF6FF',
+                        color: '#1D4ED8'
+                      }}>
+                        {selectedUser.user.plan?.toUpperCase() || t('userManagement.modal.freePlan')}
+                      </span>
+                    </div>
+
+                    {/* Stats Cards Grid */}
+                    <div className="user-stats-grid" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '16px',
+                      marginBottom: '24px'
+                    }}>
+                      <div className="user-stat-card" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        textAlign: 'center'
+                      }}>
+                        <span className="user-stat-icon" style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🔗</span>
+                        <span className="user-stat-value" style={{ fontSize: '24px', fontWeight: '700', color: '#111827', display: 'block' }}>{selectedUser.stats?.urlCount || 0}</span>
+                        <span className="user-stat-label" style={{ fontSize: '13px', color: '#6B7280' }}>{t('userManagement.modal.urls')}</span>
+                      </div>
+                      <div className="user-stat-card" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        textAlign: 'center'
+                      }}>
+                        <span className="user-stat-icon" style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🌐</span>
+                        <span className="user-stat-value" style={{ fontSize: '24px', fontWeight: '700', color: '#111827', display: 'block' }}>{selectedUser.stats?.domainCount || 0}</span>
+                        <span className="user-stat-label" style={{ fontSize: '13px', color: '#6B7280' }}>{t('userManagement.modal.domains')}</span>
+                      </div>
+                      <div className="user-stat-card" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        textAlign: 'center'
+                      }}>
+                        <span className="user-stat-icon" style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>👆</span>
+                        <span className="user-stat-value" style={{ fontSize: '24px', fontWeight: '700', color: '#111827', display: 'block' }}>{selectedUser.stats?.totalClicks || 0}</span>
+                        <span className="user-stat-label" style={{ fontSize: '13px', color: '#6B7280' }}>{t('userManagement.modal.clicks')}</span>
+                      </div>
+                    </div>
+
+                    {/* Details Grid */}
+                    <div className="details-grid" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '16px',
+                      marginBottom: '24px'
+                    }}>
+                      <div className="detail-card" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>{t('userManagement.modal.contactInfo')}</h4>
+                        <div className="detail-grid-content" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div className="detail-item" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="detail-icon" style={{ fontSize: '16px', flexShrink: 0 }}>📧</span>
+                            <div className="detail-text" style={{ flex: 1 }}>
+                              <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.email')}</span>
+                              <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>{selectedUser.user.email}</span>
+                            </div>
+                          </div>
+                          <div className="detail-item" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="detail-icon" style={{ fontSize: '16px', flexShrink: 0 }}>📱</span>
+                            <div className="detail-text" style={{ flex: 1 }}>
+                              <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.phone')}</span>
+                              <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>{selectedUser.user.phone || t('userManagement.modal.notAvailable')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="detail-card" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>{t('userManagement.modal.accountActivity')}</h4>
+                        <div className="detail-grid-content" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div className="detail-item" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="detail-icon" style={{ fontSize: '16px', flexShrink: 0 }}>📅</span>
+                            <div className="detail-text" style={{ flex: 1 }}>
+                              <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.joined')}</span>
+                              <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>{new Date(selectedUser.user.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="detail-item" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="detail-icon" style={{ fontSize: '16px', flexShrink: 0 }}>🕐</span>
+                            <div className="detail-text" style={{ flex: 1 }}>
+                              <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.lastLogin')}</span>
+                              <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>{selectedUser.user.lastLogin ? new Date(selectedUser.user.lastLogin).toLocaleDateString() : t('userManagement.modal.never')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedUser.user.subscription && (
+                      <div className="subscription-section" style={{
+                        backgroundColor: '#F9FAFB',
+                        borderRadius: '12px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>{t('userManagement.modal.subscription')}</h4>
+                        <div className="subscription-info" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div className="subscription-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="detail-label" style={{ fontSize: '13px', color: '#6B7280' }}>{t('userManagement.modal.subscriptionStatus')}</span>
+                            <span className={`subscription-status ${selectedUser.user.subscription.status}`} style={{
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: selectedUser.user.subscription.status === 'active' ? '#166534' : '#991B1B'
+                            }}>
+                              {selectedUser.user.subscription.status?.toUpperCase() || t('userManagement.modal.inactive')}
+                            </span>
+                          </div>
+                          {selectedUser.user.subscription.currentPeriodEnd && (
+                            <div className="subscription-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span className="detail-label" style={{ fontSize: '13px', color: '#6B7280' }}>{t('userManagement.modal.periodEnd')}</span>
+                              <span className="detail-value" style={{ fontSize: '13px', color: '#374151', direction: 'ltr' }}>{new Date(selectedUser.user.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

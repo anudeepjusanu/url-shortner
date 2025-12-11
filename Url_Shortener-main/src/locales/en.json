@@ -700,6 +700,20 @@
       "value": "Value",
       "verifyButton": "Verify Domain"
     },
+    "dnsModal": {
+      "title": "Domain Verification",
+      "instruction": "Add the following DNS record to verify your domain:",
+      "configTitle": "DNS Configuration Required:",
+      "type": "Type",
+      "name": "Name",
+      "value": "Value",
+      "checkDns": "Check DNS Configuration",
+      "checking": "Checking DNS...",
+      "success": "DNS record verified successfully!",
+      "failed": "DNS record not found. Please check your configuration.",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
     "noDomains": "No custom domains added yet",
     "addFirst": "Add your first custom domain to get started",
     "domainAdded": "Domain added successfully!",
@@ -908,7 +922,7 @@
       "phone": "Phone Number",
       "company": "Company",
       "website": "Website",
-      "jobTitle": "Job Title",
+      "jobTitle": "Role",
       "updateButton": "Update Profile",
       "updating": "Updating...",
       "saveChanges": "Save Changes"
@@ -959,6 +973,65 @@
       "regenerating": "Regenerating...",
       "regenerateButton": "Regenerate API Key",
       "confirmRegenerate": "Are you sure you want to regenerate your API key? The old key will no longer work."
+    }
+  },
+  "userManagement": {
+    "title": "User Management",
+    "subtitle": "Manage user roles and permissions",
+    "loading": "Loading users...",
+    "searchPlaceholder": "Search by name or email...",
+    "filterByRole": "Filter by role:",
+    "noUsersFound": "No users found.",
+    "noUsersWithRole": "No users found with role: {{role}}.",
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "inactiveUsers": "Inactive Users",
+      "newUsers": "New (30 days)"
+    },
+    "roles": {
+      "all": "All",
+      "superAdmin": "Super Admin",
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer",
+      "user": "User"
+    },
+    "userCard": {
+      "status": "Status:",
+      "active": "Active",
+      "inactive": "Inactive",
+      "joined": "Joined:",
+      "lastLogin": "Last Login:",
+      "changeRole": "Change Role:"
+    },
+    "actions": {
+      "view": "View",
+      "viewDetails": "View Details",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "activateUser": "Activate User",
+      "deactivateUser": "Deactivate User",
+      "delete": "Delete",
+      "deleteUser": "Delete User"
+    },
+    "modal": {
+      "urls": "URLs",
+      "domains": "Domains",
+      "clicks": "Clicks",
+      "contactInfo": "Contact Info",
+      "email": "Email",
+      "phone": "Phone",
+      "notAvailable": "N/A",
+      "accountActivity": "Account Activity",
+      "joined": "Joined",
+      "lastLogin": "Last Login",
+      "never": "Never",
+      "subscription": "Subscription",
+      "subscriptionStatus": "Status",
+      "inactive": "INACTIVE",
+      "periodEnd": "Period End",
+      "freePlan": "FREE"
     }
   },
   "footer": {
