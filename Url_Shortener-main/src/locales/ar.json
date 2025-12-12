@@ -1005,6 +1005,21 @@
       "lastLogin": "آخر تسجيل دخول:",
       "changeRole": "تغيير الدور:"
     },
+    "viewMode": {
+      "grid": "شبكة",
+      "table": "جدول"
+    },
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "role": "الدور",
+      "status": "الحالة",
+      "plan": "الخطة",
+      "joined": "تاريخ الانضمام",
+      "lastLogin": "آخر تسجيل دخول",
+      "actions": "الإجراءات"
+    },
     "actions": {
       "view": "عرض",
       "viewDetails": "عرض التفاصيل",

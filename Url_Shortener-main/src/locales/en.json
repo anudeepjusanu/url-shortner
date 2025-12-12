@@ -1005,6 +1005,21 @@
       "lastLogin": "Last Login:",
       "changeRole": "Change Role:"
     },
+    "viewMode": {
+      "grid": "Grid",
+      "table": "Table"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "plan": "Plan",
+      "joined": "Joined",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    },
     "actions": {
       "view": "View",
       "viewDetails": "View Details",

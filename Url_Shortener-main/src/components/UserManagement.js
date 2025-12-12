@@ -21,6 +21,7 @@ function UserManagement() {
   const [stats, setStats] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
 
   useEffect(() => {
     if (hasRole(['admin', 'super_admin'])) {
@@ -507,23 +508,31 @@ function UserManagement() {
                 />
               </div>
 
-              {/* Role Filter */}
-              <div className="user-filters" style={{
+              {/* Role Filter and View Toggle */}
+              <div style={{
                 display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '16px',
                 flexWrap: 'wrap'
               }}>
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151'
-                }}>{t('userManagement.filterByRole')}</label>
-                <div className="filter-buttons" style={{
+                <div className="user-filters" style={{
                   display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap'
+                  alignItems: 'center',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  flex: 1
                 }}>
+                  <label style={{
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#374151'
+                  }}>{t('userManagement.filterByRole')}</label>
+                  <div className="filter-buttons" style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap'
+                  }}></div>
                   <button
                     className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
                     onClick={() => setFilter('all')}
@@ -622,6 +631,59 @@ function UserManagement() {
                   </button>
                 </div>
               </div>
+
+              {/* View Toggle Buttons */}
+              <div className="view-toggle" style={{
+                display: 'flex',
+                gap: '8px',
+                backgroundColor: '#F3F4F6',
+                padding: '4px',
+                borderRadius: '8px'
+              }}>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    border: 'none',
+                    backgroundColor: viewMode === 'grid' ? 'white' : 'transparent',
+                    color: viewMode === 'grid' ? '#3B82F6' : '#6B7280',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s',
+                    boxShadow: viewMode === 'grid' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                  }}
+                >
+                  <span>⊞</span>
+                  <span>{t('userManagement.viewMode.grid') || 'Grid'}</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    border: 'none',
+                    backgroundColor: viewMode === 'table' ? 'white' : 'transparent',
+                    color: viewMode === 'table' ? '#3B82F6' : '#6B7280',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s',
+                    boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                  }}
+                >
+                  <span>☰</span>
+                  <span>{t('userManagement.viewMode.table') || 'Table'}</span>
+                </button>
+              </div>
+            </div>
             </div>
 
             {/* Users List */}
@@ -638,7 +700,280 @@ function UserManagement() {
                     {filter !== 'all' ? t('userManagement.noUsersWithRole', { role: getRoleDisplay(filter) }) : t('userManagement.noUsersFound')}
                   </p>
                 </div>
-              ) : (
+              ) : viewMode === 'table' ? (
+                /* Table View */
+                <div className="users-table-container" style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  overflowX: 'auto',
+                  overflowY: 'visible',
+                  maxWidth: '100%',
+                  WebkitOverflowScrolling: 'touch'
+                }}>
+                  <table className="users-table" style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    fontSize: '14px',
+                    minWidth: '1000px'
+                  }}>
+                      <thead>
+                        <tr style={{
+                          backgroundColor: '#F9FAFB',
+                          borderBottom: '2px solid #E5E7EB'
+                        }}>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.name') || 'Name'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.email') || 'Email'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.phone') || 'Phone'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.role') || 'Role'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.status') || 'Status'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.plan') || 'Plan'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.joined') || 'Joined'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.lastLogin') || 'Last Login'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: 'center',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.actions') || 'Actions'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map(user => (
+                          <tr key={user._id} style={{
+                            borderBottom: '1px solid #E5E7EB',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F9FAFB'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <td>
+                              <div style={{ 
+                                fontWeight: '500',
+                                color: '#111827',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {user.firstName} {user.lastName}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ 
+                                color: '#6B7280',
+                                fontSize: '13px'
+                              }}>
+                                {user.email}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ color: '#6B7280' }}>
+                                {user.phone || '-'}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}>
+                                <select
+                                  className="role-select-table"
+                                  value={user.role}
+                                  onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
+                                  disabled={
+                                    (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
+                                    (user.role === 'admin' && permissions?.role !== 'super_admin')
+                                  }
+                                  style={{
+                                    backgroundColor: getRoleColor(user.role),
+                                    color: 'white'
+                                  }}
+                                >
+                                  <option value="user">{t('userManagement.roles.user')}</option>
+                                  <option value="viewer">{t('userManagement.roles.viewer')}</option>
+                                  <option value="editor">{t('userManagement.roles.editor')}</option>
+                                  <option value="admin">{t('userManagement.roles.admin')}</option>
+                                  {permissions?.role === 'super_admin' && (
+                                    <option value="super_admin">{t('userManagement.roles.superAdmin')}</option>
+                                  )}
+                                </select>
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}>
+                                <span style={{
+                                  padding: '4px 12px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  backgroundColor: user.isActive ? '#D1FAE5' : '#FEE2E2',
+                                  color: user.isActive ? '#166534' : '#991B1B',
+                                  display: 'inline-block',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {user.isActive ? t('userManagement.userCard.active') : t('userManagement.userCard.inactive')}
+                                </span>
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{
+                                color: '#374151',
+                                textTransform: 'uppercase',
+                                fontSize: '11px',
+                                fontWeight: '600'
+                              }}>
+                                {user.plan || 'FREE'}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ 
+                                color: '#6B7280',
+                                fontSize: '13px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {new Date(user.createdAt).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ 
+                                color: '#6B7280',
+                                fontSize: '13px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '-'}
+                              </div>
+                            </td>
+                            <td style={{
+                              padding: '16px',
+                              textAlign: 'center'
+                            }}>
+                              <div style={{
+                                display: 'flex',
+                                gap: '6px',
+                                justifyContent: 'center',
+                                flexWrap: 'wrap'
+                              }}>
+                                <button
+                                  onClick={() => handleViewDetails(user._id)}
+                                  title={t('userManagement.actions.viewDetails')}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '500',
+                                    border: '1px solid #D1D5DB',
+                                    backgroundColor: 'white',
+                                    color: '#374151',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {t('userManagement.actions.view')}
+                                </button>
+                                <button
+                                  onClick={() => handleStatusToggle(user._id, user.isActive, user.email)}
+                                  title={user.isActive ? t('userManagement.actions.deactivateUser') : t('userManagement.actions.activateUser')}
+                                  disabled={
+                                    (user.role === 'super_admin' && permissions?.role !== 'super_admin') ||
+                                    (user.role === 'admin' && permissions?.role !== 'super_admin')
+                                  }
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '500',
+                                    border: 'none',
+                                    backgroundColor: user.isActive ? '#FEF2F2' : '#F0FDF4',
+                                    color: user.isActive ? '#991B1B' : '#166534',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {user.isActive ? t('userManagement.actions.deactivate') : t('userManagement.actions.activate')}
+                                </button>
+                                {permissions?.role === 'super_admin' && (
+                                  <button
+                                    onClick={() => handleDeleteUser(user._id, user.email)}
+                                    title={t('userManagement.actions.deleteUser')}
+                                    disabled={user.role === 'super_admin'}
+                                    style={{
+                                      padding: '6px 12px',
+                                      borderRadius: '6px',
+                                      fontSize: '12px',
+                                      fontWeight: '500',
+                                      border: 'none',
+                                      backgroundColor: '#FEF2F2',
+                                      color: '#991B1B',
+                                      cursor: user.role === 'super_admin' ? 'not-allowed' : 'pointer',
+                                      opacity: user.role === 'super_admin' ? 0.5 : 1,
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    {t('userManagement.actions.delete')}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                </div>
+              ) : 
+                (
+                /* Grid View */
                 <div className="users-grid" style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
@@ -837,8 +1172,8 @@ function UserManagement() {
                                 fontSize: '13px',
                                 fontWeight: '500',
                                 border: 'none',
-                                backgroundColor: '#EF4444',
-                                color: 'white',
+                                backgroundColor: '#FEF2F2',
+                                color: '#991B1B',
                                 cursor: user.role === 'super_admin' ? 'not-allowed' : 'pointer',
                                 opacity: user.role === 'super_admin' ? 0.5 : 1
                               }}
@@ -1095,7 +1430,6 @@ function UserManagement() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

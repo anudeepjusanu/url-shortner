@@ -24,9 +24,11 @@ const BillingManagement = () => {
   const loadBillingData = async () => {
     try {
       const response = await api.get("/subscriptions/billing");
-      setBillingData(response.data.data);
+      // API client returns parsed JSON directly, so response IS the JSON body
+      setBillingData(response?.data || null);
     } catch (error) {
       console.error("Failed to load billing data:", error);
+      setBillingData(null);
     } finally {
       setLoading(false);
     }
@@ -35,9 +37,11 @@ const BillingManagement = () => {
   const loadInvoices = async () => {
     try {
       const response = await api.get("/subscriptions/payment-history");
-      setInvoices(response.data.data.history);
+      // API client returns parsed JSON directly, so response IS the JSON body
+      setInvoices(response?.data?.history || []);
     } catch (error) {
       console.error("Failed to load invoices:", error);
+      setInvoices([]);
     }
   };
 

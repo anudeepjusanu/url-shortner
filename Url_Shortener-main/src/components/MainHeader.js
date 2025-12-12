@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionContext';
 import { authAPI } from '../services/api';
 import HamburgerMenu from "./HamburgerMenu";
 import "./MainHeader.css";
@@ -11,6 +12,7 @@ const MainHeader = () => {
   const { t } = useTranslation();
   const { currentLanguage, toggleLanguage } = useLanguage();
   const { user, logout } = useAuth();
+  const { hasRole } = usePermissions();
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -142,10 +144,18 @@ const MainHeader = () => {
         // { label: t('sidebar.contentFilter'), path: '/content-filter', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><g clipPath="url(#clip0_775_351)"><path d="M8 0C8.14375 0 8.2875 0.03125 8.41875 0.090625L14.3031 2.5875C14.9906 2.87813 15.5031 3.55625 15.5 4.375C15.4844 7.475 14.2094 13.1469 8.825 15.725C8.30313 15.975 7.69688 15.975 7.175 15.725C1.79063 13.1469 0.515626 7.475 0.500001 4.375C0.496876 3.55625 1.00938 2.87813 1.69688 2.5875L7.58438 0.090625C7.7125 0.03125 7.85625 0 8 0ZM8 2.0875V13.9C12.3125 11.8125 13.4719 7.19062 13.5 4.41875L8 2.0875Z" fill="#6B7280"/></g><defs><clipPath id="clip0_775_351"><path d="M0 0H16V16H0V0Z" fill="white"/></clipPath></defs></svg> }
       ]
     },
+    // Admin section - only show for admin and super_admin users
+    ...(hasRole(['admin', 'super_admin']) ? [{
+      label: t('sidebar.admin') || 'Admin',
+      items: [
+        { label: t('sidebar.userManagement') || 'User Management', path: '/user-management', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 8C11 9.65685 9.65685 11 8 11C6.34315 11 5 9.65685 5 8C5 6.34315 6.34315 5 8 5C9.65685 5 11 6.34315 11 8Z" fill="#6B7280"/><path d="M2 13C2 12.4477 2.44772 12 3 12H13C13.5523 12 14 12.4477 14 13V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V13Z" fill="#6B7280"/></svg> }
+      ]
+    }] : []),
     {
       label: t('sidebar.account'),
       items: [
         { label: t('sidebar.profile'), path: '/profile', icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none"><g clipPath="url(#clip0_775_357)"><path d="M9.5 4C9.5 3.33696 9.23661 2.70107 8.76777 2.23223C8.29893 1.76339 7.66304 1.5 7 1.5C6.33696 1.5 5.70107 1.76339 5.23223 2.23223C4.76339 2.70107 4.5 3.33696 4.5 4C4.5 4.66304 4.76339 5.29893 5.23223 5.76777C5.70107 6.23661 6.33696 6.5 7 6.5C7.66304 6.5 8.29893 6.23661 8.76777 5.76777C9.23661 5.29893 9.5 4.66304 9.5 4ZM3 4C3 2.93913 3.42143 1.92172 4.17157 1.17157C4.92172 0.421427 5.93913 0 7 0C8.06087 0 9.07828 0.421427 9.82843 1.17157C10.5786 1.92172 11 2.93913 11 4C11 5.06087 10.5786 6.07828 9.82843 6.82843C9.07828 7.57857 8.06087 8 7 8C5.93913 8 4.92172 7.57857 4.17157 6.82843C3.42143 6.07828 3 5.06087 3 4ZM1.54062 14.5H12.4594C12.1813 12.5219 10.4813 11 8.42813 11H5.57188C3.51875 11 1.81875 12.5219 1.54062 14.5ZM0 15.0719C0 11.9937 2.49375 9.5 5.57188 9.5H8.42813C11.5063 9.5 14 11.9937 14 15.0719C14 15.5844 13.5844 16 13.0719 16H0.928125C0.415625 16 0 15.5844 0 15.0719Z" fill="#6B7280"/></g><defs><clipPath id="clip0_775_357"><path d="M0 0H14V16H0V0Z" fill="white"/></clipPath></defs></svg> },
+        { label: t('sidebar.billing'), path: '/billing', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 3H2C1.44772 3 1 3.44772 1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4C15 3.44772 14.5523 3 14 3Z" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M1 6.5H15" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 9.5H6" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
         { label: t('sidebar.upgradePlan'), path: '/subscription', icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" viewBox="0 0 18 16" fill="none"><path d="M18 16H0V0H18V16Z" stroke="#E5E7EB"/><path d="M9.65625 3.3125C10.0125 3.09375 10.25 2.69687 10.25 2.25C10.25 1.55937 9.69063 1 9 1C8.30937 1 7.75 1.55937 7.75 2.25C7.75 2.7 7.9875 3.09375 8.34375 3.3125L6.55312 6.89375C6.26875 7.4625 5.53125 7.625 5.03438 7.22813L2.25 5C2.40625 4.79063 2.5 4.53125 2.5 4.25C2.5 3.55938 1.94062 3 1.25 3C0.559375 3 0 3.55938 0 4.25C0 4.94062 0.559375 5.5 1.25 5.5C1.25625 5.5 1.26562 5.5 1.27188 5.5L2.7 13.3562C2.87188 14.3062 3.7 15 4.66875 15H13.3313C14.2969 15 15.125 14.3094 15.3 13.3562L16.7281 5.5C16.7344 5.5 16.7437 5.5 16.75 5.5C17.4406 5.5 18 4.94062 18 4.25C18 3.55938 17.4406 3 16.75 3C16.0594 3 15.5 3.55938 15.5 4.25C15.5 4.53125 15.5938 4.79063 15.75 5L12.9656 7.22813C12.4688 7.625 11.7312 7.4625 11.4469 6.89375L9.65625 3.3125Z" fill="#6B7280"/></svg> }
       ]
     }
