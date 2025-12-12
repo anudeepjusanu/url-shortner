@@ -349,7 +349,7 @@ const Dashboard = () => {
                   gap: '12px',
                   marginBottom: '12px'
                 }}>
-                  <div className="card-icon blue-icon" style={{
+                  <div className="card-icon " style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
@@ -406,7 +406,7 @@ const Dashboard = () => {
                   gap: '12px',
                   marginBottom: '12px'
                 }}>
-                  <div className="card-icon green-icon" style={{
+                  <div className="card-icon " style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
@@ -466,7 +466,7 @@ const Dashboard = () => {
                   gap: '12px',
                   marginBottom: '12px'
                 }}>
-                  <div className="card-icon purple-icon" style={{
+                  <div className="card-icon " style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',

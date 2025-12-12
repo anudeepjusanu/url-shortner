@@ -497,6 +497,18 @@ const getUrlStats = async (req, res) => {
       ]
     };
     
+    // Get user for plan and account age
+    const user = await User.findById(userId);
+    
+    // Get custom domains count
+    const customDomainsCount = await Domain.countDocuments({
+      $or: [
+        { owner: userId },
+        ...(organizationId ? [{ organization: organizationId }] : [])
+      ],
+      isActive: true
+    });
+    
     const [
       totalUrls,
       activeUrls,
@@ -515,8 +527,41 @@ const getUrlStats = async (req, res) => {
         .select('title originalUrl shortCode clickCount createdAt')
     ]);
     
+    // Calculate account age
+    let accountAge = 'New User';
+    if (user && user.createdAt) {
+      const now = new Date();
+      const created = new Date(user.createdAt);
+      const diffTime = Math.abs(now - created);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 30) {
+        accountAge = `${diffDays} days`;
+      } else if (diffDays < 365) {
+        const months = Math.floor(diffDays / 30);
+        accountAge = `${months} month${months > 1 ? 's' : ''}`;
+      } else {
+        const years = Math.floor(diffDays / 365);
+        accountAge = `${years} year${years > 1 ? 's' : ''}`;
+      }
+    }
+    
+    // Get plan name
+    const planNames = {
+      'free': 'Free',
+      'pro': 'Professional',
+      'enterprise': 'Enterprise'
+    };
+    const plan = planNames[user?.plan] || 'Professional';
+    
+    // Return data in format expected by frontend Profile page
     res.json({
       success: true,
+      totalLinks: totalUrls,
+      totalClicks: totalClicks[0]?.total || 0,
+      customDomains: customDomainsCount,
+      accountAge: accountAge,
+      plan: plan,
       data: {
         stats: {
           totalUrls,

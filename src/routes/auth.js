@@ -37,10 +37,21 @@ router.put('/profile', authenticate, validateProfileUpdate, authController.updat
 
 router.put('/change-password', authenticate, validatePasswordChange, authController.changePassword);
 
+// Also support POST for change-password (frontend compatibility)
+router.post('/change-password', authenticate, validatePasswordChange, authController.changePassword);
+
 router.post('/forgot-password', passwordResetLimiter, validateForgotPassword, authController.forgotPassword);
 
 router.post('/reset-password', validateResetPassword, authController.resetPassword);
 
 router.get('/me', authenticate, authController.getProfile);
+
+// API Key management
+router.get('/api-key', authenticate, authController.getApiKey);
+router.post('/regenerate-api-key', authenticate, authController.regenerateApiKey);
+
+// User preferences
+router.get('/preferences', authenticate, authController.getPreferences);
+router.put('/preferences', authenticate, authController.updatePreferences);
 
 module.exports = router;

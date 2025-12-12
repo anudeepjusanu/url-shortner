@@ -635,11 +635,18 @@ class PaymentService {
         throw new Error('User not found');
       }
 
-      const plan = await Plan.getByName(user.plan);
-      const paymentMethods = await this.getPaymentMethods(userId);
+      const plan = await Plan.getByName(user.plan || 'free');
+      let paymentMethods = [];
+      
+      try {
+        paymentMethods = await this.getPaymentMethods(userId);
+      } catch (err) {
+        // Payment methods not available
+        console.log('Could not fetch payment methods:', err.message);
+      }
 
       let upcomingInvoice = null;
-      if (user.subscription.stripeSubscriptionId) {
+      if (stripe && user.subscription?.stripeSubscriptionId && user.subscription?.stripeCustomerId) {
         try {
           upcomingInvoice = await stripe.invoices.retrieveUpcoming({
             customer: user.subscription.stripeCustomerId
@@ -649,14 +656,29 @@ class PaymentService {
         }
       }
 
+      // Provide default usage values if not set
+      const usage = user.usage || {
+        urlsCreatedThisMonth: 0,
+        urlsCreatedTotal: 0,
+        customDomainsCount: 0,
+        apiCallsThisMonth: 0,
+        overageCharges: 0
+      };
+
+      // Provide default subscription values if not set
+      const subscription = user.subscription || {
+        status: 'active',
+        billingCycle: 'monthly'
+      };
+
       return {
         plan: {
-          name: user.plan,
+          name: user.plan || 'free',
           details: plan
         },
-        subscription: user.subscription,
-        usage: user.usage,
-        paymentMethods,
+        subscription: subscription,
+        usage: usage,
+        paymentMethods: paymentMethods || [],
         upcomingInvoice: upcomingInvoice ? {
           amount: upcomingInvoice.amount_due / 100,
           currency: upcomingInvoice.currency,

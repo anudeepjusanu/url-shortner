@@ -443,6 +443,22 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1100px) {
+  /* Plans Row - Stack on medium screens */
+  .plans-row {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px;
+  }
+
+  .plan-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 @media (max-width: 1023px) {
   .subscription-main-content {
     margin-left: 0;
@@ -468,7 +484,9 @@
 
   /* Plans Row - Stack on tablets */
   .plans-row {
+    display: flex !important;
     flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     gap: 16px;
   }
 
@@ -611,7 +629,9 @@
   }
 
   .plans-row {
+    display: flex !important;
     flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     gap: 16px;
   }
 
@@ -868,7 +888,9 @@
   }
 
   .plans-row {
+    display: flex !important;
     flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     gap: 14px;
   }
 
