@@ -923,7 +923,7 @@ function MyLinks() {
                       )}
                     </div>
                     {/* UTM Parameters Section */}
-                    <div className="utm-section">
+                   {/* <div className="utm-section">
                       <div className="utm-header">
                         <div className="utm-label">
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -945,7 +945,7 @@ function MyLinks() {
                           {t('createLink.form.utmParameters')}
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                     {/* QR Code Section */}
                     <div className="qr-section">
                       <div className="qr-content">

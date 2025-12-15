@@ -334,7 +334,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>{t('sidebar.profile')}</span>
           </div>
-          <div
+          {/* <div
             className={`nav-item ${isActive("/billing") ? "active" : ""}`}
             onClick={() => handleNavigation("/billing")}
           >
@@ -371,8 +371,8 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.billing')}</span>
-          </div>
-          <div
+          </div> */}
+          {/* <div
             className={`nav-item ${isActive("/subscription") ? "active" : ""}`}
             onClick={() => handleNavigation("/subscription")}
           >
@@ -392,12 +392,12 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.upgradePlan')}</span>
-          </div>
+          </div> */}
         </div>
       </nav>
 
       {/* Upgrade Card */}
-      <div className="upgrade-card">
+      {/* <div className="upgrade-card">
         <div className="upgrade-content">
           <div className="plan-info">
             <span className="plan-name">{t('sidebar.freePlan')}</span>
@@ -413,7 +413,7 @@ const Sidebar = ({ activeItem }) => {
             {t('sidebar.upgradeNow')}
           </button>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 };
