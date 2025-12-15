@@ -135,6 +135,15 @@ const userSchema = new mongoose.Schema({
       enum: ['light', 'dark'],
       default: 'light'
     },
+    language: {
+      type: String,
+      enum: ['en', 'ar'],
+      default: 'en'
+    },
+    timezone: {
+      type: String,
+      default: 'Asia/Riyadh'
+    },
     emailNotifications: {
       paymentReminders: {
         type: Boolean,

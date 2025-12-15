@@ -160,11 +160,11 @@ const HamburgerMenu = ({ sidebarItems, headerItems }) => {
         </nav>
 
         {/* Header Items (User Profile, Language Toggle, etc.) */}
-        {headerItems && (
+        {/* {headerItems && (
           <div className="mobile-menu-footer">
             {headerItems}
           </div>
-        )}
+        )} */}
       </div>
     </>
   );

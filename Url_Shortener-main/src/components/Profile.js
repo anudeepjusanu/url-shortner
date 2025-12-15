@@ -599,16 +599,17 @@ const Profile = () => {
                       <input
                         type="text"
                         value={personalInfo.jobTitle}
-                        onChange={(e) => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
-                        disabled={!isEditingPersonal}
+                        readOnly
+                        disabled
                         style={{
                           width: '100%',
                           padding: '10px 14px',
                           border: '1px solid #D1D5DB',
                           borderRadius: '8px',
                           fontSize: '14px',
-                          background: isEditingPersonal ? '#fff' : '#F9FAFB',
-                          cursor: isEditingPersonal ? 'text' : 'not-allowed'
+                          background: '#F9FAFB',
+                          cursor: 'not-allowed',
+                          color: '#6B7280'
                         }}
                       />
                     </div>

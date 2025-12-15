@@ -583,14 +583,14 @@ const CustomDomains = () => {
                   <svg width="14" height="14" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>Copied</span>
+                  <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>{t('customDomains.dnsModal.copied') || 'Copied'}</span>
                 </>
               ) : (
                 <>
                   <svg width="14" height="14" fill="none" stroke="#6B7280" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>Copy</span>
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>{t('customDomains.dnsModal.copy') || 'Copy'}</span>
                 </>
               )}
             </button>
@@ -770,11 +770,12 @@ const CustomDomains = () => {
           width: '90%',
           maxWidth: '600px',
           maxHeight: '90vh',
-          overflow: 'auto'
+          overflow: 'auto',
+          direction: isRTL ? 'rtl' : 'ltr'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600', color: '#1F2937' }}>
-              Domain Verification
+          <div style={{ display: 'flex', flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600', color: '#1F2937', textAlign: isRTL ? 'right' : 'left' }}>
+              {t('customDomains.dnsModal.title') || 'Domain Verification'}
             </h3>
             <button
               onClick={() => {
@@ -801,14 +802,14 @@ const CustomDomains = () => {
             padding: '1rem',
             marginBottom: '1.5rem'
           }}>
-            <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
-              Add the following DNS record to verify your domain:
+            <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0, textAlign: isRTL ? 'right' : 'left' }}>
+              {t('customDomains.dnsModal.instruction') || 'Add the following DNS record to verify your domain:'}
             </p>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#1F2937' }}>
-              DNS Configuration Required:
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#1F2937', textAlign: isRTL ? 'right' : 'left' }}>
+              {t('customDomains.dnsModal.configTitle') || 'DNS Configuration Required:'}
             </h4>
             <div style={{
               backgroundColor: '#F9FAFB',
@@ -822,14 +823,16 @@ const CustomDomains = () => {
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '0.75rem',
-                gap: '16px'
+                gap: '16px',
+                // flexDirection: isRTL ? 'row-reverse' : 'row'
               }}>
                 <span style={{
                   fontSize: '0.875rem',
                   color: '#6B7280',
                   minWidth: '60px',
-                  fontWeight: '500'
-                }}>Type:</span>
+                  fontWeight: '500',
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>{t('customDomains.dnsModal.type') || 'Type'}:</span>
                 <span style={{
                   fontFamily: 'monospace',
                   fontSize: '0.875rem',
@@ -847,14 +850,16 @@ const CustomDomains = () => {
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '0.75rem',
-                gap: '16px'
+                gap: '16px',
+                // flexDirection: isRTL ? 'row-reverse' : 'row'
               }}>
                 <span style={{
                   fontSize: '0.875rem',
                   color: '#6B7280',
                   minWidth: '60px',
-                  fontWeight: '500'
-                }}>Name:</span>
+                  fontWeight: '500',
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>{t('customDomains.dnsModal.name') || 'Name'}:</span>
                 <span style={{
                   fontFamily: 'monospace',
                   fontSize: '0.875rem',
@@ -874,14 +879,16 @@ const CustomDomains = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '16px'
+                gap: '16px',
+                // flexDirection: isRTL ? 'row-reverse' : 'row'
               }}>
                 <span style={{
                   fontSize: '0.875rem',
                   color: '#6B7280',
                   minWidth: '60px',
-                  fontWeight: '500'
-                }}>Value:</span>
+                  fontWeight: '500',
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>{t('customDomains.dnsModal.value') || 'Value'}:</span>
                 <span style={{
                   fontFamily: 'monospace',
                   fontSize: '0.875rem',
@@ -913,14 +920,14 @@ const CustomDomains = () => {
                       <svg width="14" height="14" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>Copied</span>
+                      <span style={{ fontSize: '0.75rem', color: '#FFFFFF', fontWeight: '500' }}>{t('customDomains.dnsModal.copied') || 'Copied'}</span>
                     </>
                   ) : (
                     <>
                       <svg width="14" height="14" fill="none" stroke="#6B7280" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>Copy</span>
+                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>{t('customDomains.dnsModal.copy') || 'Copy'}</span>
                     </>
                   )}
                 </button>
@@ -928,7 +935,7 @@ const CustomDomains = () => {
             </div>
           </div>
 
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '12px', justifyContent: isRTL ? 'flex-start' : 'flex-end', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
             <button
               onClick={() => handleVerifyDomain(selectedDomain.id || selectedDomain._id)}
               disabled={verificationStatus === 'checking'}
@@ -1168,6 +1175,143 @@ const CustomDomains = () => {
         .create-first-link-btn {
           transition: all 0.2s ease;
         }
+
+        /* Responsive styles for tablets and mobile */
+        @media (max-width: 1024px) {
+          .analytics-content {
+            padding: 16px !important;
+          }
+          .page-header {
+            flex-direction: column !important;
+            gap: 16px;
+            align-items: stretch !important;
+          }
+          .page-header button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .analytics-content {
+            padding: 12px !important;
+          }
+          .page-title {
+            font-size: 1.5rem !important;
+          }
+          .page-subtitle {
+            font-size: 0.875rem !important;
+          }
+          .link-card {
+            flex-direction: column !important;
+            gap: 16px !important;
+          }
+          .link-actions {
+            width: 100%;
+            justify-content: stretch !important;
+            flex-direction: column !important;
+          }
+          .link-actions button {
+            width: 100% !important;
+            min-width: auto !important;
+            justify-content: center !important;
+          }
+          .link-meta {
+            flex-direction: column !important;
+            gap: 8px !important;
+            align-items: flex-start !important;
+          }
+          .meta-item {
+            width: 100%;
+          }
+          .url-row {
+            flex-direction: column !important;
+            gap: 4px !important;
+            align-items: flex-start !important;
+          }
+          .url-label {
+            min-width: auto !important;
+          }
+          .short-url, .original-url {
+            word-break: break-all !important;
+            width: 100%;
+          }
+          .link-status {
+            flex-wrap: wrap !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .analytics-content {
+            padding: 8px !important;
+          }
+          .page-title {
+            font-size: 1.25rem !important;
+          }
+          .page-subtitle {
+            font-size: 0.8125rem !important;
+          }
+          .link-card {
+            padding: 16px !important;
+          }
+          .link-title {
+            font-size: 14px !important;
+          }
+          .status-badge {
+            font-size: 11px !important;
+            padding: 3px 10px !important;
+          }
+          .url-row {
+            font-size: 13px !important;
+          }
+          .link-meta {
+            font-size: 12px !important;
+          }
+          .link-actions button {
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+          }
+          .modal-overlay > div {
+            width: 95% !important;
+            padding: 1.5rem !important;
+            max-height: 95vh !important;
+          }
+          .modal-overlay h3 {
+            font-size: 1.125rem !important;
+          }
+          .modal-overlay button {
+            font-size: 13px !important;
+            padding: 8px 12px !important;
+          }
+        }
+
+        /* Modal responsive styles */
+        @media (max-width: 768px) {
+          .modal-overlay > div {
+            width: 95% !important;
+            padding: 1.5rem !important;
+          }
+          .empty-state {
+            padding: 32px 16px !important;
+          }
+          .empty-state h3 {
+            font-size: 14px !important;
+          }
+          .empty-state p {
+            font-size: 13px !important;
+          }
+        }
+
+        /* Tablet specific adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .link-card {
+            flex-wrap: wrap;
+          }
+          .link-actions {
+            width: 100%;
+            justify-content: flex-start !important;
+          }
+        }
       `}</style>
       <div className="analytics-container">
         <MainHeader />
@@ -1179,10 +1323,11 @@ const CustomDomains = () => {
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'space-between',
-              // alignItems: 'flex-start',
-              marginBottom: '20px'
+              alignItems: 'center',
+              marginBottom: '20px',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}>
-              <div className="header-info" style={{ margin: 0 }}>
+              <div className="header-info" style={{ margin: 0, textAlign: isRTL ? 'right' : 'left' }}>
                 <h1 className="page-title" style={{ marginBottom: '4px' }}>{t('customDomains.title')}</h1>
                 <p className="page-subtitle" style={{ margin: 0 }}>{t('customDomains.subtitle')}</p>
               </div>
@@ -1371,7 +1516,7 @@ const CustomDomains = () => {
                               gap: isRTL ? '16px' : '8px',
                               fontSize: '14px',
                               marginBottom: '8px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              // flexDirection: isRTL ? 'row-reverse' : 'row',
                               textAlign: isRTL ? 'right' : 'left',
                               alignItems: 'flex-start'
                             }}>
@@ -1392,7 +1537,7 @@ const CustomDomains = () => {
                               gap: isRTL ? '16px' : '8px',
                               fontSize: '14px',
                               marginBottom: '8px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              // flexDirection: isRTL ? 'row-reverse' : 'row',
                               textAlign: isRTL ? 'right' : 'left',
                               alignItems: 'flex-start'
                             }}>
@@ -1410,7 +1555,7 @@ const CustomDomains = () => {
                               </span>
                             </div>
                           </div>
-                          <div className="link-meta" style={{
+                          <div  style={{
                             display: 'flex',
                             gap: isRTL ? '20px' : '16px',
                             flexWrap: 'wrap',

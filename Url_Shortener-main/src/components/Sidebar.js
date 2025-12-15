@@ -266,7 +266,7 @@ const Sidebar = ({ activeItem }) => {
         </div>
 
         {/* Admin Section - Only for admin and super_admin */}
-        {/* {hasRole(['admin', 'super_admin']) && (
+        {hasRole(['admin', 'super_admin']) && (
           <div className="nav-section">
             <div className="nav-label">{t('sidebar.admin') || 'Admin'}</div>
             <div
@@ -303,7 +303,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
           </div>
         )}
- */}
+
         {/* Account Section */}
         <div className="nav-section">
           <div className="nav-label">{t('sidebar.account')}</div>
@@ -334,7 +334,7 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>{t('sidebar.profile')}</span>
           </div>
-          <div
+          {/* <div
             className={`nav-item ${isActive("/billing") ? "active" : ""}`}
             onClick={() => handleNavigation("/billing")}
           >
@@ -371,8 +371,8 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.billing')}</span>
-          </div>
-          <div
+          </div> */}
+          {/* <div
             className={`nav-item ${isActive("/subscription") ? "active" : ""}`}
             onClick={() => handleNavigation("/subscription")}
           >
@@ -392,12 +392,12 @@ const Sidebar = ({ activeItem }) => {
               </svg>
             </div>
             <span>{t('sidebar.upgradePlan')}</span>
-          </div>
+          </div> */}
         </div>
       </nav>
 
       {/* Upgrade Card */}
-      <div className="upgrade-card">
+      {/* <div className="upgrade-card">
         <div className="upgrade-content">
           <div className="plan-info">
             <span className="plan-name">{t('sidebar.freePlan')}</span>
@@ -413,7 +413,7 @@ const Sidebar = ({ activeItem }) => {
             {t('sidebar.upgradeNow')}
           </button>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 };
