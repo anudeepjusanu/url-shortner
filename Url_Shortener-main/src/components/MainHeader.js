@@ -21,9 +21,14 @@ const MainHeader = () => {
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
 
+  // Fetch user profile when user changes (login/logout)
   useEffect(() => {
-    fetchUserProfile();
-  }, []);
+    if (user) {
+      fetchUserProfile();
+    } else {
+      setUserProfile(null);
+    }
+  }, [user]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import apiClient from '../services/api';
+import { useAuth } from './AuthContext';
 
 const PermissionContext = createContext();
 
@@ -15,8 +16,11 @@ export const PermissionProvider = ({ children }) => {
   const [permissions, setPermissions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Get auth state to react to login/logout
+  const { isAuthenticated, user } = useAuth();
 
-  const fetchPermissions = async () => {
+  const fetchPermissions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.get('/roles/my-permissions');
@@ -35,17 +39,19 @@ export const PermissionProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  // Fetch permissions when authentication state changes
   useEffect(() => {
-    // Only fetch if user is authenticated (has token)
-    const token = apiClient.getToken();
-    if (token) {
+    if (isAuthenticated && user) {
+      // User is authenticated, fetch permissions
       fetchPermissions();
     } else {
+      // User is not authenticated, clear permissions
+      setPermissions(null);
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, user, fetchPermissions]);
 
   /**
    * Check if user has a specific permission
@@ -120,6 +126,12 @@ export const PermissionProvider = ({ children }) => {
     await fetchPermissions();
   };
 
+  // Compute role flags based on current permissions
+  const isAdmin = permissions ? ['admin', 'super_admin'].includes(permissions.role) : false;
+  const isSuperAdmin = permissions ? permissions.role === 'super_admin' : false;
+  const isEditor = permissions ? permissions.role === 'editor' : false;
+  const isViewer = permissions ? permissions.role === 'viewer' : false;
+
   const value = {
     permissions,
     loading,
@@ -128,10 +140,10 @@ export const PermissionProvider = ({ children }) => {
     hasRole,
     hasRoleOrAbove,
     refreshPermissions,
-    isAdmin: hasRole(['admin', 'super_admin']),
-    isSuperAdmin: hasRole(['super_admin']),
-    isEditor: hasRole(['editor']),
-    isViewer: hasRole(['viewer'])
+    isAdmin,
+    isSuperAdmin,
+    isEditor,
+    isViewer
   };
 
   return (
