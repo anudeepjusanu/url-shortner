@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI, analyticsAPI, authAPI } from '../services/api';
+import { getCurrentDomain, getShortUrl as getDomainShortUrl, isSystemDomain } from '../utils/domainUtils';
 import './Dashboard.css';
 import './DashboardLayout.css';
 
@@ -277,8 +278,13 @@ const Dashboard = () => {
   };
 
   const getShortUrl = (link) => {
-    const domain = link.domain || 'laghhu.link';
-    return `${domain}/${link.shortCode}`;
+    // Use current domain based on where user is accessing from
+    const currentDomain = getCurrentDomain();
+    // If link has a custom domain that's not a system domain, use it
+    if (link.domain && !isSystemDomain(link.domain)) {
+      return `${link.domain}/${link.shortCode}`;
+    }
+    return `${currentDomain}/${link.shortCode}`;
   };
 
 

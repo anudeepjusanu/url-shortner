@@ -273,8 +273,8 @@ const validateExportQuery = [
 const validateAdminUserUpdate = [
   body('role')
     .optional()
-    .isIn(['user', 'admin', 'premium'])
-    .withMessage('Role must be one of: user, admin, premium'),
+    .isIn(['user', 'admin', 'super_admin', 'viewer'])
+    .withMessage('Role must be one of: user, admin, super_admin, viewer'),
   body('isActive')
     .optional()
     .isBoolean()

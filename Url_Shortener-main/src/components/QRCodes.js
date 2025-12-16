@@ -7,6 +7,7 @@ import AccessDenied from "./AccessDenied";
 import { qrCodeAPI, urlsAPI } from "../services/api";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePermissions } from "../contexts/PermissionContext";
+import { getCurrentDomain, isSystemDomain } from "../utils/domainUtils";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 import "./QRCodes.css";
@@ -453,11 +454,16 @@ const QRCodes = () => {
   };
 
   const getShortUrl = (link) => {
+    const currentDomain = getCurrentDomain();
+    console.log(currentDomain,"current")
     if (typeof link === 'string') {
       const foundLink = links.find(l => l._id === link || l.id === link);
-      return foundLink ? `${foundLink.domain || 'laghhu.link'}/${foundLink.shortCode}` : '';
+      if (!foundLink) return '';
+      const domain = foundLink.domain && !isSystemDomain(foundLink.domain) ? foundLink.domain : currentDomain;
+      return `${domain}/${foundLink.shortCode}`;
     }
-    return `${link.domain || 'laghhu.link'}/${link.shortCode}`;
+    const domain = link.domain && !isSystemDomain(link.domain) ? link.domain : currentDomain;
+    return `${domain}/${link.shortCode}`;
   };
 
   const handleSelectLink = (linkId) => {

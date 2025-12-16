@@ -586,8 +586,8 @@ const getAvailableDomains = async (req, res) => {
     const activeDomains = domains.filter(domain => domain.isActive);
 
     // Always include the base/default system domain
-    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
-    const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
+    const baseDomain = process.env.BASE_DOMAIN || 'snip.sa';
+    const baseUrl = process.env.BASE_URL || 'https://snip.sa';
     
     const domainList = [
       // Base domain (always first and default if user has no custom domains)

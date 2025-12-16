@@ -7,6 +7,7 @@ import MainHeader from "./MainHeader";
 import AccessDenied from "./AccessDenied";
 import { analyticsAPI, urlsAPI } from "../services/api";
 import { usePermissions } from "../contexts/PermissionContext";
+import { getCurrentDomain, getShortUrlWithProtocol, isSystemDomain } from "../utils/domainUtils";
 import "./Analytics.css";
 import "./DashboardLayout.css";
 
@@ -336,9 +337,7 @@ const Analytics = () => {
   const handleShare = async () => {
     if (!linkData) return;
 
-    const shareUrl = linkData.domain && linkData.domain !== 'laghhu.link'
-      ? `https://${linkData.domain}/${linkData.shortCode}`
-      : `https://laghhu.link/${linkData.shortCode}`;
+    const shareUrl = getShortUrlWithProtocol(linkData);
 
     // Check if Web Share API is available
     if (navigator.share) {
@@ -690,9 +689,9 @@ const Analytics = () => {
                       direction: 'ltr',
                       textAlign: isRTL ? 'right' : 'left'
                     }}>
-                      {linkData.domain && linkData.domain !== 'laghhu.link'
+                      {linkData.domain && !isSystemDomain(linkData.domain)
                         ? `${linkData.domain}/${linkData.shortCode}`
-                        : `laghhu.link/${linkData.shortCode}`}
+                        : `${getCurrentDomain()}/${linkData.shortCode}`}
                     </h3>
                     <p className="original-link" style={{
                       fontSize: '13px',
@@ -717,11 +716,7 @@ const Analytics = () => {
                 }}>
                   <button
                     className=" copy-btn"
-                    onClick={() => copyToClipboard(
-                      linkData.domain && linkData.domain !== 'laghhu.link'
-                        ? `https://${linkData.domain}/${linkData.shortCode}`
-                        : `https://laghhu.link/${linkData.shortCode}`
-                    )}
+                    onClick={() => copyToClipboard(getShortUrlWithProtocol(linkData))}
                     style={{
                       padding: '8px 12px',
                       backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6',
