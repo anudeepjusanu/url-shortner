@@ -7,6 +7,7 @@ import Toast from './Toast';
 import AccessDenied from './AccessDenied';
 import { domainsAPI } from '../services/api';
 import { usePermissions } from '../contexts/PermissionContext';
+import { getCurrentDomain } from '../utils/domainUtils';
 import './CustomDomains.css';
 
 const CustomDomains = () => {
@@ -561,9 +562,9 @@ const CustomDomains = () => {
               backgroundColor: '#FFFFFF',
               border: '1px solid #E5E7EB',
               borderRadius: '4px'
-            }}>laghhu.link</span>
+            }}>{getCurrentDomain()}</span>
             <button
-              onClick={() => handleCopyToClipboard('laghhu.link', 'value')}
+              onClick={() => handleCopyToClipboard(getCurrentDomain(), 'value')}
               style={{
                 padding: '6px 10px',
                 backgroundColor: copiedField === 'value' ? '#10B981' : '#FFFFFF',
@@ -898,9 +899,9 @@ const CustomDomains = () => {
                   backgroundColor: '#FFFFFF',
                   border: '1px solid #E5E7EB',
                   borderRadius: '4px'
-                }}>laghhu.link</span>
+                }}>{getCurrentDomain()}</span>
                 <button
-                  onClick={() => handleCopyToClipboard('laghhu.link', 'modal-value')}
+                  onClick={() => handleCopyToClipboard(getCurrentDomain(), 'modal-value')}
                   style={{
                     padding: '6px 10px',
                     backgroundColor: copiedField === 'modal-value' ? '#10B981' : '#FFFFFF',

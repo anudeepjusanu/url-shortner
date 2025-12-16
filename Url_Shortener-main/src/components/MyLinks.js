@@ -16,6 +16,7 @@ import AccessDenied from './AccessDenied';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { usePermissions } from '../contexts/PermissionContext';
+import { getCurrentDomain, getShortUrlWithProtocol, isSystemDomain } from '../utils/domainUtils';
 import './MyLinks.css';
 
 // Reserved aliases that cannot be used for shortened URLs
@@ -202,12 +203,7 @@ function MyLinks() {
 
   const handleCopyLink = async (link) => {
     try {
-      let shortUrl;
-      if (link.domain && link.domain !== 'laghhu.link') {
-        shortUrl = `http://${link.domain}/${link.shortCode}`;
-      } else {
-        shortUrl = `https://laghhu.link/${link.shortCode}`;
-      }
+      const shortUrl = getShortUrlWithProtocol(link);
       await navigator.clipboard.writeText(shortUrl);
       setCopiedId(link.id || link._id);
       setTimeout(() => setCopiedId(null), 2000);
@@ -223,9 +219,10 @@ function MyLinks() {
 
   const handleDeleteClick = (link) => {
     const linkId = link.id || link._id;
-    const shortUrl = link.domain && link.domain !== 'laghhu.link'
+    const currentDomain = getCurrentDomain();
+    const shortUrl = link.domain && !isSystemDomain(link.domain)
       ? `${link.domain}/${link.shortCode}`
-      : `laghhu.link/${link.shortCode}`;
+      : `${currentDomain}/${link.shortCode}`;
 
     setDeleteDialog({
       isOpen: true,
@@ -881,7 +878,7 @@ function MyLinks() {
                       </label>
                       <div className="custom-url-input">
                         <span className="url-prefix">
-                          {availableDomains.find(d => d.id === selectedDomainId)?.fullDomain || 'laghhu.link'}/
+                          {availableDomains.find(d => d.id === selectedDomainId)?.fullDomain || getCurrentDomain()}/
                         </span>
                         <input
                           id="mylinks-customName"
@@ -1180,7 +1177,7 @@ function MyLinks() {
                             // }}
                             >
                               {/* <a
-                                href={link.domain && link.domain !== 'laghhu.link' ? `http://${link.domain}/${link.shortCode}` : `https://laghhu.link/${link.shortCode}`}
+                                href={getShortUrlWithProtocol(link)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="short-url"
@@ -1199,7 +1196,7 @@ function MyLinks() {
                                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                                {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
+                                {link.domain && !isSystemDomain(link.domain) ? `${link.domain}/${link.shortCode}` : `${getCurrentDomain()}/${link.shortCode}`}
                               </a> */}
                               <a
                                 href={link.originalUrl}
@@ -1220,7 +1217,7 @@ function MyLinks() {
                                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                                {link.domain && link.domain !== 'laghhu.link' ? `${link.domain}/${link.shortCode}` : `laghhu.link/${link.shortCode}`}
+                                {link.domain && !isSystemDomain(link.domain) ? `${link.domain}/${link.shortCode}` : `${getCurrentDomain()}/${link.shortCode}`}
                               </a>
                               <a
                                 href={link.originalUrl}
