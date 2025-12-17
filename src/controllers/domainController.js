@@ -53,7 +53,7 @@ const checkDomainAccess = (domain, user) => {
 
 const addDomain = async (req, res) => {
   try {
-    const { domain, subdomain, isDefault = false } = req.body;
+    let { domain, subdomain, isDefault = false } = req.body;
 
     if (!domain) {
       return res.status(400).json({
