@@ -1130,12 +1130,59 @@
     "contentFilter": "Content Filter",
     "admin": "ADMIN",
     "userManagement": "User Management",
+    "googleAnalytics": "Google Analytics",
     "account": "ACCOUNT",
     "profile": "Profile",
     "upgradePlan": "Upgrade Plan",
     "freePlan": "Free Plan",
     "billing": "Billing & Payments",
     "upgradeNow": "Upgrade Now"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "Website traffic and user behavior insights",
+    "loading": "Loading Google Analytics...",
+    "refresh": "Refresh",
+    "notConfigured": {
+      "title": "Google Analytics Not Configured",
+      "description": "Please configure Google Analytics credentials in the server environment variables.",
+      "instructions": "Required Environment Variables:"
+    },
+    "dateRange": {
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "90days": "Last 90 days"
+    },
+    "realtime": {
+      "live": "LIVE",
+      "activeUsers": "Active Users Right Now"
+    },
+    "metrics": {
+      "activeUsers": "Active Users",
+      "newUsers": "New Users",
+      "sessions": "Sessions",
+      "pageViews": "Page Views",
+      "avgDuration": "Avg. Duration",
+      "engagementRate": "Engagement Rate",
+      "bounceRate": "Bounce Rate"
+    },
+    "charts": {
+      "trafficOverTime": "Traffic Over Time"
+    },
+    "tables": {
+      "trafficSources": "Traffic Sources",
+      "topPages": "Top Pages",
+      "devices": "Devices",
+      "browsers": "Browsers",
+      "locations": "Top Locations",
+      "source": "Source",
+      "sessions": "Sessions",
+      "users": "Users",
+      "page": "Page",
+      "views": "Views",
+      "country": "Country",
+      "city": "City"
+    }
   },
   "terms": {
     "title": "Terms and Conditions",

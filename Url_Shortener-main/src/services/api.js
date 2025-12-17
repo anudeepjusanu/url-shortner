@@ -414,5 +414,38 @@ export const userManagementAPI = {
   getUserStats: () => apiClient.get('/users/stats')
 };
 
+// Google Analytics API methods (super_admin only)
+export const googleAnalyticsAPI = {
+  // Check if GA is configured
+  checkStatus: () => apiClient.get('/google-analytics/status'),
+
+  // Get real-time active users
+  getRealtime: () => apiClient.get('/google-analytics/realtime'),
+
+  // Get overview metrics
+  getOverview: (params = {}) => apiClient.get('/google-analytics/overview', params),
+
+  // Get traffic over time
+  getTrafficOverTime: (params = {}) => apiClient.get('/google-analytics/traffic-over-time', params),
+
+  // Get traffic sources
+  getTrafficSources: (params = {}) => apiClient.get('/google-analytics/traffic-sources', params),
+
+  // Get top pages
+  getTopPages: (params = {}) => apiClient.get('/google-analytics/top-pages', params),
+
+  // Get geographic data
+  getGeographic: (params = {}) => apiClient.get('/google-analytics/geographic', params),
+
+  // Get device breakdown
+  getDevices: (params = {}) => apiClient.get('/google-analytics/devices', params),
+
+  // Get browser data
+  getBrowsers: (params = {}) => apiClient.get('/google-analytics/browsers', params),
+
+  // Get full dashboard data (all metrics in one call)
+  getDashboard: (params = {}) => apiClient.get('/google-analytics/dashboard', params)
+};
+
 // Export the API client instance
 export default apiClient;
