@@ -336,3 +336,23 @@
     font-size: 14px;
   }
 }
+
+/* Header Logo Responsive Styles */
+.header-logo-img {
+  height: 48px;
+  width: auto;
+}
+
+/* Desktop and large screens - bigger logo */
+@media (min-width: 1024px) {
+  .header-logo-img {
+    height: 64px;
+  }
+}
+
+/* Extra large screens */
+@media (min-width: 1440px) {
+  .header-logo-img {
+    height: 72px;
+  }
+}

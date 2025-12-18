@@ -863,6 +863,53 @@ background: linear-gradient(135deg, #A855F7 0%, #EC4899 70.71%);}
   font-size: 16px;
 }
 
+/* Header Logo Responsive Styles */
+.header-logo-img {
+  height: 48px;
+  width: auto;
+}
+
+/* Footer Logo Styles */
+.footer-brand-logo {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-logo-img {
+  height: 56px;
+  width: auto;
+}
+
+/* Desktop and large screens - bigger logo */
+@media (min-width: 1024px) {
+  .header-logo-img {
+    height: 64px;
+  }
+  
+  .footer-logo-img {
+    height: 72px;
+  }
+  
+  .footer-brand-logo {
+    padding: 16px 20px;
+  }
+}
+
+/* Extra large screens */
+@media (min-width: 1440px) {
+  .header-logo-img {
+    height: 72px;
+  }
+  
+  .footer-logo-img {
+    height: 80px;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .hero-section {
