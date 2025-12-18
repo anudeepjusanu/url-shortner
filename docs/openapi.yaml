@@ -74,9 +74,12 @@ paths:
                     source: newsletter
                     medium: email
                     campaign: spring_sale
-                  restrictions:
+                  restrictions: 
+                    countries: ["US", "CA", "GB"]
+                    allowedCountries: true
+                    deviceTypes: ["mobile", "desktop"]
                     maxClicks: 1000
-                    allowedCountries: [US, CA, GB]
+                  
       responses:
         '201':
           description: URL created successfully
