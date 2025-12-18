@@ -539,7 +539,7 @@ const Profile = () => {
                         }}
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label style={{
                         display: 'block',
                         fontSize: '14px',
@@ -563,8 +563,8 @@ const Profile = () => {
                           cursor: isEditingPersonal ? 'text' : 'not-allowed'
                         }}
                       />
-                    </div>
-                    <div>
+                    </div> */}
+                    {/* <div>
                       <label style={{
                         display: 'block',
                         fontSize: '14px',
@@ -587,7 +587,7 @@ const Profile = () => {
                           cursor: isEditingPersonal ? 'text' : 'not-allowed'
                         }}
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <label style={{
                         display: 'block',
