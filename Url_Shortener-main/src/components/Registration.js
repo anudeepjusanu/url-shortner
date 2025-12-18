@@ -398,7 +398,7 @@ const Registration = () => {
           </div>
 
           {/* Google Sign Up */}
-          <button type="button" className="google-btn" onClick={handleGoogleSignup}>
+          {/* <button type="button" className="google-btn" onClick={handleGoogleSignup}>
             <svg width="20" height="20" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0813L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z"
@@ -423,7 +423,7 @@ const Registration = () => {
           <div className="divider">
             <hr />
             <span>{t('auth.register.divider')}</span>
-          </div>
+          </div> */}
 
           {/* Error Display */}
           {error && (
