@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MainHeader from "./MainHeader";
 import { useAuth } from "../contexts/AuthContext";
-import api from "../services/api";
+import api, { urlsAPI, analyticsAPI, domainsAPI } from "../services/api";
 import "./Profile.css";
 import "./DashboardLayout.css";
 
@@ -92,16 +92,35 @@ const Profile = () => {
 
   const loadAccountStats = async () => {
     try {
-      const response = await api.get("/urls/stats");
-      if (response) {
-        setAccountStats({
-          totalLinks: response.totalLinks || 0,
-          totalClicks: response.totalClicks || 0,
-          customDomains: response.customDomains || 0,
-          accountAge: response.accountAge || "New User",
-          plan: response.plan || "Professional"
-        });
-      }
+      // Fetch stats from multiple sources for accuracy
+      const [statsResponse, analyticsResponse, domainsResponse] = await Promise.all([
+        api.get("/urls/stats").catch(() => null),
+        analyticsAPI.getOverview({ period: '30d' }).catch(() => null),
+        domainsAPI.getDomains().catch(() => null)
+      ]);
+
+      // Get totalLinks and plan from stats endpoint
+      const totalLinks = statsResponse?.totalLinks || 0;
+      const accountAge = statsResponse?.accountAge || "New User";
+      const plan = statsResponse?.plan || "Professional";
+
+      // Get totalClicks from analytics dashboard (more accurate)
+      const analyticsData = analyticsResponse?.data || analyticsResponse;
+      const totalClicks = analyticsData?.overview?.totalClicks || statsResponse?.totalClicks || 0;
+
+      // Get custom domains count
+      const domains = domainsResponse?.data?.domains || domainsResponse?.domains || domainsResponse || [];
+      const customDomainsCount = analyticsData?.overview?.totalCustomDomains || 
+                                 (Array.isArray(domains) ? domains.filter(d => d.isActive !== false).length : 0) ||
+                                 statsResponse?.customDomains || 0;
+
+      setAccountStats({
+        totalLinks,
+        totalClicks,
+        customDomains: customDomainsCount,
+        accountAge,
+        plan
+      });
     } catch (error) {
       console.error("Error loading stats:", error);
     }

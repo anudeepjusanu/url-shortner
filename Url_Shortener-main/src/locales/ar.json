@@ -331,11 +331,16 @@
     "vsLastPeriod": "مقارنة بالفترة الماضية",
     "changeVsLastPeriod": "{{change}} مقارنة بالفترة الماضية",
     "changeFromLastWeek": "{{change}} مقارنة بالأسبوع الماضي",
+    "scannedQRCodes": "رموز الاستجابة السريعة التي تم مسحها",
+    "noChartData": "لا تتوفر بيانات نشاط النقرات",
+    "noChartDataDesc": "ابدأ بمشاركة روابطك لرؤية اتجاهات النقرات والنشاط بمرور الوقت.",
     "stats": {
       "totalLinks": "إجمالي الروابط",
       "totalClicks": "إجمالي النقرات",
       "activeLinks": "الروابط النشطة",
-      "clickRate": "معدل النقر"
+      "clickRate": "معدل النقر",
+      "totalCustomDomains": "النطاقات المخصصة",
+      "active": "نشط"
     },
     "recentLinks": {
       "title": "الروابط الأخيرة",
