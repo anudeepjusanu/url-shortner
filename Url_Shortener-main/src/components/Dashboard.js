@@ -23,7 +23,8 @@ const Dashboard = () => {
     totalClicks: 0,
     qrScans: 0,           // Changed from uniqueVisitors to qrScans
     clickRate: 0,
-    totalLinks: 0
+    totalLinks: 0,
+    totalCustomDomains: 0
   });
   const [chartData, setChartData] = useState([]);
   const [recentLinks, setRecentLinks] = useState([]);
@@ -128,11 +129,15 @@ const Dashboard = () => {
         clickRate = ((totalClicks / totalLinks)).toFixed(1);
       }
 
+      // Extract custom domains count
+      const totalCustomDomains = overviewData.totalCustomDomains || data.totalCustomDomains || 0;
+
       setStats({
         totalClicks,
         qrScans: totalQRScans,
         clickRate,
-        totalLinks
+        totalLinks,
+        totalCustomDomains
       });
 
       // Extract chart data with multiple fallback options (same as Analytics)
@@ -1041,7 +1046,7 @@ const Dashboard = () => {
                     fontSize: '13px',
                     color: '#6B7280',
                     marginBottom: '8px'
-                  }}>Scanned QR Codes</div>
+                  }}>{t('dashboard.scannedQRCodes')}</div>
                   <div className="stats-number" style={{
                     fontSize: '28px',
                     fontWeight: '600',
@@ -1113,6 +1118,52 @@ const Dashboard = () => {
                 }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4l2-4z" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div className="stats-card" style={{
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
+              }}>
+                <div className="stats-content">
+                  <div className="stats-label" style={{
+                    fontSize: '13px',
+                    color: '#6B7280',
+                    marginBottom: '8px'
+                  }}>{t('dashboard.stats.totalCustomDomains')}</div>
+                  <div className="stats-number" style={{
+                    fontSize: '28px',
+                    fontWeight: '600',
+                    color: '#1F2937',
+                    marginBottom: '6px'
+                  }}>{loading ? '...' : stats.totalCustomDomains.toLocaleString()}</div>
+                  <div className="stats-change positive" style={{
+                    fontSize: '12px',
+                    color: '#7C3AED',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>{t('dashboard.stats.active')}</div>
+                </div>
+                <div className="stats-icon purple" style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#EDE9FE',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#7C3AED'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    <path d="M2 8h12M8 2c1.5 0 3 2.5 3 6s-1.5 6-3 6-3-2.5-3-6 1.5-6 3-6z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                   </svg>
                 </div>
               </div>
@@ -1354,7 +1405,7 @@ const Dashboard = () => {
                 marginBottom: '20px',
                 margin: '0 0 20px 0'
               }}>{t('dashboard.upgradeDescription')}</p>
-              <button className="upgrade-promo-btn" onClick={() => handleNavigation('/subscription')} style={{
+              {/* <button className="upgrade-promo-btn" onClick={() => handleNavigation('/subscription')} style={{
                 padding: '12px 24px',
                 backgroundColor: 'white',
                 color: '#7C3AED',
@@ -1365,7 +1416,7 @@ const Dashboard = () => {
                 cursor: 'pointer'
               }}>
                 {t('dashboard.upgradeToPro')}
-              </button>
+              </button> */}
             </div>
             <div className="promotion-image" style={{ marginLeft: '40px' }}>
               <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">

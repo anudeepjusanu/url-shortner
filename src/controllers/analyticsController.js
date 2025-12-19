@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Click, DailySummary } = require('../models/Analytics');
 const Url = require('../models/Url');
+const Domain = require('../models/Domain');
 const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
 
@@ -340,7 +341,16 @@ const getDashboardAnalytics = async (req, res) => {
     const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
     const urlIds = urls.map(url => url._id);
     
-    console.log('📊 Found URLs:', urlIds.length);
+    // Get custom domains count for the user
+    const customDomainsFilter = {
+      $or: [
+        { owner: userObjectId },
+        ...(orgObjectId ? [{ organization: orgObjectId }] : [])
+      ]
+    };
+    const totalCustomDomains = await Domain.countDocuments(customDomainsFilter);
+    
+    console.log('📊 Found URLs:', urlIds.length, 'Custom Domains:', totalCustomDomains);
     
     const [
       totalClicks,
@@ -533,6 +543,7 @@ const getDashboardAnalytics = async (req, res) => {
           totalUniqueClicks,
           totalQRScans,
           totalUniqueQRScans,
+          totalCustomDomains,
           averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0
         },
         chartData: {
