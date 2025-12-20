@@ -144,6 +144,116 @@ const userSchema = new mongoose.Schema({
       type: String,
       default: 'Asia/Riyadh'
     },
+    // Performance & Insights Notifications
+    notifications: {
+      // Weekly/Monthly Reports
+      weeklyDigest: {
+        type: Boolean,
+        default: true
+      },
+      monthlyReport: {
+        type: Boolean,
+        default: true
+      },
+      // Real-time Alerts
+      viralLinkAlert: {
+        type: Boolean,
+        default: true
+      },
+      performanceDropAlert: {
+        type: Boolean,
+        default: true
+      },
+      milestoneAlerts: {
+        type: Boolean,
+        default: true
+      },
+      // Engagement Notifications
+      inactivityReminder: {
+        type: Boolean,
+        default: true
+      },
+      featureTips: {
+        type: Boolean,
+        default: true
+      },
+      productUpdates: {
+        type: Boolean,
+        default: true
+      },
+      // Business Intelligence
+      competitorBenchmarks: {
+        type: Boolean,
+        default: false
+      },
+      predictiveAlerts: {
+        type: Boolean,
+        default: true
+      },
+      // Monetization
+      upgradeOpportunities: {
+        type: Boolean,
+        default: true
+      },
+      specialOffers: {
+        type: Boolean,
+        default: true
+      },
+      usageWarnings: {
+        type: Boolean,
+        default: true
+      },
+      // Operational
+      securityAlerts: {
+        type: Boolean,
+        default: true
+      },
+      domainStatus: {
+        type: Boolean,
+        default: true
+      },
+      linkExpiration: {
+        type: Boolean,
+        default: true
+      },
+      billingUpdates: {
+        type: Boolean,
+        default: true
+      },
+      // Marketing
+      newsletter: {
+        type: Boolean,
+        default: false
+      },
+      marketingEmails: {
+        type: Boolean,
+        default: false
+      }
+    },
+    // Report Settings
+    reportSettings: {
+      weeklyReportDay: {
+        type: String,
+        enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        default: 'monday'
+      },
+      monthlyReportDay: {
+        type: Number,
+        min: 1,
+        max: 28,
+        default: 1
+      },
+      reportFormat: {
+        type: String,
+        enum: ['email', 'pdf', 'both'],
+        default: 'email'
+      },
+      includeCharts: {
+        type: Boolean,
+        default: true
+      }
+    },
+    // Legacy fields for backward compatibility
     emailNotifications: {
       paymentReminders: {
         type: Boolean,

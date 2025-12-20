@@ -38,6 +38,359 @@ class ScheduledTasks {
     }
   }
 
+  // Send weekly digest reports
+  static async sendWeeklyDigests() {
+    try {
+      const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'lowercase' });
+      
+      // Find users who have weekly digest enabled and prefer this day
+      const users = await User.find({
+        'preferences.notifications.weeklyDigest': true,
+        $or: [
+          { 'preferences.reportSettings.weeklyReportDay': dayOfWeek },
+          { 'preferences.reportSettings.weeklyReportDay': { $exists: false } } // Default to Monday
+        ]
+      });
+
+      console.log(`Sending weekly digests to ${users.length} users`);
+
+      for (const user of users) {
+        try {
+          // Get user's link statistics for the past week
+          const Url = require('../models/Url');
+          const { Click } = require('../models/Analytics');
+          
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+          // Get user's links
+          const userLinks = await Url.find({ userId: user._id });
+          const linkIds = userLinks.map(link => link._id);
+
+          // Get analytics for the past week
+          const weeklyAnalytics = await Click.aggregate([
+            {
+              $match: {
+                url: { $in: linkIds },
+                timestamp: { $gte: oneWeekAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$url',
+                clicks: { $sum: 1 },
+                uniqueVisitors: { $addToSet: '$ipHash' }
+              }
+            }
+          ]);
+
+          // Calculate stats
+          const totalClicks = weeklyAnalytics.reduce((sum, item) => sum + item.clicks, 0);
+          const uniqueVisitors = weeklyAnalytics.reduce((sum, item) => sum + item.uniqueVisitors.length, 0);
+          const newLinks = userLinks.filter(link => new Date(link.createdAt) >= oneWeekAgo).length;
+
+          // Get top performing links
+          const topLinks = weeklyAnalytics
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 3)
+            .map(item => {
+              const link = userLinks.find(l => l._id.toString() === item._id.toString());
+              return {
+                title: link?.title || link?.shortCode || 'Untitled',
+                clicks: item.clicks,
+                shortCode: link?.shortCode
+              };
+            });
+
+          // Get top countries
+          const countryAnalytics = await Click.aggregate([
+            {
+              $match: {
+                url: { $in: linkIds },
+                timestamp: { $gte: oneWeekAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$location.countryName',
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 3 }
+          ]);
+
+          const topCountries = countryAnalytics.map(c => ({
+            name: c._id || 'Unknown',
+            percentage: Math.round((c.count / totalClicks) * 100) || 0
+          }));
+
+          const stats = {
+            totalClicks,
+            uniqueVisitors,
+            newLinks,
+            topLinks: topLinks.length > 0 ? topLinks : [{ title: 'No data', clicks: 0, shortCode: '-' }],
+            topCountries: topCountries.length > 0 ? topCountries : [{ name: 'No data', percentage: 0 }],
+            changeFromLastWeek: 0 // Would need historical data to calculate
+          };
+
+          await emailService.sendWeeklyDigest(user, stats);
+          console.log(`Sent weekly digest to ${user.email}`);
+        } catch (userError) {
+          console.error(`Error sending weekly digest to ${user.email}:`, userError);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending weekly digests:', error);
+    }
+  }
+
+  // Send monthly reports
+  static async sendMonthlyReports() {
+    try {
+      const dayOfMonth = new Date().getDate();
+      
+      // Find users who have monthly report enabled and prefer this day
+      const users = await User.find({
+        'preferences.notifications.monthlyReport': true,
+        $or: [
+          { 'preferences.reportSettings.monthlyReportDay': dayOfMonth },
+          { 'preferences.reportSettings.monthlyReportDay': { $exists: false } } // Default to 1st
+        ]
+      });
+
+      console.log(`Sending monthly reports to ${users.length} users`);
+
+      for (const user of users) {
+        try {
+          // Get user's link statistics for the past month
+          const Url = require('../models/Url');
+          const { Click } = require('../models/Analytics');
+          
+          const oneMonthAgo = new Date();
+          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+          // Get user's links
+          const userLinks = await Url.find({ userId: user._id });
+          const linkIds = userLinks.map(link => link._id);
+
+          // Get analytics for the past month
+          const monthlyAnalytics = await Click.aggregate([
+            {
+              $match: {
+                url: { $in: linkIds },
+                timestamp: { $gte: oneMonthAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$url',
+                clicks: { $sum: 1 },
+                uniqueVisitors: { $addToSet: '$ipHash' }
+              }
+            }
+          ]);
+
+          // Calculate stats
+          const totalClicks = monthlyAnalytics.reduce((sum, item) => sum + item.clicks, 0);
+          const uniqueVisitors = monthlyAnalytics.reduce((sum, item) => sum + item.uniqueVisitors.length, 0);
+          const totalLinks = userLinks.length;
+
+          // Get QR scans
+          const qrScans = await Click.countDocuments({
+            url: { $in: linkIds },
+            timestamp: { $gte: oneMonthAgo },
+            clickSource: 'qr_code'
+          });
+
+          // Get top performing links
+          const topLinks = monthlyAnalytics
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 5)
+            .map(item => {
+              const link = userLinks.find(l => l._id.toString() === item._id.toString());
+              return {
+                title: link?.title || link?.shortCode || 'Untitled',
+                clicks: item.clicks,
+                shortCode: link?.shortCode
+              };
+            });
+
+          // Get device breakdown
+          const deviceAnalytics = await Click.aggregate([
+            {
+              $match: {
+                url: { $in: linkIds },
+                timestamp: { $gte: oneMonthAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$device.type',
+                count: { $sum: 1 }
+              }
+            }
+          ]);
+
+          const deviceBreakdown = {
+            mobile: 0,
+            desktop: 0,
+            tablet: 0
+          };
+          deviceAnalytics.forEach(d => {
+            const device = (d._id || 'desktop').toLowerCase();
+            if (device.includes('mobile') || device.includes('phone')) {
+              deviceBreakdown.mobile += d.count;
+            } else if (device.includes('tablet') || device.includes('ipad')) {
+              deviceBreakdown.tablet += d.count;
+            } else {
+              deviceBreakdown.desktop += d.count;
+            }
+          });
+          const totalDevices = deviceBreakdown.mobile + deviceBreakdown.desktop + deviceBreakdown.tablet || 1;
+          deviceBreakdown.mobile = Math.round((deviceBreakdown.mobile / totalDevices) * 100);
+          deviceBreakdown.desktop = Math.round((deviceBreakdown.desktop / totalDevices) * 100);
+          deviceBreakdown.tablet = Math.round((deviceBreakdown.tablet / totalDevices) * 100);
+
+          // Get top countries
+          const countryAnalytics = await Click.aggregate([
+            {
+              $match: {
+                url: { $in: linkIds },
+                timestamp: { $gte: oneMonthAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$location.countryName',
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+          ]);
+
+          const topCountries = countryAnalytics.map(c => ({
+            name: c._id || 'Unknown',
+            clicks: c.count,
+            percentage: Math.round((c.count / totalClicks) * 100) || 0
+          }));
+
+          const daysInMonth = 30;
+          const stats = {
+            totalClicks,
+            uniqueVisitors,
+            totalLinks,
+            qrScans,
+            topLinks: topLinks.length > 0 ? topLinks : [{ title: 'No data', clicks: 0, shortCode: '-' }],
+            deviceBreakdown,
+            topCountries: topCountries.length > 0 ? topCountries : [{ name: 'No data', clicks: 0, percentage: 0 }],
+            changeFromLastMonth: 0, // Would need historical data to calculate
+            avgClicksPerDay: Math.round(totalClicks / daysInMonth)
+          };
+
+          await emailService.sendMonthlyReport(user, stats);
+          console.log(`Sent monthly report to ${user.email}`);
+        } catch (userError) {
+          console.error(`Error sending monthly report to ${user.email}:`, userError);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending monthly reports:', error);
+    }
+  }
+
+  // Check for viral links and send alerts
+  static async checkViralLinks() {
+    try {
+      const Url = require('../models/Url');
+      const { Click } = require('../models/Analytics');
+      
+      const oneHourAgo = new Date();
+      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+      // Find links with unusual traffic in the last hour
+      const viralLinks = await Click.aggregate([
+        {
+          $match: {
+            timestamp: { $gte: oneHourAgo }
+          }
+        },
+        {
+          $group: {
+            _id: '$url',
+            clicks: { $sum: 1 }
+          }
+        },
+        {
+          $match: {
+            clicks: { $gte: 100 } // Threshold for viral alert
+          }
+        }
+      ]);
+
+      for (const viral of viralLinks) {
+        try {
+          const url = await Url.findById(viral._id).populate('userId');
+          if (!url || !url.userId) continue;
+
+          const user = url.userId;
+          
+          // Check if user has viral alerts enabled
+          if (!user.preferences?.notifications?.viralLinkAlert) continue;
+
+          // Check if we already sent an alert for this link recently
+          const lastAlertKey = `viral_alert_${url._id}`;
+          if (user.lastAlerts && user.lastAlerts[lastAlertKey]) {
+            const lastAlert = new Date(user.lastAlerts[lastAlertKey]);
+            const hoursSinceLastAlert = (new Date() - lastAlert) / (1000 * 60 * 60);
+            if (hoursSinceLastAlert < 6) continue; // Don't spam alerts
+          }
+
+          // Get top source
+          const topSource = await Click.aggregate([
+            {
+              $match: {
+                url: url._id,
+                timestamp: { $gte: oneHourAgo }
+              }
+            },
+            {
+              $group: {
+                _id: '$referer',
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 1 }
+          ]);
+
+          const linkData = {
+            linkTitle: url.title,
+            shortUrl: `https://laghhu.link/${url.shortCode}`,
+            clicks: viral.clicks,
+            timeframe: '1 hour',
+            topSource: topSource[0]?._id || 'Direct traffic',
+            linkId: url._id
+          };
+
+          await emailService.sendViralAlert(user, linkData);
+          
+          // Update last alert time
+          await User.findByIdAndUpdate(user._id, {
+            $set: { [`lastAlerts.${lastAlertKey}`]: new Date() }
+          });
+
+          console.log(`Sent viral alert for ${url.shortCode} to ${user.email}`);
+        } catch (linkError) {
+          console.error(`Error processing viral link:`, linkError);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking viral links:', error);
+    }
+  }
+
   // Send trial ending notifications
   static async sendTrialEndingNotifications() {
     try {
@@ -171,6 +524,24 @@ class ScheduledTasks {
       await this.sendTrialEndingNotifications();
     });
 
+    // Weekly digest - every day at 8 AM (checks user's preferred day)
+    cron.schedule('0 8 * * *', async () => {
+      console.log('Running weekly digest task...');
+      await this.sendWeeklyDigests();
+    });
+
+    // Monthly reports - every day at 7 AM (checks user's preferred day)
+    cron.schedule('0 7 * * *', async () => {
+      console.log('Running monthly report task...');
+      await this.sendMonthlyReports();
+    });
+
+    // Viral link alerts - every 15 minutes
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('Checking for viral links...');
+      await this.checkViralLinks();
+    });
+
     // Check usage overages - daily at 11 PM
     cron.schedule('0 23 * * *', async () => {
       console.log('Running usage overage check...');
@@ -190,6 +561,14 @@ class ScheduledTasks {
     });
 
     console.log('✓ Scheduled tasks initialized');
+    console.log('  - Payment reminders: daily at 9 AM');
+    console.log('  - Trial ending notifications: daily at 10 AM');
+    console.log('  - Weekly digests: daily at 8 AM (user preference)');
+    console.log('  - Monthly reports: daily at 7 AM (user preference)');
+    console.log('  - Viral link alerts: every 15 minutes');
+    console.log('  - Usage overage check: daily at 11 PM');
+    console.log('  - Monthly usage reset: 1st of month at midnight');
+    console.log('  - Expired subscription check: daily at midnight');
   }
 }
 

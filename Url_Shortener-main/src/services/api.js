@@ -414,5 +414,34 @@ export const userManagementAPI = {
   getUserStats: () => apiClient.get('/users/stats')
 };
 
+// Preferences API methods
+export const preferencesAPI = {
+  // Get all notification preferences
+  getNotificationPreferences: () => apiClient.get('/preferences/notifications'),
+
+  // Update all notification preferences
+  updateNotificationPreferences: (data) => apiClient.put('/preferences/notifications', data),
+
+  // Toggle single notification setting
+  toggleNotification: (category, setting, enabled) => 
+    apiClient.request(`/preferences/notifications/${category}/${setting}`, {
+      method: 'PATCH',
+      body: { enabled }
+    }),
+
+  // Toggle entire category
+  toggleCategory: (category, enabled) => 
+    apiClient.request(`/preferences/notifications/category/${category}`, {
+      method: 'PATCH',
+      body: { enabled }
+    }),
+
+  // Get report preview
+  getReportPreview: (type) => apiClient.get(`/preferences/reports/${type}/preview`),
+
+  // Send test notification
+  sendTestNotification: (type) => apiClient.post('/preferences/notifications/test', { type })
+};
+
 // Export the API client instance
 export default apiClient;

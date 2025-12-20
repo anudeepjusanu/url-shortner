@@ -964,10 +964,79 @@
       "weeklyReportsDesc": "Get weekly analytics reports sent to your email",
       "productUpdates": "Product Updates",
       "securityAlerts": "Security Alerts",
-      "savePreferences": "Save Preferences"
+      "savePreferences": "Save Preferences",
+      "performance": {
+        "title": "Performance & Insights",
+        "weeklyDigest": "Weekly Performance Digest",
+        "weeklyDigestDesc": "Get a summary of your link performance every week",
+        "monthlyReport": "Monthly Business Report",
+        "monthlyReportDesc": "Detailed monthly analytics with trends and insights",
+        "viralAlert": "Viral Link Alerts",
+        "viralAlertDesc": "Get notified when your links get unusual traffic spikes",
+        "dropAlert": "Performance Drop Alerts",
+        "dropAlertDesc": "Alert when link clicks drop significantly",
+        "milestones": "Milestone Celebrations",
+        "milestonesDesc": "Celebrate when you hit click milestones (100, 1K, 10K)"
+      },
+      "engagement": {
+        "title": "Engagement & Tips",
+        "inactivity": "Inactivity Reminders",
+        "inactivityDesc": "Remind me if I haven't logged in for a while",
+        "featureTips": "Feature Tips & Tutorials",
+        "featureTipsDesc": "Learn about features you might not be using",
+        "productUpdates": "Product Updates",
+        "productUpdatesDesc": "Get notified about new features and improvements"
+      },
+      "business": {
+        "title": "Business Intelligence",
+        "benchmarks": "Industry Benchmarks",
+        "benchmarksDesc": "Compare your performance with industry averages",
+        "predictive": "Predictive Alerts",
+        "predictiveDesc": "Get alerts about predicted usage limits and trends"
+      },
+      "monetization": {
+        "title": "Account & Billing",
+        "upgrade": "Upgrade Opportunities",
+        "upgradeDesc": "Suggestions when you might benefit from upgrading",
+        "offers": "Special Offers & Discounts",
+        "offersDesc": "Exclusive deals and promotional offers",
+        "usage": "Usage Limit Warnings",
+        "usageDesc": "Alert when approaching plan limits"
+      },
+      "operational": {
+        "title": "Security & Operations",
+        "security": "Security Alerts",
+        "securityDesc": "Important security notifications (always recommended)",
+        "domain": "Domain Status Updates",
+        "domainDesc": "DNS verification and SSL certificate updates",
+        "expiration": "Link Expiration Reminders",
+        "expirationDesc": "Notify before your links expire",
+        "billing": "Billing Updates",
+        "billingDesc": "Payment confirmations and invoice notifications"
+      },
+      "marketing": {
+        "title": "Marketing & Newsletter",
+        "newsletter": "Newsletter",
+        "newsletterDesc": "Industry news, tips, and best practices",
+        "promotional": "Promotional Emails",
+        "promotionalDesc": "Marketing campaigns and announcements"
+      },
+      "reportSettings": {
+        "title": "Report Settings",
+        "weeklyDay": "Weekly Report Day",
+        "monthlyDay": "Monthly Report Day",
+        "format": "Report Format",
+        "includeCharts": "Include charts and visualizations"
+      },
+      "regional": {
+        "title": "Regional Settings",
+        "language": "Language",
+        "timezone": "Timezone"
+      }
     },
     "notifications": {
-      "title": "Notifications"
+      "title": "Notifications",
+      "settingsSaved": "Notification preferences saved successfully!"
     },
     "apiKeys": {
       "title": "API Keys",

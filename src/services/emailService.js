@@ -8,29 +8,51 @@ class EmailService {
   }
 
   setupTransporter() {
-    if (config.SMTP_HOST) {
-      this.transporter = nodemailer.createTransporter({
+    if (config.SMTP_HOST && config.SMTP_USER && config.SMTP_PASS) {
+      this.transporter = nodemailer.createTransport({
         host: config.SMTP_HOST,
-        port: config.SMTP_PORT,
+        port: config.SMTP_PORT || 587,
         secure: config.SMTP_PORT == 465,
         auth: {
           user: config.SMTP_USER,
           pass: config.SMTP_PASS
         }
       });
+      
+      // Verify connection
+      this.transporter.verify((error, success) => {
+        if (error) {
+          console.error('SMTP connection error:', error.message);
+        } else {
+          console.log('✓ Email service connected and ready');
+        }
+      });
     } else {
-      console.log('Email service not configured - SMTP settings missing');
+      console.log('⚠️ Email service not configured - SMTP settings missing');
+      console.log('   Required: SMTP_HOST, SMTP_USER, SMTP_PASS in .env file');
     }
+  }
+
+  // Check if email service is available
+  isAvailable() {
+    return this.transporter !== null;
+  }
+
+  // Get from address
+  getFromAddress() {
+    const fromName = config.SMTP_FROM_NAME || 'LaghhuLink';
+    const fromEmail = config.SMTP_FROM_EMAIL || config.SMTP_USER;
+    return `"${fromName}" <${fromEmail}>`;
   }
 
   async sendWelcomeEmail(user) {
     if (!this.transporter) {
       console.log('Email service not available');
-      return;
+      return { success: false, error: 'Email service not configured' };
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: this.getFromAddress(),
       to: user.email,
       subject: 'Welcome to LaghhuLink! 🚀',
       html: `
@@ -592,6 +614,410 @@ class EmailService {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
       console.error('Failed to send trial ending notification:', error);
+    }
+  }
+
+  // Weekly Performance Digest
+  async sendWeeklyDigest(user, stats = null) {
+    if (!this.transporter) {
+      const error = new Error('Email service not configured. Please add SMTP settings to your .env file.');
+      error.code = 'EMAIL_NOT_CONFIGURED';
+      throw error;
+    }
+
+    // Use provided stats or generate sample data for test
+    const weeklyStats = stats || {
+      totalClicks: Math.floor(Math.random() * 5000) + 100,
+      uniqueVisitors: Math.floor(Math.random() * 3000) + 50,
+      newLinks: Math.floor(Math.random() * 20) + 1,
+      topLinks: [
+        { title: 'Summer Campaign', clicks: 1234, shortCode: 'summer24' },
+        { title: 'Product Launch', clicks: 987, shortCode: 'launch' },
+        { title: 'Newsletter', clicks: 654, shortCode: 'news' }
+      ],
+      topCountries: [
+        { name: 'Saudi Arabia', percentage: 45 },
+        { name: 'UAE', percentage: 25 },
+        { name: 'Egypt', percentage: 15 }
+      ],
+      changeFromLastWeek: Math.floor(Math.random() * 40) - 10
+    };
+
+    const changeIcon = weeklyStats.changeFromLastWeek >= 0 ? '📈' : '📉';
+    const changeColor = weeklyStats.changeFromLastWeek >= 0 ? '#10B981' : '#EF4444';
+
+    const mailOptions = {
+      from: this.getFromAddress(),
+      to: user.email,
+      subject: `📊 Your Weekly Performance Report - ${weeklyStats.totalClicks.toLocaleString()} clicks!`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; text-align: center; padding: 40px 30px; border-radius: 12px 12px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 12px 12px; }
+            .stat-grid { display: flex; justify-content: space-around; margin: 25px 0; }
+            .stat-box { text-align: center; padding: 15px; background: #F9FAFB; border-radius: 8px; min-width: 100px; }
+            .stat-number { font-size: 28px; font-weight: bold; color: #3B82F6; }
+            .stat-label { font-size: 12px; color: #6B7280; text-transform: uppercase; }
+            .section { margin: 25px 0; padding: 20px; background: #F9FAFB; border-radius: 8px; }
+            .section-title { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 15px; }
+            .link-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #E5E7EB; }
+            .link-row:last-child { border-bottom: none; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; margin: 20px 0; font-weight: 600; }
+            .change { color: ${changeColor}; font-weight: 600; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0 0 10px 0; font-size: 24px;">Weekly Performance Report</h1>
+              <p style="margin: 0; opacity: 0.9;">Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+
+            <div class="content">
+              <h2 style="margin-top: 0;">Hi ${user.firstName}! 👋</h2>
+              <p>Here's how your links performed this week:</p>
+
+              <div class="stat-grid">
+                <div class="stat-box">
+                  <div class="stat-number">${weeklyStats.totalClicks.toLocaleString()}</div>
+                  <div class="stat-label">Total Clicks</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">${weeklyStats.uniqueVisitors.toLocaleString()}</div>
+                  <div class="stat-label">Unique Visitors</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">${weeklyStats.newLinks}</div>
+                  <div class="stat-label">New Links</div>
+                </div>
+              </div>
+
+              <p style="text-align: center;">
+                ${changeIcon} <span class="change">${weeklyStats.changeFromLastWeek >= 0 ? '+' : ''}${weeklyStats.changeFromLastWeek}%</span> compared to last week
+              </p>
+
+              <div class="section">
+                <div class="section-title">🏆 Top Performing Links</div>
+                ${weeklyStats.topLinks.map((link, i) => `
+                  <div class="link-row">
+                    <span>${i + 1}. ${link.title || link.shortCode}</span>
+                    <span style="color: #3B82F6; font-weight: 600;">${link.clicks.toLocaleString()} clicks</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="section">
+                <div class="section-title">🌍 Top Countries</div>
+                ${weeklyStats.topCountries.map(country => `
+                  <div class="link-row">
+                    <span>${country.name}</span>
+                    <span style="color: #6B7280;">${country.percentage}%</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div style="text-align: center;">
+                <a href="https://laghhu.link/analytics" class="button">View Full Analytics</a>
+              </div>
+
+              <div class="footer">
+                <p>You're receiving this because you have weekly reports enabled.</p>
+                <p><a href="https://laghhu.link/profile" style="color: #3B82F6;">Manage notification preferences</a></p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log('Weekly digest sent to:', user.email);
+      return { success: true, message: `Weekly digest sent to ${user.email}` };
+    } catch (error) {
+      console.error('Failed to send weekly digest:', error);
+      throw error;
+    }
+  }
+
+  // Monthly Business Report
+  async sendMonthlyReport(user, stats = null) {
+    if (!this.transporter) {
+      const error = new Error('Email service not configured. Please add SMTP settings to your .env file.');
+      error.code = 'EMAIL_NOT_CONFIGURED';
+      throw error;
+    }
+
+    const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    // Use provided stats or generate sample data for test
+    const monthlyStats = stats || {
+      totalClicks: Math.floor(Math.random() * 20000) + 1000,
+      uniqueVisitors: Math.floor(Math.random() * 15000) + 500,
+      totalLinks: Math.floor(Math.random() * 100) + 10,
+      qrScans: Math.floor(Math.random() * 500) + 50,
+      topLinks: [
+        { title: 'Black Friday Sale', clicks: 5234, shortCode: 'bf24' },
+        { title: 'Product Launch', clicks: 3987, shortCode: 'launch' },
+        { title: 'Newsletter Signup', clicks: 2654, shortCode: 'signup' },
+        { title: 'Holiday Campaign', clicks: 1876, shortCode: 'holiday' },
+        { title: 'Webinar Registration', clicks: 1234, shortCode: 'webinar' }
+      ],
+      deviceBreakdown: { mobile: 62, desktop: 33, tablet: 5 },
+      topCountries: [
+        { name: 'Saudi Arabia', clicks: 8500, percentage: 42 },
+        { name: 'UAE', clicks: 4200, percentage: 21 },
+        { name: 'Egypt', clicks: 3100, percentage: 15 },
+        { name: 'Kuwait', clicks: 2200, percentage: 11 },
+        { name: 'Other', clicks: 2000, percentage: 11 }
+      ],
+      changeFromLastMonth: Math.floor(Math.random() * 50) - 15,
+      avgClicksPerDay: Math.floor(Math.random() * 500) + 100
+    };
+
+    const changeIcon = monthlyStats.changeFromLastMonth >= 0 ? '📈' : '📉';
+    const changeColor = monthlyStats.changeFromLastMonth >= 0 ? '#10B981' : '#EF4444';
+
+    const mailOptions = {
+      from: this.getFromAddress(),
+      to: user.email,
+      subject: `📊 Your Monthly Report for ${monthName} - ${monthlyStats.totalClicks.toLocaleString()} clicks!`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #7C3AED, #5B21B6); color: white; text-align: center; padding: 40px 30px; border-radius: 12px 12px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 12px 12px; }
+            .stat-grid { display: flex; flex-wrap: wrap; justify-content: space-around; margin: 25px 0; gap: 15px; }
+            .stat-box { text-align: center; padding: 20px; background: #F9FAFB; border-radius: 8px; min-width: 120px; flex: 1; }
+            .stat-number { font-size: 32px; font-weight: bold; color: #7C3AED; }
+            .stat-label { font-size: 12px; color: #6B7280; text-transform: uppercase; margin-top: 5px; }
+            .section { margin: 25px 0; padding: 20px; background: #F9FAFB; border-radius: 8px; }
+            .section-title { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+            .link-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #E5E7EB; }
+            .link-row:last-child { border-bottom: none; }
+            .progress-bar { height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+            .progress-fill { height: 100%; background: #7C3AED; border-radius: 4px; }
+            .button { display: inline-block; background: #7C3AED; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; margin: 20px 0; font-weight: 600; }
+            .change { color: ${changeColor}; font-weight: 600; }
+            .highlight-box { background: linear-gradient(135deg, #FEF3C7, #FDE68A); padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0 0 10px 0; font-size: 28px;">Monthly Business Report</h1>
+              <p style="margin: 0; opacity: 0.9; font-size: 18px;">${monthName}</p>
+            </div>
+
+            <div class="content">
+              <h2 style="margin-top: 0;">Hi ${user.firstName}! 👋</h2>
+              <p>Here's your comprehensive monthly performance summary:</p>
+
+              <div class="stat-grid">
+                <div class="stat-box">
+                  <div class="stat-number">${monthlyStats.totalClicks.toLocaleString()}</div>
+                  <div class="stat-label">Total Clicks</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">${monthlyStats.uniqueVisitors.toLocaleString()}</div>
+                  <div class="stat-label">Unique Visitors</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">${monthlyStats.totalLinks}</div>
+                  <div class="stat-label">Active Links</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">${monthlyStats.qrScans}</div>
+                  <div class="stat-label">QR Scans</div>
+                </div>
+              </div>
+
+              <div class="highlight-box">
+                <p style="margin: 0; text-align: center; font-size: 16px;">
+                  ${changeIcon} <span class="change">${monthlyStats.changeFromLastMonth >= 0 ? '+' : ''}${monthlyStats.changeFromLastMonth}%</span> compared to last month
+                  <br><span style="color: #6B7280; font-size: 14px;">Average: ${monthlyStats.avgClicksPerDay} clicks/day</span>
+                </p>
+              </div>
+
+              <div class="section">
+                <div class="section-title">🏆 Top 5 Performing Links</div>
+                ${monthlyStats.topLinks.map((link, i) => `
+                  <div class="link-row">
+                    <span><strong>#${i + 1}</strong> ${link.title || link.shortCode}</span>
+                    <span style="color: #7C3AED; font-weight: 600;">${link.clicks.toLocaleString()} clicks</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="section">
+                <div class="section-title">📱 Device Breakdown</div>
+                <div style="margin-bottom: 15px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Mobile</span><span>${monthlyStats.deviceBreakdown.mobile}%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width: ${monthlyStats.deviceBreakdown.mobile}%"></div></div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Desktop</span><span>${monthlyStats.deviceBreakdown.desktop}%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width: ${monthlyStats.deviceBreakdown.desktop}%"></div></div>
+                </div>
+                <div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Tablet</span><span>${monthlyStats.deviceBreakdown.tablet}%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width: ${monthlyStats.deviceBreakdown.tablet}%"></div></div>
+                </div>
+              </div>
+
+              <div class="section">
+                <div class="section-title">🌍 Geographic Distribution</div>
+                ${monthlyStats.topCountries.map(country => `
+                  <div class="link-row">
+                    <span>${country.name}</span>
+                    <span style="color: #6B7280;">${country.clicks.toLocaleString()} clicks (${country.percentage}%)</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div style="text-align: center;">
+                <a href="https://laghhu.link/analytics" class="button">View Detailed Analytics</a>
+              </div>
+
+              <div class="footer">
+                <p>You're receiving this because you have monthly reports enabled.</p>
+                <p><a href="https://laghhu.link/profile" style="color: #7C3AED;">Manage notification preferences</a></p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log('Monthly report sent to:', user.email);
+      return { success: true, message: `Monthly report sent to ${user.email}` };
+    } catch (error) {
+      console.error('Failed to send monthly report:', error);
+      throw error;
+    }
+  }
+
+  // Viral Link Alert
+  async sendViralAlert(user, linkData) {
+    if (!this.transporter) {
+      const error = new Error('Email service not configured. Please add SMTP settings to your .env file.');
+      error.code = 'EMAIL_NOT_CONFIGURED';
+      throw error;
+    }
+
+    const mailOptions = {
+      from: this.getFromAddress(),
+      to: user.email,
+      subject: `🔥 Your Link is Going Viral! ${linkData.clicks.toLocaleString()} clicks in ${linkData.timeframe}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #EF4444, #DC2626); color: white; text-align: center; padding: 40px 30px; border-radius: 12px 12px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 12px 12px; }
+            .stat-box { text-align: center; padding: 25px; background: #FEF2F2; border-radius: 8px; margin: 20px 0; }
+            .stat-number { font-size: 48px; font-weight: bold; color: #EF4444; }
+            .button { display: inline-block; background: #EF4444; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; margin: 20px 0; font-weight: 600; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 32px;">🔥 VIRAL ALERT!</h1>
+              <p style="margin: 10px 0 0 0; font-size: 18px;">Your link is on fire!</p>
+            </div>
+
+            <div class="content">
+              <h2 style="margin-top: 0;">Incredible news, ${user.firstName}! 🎉</h2>
+              <p>Your link <strong>"${linkData.linkTitle || linkData.shortUrl}"</strong> is experiencing massive traffic!</p>
+
+              <div class="stat-box">
+                <div class="stat-number">${linkData.clicks.toLocaleString()}</div>
+                <div style="color: #6B7280; font-size: 14px;">clicks in the last ${linkData.timeframe}</div>
+              </div>
+
+              <p><strong>Quick Stats:</strong></p>
+              <ul>
+                <li>Link: ${linkData.shortUrl}</li>
+                <li>Current rate: ~${Math.round(linkData.clicks / (linkData.timeframe === '1 hour' ? 1 : 24))} clicks/hour</li>
+                <li>Top source: ${linkData.topSource || 'Direct traffic'}</li>
+              </ul>
+
+              <div style="text-align: center;">
+                <a href="https://laghhu.link/analytics/${linkData.linkId || ''}" class="button">View Live Analytics</a>
+              </div>
+
+              <p style="color: #6B7280; font-size: 14px;">
+                💡 <strong>Tip:</strong> Make sure your destination page can handle the traffic surge!
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log('Viral alert sent to:', user.email);
+      return { success: true, message: `Viral alert sent to ${user.email}` };
+    } catch (error) {
+      console.error('Failed to send viral alert:', error);
+      throw error;
+    }
+  }
+
+  // Test notification for preferences page
+  async sendTestNotification(user, type) {
+    // Check if email service is configured first
+    if (!this.transporter) {
+      const error = new Error('Email service not configured. Please add SMTP_HOST, SMTP_USER, and SMTP_PASS to your .env file.');
+      error.code = 'EMAIL_NOT_CONFIGURED';
+      throw error;
+    }
+
+    switch (type) {
+      case 'weekly':
+        return this.sendWeeklyDigest(user);
+      case 'monthly':
+        return this.sendMonthlyReport(user);
+      case 'viral':
+        return this.sendViralAlert(user, {
+          linkTitle: 'Test Link',
+          shortUrl: 'https://laghhu.link/test',
+          clicks: 1500,
+          timeframe: '1 hour',
+          topSource: 'Twitter'
+        });
+      default:
+        throw new Error('Unknown notification type');
     }
   }
 }
