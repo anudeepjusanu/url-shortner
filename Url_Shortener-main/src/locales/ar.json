@@ -277,6 +277,8 @@
       "languageToggle": "تبديل اللغة",
       "googleSignup": "التسجيل باستخدام Google",
       "divider": "أو سجل باستخدام البريد الإلكتروني",
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "أدخل اسمك الكامل",
       "firstName": "الاسم الأول",
       "lastName": "الاسم الأخير",
       "firstNamePlaceholder": "أدخل الاسم الأول",
@@ -306,6 +308,7 @@
       "feature2Description": "تتبع أداء روابطك مع تحليلات مفصلة في الوقت الفعلي",
       "feature3Title": "أمان من الدرجة المؤسسية",
       "feature3Description": "بياناتك محمية بأعلى معايير الأمان والخصوصية",
+      "errorFullNameRequired": "الاسم الكامل مطلوب",
       "errorFirstNameRequired": "الاسم الأول مطلوب",
       "errorLastNameRequired": "الاسم الأخير مطلوب",
       "errorEmailRequired": "البريد الإلكتروني مطلوب",
@@ -328,11 +331,16 @@
     "vsLastPeriod": "مقارنة بالفترة الماضية",
     "changeVsLastPeriod": "{{change}} مقارنة بالفترة الماضية",
     "changeFromLastWeek": "{{change}} مقارنة بالأسبوع الماضي",
+    "scannedQRCodes": "رموز الاستجابة السريعة التي تم مسحها",
+    "noChartData": "لا تتوفر بيانات نشاط النقرات",
+    "noChartDataDesc": "ابدأ بمشاركة روابطك لرؤية اتجاهات النقرات والنشاط بمرور الوقت.",
     "stats": {
       "totalLinks": "إجمالي الروابط",
       "totalClicks": "إجمالي النقرات",
       "activeLinks": "الروابط النشطة",
-      "clickRate": "معدل النقر"
+      "clickRate": "معدل النقر",
+      "totalCustomDomains": "النطاقات المخصصة",
+      "active": "نشط"
     },
     "recentLinks": {
       "title": "الروابط الأخيرة",

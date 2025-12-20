@@ -334,7 +334,7 @@ const Login = () => {
           </div>
 
           {/* Google Sign In */}
-          <div className="google-section">
+          {/* <div className="google-section">
             <button
               type="button"
               className="google-btn"
@@ -371,7 +371,7 @@ const Login = () => {
               <hr />
               <span>{t('auth.login.dividerText')}</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Error Display */}
           {error && (

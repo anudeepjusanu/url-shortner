@@ -12,8 +12,7 @@ const Registration = () => {
   const { register, loading, error, clearError } = useAuth();
   const { currentLanguage, changeLanguage } = useLanguage();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     phone: "",
     password: "",
@@ -52,14 +51,9 @@ const Registration = () => {
     let firstErrorField = null;
 
     // Required fields validation
-    if (!formData.firstName.trim()) {
-      errors.firstName = t('auth.register.errorFirstNameRequired') || 'This field is required';
-      if (!firstErrorField) firstErrorField = 'firstName';
-    }
-
-    if (!formData.lastName.trim()) {
-      errors.lastName = t('auth.register.errorLastNameRequired') || 'This field is required';
-      if (!firstErrorField) firstErrorField = 'lastName';
+    if (!formData.fullName.trim()) {
+      errors.fullName = t('auth.register.errorFullNameRequired') || 'This field is required';
+      if (!firstErrorField) firstErrorField = 'fullName';
     }
 
     if (!formData.email.trim()) {
@@ -126,9 +120,14 @@ const Registration = () => {
 
     try {
       // Prepare registration data (excluding confirmPassword and checkboxes)
+      // Split fullName into firstName and lastName for backend
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+      
       const registrationData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        firstName,
+        lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
@@ -155,9 +154,14 @@ const Registration = () => {
   const handleVerifyOTP = async (otp) => {
     try {
       // Prepare registration data with OTP
+      // Split fullName into firstName and lastName for backend
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+      
       const registrationData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        firstName,
+        lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
@@ -185,9 +189,14 @@ const Registration = () => {
   const handleResendOTP = async () => {
     try {
       // Prepare registration data without OTP to resend
+      // Split fullName into firstName and lastName for backend
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+      
       const registrationData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        firstName,
+        lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
@@ -389,7 +398,7 @@ const Registration = () => {
           </div>
 
           {/* Google Sign Up */}
-          <button type="button" className="google-btn" onClick={handleGoogleSignup}>
+          {/* <button type="button" className="google-btn" onClick={handleGoogleSignup}>
             <svg width="20" height="20" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0813L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z"
@@ -414,7 +423,7 @@ const Registration = () => {
           <div className="divider">
             <hr />
             <span>{t('auth.register.divider')}</span>
-          </div>
+          </div> */}
 
           {/* Error Display */}
           {error && (
@@ -431,40 +440,22 @@ const Registration = () => {
 
           {/* Registration Form */}
           <form className="registration-form" onSubmit={handleSubmit}>
-            {/* Name Fields */}
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="firstName">{t('auth.register.firstName')}</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  placeholder={t('auth.register.firstNamePlaceholder')}
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className={formErrors.firstName ? 'error' : ''}
-                  required
-                />
-                {formErrors.firstName && (
-                  <span className="field-error">{formErrors.firstName}</span>
-                )}
-              </div>
-              <div className="form-field">
-                <label htmlFor="lastName">{t('auth.register.lastName')}</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  placeholder={t('auth.register.lastNamePlaceholder')}
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className={formErrors.lastName ? 'error' : ''}
-                  required
-                />
-                {formErrors.lastName && (
-                  <span className="field-error">{formErrors.lastName}</span>
-                )}
-              </div>
+            {/* Full Name Field */}
+            <div className="form-field">
+              <label htmlFor="fullName">{t('auth.register.fullName')}</label>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                placeholder={t('auth.register.fullNamePlaceholder')}
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className={formErrors.fullName ? 'error' : ''}
+                required
+              />
+              {formErrors.fullName && (
+                <span className="field-error">{formErrors.fullName}</span>
+              )}
             </div>
 
             {/* Email Field */}
@@ -486,7 +477,7 @@ const Registration = () => {
             </div>
 
             {/* Phone Field */}
-            <div className="form-field">
+            {/* <div className="form-field">
               <label htmlFor="phone">{t('auth.register.phone')}</label>
               <div className="phone-input-wrapper">
                 <span className="country-code">+966</span>
@@ -499,7 +490,7 @@ const Registration = () => {
                   onChange={handleInputChange}
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Password Field */}
             <div className="form-field">

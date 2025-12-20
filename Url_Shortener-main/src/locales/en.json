@@ -276,6 +276,8 @@
       "languageToggle": "Language Toggle",
       "googleSignup": "Sign up with Google",
       "divider": "or sign up with email",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
       "firstName": "First Name",
       "lastName": "Last Name",
       "firstNamePlaceholder": "Enter your first name",
@@ -305,6 +307,7 @@
       "feature2Description": "Track your link performance with detailed real-time analytics",
       "feature3Title": "Enterprise Security",
       "feature3Description": "Your data is protected with enterprise-grade security and privacy",
+      "errorFullNameRequired": "Full name is required",
       "errorFirstNameRequired": "First name is required",
       "errorLastNameRequired": "Last name is required",
       "errorEmailRequired": "Email address is required",
@@ -336,6 +339,9 @@
     "addCustomDomainDesc": "Use your own branded domain for professional short links",
     "setupDomain": "Setup Domain",
     "shortenYourURL": "Shorten Your URL",
+    "scannedQRCodes": "Scanned QR Codes",
+    "noChartData": "No Click Activity Data Available",
+    "noChartDataDesc": "Start sharing your links to see click trends and activity over time.",
     "longURL": "Long URL",
     "longURLPlaceholder": "Paste your long URL here",
     "customBackhalf": "Custom Name (Optional)",
@@ -348,7 +354,9 @@
       "totalLinks": "Total Links",
       "totalClicks": "Total Clicks",
       "activeLinks": "Active Links",
-      "clickRate": "Click Rate"
+      "clickRate": "Click Rate",
+      "totalCustomDomains": "Custom Domains",
+      "active": "Active"
     },
     "recentLinks": {
       "title": "Recent Links",

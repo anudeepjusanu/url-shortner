@@ -1,0 +1,729 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener API
+  description: |
+    REST API for creating and managing shortened URLs with advanced features like custom codes, 
+    UTM tracking, password protection, and analytics.
+    
+    ## Authentication
+    Use your API key in the `X-API-Key` header for all requests.
+    
+    ## Rate Limits
+    - Free: 100 requests per 15 minutes
+    - Pro: 1,000 requests per 15 minutes
+    - Enterprise: 5,000 requests per 15 minutes
+  version: 1.0.0
+  contact:
+    email: support@your-domain.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://your-domain.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: URLs
+    description: URL shortening and management
+  - name: Statistics
+    description: Usage statistics and analytics
+  - name: Authentication
+    description: API key management
+
+paths:
+  /urls:
+    post:
+      tags:
+        - URLs
+      summary: Create shortened URL
+      description: Create a new shortened URL with optional customization
+      operationId: createUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+            examples:
+              basic:
+                summary: Basic URL
+                value:
+                  originalUrl: https://example.com/very-long-url
+              custom:
+                summary: Custom code with metadata
+                value:
+                  originalUrl: https://example.com/page
+                  customCode: mylink
+                  title: My Custom Link
+                  tags: [marketing, campaign]
+              advanced:
+                summary: Advanced features
+                value:
+                  originalUrl: https://example.com/product
+                  customCode: spring-sale
+                  title: Spring Sale 2024
+                  expiresAt: "2024-12-31T23:59:59Z"
+                  password: secret123
+                  utm:
+                    source: newsletter
+                    medium: email
+                    campaign: spring_sale
+                  restrictions: 
+                    countries: ["US", "CA", "GB"]
+                    allowedCountries: true
+                    deviceTypes: ["mobile", "desktop"]
+                    maxClicks: 1000
+                  
+      responses:
+        '201':
+          description: URL created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    
+    get:
+      tags:
+        - URLs
+      summary: Get all URLs
+      description: Retrieve a paginated list of shortened URLs
+      operationId: getUrls
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          description: Search in title, URL, or short code
+          schema:
+            type: string
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, clickCount, title]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: URLs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUrlsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /urls/{id}:
+    get:
+      tags:
+        - URLs
+      summary: Get single URL
+      description: Retrieve details of a specific shortened URL
+      operationId: getUrl
+      parameters:
+        - $ref: '#/components/parameters/UrlId'
+      responses:
+        '200':
+          description: URL retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUrlResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags:
+        - URLs
+      summary: Update URL
+      description: Update properties of an existing shortened URL
+      operationId: updateUrl
+      parameters:
+        - $ref: '#/components/parameters/UrlId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUrlRequest'
+      responses:
+        '200':
+          description: URL updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUrlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags:
+        - URLs
+      summary: Delete URL
+      description: Delete a shortened URL permanently
+      operationId: deleteUrl
+      parameters:
+        - $ref: '#/components/parameters/UrlId'
+      responses:
+        '200':
+          description: URL deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /urls/bulk-delete:
+    post:
+      tags:
+        - URLs
+      summary: Bulk delete URLs
+      description: Delete multiple URLs at once
+      operationId: bulkDeleteUrls
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+      responses:
+        '200':
+          description: URLs deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /urls/stats:
+    get:
+      tags:
+        - Statistics
+      summary: Get URL statistics
+      description: Get aggregated statistics for all URLs
+      operationId: getUrlStats
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /urls/domains/available:
+    get:
+      tags:
+        - Statistics
+      summary: Get available domains
+      description: Get list of domains available for URL shortening
+      operationId: getAvailableDomains
+      responses:
+        '200':
+          description: Domains retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/api-key:
+    get:
+      tags:
+        - Authentication
+      summary: Get API key
+      description: Get your current API key (requires JWT authentication)
+      operationId: getApiKey
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: API key retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  apiKey:
+                    type: string
+                    nullable: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/regenerate-api-key:
+    post:
+      tags:
+        - Authentication
+      summary: Regenerate API key
+      description: Generate a new API key (requires JWT authentication)
+      operationId: regenerateApiKey
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: API key regenerated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  apiKey:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from login
+
+  parameters:
+    UrlId:
+      name: id
+      in: path
+      required: true
+      description: URL ID
+      schema:
+        type: string
+        example: "507f1f77bcf86cd799439011"
+
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required:
+        - originalUrl
+      properties:
+        originalUrl:
+          type: string
+          format: uri
+          description: The long URL to shorten
+          example: https://example.com/very-long-url
+        customCode:
+          type: string
+          pattern: '^[a-zA-Z0-9_-]+$'
+          description: Custom short code (alphanumeric, case-sensitive)
+          example: mylink
+        title:
+          type: string
+          maxLength: 200
+          description: Title for the shortened URL
+          example: My Custom Link
+        description:
+          type: string
+          maxLength: 500
+          description: Description of the link
+        tags:
+          type: array
+          items:
+            type: string
+          description: Array of tags for organization
+          example: [marketing, campaign]
+        expiresAt:
+          type: string
+          format: date-time
+          description: ISO 8601 date when the link expires
+          example: "2024-12-31T23:59:59Z"
+        password:
+          type: string
+          description: Password protection for the link
+        domainId:
+          type: string
+          description: Domain ID to use ("base" for default domain)
+          example: base
+        utm:
+          type: object
+          properties:
+            source:
+              type: string
+            medium:
+              type: string
+            campaign:
+              type: string
+            term:
+              type: string
+            content:
+              type: string
+        restrictions:
+          type: object
+          properties:
+            maxClicks:
+              type: integer
+              minimum: 1
+            allowedCountries:
+              type: array
+              items:
+                type: string
+            blockedCountries:
+              type: array
+              items:
+                type: string
+            allowedDevices:
+              type: array
+              items:
+                type: string
+                enum: [desktop, mobile, tablet]
+        redirectType:
+          type: integer
+          enum: [301, 302]
+          default: 302
+          description: HTTP redirect type
+
+    CreateUrlResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            url:
+              $ref: '#/components/schemas/Url'
+            domain:
+              $ref: '#/components/schemas/Domain'
+
+    UpdateUrlRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        customCode:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        password:
+          type: string
+        utm:
+          type: object
+        restrictions:
+          type: object
+        redirectType:
+          type: integer
+          enum: [301, 302]
+
+    UpdateUrlResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            url:
+              $ref: '#/components/schemas/Url'
+
+    GetUrlsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            urls:
+              type: array
+              items:
+                $ref: '#/components/schemas/Url'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    GetUrlResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            url:
+              $ref: '#/components/schemas/Url'
+
+    StatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        totalLinks:
+          type: integer
+        totalClicks:
+          type: integer
+        customDomains:
+          type: integer
+        accountAge:
+          type: string
+        plan:
+          type: string
+        data:
+          type: object
+          properties:
+            stats:
+              type: object
+              properties:
+                totalUrls:
+                  type: integer
+                activeUrls:
+                  type: integer
+                totalClicks:
+                  type: integer
+                topUrls:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Url'
+
+    DomainsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            domains:
+              type: array
+              items:
+                $ref: '#/components/schemas/Domain'
+
+    Url:
+      type: object
+      properties:
+        _id:
+          type: string
+        originalUrl:
+          type: string
+        shortCode:
+          type: string
+        customCode:
+          type: string
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        clickCount:
+          type: integer
+        isActive:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        utm:
+          type: object
+        restrictions:
+          type: object
+        creator:
+          type: object
+          properties:
+            _id:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Domain:
+      type: object
+      properties:
+        id:
+          type: string
+        fullDomain:
+          type: string
+        domain:
+          type: string
+        subdomain:
+          type: string
+          nullable: true
+        isDefault:
+          type: boolean
+        shortUrl:
+          type: string
+        status:
+          type: string
+        isSystemDomain:
+          type: boolean
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        error:
+          type: string
+          description: Detailed error (development only)
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Invalid URL format
+
+    Unauthorized:
+      description: Unauthorized - Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Invalid API key
+
+    Forbidden:
+      description: Forbidden - Insufficient permissions or usage limit exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+              code:
+                type: string
+              data:
+                type: object
+          example:
+            success: false
+            message: Monthly URL creation limit exceeded
+            code: USAGE_LIMIT_EXCEEDED
+            data:
+              limit: 100
+              current: 100
+              action: createUrl
+
+    NotFound:
+      description: Not found - Resource doesn't exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: URL not found
