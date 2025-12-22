@@ -600,6 +600,164 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// Send password reset OTP
+const sendPasswordResetOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    console.log('📧 Password reset OTP requested for:', email);
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log('⚠️ User not found for email:', email);
+      // Return success even if user doesn't exist (security best practice)
+      return res.json({
+        success: true,
+        message: 'If the email exists, a verification code has been sent'
+      });
+    }
+    
+    console.log('✅ User found:', user.email);
+    
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    console.log('🔢 Generated OTP:', otp);
+    
+    // Store OTP in cache with email as key for 10 minutes
+    const otpKey = `password_reset_otp:${email}`;
+    await cacheSet(otpKey, otp, 10 * 60); // 10 minutes TTL
+    
+    console.log('💾 OTP stored in cache with key:', otpKey);
+    
+    // Send OTP via email
+    try {
+      await otpService.sendOtp({ email, otp, method: 'email' });
+      console.log('✅ OTP sent via Authentica');
+    } catch (emailError) {
+      console.error('❌ Failed to send OTP email:', emailError);
+      // Continue even if email fails in development
+      if (process.env.NODE_ENV !== 'development') {
+        throw emailError;
+      }
+    }
+    
+    // Always return OTP in development for testing
+    const responseData = {
+      success: true,
+      message: 'Verification code has been sent to your email'
+    };
+    
+    // Include OTP in response for development testing
+    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+      responseData.otp = otp;
+      responseData.debug = true;
+      console.log('\n🔐 ===== PASSWORD RESET OTP =====');
+      console.log('📧 Email:', email);
+      console.log('🔢 OTP Code:', otp);
+      console.log('================================\n');
+    }
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Send password reset OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send verification code'
+    });
+  }
+};
+
+// Verify password reset OTP
+const verifyPasswordResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    // Verify OTP
+    const otpKey = `password_reset_otp:${email}`;
+    const storedOtp = await cacheGet(otpKey);
+    
+    if (!storedOtp || storedOtp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification code'
+      });
+    }
+    
+    // Clear OTP from cache (single use)
+    await cacheDel(otpKey);
+    
+    // Store verified flag for 10 minutes (to allow password reset)
+    const verifiedKey = `password_reset_verified:${email}`;
+    await cacheSet(verifiedKey, 'true', 10 * 60); // 10 minutes TTL
+    
+    res.json({
+      success: true,
+      message: 'OTP verified successfully'
+    });
+  } catch (error) {
+    console.error('Verify password reset OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify OTP'
+    });
+  }
+};
+
+// Reset password with OTP
+const resetPasswordWithOTP = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    
+    // Check if OTP was verified (stored in verified cache)
+    const verifiedKey = `password_reset_verified:${email}`;
+    const isVerified = await cacheGet(verifiedKey);
+    
+    if (!isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please verify OTP first'
+      });
+    }
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Check if new password is same as old password
+    const isSamePassword = await user.comparePassword(newPassword);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be different from old password'
+      });
+    }
+    
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    // Clear verified flag from cache
+    await cacheDel(verifiedKey);
+    
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+  } catch (error) {
+    console.error('Reset password with OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset password'
+    });
+  }
+};
+
 // Get user's API key
 const getApiKey = async (req, res) => {
   try {
@@ -784,6 +942,9 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  sendPasswordResetOTP,
+  verifyPasswordResetOTP,
+  resetPasswordWithOTP,
   getApiKey,
   regenerateApiKey,
   getPreferences,

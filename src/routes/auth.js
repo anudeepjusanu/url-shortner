@@ -10,6 +10,7 @@ const {
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,
+  validateResetPasswordWithOTP,
   validateProfileUpdate,
   sanitizeInput
 } = require('../middleware/validation');
@@ -43,6 +44,12 @@ router.post('/change-password', authenticate, validatePasswordChange, authContro
 router.post('/forgot-password', passwordResetLimiter, validateForgotPassword, authController.forgotPassword);
 
 router.post('/reset-password', validateResetPassword, authController.resetPassword);
+
+router.post('/send-password-reset-otp', passwordResetLimiter, validateForgotPassword, authController.sendPasswordResetOTP);
+
+router.post('/verify-password-reset-otp', authController.verifyPasswordResetOTP);
+
+router.post('/reset-password-with-otp', authController.resetPasswordWithOTP);
 
 router.get('/me', authenticate, authController.getProfile);
 

@@ -303,6 +303,26 @@ export const authAPI = {
 
     return response;
   },
+
+  forgotPassword: async (email) => {
+    return apiClient.post('/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (token, newPassword) => {
+    return apiClient.post('/auth/reset-password', { token, newPassword });
+  },
+
+  sendPasswordResetOTP: async (email) => {
+    return apiClient.post('/auth/send-password-reset-otp', { email });
+  },
+
+  verifyPasswordResetOTP: async (data) => {
+    return apiClient.post('/auth/verify-password-reset-otp', data);
+  },
+
+  resetPasswordWithOTP: async (data) => {
+    return apiClient.post('/auth/reset-password-with-otp', data);
+  },
 };
 
 // URLs API methods
