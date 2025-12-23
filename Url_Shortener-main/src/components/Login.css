@@ -35,6 +35,17 @@
 
 .login-container .brand-logo {
   margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container .auth-logo-img,
+.auth-logo-img {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  max-width: 100%;
 }
 
 .login-container .logo-icon {
@@ -556,6 +567,11 @@
     top: 20px;
     right: 32px;
   }
+
+  .login-container .auth-logo-img,
+  .auth-logo-img {
+    width: 110px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -643,6 +659,11 @@
   .forgot-password-link {
     font-size: 13px;
   }
+
+  .login-container .auth-logo-img,
+  .auth-logo-img {
+    width: 100px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -701,6 +722,11 @@
   .logo-icon {
     width: 64px;
     height: 64px;
+  }
+
+  .login-container .auth-logo-img,
+  .auth-logo-img {
+    width: 100px;
   }
 
   .login-container .logo-icon svg,
@@ -838,6 +864,11 @@
   .logo-icon {
     width: 56px;
     height: 56px;
+  }
+
+  .login-container .auth-logo-img,
+  .auth-logo-img {
+    width: 80px;
   }
 
   .login-form {

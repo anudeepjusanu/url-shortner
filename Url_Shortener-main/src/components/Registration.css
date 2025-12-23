@@ -63,6 +63,16 @@
 
 .brand-logo {
   margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-logo-img {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  max-width: 100%;
 }
 
 .logo-icon {
@@ -543,6 +553,10 @@ color: #FFF;
     top: 20px;
     right: 32px;
   }
+
+  .auth-logo-img {
+    width: 110px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -589,6 +603,10 @@ color: #FFF;
   .form-header h2 {
     font-size: 26px;
     line-height: 32px;
+  }
+
+  .auth-logo-img {
+    width: 100px;
   }
 }
 
@@ -644,6 +662,10 @@ color: #FFF;
 
   .brand-subtitle {
     font-size: 15px;
+  }
+
+  .auth-logo-img {
+    width: 100px;
   }
 
   .logo-icon {
@@ -783,6 +805,10 @@ color: #FFF;
   .logo-icon {
     width: 56px;
     height: 56px;
+  }
+
+  .auth-logo-img {
+    width: 80px;
   }
 
   .registration-form {
