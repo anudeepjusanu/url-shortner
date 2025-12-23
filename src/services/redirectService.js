@@ -475,33 +475,113 @@ class RedirectService {
 
       // Properly encode the short code for international characters (Arabic, Chinese, etc.)
       const encodedShortCode = encodeURIComponent(shortCode);
-      const shortUrl = `${config.BASE_URL}/${encodedShortCode}`;
+      const shortUrl = `${config.BASE_URL}/${encodedShortCode}?qr=1`;
 
       console.log('🔗 Generating QR Code:', {
         shortCode,
         encodedShortCode,
         shortUrl,
+        format,
         hasInternationalChars: /[^\x00-\x7F]/.test(shortCode)
       });
 
-      // Build QR code URL with customization parameters
-      const qrParams = new URLSearchParams({
-        size: `${size}x${size}`,
-        data: shortUrl,
-        format: format,
-        color: fgColor,
-        bgcolor: bgColor,
-        ecc: errorCorrection,
-        margin: margin.toString()
-      });
+      // Generate QR code locally using the qrcode library
+      const QRCode = require('qrcode');
+      const sharp = require('sharp');
 
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?${qrParams.toString()}`;
+      const qrOptions = {
+        errorCorrectionLevel: errorCorrection,
+        margin: margin,
+        width: parseInt(size),
+        color: {
+          dark: `#${fgColor}`,
+          light: `#${bgColor}`
+        }
+      };
+
+      let qrCodeData;
+      let mimeType;
+
+      if (format === 'svg') {
+        // Generate SVG
+        qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+        mimeType = 'image/svg+xml';
+        // Return SVG as data URL
+        qrCodeData = `data:${mimeType};base64,${Buffer.from(qrCodeData).toString('base64')}`;
+      } else if (format === 'pdf') {
+        // Generate PDF with QR code
+        const PDFDocument = require('pdfkit');
+        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
+        
+        // Create PDF
+        const pdfBuffer = await new Promise((resolve, reject) => {
+          try {
+            const doc = new PDFDocument({
+              size: [parseInt(size) + 100, parseInt(size) + 100],
+              margins: { top: 50, bottom: 50, left: 50, right: 50 }
+            });
+
+            const chunks = [];
+            doc.on('data', chunk => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+
+            // Add title
+            doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: 'center' });
+            doc.moveDown();
+
+            // Add QR code image
+            doc.image(pngBuffer, {
+              fit: [parseInt(size), parseInt(size)],
+              align: 'center',
+              valign: 'center'
+            });
+
+            doc.end();
+          } catch (error) {
+            reject(error);
+          }
+        });
+        
+        mimeType = 'application/pdf';
+        qrCodeData = `data:${mimeType};base64,${pdfBuffer.toString('base64')}`;
+      } else {
+        // Generate PNG buffer first
+        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
+
+        // Convert to requested format using sharp
+        let finalBuffer;
+        switch (format.toLowerCase()) {
+          case 'jpeg':
+          case 'jpg':
+            finalBuffer = await sharp(pngBuffer).jpeg({ quality: 92 }).toBuffer();
+            mimeType = 'image/jpeg';
+            break;
+          case 'gif':
+            finalBuffer = await sharp(pngBuffer).gif().toBuffer();
+            mimeType = 'image/gif';
+            break;
+          case 'webp':
+            finalBuffer = await sharp(pngBuffer).webp({ quality: 92 }).toBuffer();
+            mimeType = 'image/webp';
+            break;
+          case 'png':
+          default:
+            finalBuffer = pngBuffer;
+            mimeType = 'image/png';
+            break;
+        }
+
+        // Return as data URL
+        qrCodeData = `data:${mimeType};base64,${finalBuffer.toString('base64')}`;
+      }
 
       return {
         url: shortUrl,
-        qrCodeUrl,
+        qrCodeUrl: qrCodeData,
         shortCode,
         originalUrl: url.originalUrl,
+        format,
         customization: {
           size,
           format,
