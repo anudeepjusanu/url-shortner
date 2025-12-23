@@ -11,7 +11,18 @@ class AnalyticsService {
   // Helper method to check if a domain is a main/default domain
   isMainDomain(domain) {
     if (!domain) return true;
-    const mainDomains = ['laghhu.link', 'www.laghhu.link', 'localhost:3015', 'localhost'];
+    const mainDomains = [
+      process.env.APP_URL?.replace(/https?:\/\//, ''),
+      'laghhu.link',
+      'www.laghhu.link',
+      'shortener.laghhu.link',
+      '20.193.155.139',
+      'localhost:3015',
+      'localhost',
+      'snip.sa',
+      'www.snip.sa',
+      'shortener.snip.sa'
+    ].filter(Boolean);
     return mainDomains.includes(domain);
   }
 

@@ -212,7 +212,10 @@ class RedirectService {
       'shortener.laghhu.link',
       '20.193.155.139',
       'localhost:3015',
-      'localhost'
+      'localhost',
+      'snip.sa',
+      'www.snip.sa',
+      'shortener.snip.sa'
     ].filter(Boolean);
 
     console.log('isMainDomain check:', { domain, mainDomains, isMain: mainDomains.includes(domain) });
