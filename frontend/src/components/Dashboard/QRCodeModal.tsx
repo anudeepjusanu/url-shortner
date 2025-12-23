@@ -51,16 +51,69 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ shortCode, shortUrl, onClose 
 
   const downloadQRCode = async () => {
     try {
-      const response = await fetch(qrCodeUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `qr-${shortCode}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Check if qrCodeUrl is a data URL (base64)
+      if (qrCodeUrl.startsWith('data:')) {
+        // Extract the base64 data and mime type
+        const [header, base64Data] = qrCodeUrl.split(',');
+        const mimeType = header.match(/data:([^;]+)/)?.[1] || 'image/png';
+        
+        // Convert base64 to blob
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Normalize file extension
+        const fileExtension = format === 'jpeg' ? 'jpg' : format;
+        a.download = `qr-${shortCode}.${fileExtension}`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Handle external URL (fallback)
+        const response = await fetch(qrCodeUrl);
+        const originalBlob = await response.blob();
+        
+        // Get the correct MIME type for the format
+        const getMimeType = (fmt: string): string => {
+          const mimeTypes: Record<string, string> = {
+            'png': 'image/png',
+            'jpeg': 'image/jpeg',
+            'jpg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'pdf': 'application/pdf'
+          };
+          return mimeTypes[fmt.toLowerCase()] || 'image/png';
+        };
+        
+        // Create a new blob with the correct MIME type
+        const mimeType = getMimeType(format);
+        const blob = new Blob([originalBlob], { type: mimeType });
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Normalize file extension
+        const fileExtension = format === 'jpeg' ? 'jpg' : format;
+        a.download = `qr-${shortCode}.${fileExtension}`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error('Failed to download QR code:', err);
     }
