@@ -1170,12 +1170,59 @@
     "contentFilter": "تصفية المحتوى",
     "admin": "الإدارة",
     "userManagement": "إدارة المستخدمين",
+    "googleAnalytics": "تحليلات جوجل",
     "account": "الحساب",
     "profile": "الملف الشخصي",
     "upgradePlan": "ترقية الخطة",
     "freePlan": "الخطة المجانية",
     "billing": "الفواتير والمدفوعات",
     "upgradeNow": "ترقية الآن"
+  },
+  "googleAnalytics": {
+    "title": "تحليلات جوجل",
+    "subtitle": "رؤى حركة المرور وسلوك المستخدمين",
+    "loading": "جاري تحميل تحليلات جوجل...",
+    "refresh": "تحديث",
+    "notConfigured": {
+      "title": "تحليلات جوجل غير مُعدة",
+      "description": "يرجى تكوين بيانات اعتماد تحليلات جوجل في متغيرات بيئة الخادم.",
+      "instructions": "متغيرات البيئة المطلوبة:"
+    },
+    "dateRange": {
+      "7days": "آخر 7 أيام",
+      "30days": "آخر 30 يوم",
+      "90days": "آخر 90 يوم"
+    },
+    "realtime": {
+      "live": "مباشر",
+      "activeUsers": "المستخدمون النشطون الآن"
+    },
+    "metrics": {
+      "activeUsers": "المستخدمون النشطون",
+      "newUsers": "المستخدمون الجدد",
+      "sessions": "الجلسات",
+      "pageViews": "مشاهدات الصفحة",
+      "avgDuration": "متوسط المدة",
+      "engagementRate": "معدل التفاعل",
+      "bounceRate": "معدل الارتداد"
+    },
+    "charts": {
+      "trafficOverTime": "حركة المرور عبر الوقت"
+    },
+    "tables": {
+      "trafficSources": "مصادر الزيارات",
+      "topPages": "أهم الصفحات",
+      "devices": "الأجهزة",
+      "browsers": "المتصفحات",
+      "locations": "أهم المواقع",
+      "source": "المصدر",
+      "sessions": "الجلسات",
+      "users": "المستخدمون",
+      "page": "الصفحة",
+      "views": "المشاهدات",
+      "country": "الدولة",
+      "city": "المدينة"
+    }
   },
   "terms": {
     "title": "الشروط والأحكام",

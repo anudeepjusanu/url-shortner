@@ -112,6 +112,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
+app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');

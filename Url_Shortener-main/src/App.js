@@ -24,6 +24,7 @@ import BillingManagement from './components/BillingManagement';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsAndConditions from './components/TermsAndConditions';
 import UserManagement from './components/UserManagement';
+import GoogleAnalyticsDashboard from './components/GoogleAnalyticsDashboard';
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
@@ -156,6 +157,15 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <UserManagement />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            {/* Google Analytics - Super Admin only */}
+            <Route path="/google-analytics" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GoogleAnalyticsDashboard />
                 </Layout>
               </ProtectedRoute>
             } />
