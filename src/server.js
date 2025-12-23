@@ -1,6 +1,7 @@
 const app = require('./app');
 const connectDB = require('./config/database');
 const ScheduledTasks = require('./services/scheduledTasks');
+const { scheduleHealthChecks } = require('./jobs/healthMonitoring');
 require('dotenv').config();
 
 // Connect to database
@@ -18,6 +19,7 @@ const server = app.listen(PORT, HOST, () => {
   // Initialize scheduled tasks (payment reminders, trial notifications, etc.)
   if (process.env.NODE_ENV !== 'test') {
     ScheduledTasks.initializeCronJobs();
+    scheduleHealthChecks(); // Phase 1: Link health monitoring
   }
 });
 

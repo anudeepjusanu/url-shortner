@@ -114,6 +114,11 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/preferences', require('./routes/preferences'));
 
+// Phase 1 Features
+app.use('/api/bio-pages', require('./routes/bioPage'));
+app.use('/api/bundles', require('./routes/linkBundle'));
+app.use('/api/health', require('./routes/linkHealth'));
+
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');

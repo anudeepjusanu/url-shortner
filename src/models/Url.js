@@ -151,6 +151,54 @@ const urlSchema = new mongoose.Schema({
     ogImage: String,
     ogType: String
   },
+  // Enhanced Social Media Preview
+  socialPreview: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      maxlength: 70,
+      trim: true
+    },
+    description: {
+      type: String,
+      maxlength: 200,
+      trim: true
+    },
+    image: {
+      type: String,
+      trim: true
+    },
+    // Platform-specific overrides
+    twitter: {
+      card: {
+        type: String,
+        enum: ['summary', 'summary_large_image', 'app', 'player'],
+        default: 'summary_large_image'
+      },
+      title: String,
+      description: String,
+      image: String,
+      site: String,
+      creator: String
+    },
+    facebook: {
+      title: String,
+      description: String,
+      image: String,
+      type: {
+        type: String,
+        default: 'website'
+      }
+    },
+    linkedin: {
+      title: String,
+      description: String,
+      image: String
+    }
+  },
   utm: {
     source: String,
     medium: String,

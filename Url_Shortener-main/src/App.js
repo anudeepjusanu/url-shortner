@@ -24,9 +24,11 @@ import BillingManagement from './components/BillingManagement';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsAndConditions from './components/TermsAndConditions';
 import UserManagement from './components/UserManagement';
+import BioPage from './components/BioPage';
+import LinkBundles from './components/LinkBundles';
+import LinkHealth from './components/LinkHealth';
+import PublicBioPage from './components/PublicBioPage';
 // Import placeholder components for now - we'll create them later
-// const QRCodes = () => <div>QR Codes Page</div>;
-// const UTMBuilder = () => <div>UTM Builder Page</div>;
 const CreateLink = () => <div>Create Link Page</div>;
 const TeamMembers = () => <div>Team Members Page</div>;
 
@@ -44,6 +46,9 @@ function App() {
             {/* Public pages */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            
+            {/* Public Bio Page - No authentication required */}
+            <Route path="/:username" element={<PublicBioPage />} />
 
             {/* Authentication routes */}
             <Route path="/register" element={<Registration />} />
@@ -156,6 +161,29 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <UserManagement />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            {/* Phase 1 Features - Protected */}
+            <Route path="/bio-page" element={
+              <ProtectedRoute>
+                <Layout>
+                  <BioPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/bundles" element={
+              <ProtectedRoute>
+                <Layout>
+                  <LinkBundles />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/health" element={
+              <ProtectedRoute>
+                <Layout>
+                  <LinkHealth />
                 </Layout>
               </ProtectedRoute>
             } />

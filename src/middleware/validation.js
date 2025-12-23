@@ -365,6 +365,68 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
+// Bio Page validation
+const validateBioPage = [
+  body('slug')
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Slug must be between 3 and 50 characters')
+    .matches(/^[a-z0-9-_]+$/)
+    .withMessage('Slug can only contain lowercase letters, numbers, hyphens, and underscores'),
+  body('title')
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Title must be between 1 and 100 characters'),
+  body('bio')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Bio cannot exceed 500 characters'),
+  body('links')
+    .optional()
+    .isArray()
+    .withMessage('Links must be an array'),
+  body('links.*.title')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Link title must be between 1 and 100 characters'),
+  body('links.*.url')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Link URL must be valid'),
+  handleValidationErrors
+];
+
+// Link Bundle validation
+const validateLinkBundle = [
+  body('name')
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Bundle name must be between 1 and 100 characters'),
+  body('slug')
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Slug must be between 3 and 50 characters')
+    .matches(/^[a-z0-9-_]+$/)
+    .withMessage('Slug can only contain lowercase letters, numbers, hyphens, and underscores'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Description cannot exceed 500 characters'),
+  body('color')
+    .optional()
+    .matches(/^#[0-9A-Fa-f]{6}$/)
+    .withMessage('Color must be a valid hex color code'),
+  body('links')
+    .optional()
+    .isArray()
+    .withMessage('Links must be an array'),
+  handleValidationErrors
+];
+
 module.exports = {
   handleValidationErrors,
   validateRegistration,
@@ -383,5 +445,7 @@ module.exports = {
   validateAdminUserUpdate,
   validateDomain,
   validateDomainUpdate,
-  sanitizeInput
+  sanitizeInput,
+  validateBioPage,
+  validateLinkBundle
 };

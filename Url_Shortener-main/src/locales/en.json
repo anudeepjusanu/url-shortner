@@ -1426,5 +1426,158 @@
       "title": "Clause 11: Updates to the Privacy Policy",
       "content": "The Privacy Policy was last updated on January 13, 2025. Snip reserves the right to add or modify any terms of the Privacy Policy. The website management will notify the data subject of any changes, and the data subject's account may be terminated if they do not accept the updated Privacy Policy after being notified."
     }
+  },
+  "sidebar": {
+    "main": "Main",
+    "dashboard": "Dashboard",
+    "myLinks": "My Links",
+    "analytics": "Analytics",
+    "qrCodes": "QR Codes",
+    "settings": "Settings",
+    "customDomains": "Custom Domains",
+    "admin": "Admin",
+    "userManagement": "User Management",
+    "account": "Account",
+    "profile": "Profile",
+    "advanced": "Advanced",
+    "bioPage": "Bio Page",
+    "linkBundles": "Link Bundles",
+    "linkHealth": "Link Health"
+  },
+  "bioPage": {
+    "title": "Bio Page",
+    "subtitle": "Create your personalized link-in-bio page",
+    "createNew": "Create Bio Page",
+    "edit": "Edit Bio Page",
+    "preview": "Preview",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "delete": "Delete Bio Page",
+    "form": {
+      "username": "Username",
+      "usernamePlaceholder": "your-username",
+      "usernameHint": "This will be your public URL: snip.ly/your-username",
+      "title": "Page Title",
+      "titlePlaceholder": "Your Name or Brand",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell your story in a few words...",
+      "profileImage": "Profile Image URL",
+      "profileImagePlaceholder": "https://example.com/image.jpg",
+      "addLink": "Add Link",
+      "linkTitle": "Link Title",
+      "linkUrl": "Link URL",
+      "linkIcon": "Icon (emoji)",
+      "socialLinks": "Social Links",
+      "addSocial": "Add Social Link",
+      "platform": "Platform",
+      "url": "URL"
+    },
+    "theme": {
+      "title": "Theme Customization",
+      "backgroundColor": "Background Color",
+      "textColor": "Text Color",
+      "buttonColor": "Button Color",
+      "buttonTextColor": "Button Text Color",
+      "buttonStyle": "Button Style",
+      "rounded": "Rounded",
+      "square": "Square",
+      "fontFamily": "Font Family"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "totalViews": "Total Views",
+      "totalClicks": "Total Clicks",
+      "clicksByLink": "Clicks by Link"
+    },
+    "success": {
+      "created": "Bio page created successfully!",
+      "updated": "Bio page updated successfully!",
+      "deleted": "Bio page deleted successfully!",
+      "published": "Bio page published!",
+      "unpublished": "Bio page unpublished!"
+    },
+    "errors": {
+      "usernameRequired": "Username is required",
+      "usernameInvalid": "Username can only contain letters, numbers, and hyphens",
+      "usernameTaken": "This username is already taken",
+      "titleRequired": "Page title is required"
+    }
+  },
+  "linkBundles": {
+    "title": "Link Bundles",
+    "subtitle": "Organize and share multiple links together",
+    "createNew": "Create Bundle",
+    "edit": "Edit Bundle",
+    "delete": "Delete Bundle",
+    "export": "Export",
+    "form": {
+      "name": "Bundle Name",
+      "namePlaceholder": "My Link Collection",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this bundle...",
+      "selectLinks": "Select Links",
+      "noLinks": "No links selected",
+      "addLinks": "Add Links to Bundle"
+    },
+    "stats": {
+      "totalBundles": "Total Bundles",
+      "totalLinks": "Links in Bundles",
+      "totalClicks": "Total Clicks"
+    },
+    "export": {
+      "json": "Export as JSON",
+      "csv": "Export as CSV",
+      "success": "Bundle exported successfully!",
+      "failed": "Failed to export bundle"
+    },
+    "success": {
+      "created": "Bundle created successfully!",
+      "updated": "Bundle updated successfully!",
+      "deleted": "Bundle deleted successfully!"
+    },
+    "errors": {
+      "nameRequired": "Bundle name is required",
+      "noLinksSelected": "Please select at least one link"
+    }
+  },
+  "linkHealth": {
+    "title": "Link Health Monitoring",
+    "subtitle": "Monitor your links and get alerts when they go down",
+    "enableMonitoring": "Enable Monitoring",
+    "disableMonitoring": "Disable Monitoring",
+    "checkNow": "Check Now",
+    "tabs": {
+      "monitored": "Monitored Links",
+      "alerts": "Alerts"
+    },
+    "stats": {
+      "uptime": "Uptime",
+      "responseTime": "Response Time",
+      "lastChecked": "Last Checked",
+      "statusCode": "Status Code"
+    },
+    "settings": {
+      "selectLink": "Select Link",
+      "checkInterval": "Check Interval (minutes)",
+      "failureThreshold": "Failure Threshold",
+      "failureThresholdHint": "Number of consecutive failures before alert",
+      "notifyOnFailure": "Send email notifications on failure"
+    },
+    "alerts": {
+      "down": "Link is down",
+      "slow": "Link is slow",
+      "recovered": "Link recovered",
+      "acknowledge": "Acknowledge"
+    },
+    "success": {
+      "enabled": "Health monitoring enabled!",
+      "disabled": "Health monitoring disabled",
+      "checked": "Link checked successfully!",
+      "acknowledged": "Alert acknowledged"
+    },
+    "errors": {
+      "noLinkSelected": "Please select a link",
+      "checkFailed": "Failed to check link health"
+    }
   }
 }

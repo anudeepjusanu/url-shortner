@@ -1,0 +1,260 @@
+/* Public Bio Page Styles */
+
+.public-bio-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bio-container {
+  width: 100%;
+  max-width: 680px;
+  padding: 40px 20px;
+}
+
+/* Profile Section */
+.bio-profile {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.bio-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bio-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: inherit;
+}
+
+.bio-description {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.9;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Links Section */
+.bio-links {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.bio-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bio-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bio-link:active {
+  transform: translateY(0);
+}
+
+.link-icon {
+  font-size: 20px;
+}
+
+.link-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Social Links */
+.bio-social {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.social-link {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.social-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.social-link svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Footer */
+.bio-footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bio-footer p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* Loading State */
+.public-bio-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.public-bio-loading .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.public-bio-loading p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Error State */
+.public-bio-error {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.public-bio-error h1 {
+  font-size: 72px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.public-bio-error p {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bio-container {
+    padding: 30px 16px;
+  }
+
+  .bio-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .bio-title {
+    font-size: 24px;
+  }
+
+  .bio-description {
+    font-size: 14px;
+  }
+
+  .bio-link {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .social-link {
+    width: 44px;
+    height: 44px;
+  }
+
+  .social-link svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bio-container {
+    padding: 20px 12px;
+  }
+
+  .bio-avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .bio-title {
+    font-size: 22px;
+  }
+
+  .bio-description {
+    font-size: 13px;
+  }
+
+  .bio-link {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .bio-social {
+    gap: 12px;
+  }
+
+  .social-link {
+    width: 40px;
+    height: 40px;
+  }
+
+  .social-link svg {
+    width: 20px;
+    height: 20px;
+  }
+}

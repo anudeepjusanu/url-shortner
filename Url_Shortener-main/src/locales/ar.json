@@ -1426,5 +1426,158 @@
       "title": "البند الحادي عشر: تحديثات سياسة الخصوصية",
       "content": "تم إجراء آخر تحديث على سياسة الخصوصية بتاريخ 13 يناير 2025. تحتفظ إدارة موقع Snip بحق إضافة أو تغيير أي من أحكام سياسة الخصوصية، وسوف تقوم إدارة الموقع بإشعار صاحب البيانات بذلك، ويحق لإدارة الموقع إنهاء حساب صاحب البيانات في حال عدم قبوله أي تغيير في سياسة الخصوصية بعد إشعاره بذلك."
     }
+  },
+  "sidebar": {
+    "main": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "myLinks": "روابطي",
+    "analytics": "التحليلات",
+    "qrCodes": "رموز QR",
+    "settings": "الإعدادات",
+    "customDomains": "النطاقات المخصصة",
+    "admin": "الإدارة",
+    "userManagement": "إدارة المستخدمين",
+    "account": "الحساب",
+    "profile": "الملف الشخصي",
+    "advanced": "متقدم",
+    "bioPage": "صفحة السيرة",
+    "linkBundles": "حزم الروابط",
+    "linkHealth": "صحة الروابط"
+  },
+  "bioPage": {
+    "title": "صفحة السيرة",
+    "subtitle": "أنشئ صفحة روابطك الشخصية",
+    "createNew": "إنشاء صفحة سيرة",
+    "edit": "تعديل صفحة السيرة",
+    "preview": "معاينة",
+    "publish": "نشر",
+    "unpublish": "إلغاء النشر",
+    "delete": "حذف صفحة السيرة",
+    "form": {
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "اسم-المستخدم",
+      "usernameHint": "سيكون هذا رابطك العام: snip.ly/اسم-المستخدم",
+      "title": "عنوان الصفحة",
+      "titlePlaceholder": "اسمك أو علامتك التجارية",
+      "bio": "السيرة الذاتية",
+      "bioPlaceholder": "اروِ قصتك في بضع كلمات...",
+      "profileImage": "رابط صورة الملف الشخصي",
+      "profileImagePlaceholder": "https://example.com/image.jpg",
+      "addLink": "إضافة رابط",
+      "linkTitle": "عنوان الرابط",
+      "linkUrl": "رابط URL",
+      "linkIcon": "أيقونة (إيموجي)",
+      "socialLinks": "روابط التواصل الاجتماعي",
+      "addSocial": "إضافة رابط اجتماعي",
+      "platform": "المنصة",
+      "url": "الرابط"
+    },
+    "theme": {
+      "title": "تخصيص المظهر",
+      "backgroundColor": "لون الخلفية",
+      "textColor": "لون النص",
+      "buttonColor": "لون الزر",
+      "buttonTextColor": "لون نص الزر",
+      "buttonStyle": "نمط الزر",
+      "rounded": "دائري",
+      "square": "مربع",
+      "fontFamily": "نوع الخط"
+    },
+    "analytics": {
+      "title": "التحليلات",
+      "totalViews": "إجمالي المشاهدات",
+      "totalClicks": "إجمالي النقرات",
+      "clicksByLink": "النقرات حسب الرابط"
+    },
+    "success": {
+      "created": "تم إنشاء صفحة السيرة بنجاح!",
+      "updated": "تم تحديث صفحة السيرة بنجاح!",
+      "deleted": "تم حذف صفحة السيرة بنجاح!",
+      "published": "تم نشر صفحة السيرة!",
+      "unpublished": "تم إلغاء نشر صفحة السيرة!"
+    },
+    "errors": {
+      "usernameRequired": "اسم المستخدم مطلوب",
+      "usernameInvalid": "يمكن أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات فقط",
+      "usernameTaken": "اسم المستخدم هذا مستخدم بالفعل",
+      "titleRequired": "عنوان الصفحة مطلوب"
+    }
+  },
+  "linkBundles": {
+    "title": "حزم الروابط",
+    "subtitle": "نظم وشارك عدة روابط معاً",
+    "createNew": "إنشاء حزمة",
+    "edit": "تعديل الحزمة",
+    "delete": "حذف الحزمة",
+    "export": "تصدير",
+    "form": {
+      "name": "اسم الحزمة",
+      "namePlaceholder": "مجموعة روابطي",
+      "description": "الوصف",
+      "descriptionPlaceholder": "صف هذه الحزمة...",
+      "selectLinks": "اختر الروابط",
+      "noLinks": "لم يتم اختيار روابط",
+      "addLinks": "إضافة روابط إلى الحزمة"
+    },
+    "stats": {
+      "totalBundles": "إجمالي الحزم",
+      "totalLinks": "الروابط في الحزم",
+      "totalClicks": "إجمالي النقرات"
+    },
+    "export": {
+      "json": "تصدير كـ JSON",
+      "csv": "تصدير كـ CSV",
+      "success": "تم تصدير الحزمة بنجاح!",
+      "failed": "فشل تصدير الحزمة"
+    },
+    "success": {
+      "created": "تم إنشاء الحزمة بنجاح!",
+      "updated": "تم تحديث الحزمة بنجاح!",
+      "deleted": "تم حذف الحزمة بنجاح!"
+    },
+    "errors": {
+      "nameRequired": "اسم الحزمة مطلوب",
+      "noLinksSelected": "يرجى اختيار رابط واحد على الأقل"
+    }
+  },
+  "linkHealth": {
+    "title": "مراقبة صحة الروابط",
+    "subtitle": "راقب روابطك واحصل على تنبيهات عند تعطلها",
+    "enableMonitoring": "تفعيل المراقبة",
+    "disableMonitoring": "تعطيل المراقبة",
+    "checkNow": "فحص الآن",
+    "tabs": {
+      "monitored": "الروابط المراقبة",
+      "alerts": "التنبيهات"
+    },
+    "stats": {
+      "uptime": "وقت التشغيل",
+      "responseTime": "وقت الاستجابة",
+      "lastChecked": "آخر فحص",
+      "statusCode": "رمز الحالة"
+    },
+    "settings": {
+      "selectLink": "اختر الرابط",
+      "checkInterval": "فترة الفحص (بالدقائق)",
+      "failureThreshold": "عتبة الفشل",
+      "failureThresholdHint": "عدد الإخفاقات المتتالية قبل التنبيه",
+      "notifyOnFailure": "إرسال إشعارات بريد إلكتروني عند الفشل"
+    },
+    "alerts": {
+      "down": "الرابط معطل",
+      "slow": "الرابط بطيء",
+      "recovered": "تم استعادة الرابط",
+      "acknowledge": "إقرار"
+    },
+    "success": {
+      "enabled": "تم تفعيل مراقبة الصحة!",
+      "disabled": "تم تعطيل مراقبة الصحة",
+      "checked": "تم فحص الرابط بنجاح!",
+      "acknowledged": "تم إقرار التنبيه"
+    },
+    "errors": {
+      "noLinkSelected": "يرجى اختيار رابط",
+      "checkFailed": "فشل فحص صحة الرابط"
+    }
   }
 }

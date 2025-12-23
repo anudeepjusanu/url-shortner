@@ -445,3 +445,94 @@ export const preferencesAPI = {
 
 // Export the API client instance
 export default apiClient;
+
+// ============================================
+// PHASE 1 FEATURES API METHODS
+// ============================================
+
+// Bio Pages API methods (Linktree Alternative)
+export const bioPagesAPI = {
+  // Create bio page
+  create: (bioPageData) => apiClient.post('/bio-pages', bioPageData),
+  
+  // Get my bio page
+  getMyBioPage: () => apiClient.get('/bio-pages/me'),
+  
+  // Get public bio page by slug
+  getBySlug: (slug) => apiClient.get(`/bio-pages/public/${slug}`),
+  
+  // Update bio page
+  update: (bioPageData) => apiClient.put('/bio-pages', bioPageData),
+  
+  // Delete bio page
+  delete: () => apiClient.delete('/bio-pages'),
+  
+  // Get analytics
+  getAnalytics: () => apiClient.get('/bio-pages/analytics'),
+  
+  // Check slug availability
+  checkSlug: (slug) => apiClient.get(`/bio-pages/check-slug/${slug}`),
+  
+  // Track link click (public)
+  trackClick: (slug, linkId) => apiClient.post(`/bio-pages/public/${slug}/track/${linkId}`),
+  
+  // Add email subscriber (public)
+  subscribe: (slug, email) => apiClient.post(`/bio-pages/public/${slug}/subscribe`, { email })
+};
+
+// Link Bundles API methods
+export const bundlesAPI = {
+  // Create bundle
+  create: (bundleData) => apiClient.post('/bundles', bundleData),
+  
+  // Get all bundles
+  list: (params) => apiClient.get('/bundles', params),
+  
+  // Get single bundle
+  get: (id) => apiClient.get(`/bundles/${id}`),
+  
+  // Get public bundle by slug
+  getBySlug: (slug) => apiClient.get(`/bundles/public/${slug}`),
+  
+  // Update bundle
+  update: (id, bundleData) => apiClient.put(`/bundles/${id}`, bundleData),
+  
+  // Delete bundle
+  delete: (id) => apiClient.delete(`/bundles/${id}`),
+  
+  // Add link to bundle
+  addLink: (bundleId, linkId) => apiClient.post(`/bundles/${bundleId}/links`, { linkId }),
+  
+  // Remove link from bundle
+  removeLink: (bundleId, linkId) => apiClient.delete(`/bundles/${bundleId}/links/${linkId}`),
+  
+  // Get bundle analytics
+  getAnalytics: (bundleId) => apiClient.get(`/bundles/${bundleId}/analytics`),
+  
+  // Export bundle
+  export: (bundleId, format = 'json') => apiClient.get(`/bundles/${bundleId}/export`, { format })
+};
+
+// Link Health Monitoring API methods
+export const healthAPI = {
+  // Enable health monitoring
+  enable: (urlId, settings) => apiClient.post(`/health/${urlId}/enable`, settings),
+  
+  // Disable health monitoring
+  disable: (urlId) => apiClient.post(`/health/${urlId}/disable`),
+  
+  // Get health status
+  getStatus: (urlId) => apiClient.get(`/health/${urlId}/status`),
+  
+  // Trigger manual health check
+  check: (urlId) => apiClient.post(`/health/${urlId}/check`),
+  
+  // Get all monitored URLs
+  getMonitored: (params) => apiClient.get('/health/monitored', params),
+  
+  // Get alerts
+  getAlerts: (params) => apiClient.get('/health/alerts', params),
+  
+  // Acknowledge alert
+  acknowledgeAlert: (urlId, alertId) => apiClient.post(`/health/${urlId}/alerts/${alertId}/acknowledge`)
+};

@@ -304,6 +304,92 @@ const Sidebar = ({ activeItem }) => {
           </div>
         )}
 
+        {/* Phase 1 Features Section */}
+        <div className="nav-section">
+          <div className="nav-label">{t('sidebar.advanced') || 'Advanced'}</div>
+          <div
+            className={`nav-item ${isActive("/bio-page") ? "active" : ""}`}
+            onClick={() => handleNavigation("/bio-page")}
+          >
+            <div className="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M2 2C2 1.44772 2.44772 1 3 1H13C13.5523 1 14 1.44772 14 2V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V2Z"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <circle cx="8" cy="5" r="2" fill="#6B7280"/>
+                <path d="M5 11C5 9.89543 5.89543 9 7 9H9C10.1046 9 11 9.89543 11 11V12H5V11Z" fill="#6B7280"/>
+              </svg>
+            </div>
+            <span>{t('sidebar.bioPage') || 'Bio Page'}</span>
+          </div>
+          <div
+            className={`nav-item ${isActive("/bundles") ? "active" : ""}`}
+            onClick={() => handleNavigation("/bundles")}
+          >
+            <div className="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M2 3C2 2.44772 2.44772 2 3 2H13C13.5523 2 14 2.44772 14 3V5C14 5.55228 13.5523 6 13 6H3C2.44772 6 2 5.55228 2 5V3Z"
+                  fill="#6B7280"
+                />
+                <path
+                  d="M2 8C2 7.44772 2.44772 7 3 7H13C13.5523 7 14 7.44772 14 8V10C14 10.5523 13.5523 11 13 11H3C2.44772 11 2 10.5523 2 10V8Z"
+                  fill="#6B7280"
+                />
+                <path
+                  d="M3 12C2.44772 12 2 12.4477 2 13C2 13.5523 2.44772 14 3 14H13C13.5523 14 14 13.5523 14 13C14 12.4477 13.5523 12 13 12H3Z"
+                  fill="#6B7280"
+                />
+              </svg>
+            </div>
+            <span>{t('sidebar.linkBundles') || 'Link Bundles'}</span>
+          </div>
+          <div
+            className={`nav-item ${isActive("/health") ? "active" : ""}`}
+            onClick={() => handleNavigation("/health")}
+          >
+            <div className="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <path
+                  d="M8 5V8L10 10"
+                  stroke="#6B7280"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <span>{t('sidebar.linkHealth') || 'Link Health'}</span>
+          </div>
+        </div>
+
         {/* Account Section */}
         <div className="nav-section">
           <div className="nav-label">{t('sidebar.account')}</div>
