@@ -1043,6 +1043,7 @@
       "inactive": "Inactive",
       "joined": "Joined:",
       "lastLogin": "Last Login:",
+      "location": "Location:",
       "changeRole": "Change Role:"
     },
     "viewMode": {
@@ -1057,6 +1058,7 @@
       "status": "Status",
       "plan": "Plan",
       "joined": "Joined",
+      "location": "Location",
       "lastLogin": "Last Login",
       "actions": "Actions"
     },
@@ -1077,6 +1079,7 @@
       "contactInfo": "Contact Info",
       "email": "Email",
       "phone": "Phone",
+      "location": "Registration Location",
       "notAvailable": "N/A",
       "accountActivity": "Account Activity",
       "joined": "Joined",

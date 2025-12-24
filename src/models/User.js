@@ -185,7 +185,17 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
-  }]
+  }],
+  registrationLocation: {
+    ip: String,
+    country: String,
+    countryCode: String,
+    region: String,
+    city: String,
+    latitude: Number,
+    longitude: Number,
+    timezone: String
+  }
 }, {
   timestamps: true,
   toJSON: {

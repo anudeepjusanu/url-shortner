@@ -1043,6 +1043,7 @@
       "inactive": "غير نشط",
       "joined": "تاريخ الانضمام:",
       "lastLogin": "آخر تسجيل دخول:",
+      "location": "الموقع:",
       "changeRole": "تغيير الدور:"
     },
     "viewMode": {
@@ -1057,6 +1058,7 @@
       "status": "الحالة",
       "plan": "الخطة",
       "joined": "تاريخ الانضمام",
+      "location": "الموقع",
       "lastLogin": "آخر تسجيل دخول",
       "actions": "الإجراءات"
     },
@@ -1077,6 +1079,7 @@
       "contactInfo": "معلومات الاتصال",
       "email": "البريد الإلكتروني",
       "phone": "الهاتف",
+      "location": "موقع التسجيل",
       "notAvailable": "غير متوفر",
       "accountActivity": "نشاط الحساب",
       "joined": "تاريخ الانضمام",
