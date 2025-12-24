@@ -338,7 +338,7 @@ const getUsersWithRoles = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const users = await User.find(query)
-      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone')
+      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone registrationLocation')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))

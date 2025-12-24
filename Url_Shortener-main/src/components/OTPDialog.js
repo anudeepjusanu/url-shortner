@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './OTPDialog.css';
 
 const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
+  const { t } = useTranslation();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
@@ -92,7 +94,7 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
     const otpValue = otp.join('');
 
     if (otpValue.length !== 6) {
-      setError('Please enter all 6 digits of the verification code');
+      setError(t('otp.errorEnterAllDigits'));
       return;
     }
 
@@ -100,13 +102,13 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
       await onVerify(otpValue);
     } catch (err) {
       // Provide more specific error messages based on error type
-      let errorMessage = 'Invalid verification code. Please check and try again.';
+      let errorMessage = t('otp.errorInvalidCode');
       if (err.message?.includes('expired') || err.message?.includes('Expired')) {
-        errorMessage = 'Verification code has expired. Please request a new one.';
+        errorMessage = t('otp.errorExpired');
       } else if (err.message?.includes('invalid') || err.message?.includes('Invalid')) {
-        errorMessage = 'Invalid verification code. Please check and try again.';
+        errorMessage = t('otp.errorInvalidCode');
       } else if (err.message?.includes('attempts') || err.message?.includes('Attempts')) {
-        errorMessage = 'Too many failed attempts. Please request a new code.';
+        errorMessage = t('otp.errorTooManyAttempts');
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -146,11 +148,11 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
       }
     } catch (err) {
       // Provide more specific error messages based on error type
-      let errorMessage = 'Failed to resend verification code. Please try again.';
+      let errorMessage = t('otp.errorResendFailed');
       if (err.message?.includes('rate') || err.message?.includes('Rate') || err.message?.includes('limit')) {
-        errorMessage = 'Too many requests. Please wait a moment before trying again.';
+        errorMessage = t('otp.errorTooManyRequests');
       } else if (err.message?.includes('network') || err.message?.includes('Network')) {
-        errorMessage = 'Network error. Please check your connection and try again.';
+        errorMessage = t('otp.errorNetwork');
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -165,7 +167,7 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
       <div className="otp-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="otp-dialog-header">
           <div className="otp-header-left">
-            <button className="otp-back-btn" onClick={onClose} aria-label="Go back">
+            <button className="otp-back-btn" onClick={onClose} aria-label={t('otp.goBack')}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -176,9 +178,9 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
                 <path d="M10 6V10L13 13" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <h3 className="otp-dialog-title">Verify OTP</h3>
+            <h3 className="otp-dialog-title">{t('otp.title')}</h3>
           </div>
-          <button className="otp-close-btn" onClick={onClose} aria-label="Close">
+          <button className="otp-close-btn" onClick={onClose} aria-label={t('common.close')}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
@@ -187,7 +189,7 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
 
         <div className="otp-dialog-body">
           <div className="otp-info">
-            <p>We've sent a 6-digit verification code to</p>
+            <p>{t('otp.sentMessage')}</p>
             <p className="otp-email">{email}</p>
           </div>
 
@@ -202,7 +204,7 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
               </div>
             )}
 
-            <div className="otp-inputs">
+            <div className="otp-inputs" dir="ltr">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -215,7 +217,8 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   className="otp-input"
                   disabled={loading}
-                  aria-label={`Digit ${index + 1}`}
+                  aria-label={t('otp.digitLabel', { number: index + 1 })}
+                  dir="ltr"
                 />
               ))}
             </div>
@@ -230,12 +233,12 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
                   <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="37.7" strokeDashoffset="37.7" strokeLinecap="round"/>
                 </svg>
               )}
-              {loading ? 'Verifying...' : 'Verify & Sign In'}
+              {loading ? t('otp.verifying') : t('otp.verifyButton')}
             </button>
 
             <div className="otp-resend">
               <p>
-                Didn't receive the code?{' '}
+                {t('otp.didntReceive')}{' '}
                 {canResend ? (
                   <button
                     type="button"
@@ -243,10 +246,10 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
                     className="otp-resend-btn"
                     disabled={loading}
                   >
-                    Resend OTP
+                    {t('otp.resendButton')}
                   </button>
                 ) : (
-                  <span className="otp-timer">Resend in {resendTimer}s</span>
+                  <span className="otp-timer">{t('otp.resendIn', { seconds: resendTimer })}</span>
                 )}
               </p>
             </div>
@@ -256,7 +259,7 @@ const OTPDialog = ({ isOpen, onClose, onVerify, onResend, email, loading }) => {
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 0C7.1 0 7.2 0.025 7.3 0.0625L12.5 2.25C13.05 2.475 13.45 3.025 13.45 3.625C13.44 6.125 12.4 10.675 7.7 12.8C7.3 13 6.7 13 6.3 12.8C1.6 10.675 0.56 6.125 0.55 3.625C0.55 3.025 0.95 2.475 1.5 2.25L6.7 0.0625C6.8 0.025 6.9 0 7 0ZM7 1.825V12.15C10.675 10.425 11.65 6.3 11.675 3.875L7 1.825Z" fill="#3B82F6"/>
             </svg>
-            <p><strong>Security Tip:</strong> Never share your OTP with anyone. We'll never ask for your verification code.</p>
+            <p><strong>{t('otp.securityTipTitle')}</strong> {t('otp.securityTipMessage')}</p>
           </div>
         </div>
       </div>
