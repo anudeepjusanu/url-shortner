@@ -149,6 +149,7 @@
   display: flex;
   gap: 8px;
   justify-content: center;
+  direction: ltr !important;
 }
 
 .otp-input {
@@ -162,6 +163,8 @@
   outline: none;
   transition: all 0.2s;
   background-color: #fff;
+  direction: ltr !important;
+  unicode-bidi: bidi-override;
 }
 
 .otp-input:focus {

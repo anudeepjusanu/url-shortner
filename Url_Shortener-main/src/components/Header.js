@@ -104,6 +104,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
               <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
               {/* <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button> */}
               <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
+              <button onClick={() => window.location.href = '/api-docs'} className="nav-link">{t('footer.api')}</button>
+
             </nav>
           </div>
           <div className="create-link-header-right">
