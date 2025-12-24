@@ -711,7 +711,7 @@ const LandingPage = () => {
                   <a href="#">{t('footer.pricing')}</a>
                 </li> */}
                 <li>
-                  <a href="#">{t('footer.api')}</a>
+                  <a href="/api-docs">{t('footer.api')}</a>
                 </li>
                 <li>
                   <a href="#">{t('footer.integrations')}</a>

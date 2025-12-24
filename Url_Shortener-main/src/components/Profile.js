@@ -1052,6 +1052,26 @@ const Profile = () => {
                 >
                   {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
                 </button>
+                <a
+                  href="/api-docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    border: '1px solid #3B82F6',
+                    background: '#fff',
+                    color: '#3B82F6',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  📖 {t('profile.apiKeys.viewDocs') || 'View API Docs'}
+                </a>
               </div>
             </section>
 

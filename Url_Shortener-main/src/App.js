@@ -25,6 +25,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsAndConditions from './components/TermsAndConditions';
 import UserManagement from './components/UserManagement';
 import GoogleAnalyticsDashboard from './components/GoogleAnalyticsDashboard';
+import ApiDocumentation from './components/ApiDocumentation';
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
@@ -45,6 +46,7 @@ function App() {
             {/* Public pages */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/api-docs" element={<ApiDocumentation />} />
 
             {/* Authentication routes */}
             <Route path="/register" element={<Registration />} />
