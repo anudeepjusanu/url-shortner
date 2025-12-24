@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const qrCodeController = require('../controllers/qrCodeController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authenticateAny } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/rateLimiter');
 const { validateObjectId, sanitizeInput } = require('../middleware/validation');
 const { checkFeatureAccess } = require('../middleware/roleCheck');
 
 // Apply middleware
 router.use(sanitizeInput);
-router.use(authenticate);
+router.use(authenticateAny);  // Accept both Bearer token and API key
 router.use(apiLimiter);
 
 // Get QR code statistics

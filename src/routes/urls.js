@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const urlController = require('../controllers/urlController');
-const { authenticate, apiKeyAuth } = require('../middleware/auth');
+const { authenticate, apiKeyAuth, authenticateAny } = require('../middleware/auth');
 const { urlCreationLimiter, apiLimiter } = require('../middleware/rateLimiter');
 const { checkResourceLimits, checkFeatureAccess } = require('../middleware/roleCheck');
 const {
@@ -16,8 +16,9 @@ const {
 
 router.use(sanitizeInput);
 
+// Create URL - accepts both Bearer token and API key
 router.post('/',
-  authenticate,
+  authenticateAny,
   // TEMPORARILY DISABLED - Rate limiting paused until going live
   // urlCreationLimiter,
   checkResourceLimits('urls'),
@@ -25,43 +26,50 @@ router.post('/',
   urlController.createUrl
 );
 
+// Get all URLs - accepts both Bearer token and API key
 router.get('/', 
-  authenticate, 
+  authenticateAny, 
   validatePagination, 
   urlController.getUrls
 );
 
+// Get URL stats - accepts both Bearer token and API key
 router.get('/stats',
-  authenticate,
+  authenticateAny,
   urlController.getUrlStats
 );
 
+// Get available domains - accepts both Bearer token and API key
 router.get('/domains/available',
-  authenticate,
+  authenticateAny,
   urlController.getAvailableDomains
 );
 
+// Get single URL - accepts both Bearer token and API key
 router.get('/:id', 
-  authenticate, 
+  authenticateAny, 
   validateObjectId, 
   urlController.getUrl
 );
 
+// Update URL - accepts both Bearer token and API key
 router.put('/:id', 
-  authenticate, 
+  authenticateAny, 
   validateObjectId, 
   validateUrlUpdate, 
   urlController.updateUrl
 );
 
+// Delete URL - accepts both Bearer token and API key
 router.delete('/:id', 
-  authenticate, 
+  authenticateAny, 
   validateObjectId, 
   urlController.deleteUrl
 );
 
+// Bulk delete - accepts both Bearer token and API key
 router.post('/bulk-delete', 
-  authenticate, 
+  authenticateAny, 
   checkFeatureAccess('bulk_operations'),
   validateBulkDelete, 
   urlController.bulkDelete

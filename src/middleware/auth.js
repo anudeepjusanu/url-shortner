@@ -161,18 +161,21 @@ const apiKeyAuth = async (req, res, next) => {
       });
     }
     
+    console.log('API Key auth attempt with key:', apiKey.substring(0, 8) + '...');
+    
     const user = await User.findOne({
       'apiKeys.key': apiKey,
       'apiKeys.isActive': true
     }).populate('organization', 'name slug limits');
     
     if (!user) {
+      console.log('No user found with this API key');
       return res.status(401).json({
         success: false,
         message: 'Invalid API key'
       });
     }
-    console.log('Authenticated user:', user);
+    console.log('Authenticated user via API key:', user.email);
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -207,6 +210,28 @@ const apiKeyAuth = async (req, res, next) => {
   }
 };
 
+// Combined auth middleware - accepts either Bearer token OR API key
+const authenticateAny = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const apiKey = req.headers['x-api-key'];
+  
+  // If API key is provided, use API key auth
+  if (apiKey) {
+    return apiKeyAuth(req, res, next);
+  }
+  
+  // Otherwise, use Bearer token auth
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authenticate(req, res, next);
+  }
+  
+  // No authentication provided
+  return res.status(401).json({
+    success: false,
+    message: 'Authentication required. Provide either Bearer token or X-API-Key header.'
+  });
+};
+
 const rateLimitByUser = (req, res, next) => {
   if (!req.user) {
     return next();
@@ -226,5 +251,6 @@ module.exports = {
   requireRole,
   requireAdmin,
   apiKeyAuth,
+  authenticateAny,
   rateLimitByUser
 };
