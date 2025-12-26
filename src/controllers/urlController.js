@@ -27,7 +27,8 @@ const createUrl = async (req, res) => {
       utm,
       restrictions,
       redirectType,
-      domainId
+      domainId,
+      generateQRCode = false // Option to auto-generate QR code
     } = req.body;
 
     // Check usage limits before creating URL
@@ -157,6 +158,57 @@ const createUrl = async (req, res) => {
 
     await cacheSet(`url:${shortCode}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
 
+    // Auto-generate QR code if requested
+    let qrCodeData = null;
+    if (generateQRCode) {
+      try {
+        const QRCode = require('qrcode');
+        const { domainToASCII } = require('../utils/punycode');
+        
+        // Build the short URL with QR tracking parameter
+        const urlDomain = populatedUrl.domain || process.env.SHORT_DOMAIN || process.env.BASE_DOMAIN || 'laghhu.link';
+        const asciiDomain = domainToASCII(urlDomain);
+        const protocol = asciiDomain.includes('localhost') ? 'http://' : 'https://';
+        const urlCode = populatedUrl.customCode || populatedUrl.shortCode;
+        const shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
+        
+        // Generate QR code
+        const qrOptions = {
+          errorCorrectionLevel: 'M',
+          type: 'image/png',
+          quality: 0.92,
+          margin: 4,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          width: 300
+        };
+        
+        const qrBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+        qrCodeData = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+        
+        // Update URL with QR code info
+        populatedUrl.qrCodeGenerated = true;
+        populatedUrl.qrCodeGeneratedAt = new Date();
+        populatedUrl.qrCode = qrCodeData;
+        populatedUrl.qrCodeSettings = {
+          size: 300,
+          format: 'png',
+          errorCorrection: 'M',
+          foregroundColor: '#000000',
+          backgroundColor: '#FFFFFF',
+          includeMargin: true
+        };
+        await populatedUrl.save();
+        
+        console.log('✅ QR code auto-generated for URL:', shortCode);
+      } catch (qrError) {
+        console.error('⚠️ Failed to auto-generate QR code:', qrError.message);
+        // Continue without QR code - don't fail the URL creation
+      }
+    }
+
     // Prepare domain info for response
     const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
     const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
@@ -183,7 +235,8 @@ const createUrl = async (req, res) => {
       message: 'URL created successfully',
       data: {
         url: populatedUrl,
-        domain: domainInfo
+        domain: domainInfo,
+        ...(qrCodeData && { qrCode: qrCodeData })
       }
     });
   } catch (error) {

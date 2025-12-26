@@ -62,7 +62,8 @@ const ApiDocumentation = () => {
         domainId: { type: "string", required: false, description: 'Domain ID to use ("base" for default domain)' },
         utm: { type: "object", required: false, description: "UTM parameters (source, medium, campaign)" },
         restrictions: { type: "object", required: false, description: "Access restrictions (maxClicks, allowedCountries, etc.)" },
-        redirectType: { type: "number", required: false, description: "HTTP redirect type (301 or 302, default: 302)" }
+        redirectType: { type: "number", required: false, description: "HTTP redirect type (301 or 302, default: 302)" },
+        generateQRCode: { type: "boolean", required: false, description: "Auto-generate QR code with tracking (default: false)" }
       },
       responses: {
         201: {
@@ -77,6 +78,8 @@ const ApiDocumentation = () => {
       "shortCode": "abc123",
       "title": "My Custom Link",
       "clickCount": 0,
+      "qrScanCount": 0,
+      "qrCodeGenerated": true,
       "isActive": true,
       "createdAt": "2024-01-15T10:30:00.000Z"
     },
@@ -85,7 +88,8 @@ const ApiDocumentation = () => {
       "fullDomain": "snip.sa",
       "shortUrl": "https://snip.sa",
       "isSystemDomain": true
-    }
+    },
+    "qrCode": "data:image/png;base64,iVBORw0KGgo..."
   }
 }`
         },
@@ -289,14 +293,16 @@ const ApiDocumentation = () => {
   -d '{
     "originalUrl": "https://example.com/my-long-url",
     "title": "My Link",
-    "tags": ["marketing", "campaign"]
+    "tags": ["marketing", "campaign"],
+    "generateQRCode": true
   }'`,
         javascript: `const axios = require('axios');
 
 const response = await axios.post('${BASE_URL}/urls', {
   originalUrl: 'https://example.com/my-long-url',
   title: 'My Link',
-  tags: ['marketing', 'campaign']
+  tags: ['marketing', 'campaign'],
+  generateQRCode: true
 }, {
   headers: {
     'Content-Type': 'application/json',
@@ -316,7 +322,8 @@ response = requests.post(
     json={
         'originalUrl': 'https://example.com/my-long-url',
         'title': 'My Link',
-        'tags': ['marketing', 'campaign']
+        'tags': ['marketing', 'campaign'],
+        'generateQRCode': True
     }
 )
 
@@ -328,7 +335,8 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'originalUrl' => 'https://example.com/my-long-url',
     'title' => 'My Link',
-    'tags' => ['marketing', 'campaign']
+    'tags' => ['marketing', 'campaign'],
+    'generateQRCode' => true
 ]));
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
@@ -339,7 +347,34 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 print_r(json_decode($response, true));
-?>`
+?>`,
+        java: `import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+
+HttpClient client = HttpClient.newHttpClient();
+
+String jsonBody = """
+    {
+        "originalUrl": "https://example.com/my-long-url",
+        "title": "My Link",
+        "tags": ["marketing", "campaign"],
+        "generateQRCode": true
+    }
+    """;
+
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("${BASE_URL}/urls"))
+    .header("Content-Type", "application/json")
+    .header("X-API-Key", "YOUR_API_KEY")
+    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+    .build();
+
+HttpResponse<String> response = client.send(request, 
+    HttpResponse.BodyHandlers.ofString());
+
+System.out.println(response.body());`
       },
       "get-urls": {
         curl: `curl -X GET "${BASE_URL}/urls?page=1&limit=20" \\
@@ -372,7 +407,24 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 print_r(json_decode($response, true));
-?>`
+?>`,
+        java: `import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+
+HttpClient client = HttpClient.newHttpClient();
+
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("${BASE_URL}/urls?page=1&limit=20"))
+    .header("X-API-Key", "YOUR_API_KEY")
+    .GET()
+    .build();
+
+HttpResponse<String> response = client.send(request, 
+    HttpResponse.BodyHandlers.ofString());
+
+System.out.println(response.body());`
       }
     };
 
@@ -507,8 +559,8 @@ print_r(json_decode($response, true));
               <ul className="feature-list">
                 <li><span className="feature-icon">✓</span> Create shortened URLs with custom codes</li>
                 <li><span className="feature-icon">✓</span> Track clicks and analytics</li>
-                <li><span className="feature-icon">✓</span> Password protection and expiration dates</li>
-                <li><span className="feature-icon">✓</span> UTM parameter tracking</li>
+                {/* <li><span className="feature-icon">✓</span> Password protection and expiration dates</li>
+                <li><span className="feature-icon">✓</span> UTM parameter tracking</li> */}
                 <li><span className="feature-icon">✓</span> Geographic and device restrictions</li>
                 <li><span className="feature-icon">✓</span> Custom domain support</li>
               </ul>
@@ -759,7 +811,7 @@ print_r(json_decode($response, true));
                         <div className="params-section">
                           <h4>Code Example</h4>
                           <div className="language-tabs">
-                            {['curl', 'javascript', 'python', 'php'].map(lang => (
+                            {['curl', 'javascript', 'python', 'php', 'java'].map(lang => (
                               <button
                                 key={lang}
                                 className={`lang-tab ${selectedLanguage === lang ? 'active' : ''}`}
@@ -881,7 +933,7 @@ print_r(json_decode($response, true));
               <p>Here's a complete example showing how to create a URL, retrieve it, and check statistics:</p>
 
               <div className="language-tabs">
-                {['curl', 'javascript', 'python', 'php'].map(lang => (
+                {['curl', 'javascript', 'python', 'php', 'java'].map(lang => (
                   <button
                     key={lang}
                     className={`lang-tab ${selectedLanguage === lang ? 'active' : ''}`}
