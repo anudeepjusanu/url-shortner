@@ -453,6 +453,27 @@ export const userManagementAPI = {
   getUserStats: () => apiClient.get('/users/stats')
 };
 
+// Admin API methods (admin/super_admin only)
+export const adminAPI = {
+  // Get all URLs with filters
+  getAllUrls: (params) => apiClient.get('/admin/urls', params),
+
+  // Get URLs by specific user
+  getUserUrls: (userId, params) => apiClient.get(`/admin/urls`, { ...params, creator: userId }),
+
+  // Update URL (activate/deactivate)
+  updateUrl: (urlId, data) => apiClient.put(`/admin/urls/${urlId}`, data),
+
+  // Delete URL
+  deleteUrl: (urlId) => apiClient.delete(`/admin/urls/${urlId}`),
+
+  // Get system stats
+  getSystemStats: () => apiClient.get('/admin/stats'),
+
+  // Get all users
+  getAllUsers: (params) => apiClient.get('/admin/users', params)
+};
+
 // Google Analytics API methods (super_admin only)
 export const googleAnalyticsAPI = {
   // Check if GA is configured

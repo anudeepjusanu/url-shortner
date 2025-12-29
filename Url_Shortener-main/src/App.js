@@ -24,6 +24,7 @@ import BillingManagement from './components/BillingManagement';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsAndConditions from './components/TermsAndConditions';
 import UserManagement from './components/UserManagement';
+import AdminUrlManagement from './components/AdminUrlManagement';
 import GoogleAnalyticsDashboard from './components/GoogleAnalyticsDashboard';
 import ApiDocumentation from './components/ApiDocumentation';
 // Import placeholder components for now - we'll create them later
@@ -159,6 +160,15 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <UserManagement />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            {/* Admin URL Management - Admin and Super Admin only */}
+            <Route path="/admin-urls" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminUrlManagement />
                 </Layout>
               </ProtectedRoute>
             } />

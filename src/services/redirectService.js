@@ -134,9 +134,14 @@ class RedirectService {
       // Normalize domain to ASCII (Punycode) for consistent database lookup
       const { domainToASCII } = require('../utils/punycode');
       const normalizedDomain = requestDomain ? domainToASCII(requestDomain.toLowerCase()) : null;
+      
+      // Normalize shortCode for case-insensitive lookup (but preserve original for logging)
+      const originalShortCode = shortCode;
+      const lowerShortCode = shortCode.toLowerCase();
 
       console.log('🔍 Looking up URL:', {
-        shortCode,
+        shortCode: originalShortCode,
+        lowerShortCode,
         shortCodeType: typeof shortCode,
         shortCodeLength: shortCode?.length,
         requestDomain,
@@ -144,23 +149,55 @@ class RedirectService {
         isMainDomain: this.isMainDomain(normalizedDomain)
       });
 
-      let url = await cacheGet(`url:${shortCode}`);
+      // Try cache with lowercase key first
+      let url = await cacheGet(`url:${lowerShortCode}`);
+      
+      // Also try original case for backward compatibility
+      if (!url) {
+        url = await cacheGet(`url:${originalShortCode}`);
+      }
 
       if (url) {
-        console.log('💾 Cache HIT:', { shortCode, cacheKey: `url:${shortCode}` });
+        console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive });
+        
+        // IMPORTANT: Always verify isActive status from database for cached URLs
+        // This ensures deactivated URLs don't redirect even if cached
+        const freshStatus = await Url.findOne({ 
+          $or: [
+            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
+            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
+          ]
+        }).select('isActive').lean();
+        
+        if (freshStatus && freshStatus.isActive !== url.isActive) {
+          console.log('⚠️ Cache stale! DB isActive:', freshStatus.isActive, 'Cache isActive:', url.isActive);
+          url.isActive = freshStatus.isActive;
+          
+          // If URL is now inactive, clear the cache
+          if (!freshStatus.isActive) {
+            console.log('🗑️ Clearing stale cache for deactivated URL');
+            const { cacheDel } = require('../config/redis');
+            await cacheDel(`url:${lowerShortCode}`);
+            await cacheDel(`url:${originalShortCode}`);
+          }
+        }
       } else {
         console.log('💾 Cache MISS - querying database');
 
+        // Use case-insensitive regex for shortCode and customCode lookup
         const query = {
-          $or: [{ shortCode }, { customCode: shortCode }]
+          $or: [
+            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
+            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
+          ]
         };
 
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
           query.domain = normalizedDomain;
-          console.log('🌐 Custom domain query:', JSON.stringify(query, null, 2));
+          console.log('🌐 Custom domain query (case-insensitive):', JSON.stringify(query, null, 2));
         } else {
-          console.log('🌐 Main domain query:', JSON.stringify(query, null, 2));
+          console.log('🌐 Main domain query (case-insensitive):', JSON.stringify(query, null, 2));
         }
 
         url = await Url.findOne(query)
@@ -183,8 +220,9 @@ class RedirectService {
 
         if (url && url.isActive) {
           try {
-            await cacheSet(`url:${shortCode}`, url, config.CACHE_TTL.URL_CACHE);
-            console.log('💾 Cached URL:', { shortCode, ttl: config.CACHE_TTL.URL_CACHE });
+            // Cache with lowercase key for consistent case-insensitive lookups
+            await cacheSet(`url:${lowerShortCode}`, url, config.CACHE_TTL.URL_CACHE);
+            console.log('💾 Cached URL:', { shortCode: lowerShortCode, ttl: config.CACHE_TTL.URL_CACHE });
           } catch (cacheError) {
             console.warn('⚠️  Cache set failed:', cacheError.message);
             // Continue anyway, just without caching
@@ -225,11 +263,20 @@ class RedirectService {
   async validateRedirect(url, requestData) {
     const { ipAddress, userAgent, password, country, deviceType } = requestData;
     
+    console.log('🔍 validateRedirect check:', {
+      urlId: url._id,
+      shortCode: url.shortCode,
+      isActive: url.isActive,
+      hasPassword: !!url.password,
+      expiresAt: url.expiresAt
+    });
+    
     if (!url) {
       return { allowed: false, reason: 'URL not found' };
     }
     
     if (!url.isActive) {
+      console.log('❌ URL is deactivated, blocking redirect');
       return { allowed: false, reason: 'URL is deactivated' };
     }
     

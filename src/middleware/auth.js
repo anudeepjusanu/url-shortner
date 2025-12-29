@@ -148,7 +148,7 @@ const requireRole = (roles) => {
   };
 };
 
-const requireAdmin = requireRole(['admin']);
+const requireAdmin = requireRole(['admin', 'super_admin']);
 
 const apiKeyAuth = async (req, res, next) => {
   try {

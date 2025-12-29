@@ -156,7 +156,7 @@ const createUrl = async (req, res) => {
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
 
-    await cacheSet(`url:${shortCode}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
+    await cacheSet(`url:${shortCode.toLowerCase()}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
 
     // Auto-generate QR code if requested
     let qrCodeData = null;
@@ -426,18 +426,26 @@ const updateUrl = async (req, res) => {
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
 
-    // Clear cache for short code
-    await cacheDel(`url:${url.shortCode}`);
+    // Clear cache for short code (use lowercase for case-insensitive consistency)
+    const lowerShortCode = url.shortCode.toLowerCase();
+    await cacheDel(`url:${lowerShortCode}`);
 
     // If custom code was changed, clear old custom code cache
     if (customCode !== undefined && url.customCode && customCode !== url.customCode) {
-      await cacheDel(`url:${url.customCode}`);
+      await cacheDel(`url:${url.customCode.toLowerCase()}`);
     }
 
-    // Set new cache
-    await cacheSet(`url:${url.shortCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
-    if (updatedUrl.customCode) {
-      await cacheSet(`url:${updatedUrl.customCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+    // Only cache if URL is active - deactivated URLs should not be cached
+    if (updatedUrl.isActive) {
+      await cacheSet(`url:${lowerShortCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+      if (updatedUrl.customCode) {
+        await cacheSet(`url:${updatedUrl.customCode.toLowerCase()}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+      }
+    } else {
+      // Also clear custom code cache if URL is deactivated
+      if (updatedUrl.customCode) {
+        await cacheDel(`url:${updatedUrl.customCode.toLowerCase()}`);
+      }
     }
     
     res.json({
@@ -476,7 +484,10 @@ const deleteUrl = async (req, res) => {
     }
     
     await Url.findByIdAndDelete(id);
-    await cacheDel(`url:${url.shortCode}`);
+    await cacheDel(`url:${url.shortCode.toLowerCase()}`);
+    if (url.customCode) {
+      await cacheDel(`url:${url.customCode.toLowerCase()}`);
+    }
     
     res.json({
       success: true,
@@ -518,11 +529,15 @@ const bulkDelete = async (req, res) => {
     }
     
     const shortCodes = urls.map(url => url.shortCode);
+    const customCodes = urls.filter(url => url.customCode).map(url => url.customCode);
     
     await Url.deleteMany({ _id: { $in: ids } });
     
     for (const shortCode of shortCodes) {
-      await cacheDel(`url:${shortCode}`);
+      await cacheDel(`url:${shortCode.toLowerCase()}`);
+    }
+    for (const customCode of customCodes) {
+      await cacheDel(`url:${customCode.toLowerCase()}`);
     }
     
     res.json({
