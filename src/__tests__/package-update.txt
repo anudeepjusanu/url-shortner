@@ -1,0 +1,4 @@
+Update the package.json test script to:
+"test": "jest --coverage",
+"test:watch": "jest --watch",
+"test:verbose": "jest --verbose --coverage"
