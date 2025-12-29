@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Url = require('../models/Url');
 const Organization = require('../models/Organization');
 const { Click } = require('../models/Analytics');
+const { cacheDel } = require('../config/redis');
 
 const getSystemStats = async (req, res) => {
   try {
@@ -213,6 +214,7 @@ const getAllUrls = async (req, res) => {
       limit = 20,
       search,
       isActive,
+      creator,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -226,6 +228,10 @@ const getAllUrls = async (req, res) => {
         { originalUrl: { $regex: search, $options: 'i' } },
         { shortCode: { $regex: search, $options: 'i' } }
       ];
+    }
+    
+    if (creator) {
+      filter.creator = creator;
     }
     
     if (isActive !== undefined) {
@@ -279,6 +285,14 @@ const updateUrl = async (req, res) => {
       });
     }
     
+    console.log('🔄 Admin updating URL:', {
+      id,
+      shortCode: url.shortCode,
+      customCode: url.customCode,
+      currentIsActive: url.isActive,
+      newIsActive: isActive
+    });
+    
     const updateData = {};
     if (isActive !== undefined) updateData.isActive = isActive;
     if (title !== undefined) updateData.title = title;
@@ -287,6 +301,25 @@ const updateUrl = async (req, res) => {
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
+    
+    // Clear cache for this URL so deactivation takes effect immediately
+    // Use lowercase for case-insensitive consistency
+    const lowerShortCode = url.shortCode.toLowerCase();
+    console.log('🗑️ Clearing cache for:', `url:${lowerShortCode}`);
+    const cacheDelResult1 = await cacheDel(`url:${lowerShortCode}`);
+    console.log('🗑️ Cache delete result for shortCode:', cacheDelResult1);
+    
+    if (url.customCode) {
+      const lowerCustomCode = url.customCode.toLowerCase();
+      console.log('🗑️ Clearing cache for customCode:', `url:${lowerCustomCode}`);
+      const cacheDelResult2 = await cacheDel(`url:${lowerCustomCode}`);
+      console.log('🗑️ Cache delete result for customCode:', cacheDelResult2);
+    }
+    
+    console.log('✅ URL updated successfully:', {
+      shortCode: updatedUrl.shortCode,
+      isActive: updatedUrl.isActive
+    });
     
     res.json({
       success: true,
