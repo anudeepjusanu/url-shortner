@@ -150,12 +150,12 @@ function AdminUrlManagement() {
         <Sidebar />
         <div className="dashboard-main">
           <MainHeader />
-          <div className="admin-url-management">
-            <div className="access-denied">
-              <h2>{t('adminUrlManagement.accessDenied')}</h2>
-              <p>{t('adminUrlManagement.noPermission')}</p>
-            </div>
-          </div>
+      <div className="admin-url-management">
+        <div className="access-denied">
+          <h2>{t('adminUrlManagement.accessDenied')}</h2>
+          <p>{t('adminUrlManagement.noPermission')}</p>
+        </div>
+      </div>
         </div>
       </div>
     );
