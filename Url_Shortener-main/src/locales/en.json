@@ -1475,7 +1475,7 @@
       "totalUsers": "Total Users"
     },
     "filters": {
-      "searchPlaceholder": "Search by URL, short code, or title...",
+      "searchPlaceholder": "Search by URL, short code, title, or creator...",
       "allStatus": "All Status",
       "active": "Active",
       "inactive": "Inactive",

@@ -220,20 +220,66 @@ const getAllUrls = async (req, res) => {
     } = req.query;
     
     const skip = (page - 1) * limit;
-    const filter = {};
+    let filter = {};
     
-    if (search) {
+    // Search across URL fields AND creator name/email
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      // Escape special regex characters to prevent regex injection
+      const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Create a version with optional spaces between characters for flexible matching
+      // This allows "JohnDoe" to match "John Doe" and vice versa
+      const flexibleSearch = escapedSearch.split(/\s+/).join('\\s*');
+      // Also create a version without any spaces for matching concatenated names
+      const noSpaceSearch = searchTerm.replace(/\s+/g, '');
+      const escapedNoSpaceSearch = noSpaceSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // First, find users matching the search term (search in full name or email)
+      const matchingUsers = await User.find({
+        $or: [
+          { firstName: { $regex: escapedSearch, $options: 'i' } },
+          { lastName: { $regex: escapedSearch, $options: 'i' } },
+          { email: { $regex: escapedSearch, $options: 'i' } },
+          // Search by combining first and last name with space (for "John Doe" type searches)
+          { $expr: { 
+            $regexMatch: { 
+              input: { $concat: ['$firstName', ' ', '$lastName'] }, 
+              regex: flexibleSearch, 
+              options: 'i' 
+            } 
+          }},
+          // Search by combining first and last name without space (for "JohnDoe" type searches)
+          { $expr: { 
+            $regexMatch: { 
+              input: { $concat: ['$firstName', '$lastName'] }, 
+              regex: escapedNoSpaceSearch, 
+              options: 'i' 
+            } 
+          }}
+        ]
+      }).select('_id');
+      
+      const userIds = matchingUsers.map(u => u._id);
+      
+      // Build filter to search URL fields OR match creator
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { originalUrl: { $regex: search, $options: 'i' } },
-        { shortCode: { $regex: search, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { originalUrl: { $regex: escapedSearch, $options: 'i' } },
+        { shortCode: { $regex: escapedSearch, $options: 'i' } }
       ];
+      
+      // Add creator filter if matching users found
+      if (userIds.length > 0) {
+        filter.$or.push({ creator: { $in: userIds } });
+      }
     }
     
+    // Filter by specific creator ID (from dropdown)
     if (creator) {
       filter.creator = creator;
     }
     
+    // Filter by status
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
     }

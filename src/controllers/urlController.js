@@ -1,11 +1,59 @@
 const Url = require('../models/Url');
 const User = require('../models/User');
 const Domain = require('../models/Domain');
-const { generateShortCode } = require('../utils/shortCodeGenerator');
+const { generateShortCode, validateShortCode } = require('../utils/shortCodeGenerator');
 const { validateUrl } = require('../utils/urlValidator');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
+
+// Reserved aliases that cannot be used for shortened URLs
+const RESERVED_ALIASES = [
+  // Frontend routes
+  'admin', 'dashboard', 'analytics', 'profile', 'settings',
+  'login', 'register', 'logout', 'signup', 'signin',
+  'my-links', 'mylinks', 'links', 'urls',
+  'create-short-link', 'create-link', 'create',
+  'qr-codes', 'qr', 'qrcode', 'qrcodes',
+  'utm-builder', 'utm', 'builder',
+  'custom-domains', 'domains', 'domain',
+  'subscription', 'billing', 'payment', 'pricing',
+  'team-members', 'team', 'members', 'users',
+  'content-filter', 'filter', 'content',
+  'url-management', 'management', 'admin-urls',
+
+  // Backend/API routes
+  'api', 'auth', 'v1', 'v2', 'v3',
+  'graphql', 'webhook', 'webhooks',
+  'oauth', 'callback', 'redirect',
+
+  // Common system pages
+  'about', 'contact', 'help', 'support',
+  'terms', 'privacy', 'legal', 'policy',
+  'terms-and-conditions', 'privacy-policy',
+  'docs', 'documentation', 'guide', 'tutorial',
+  'api-docs', 'api-documentation',
+  'blog', 'news', 'updates', 'changelog',
+  'status', 'health', 'ping', 'test',
+
+  // Security/Admin
+  'root', 'administrator', 'superuser', 'moderator',
+  'system', 'config', 'configuration', 'setup',
+  'install', 'upgrade', 'migrate', 'backup',
+
+  // Common reserved words
+  'www', 'ftp', 'mail', 'smtp', 'pop3',
+  'assets', 'static', 'public', 'cdn',
+  'download', 'upload', 'file', 'files',
+  'img', 'image', 'images', 'css', 'js',
+  'favicon', 'robots', 'sitemap', 'feed', 'rss'
+];
+
+// Helper function to check if alias is reserved
+const isReservedAlias = (alias) => {
+  if (!alias) return false;
+  return RESERVED_ALIASES.includes(alias.toLowerCase().trim());
+};
 
 // Helper function to normalize short codes (preserve case for international characters)
 const normalizeShortCode = (code) => {
@@ -103,6 +151,23 @@ const createUrl = async (req, res) => {
     let shortCode = customCode ? normalizeShortCode(customCode) : null;
     
     if (shortCode) {
+      // Check if the custom code is a reserved alias
+      if (isReservedAlias(shortCode)) {
+        return res.status(400).json({
+          success: false,
+          message: 'This alias is reserved for system use. Please choose a different alias.'
+        });
+      }
+
+      // Validate the short code format
+      const validation = validateShortCode(shortCode);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.reason
+        });
+      }
+
       const existingUrl = await Url.findOne({
         $or: [{ shortCode: shortCode }, { customCode: shortCode }]
       });
@@ -397,6 +462,24 @@ const updateUrl = async (req, res) => {
     // Check if custom code is being updated and if it's already taken
     if (customCode !== undefined && customCode !== url.customCode) {
       const normalizedCode = normalizeShortCode(customCode);
+
+      // Check if the custom code is a reserved alias
+      if (isReservedAlias(normalizedCode)) {
+        return res.status(400).json({
+          success: false,
+          message: 'This alias is reserved for system use. Please choose a different alias.'
+        });
+      }
+
+      // Validate the short code format
+      const validation = validateShortCode(normalizedCode);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.reason
+        });
+      }
+
       const existingUrl = await Url.findOne({
         customCode: normalizedCode,
         _id: { $ne: id }
