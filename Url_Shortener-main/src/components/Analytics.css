@@ -18,13 +18,19 @@
 /* Main Content Area */
 .analytics-main {
   flex: 1;
-  /* margin-left: 250px; */
+  /* margin-left: 250px; Match sidebar width */
   background: #f9fafb;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: calc(100vh - 64px);
   padding-top: 0;
 }
+
+/* RTL Support */
+/* [dir="rtl"] .analytics-main {
+  margin-left: 0;
+  margin-right: 250px;
+} */
 
 .analytics-content {
   padding: 24px 32px;
@@ -562,8 +568,14 @@
 @media (max-width: 1023px) {
   .analytics-main {
     margin-left: 0;
+    /* margin-right: 0; */
     min-height: calc(100vh - 64px);
   }
+
+  /* [dir="rtl"] .analytics-main {
+    margin-left: 0;
+    margin-right: 0;
+  } */
 
   .analytics-content {
     padding: 20px 24px;
