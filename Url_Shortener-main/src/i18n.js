@@ -20,8 +20,8 @@ i18n
   .use(initReactI18next) // Pass i18n instance to react-i18next
   .init({
     resources,
-    fallbackLng: 'en', // Use English if detected language is not available
-    lng: localStorage.getItem('language') || 'en', // Default language
+    fallbackLng: 'ar', // Use Arabic if detected language is not available
+    lng: localStorage.getItem('language') || 'ar', // Default language
     debug: false, // Set to true for development debugging
 
     interpolation: {

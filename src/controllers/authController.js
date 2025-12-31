@@ -866,7 +866,7 @@ const getPreferences = async (req, res) => {
       emailNotifications: user.preferences?.emailNotifications?.usageAlerts !== false,
       marketingEmails: user.preferences?.emailNotifications?.newsletter || false,
       weeklyReports: user.preferences?.emailNotifications?.paymentReminders !== false,
-      language: user.preferences?.language || 'en',
+      language: user.preferences?.language || 'ar',
       timezone: user.preferences?.timezone || 'Asia/Riyadh',
       theme: user.preferences?.theme || 'light'
     });
@@ -930,7 +930,7 @@ const updatePreferences = async (req, res) => {
       emailNotifications: user.preferences.emailNotifications?.usageAlerts !== false,
       marketingEmails: user.preferences.emailNotifications?.newsletter || false,
       weeklyReports: user.preferences.emailNotifications?.paymentReminders !== false,
-      language: user.preferences.language || 'en',
+      language: user.preferences.language || 'ar',
       timezone: user.preferences.timezone || 'Asia/Riyadh',
       theme: user.preferences.theme || 'light'
     });

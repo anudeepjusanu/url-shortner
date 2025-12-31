@@ -145,7 +145,7 @@ const Profile = () => {
           emailNotifications: response.emailNotifications !== false,
           marketingEmails: response.marketingEmails || false,
           weeklyReports: response.weeklyReports !== false,
-          language: response.language || "en",
+          language: response.language || "ar",
           timezone: response.timezone || "Asia/Riyadh"
         });
       }
