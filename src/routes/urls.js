@@ -19,8 +19,7 @@ router.use(sanitizeInput);
 // Create URL - accepts both Bearer token and API key
 router.post('/',
   authenticateAny,
-  // TEMPORARILY DISABLED - Rate limiting paused until going live
-  // urlCreationLimiter,
+  urlCreationLimiter,
   checkResourceLimits('urls'),
   validateUrlCreation,
   urlController.createUrl
@@ -28,7 +27,8 @@ router.post('/',
 
 // Get all URLs - accepts both Bearer token and API key
 router.get('/', 
-  authenticateAny, 
+  authenticateAny,
+  apiLimiter,
   validatePagination, 
   urlController.getUrls
 );
@@ -36,25 +36,29 @@ router.get('/',
 // Get URL stats - accepts both Bearer token and API key
 router.get('/stats',
   authenticateAny,
+  apiLimiter,
   urlController.getUrlStats
 );
 
 // Get available domains - accepts both Bearer token and API key
 router.get('/domains/available',
   authenticateAny,
+  apiLimiter,
   urlController.getAvailableDomains
 );
 
 // Get single URL - accepts both Bearer token and API key
 router.get('/:id', 
-  authenticateAny, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   urlController.getUrl
 );
 
 // Update URL - accepts both Bearer token and API key
 router.put('/:id', 
-  authenticateAny, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   validateUrlUpdate, 
   urlController.updateUrl
@@ -62,14 +66,16 @@ router.put('/:id',
 
 // Delete URL - accepts both Bearer token and API key
 router.delete('/:id', 
-  authenticateAny, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   urlController.deleteUrl
 );
 
 // Bulk delete - accepts both Bearer token and API key
 router.post('/bulk-delete', 
-  authenticateAny, 
+  authenticateAny,
+  apiLimiter,
   checkFeatureAccess('bulk_operations'),
   validateBulkDelete, 
   urlController.bulkDelete

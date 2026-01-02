@@ -121,10 +121,34 @@ class UrlValidator {
       };
     }
     
+    // Check that hostname has at least one dot (requires a TLD)
+    // Exception: allow localhost in non-production environments
+    if (!hostname.includes('.')) {
+      if (hostname === 'localhost' && process.env.NODE_ENV !== 'production') {
+        // Allow localhost in development
+      } else {
+        return {
+          isValid: false,
+          message: 'Invalid URL: domain must include a valid TLD (e.g., .com, .org, .net)'
+        };
+      }
+    }
+    
+    // Validate domain format - must have valid characters
     if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(hostname)) {
       return {
         isValid: false,
         message: 'Invalid domain name format'
+      };
+    }
+    
+    // Ensure TLD is at least 2 characters (e.g., .co, .io, .com)
+    const parts = hostname.split('.');
+    const tld = parts[parts.length - 1];
+    if (tld && tld.length < 2) {
+      return {
+        isValid: false,
+        message: 'Invalid URL: TLD must be at least 2 characters'
       };
     }
     
@@ -391,30 +415,38 @@ class UrlValidator {
   checkUrlAccessibility(url, timeout = 5000) {
     return new Promise(async (resolve) => {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        // Use axios for more reliable HTTP requests in Node.js
+        const axios = require('axios');
         
-        const response = await fetch(url, {
-          method: 'HEAD',
-          signal: controller.signal,
+        const response = await axios.head(url, {
+          timeout: timeout,
+          maxRedirects: 5,
+          validateStatus: () => true, // Don't throw on any status code
           headers: {
             'User-Agent': 'URL-Shortener-Validator/1.0'
           }
         });
         
-        clearTimeout(timeoutId);
-        
         resolve({
-          accessible: response.ok,
+          accessible: response.status >= 200 && response.status < 400,
           status: response.status,
           statusText: response.statusText,
-          redirected: response.redirected,
-          finalUrl: response.url
+          redirected: response.request?.res?.responseUrl !== url,
+          finalUrl: response.request?.res?.responseUrl || url
         });
       } catch (error) {
+        // Extract meaningful error message
+        let errorMessage = error.message || 'Unknown error';
+        
+        // Handle axios-specific error codes
+        if (error.code) {
+          errorMessage = error.code;
+        }
+        
         resolve({
           accessible: false,
-          error: error.message
+          error: errorMessage,
+          code: error.code
         });
       }
     });

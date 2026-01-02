@@ -490,11 +490,15 @@ function MyLinks() {
       console.log('Error response data:', err.response);
 
       // Parse error message to determine which field has the error
-      const errorMessage = err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
+      // Backend returns message in err.response.data.message
+      const errorMessage = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
       const errorLower = errorMessage.toLowerCase();
 
-      // Check if error is about URL
-      if (errorLower.includes('url') && !errorLower.includes('alias')) {
+      // Check if error is about URL (including non-existing URL errors)
+      if (errorLower.includes('url') || 
+          errorLower.includes('domain could not be found') ||
+          errorLower.includes('not accessible') ||
+          errorLower.includes('does not exist')) {
         setUrlError(errorMessage);
       }
       // Check if error is about alias/custom code

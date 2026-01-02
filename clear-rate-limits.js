@@ -11,26 +11,20 @@ async function clearRateLimits() {
     await client.connect();
     console.log('Connected to Redis');
 
-    // Clear all rate limit keys
-    const keys = await client.keys('*auth*');
-    console.log('Found auth rate limit keys:', keys);
-
-    if (keys.length > 0) {
-      await client.del(keys);
-      console.log(`Cleared ${keys.length} rate limit keys`);
-    }
-
-    // Also clear any strict auth keys
-    const strictKeys = await client.keys('*strict_auth*');
-    console.log('Found strict auth keys:', strictKeys);
-
-    if (strictKeys.length > 0) {
-      await client.del(strictKeys);
-      console.log(`Cleared ${strictKeys.length} strict auth keys`);
+    // Clear all rate limit related keys
+    const patterns = ['*auth*', '*strict_auth*', '*url_creation*', '*api:*', '*redirect:*', '*password_reset*', '*rl:*'];
+    
+    for (const pattern of patterns) {
+      const keys = await client.keys(pattern);
+      if (keys.length > 0) {
+        console.log(`Found ${keys.length} keys matching ${pattern}`);
+        await client.del(keys);
+        console.log(`Cleared ${keys.length} keys`);
+      }
     }
 
     await client.quit();
-    console.log('Rate limits cleared successfully');
+    console.log('All rate limits cleared successfully');
   } catch (error) {
     console.error('Error clearing rate limits:', error);
     process.exit(1);

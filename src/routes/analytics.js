@@ -14,8 +14,7 @@ const {
 
 router.use(sanitizeInput);
 router.use(authenticateAny);  // Accept both Bearer token and API key
-// TEMPORARILY DISABLED - Rate limiting paused until going live
-// router.use(apiLimiter);
+router.use(apiLimiter);
 
 router.get('/dashboard', 
   validateAnalyticsQuery, 
