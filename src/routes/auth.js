@@ -26,7 +26,7 @@ router.post('/register-simple', validateRegistration, authController.register);
 router.post('/register', authLimiter, validateRegistration, authController.register);
 
 // Temporarily disable strict rate limiter for debugging
-router.post('/login', validateLogin, authController.login);
+router.post('/login', authLimiter, validateLogin, authController.login);
 
 router.post('/refresh', authController.refreshToken);
 

@@ -367,11 +367,15 @@ const CreateShortLink = () => {
       console.error('Error creating short link:', err);
 
       // Parse error message to determine which field has the error
-      const errorMessage = err.message || t('createLink.errors.general');
+      // Backend returns message in err.response.data.message
+      const errorMessage = err.response?.data?.message || err.message || t('createLink.errors.general');
       const errorLower = errorMessage.toLowerCase();
 
-      // Check if error is about URL
-      if (errorLower.includes('url') && !errorLower.includes('alias')) {
+      // Check if error is about URL (including non-existing URL errors)
+      if (errorLower.includes('url') || 
+          errorLower.includes('domain could not be found') ||
+          errorLower.includes('not accessible') ||
+          errorLower.includes('does not exist')) {
         setUrlError(errorMessage);
       }
       // Check if error is about alias/custom code

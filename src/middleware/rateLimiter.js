@@ -35,7 +35,7 @@ const generalLimiter = createRateLimiter({
 
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   message: 'Too many authentication attempts, please try again later',
   keyGenerator: (req) => `auth:${ipKeyGenerator(req)}`,
   skip: (req) => req.method !== 'POST'
@@ -43,7 +43,7 @@ const authLimiter = createRateLimiter({
 
 const urlCreationLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 50,
+  max: 100,
   message: 'Too many URLs created, please try again later',
   keyGenerator: (req) => {
     if (req.user) {
@@ -55,7 +55,7 @@ const urlCreationLimiter = createRateLimiter({
       };
       return {
         key: userKey,
-        max: 50 * (roleMultiplier[req.user.role] || 1)
+        max: 100 * (roleMultiplier[req.user.role] || 1)
       };
     }
     return `url_creation:ip:${ipKeyGenerator(req)}`;
@@ -65,15 +65,15 @@ const urlCreationLimiter = createRateLimiter({
 const apiLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   max: (req) => {
-    if (!req.user) return 10;
+    if (!req.user) return 50;
     
     const limits = {
       'admin': 10000,
-      'premium': 1000,
-      'user': 100
+      'premium': 2000,
+      'user': 500
     };
     
-    return limits[req.user.role] || 100;
+    return limits[req.user.role] || 500;
   },
   message: 'API rate limit exceeded',
   keyGenerator: (req) => {
@@ -94,7 +94,7 @@ const redirectLimiter = createRateLimiter({
 
 const strictAuthLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 10,
   message: 'Too many failed attempts, account temporarily locked',
   keyGenerator: (req) => `strict_auth:${req.body.email || ipKeyGenerator(req)}`,
   skipSuccessfulRequests: true,
@@ -102,7 +102,7 @@ const strictAuthLimiter = createRateLimiter({
 
 const passwordResetLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 10,
   message: 'Too many password reset requests, please try again later',
   keyGenerator: (req) => `password_reset:${req.body.email || ipKeyGenerator(req)}`
 });

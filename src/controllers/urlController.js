@@ -2,7 +2,7 @@ const Url = require('../models/Url');
 const User = require('../models/User');
 const Domain = require('../models/Domain');
 const { generateShortCode, validateShortCode } = require('../utils/shortCodeGenerator');
-const { validateUrl } = require('../utils/urlValidator');
+const { validateUrl, checkUrlAccessibility } = require('../utils/urlValidator');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
@@ -100,6 +100,52 @@ const createUrl = async (req, res) => {
         success: false,
         message: urlValidation.message
       });
+    }
+
+    // Check if the URL actually exists and is accessible
+    const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+    if (!accessibilityCheck.accessible) {
+      // Check for specific error types
+      const errorMsg = accessibilityCheck.error || '';
+      const status = accessibilityCheck.status;
+      
+      // DNS failures - domain doesn't exist
+      if (errorMsg.includes('ENOTFOUND') || 
+          errorMsg.includes('getaddrinfo') ||
+          errorMsg.includes('EAI_AGAIN')) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
+        });
+      }
+      
+      // Connection refused - server not running
+      if (errorMsg.includes('ECONNREFUSED')) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
+        });
+      }
+      
+      // HTTP 4xx/5xx errors
+      if (status && status >= 400) {
+        return res.status(400).json({
+          success: false,
+          message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+        });
+      }
+      
+      // Timeout or abort - could be slow server, allow with warning
+      if (errorMsg.includes('abort') || errorMsg.includes('timeout')) {
+        // Allow timeout - the URL might just be slow
+        console.log(`URL accessibility check timed out for: ${urlValidation.cleanUrl}`);
+      } else if (errorMsg) {
+        // Other errors - reject
+        return res.status(400).json({
+          success: false,
+          message: `URL is not accessible: ${errorMsg}. Please check the URL and try again.`
+        });
+      }
     }
 
     // Handle custom domain
@@ -430,6 +476,7 @@ const updateUrl = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      originalUrl,
       title,
       description,
       tags,
@@ -457,6 +504,38 @@ const updateUrl = async (req, res) => {
         success: false,
         message: 'Access denied'
       });
+    }
+
+    // Validate and check accessibility of new originalUrl if provided
+    if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
+      const urlValidation = validateUrl(originalUrl);
+      if (!urlValidation.isValid) {
+        return res.status(400).json({
+          success: false,
+          message: urlValidation.message
+        });
+      }
+
+      // Check if the URL actually exists and is accessible
+      const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+      if (!accessibilityCheck.accessible) {
+        const status = accessibilityCheck.status;
+        if (status && status >= 400) {
+          return res.status(400).json({
+            success: false,
+            message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+          });
+        }
+        if (accessibilityCheck.error && 
+            (accessibilityCheck.error.includes('ENOTFOUND') || 
+             accessibilityCheck.error.includes('ECONNREFUSED') ||
+             accessibilityCheck.error.includes('getaddrinfo'))) {
+          return res.status(400).json({
+            success: false,
+            message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
+          });
+        }
+      }
     }
     
     // Check if custom code is being updated and if it's already taken
@@ -494,6 +573,10 @@ const updateUrl = async (req, res) => {
     }
 
     const updateData = {};
+    if (originalUrl !== undefined) {
+      const urlValidation = validateUrl(originalUrl);
+      updateData.originalUrl = urlValidation.cleanUrl;
+    }
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (tags !== undefined) updateData.tags = tags.map(tag => tag.toLowerCase().trim());
