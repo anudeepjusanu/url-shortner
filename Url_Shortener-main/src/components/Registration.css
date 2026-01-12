@@ -376,27 +376,73 @@ color: #FFF;
 /* Password Input */
 .password-input-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
+  width: 100%;
+  overflow: visible !important;
 }
 
 .password-input-wrapper input {
   width: 100%;
-  padding-right: 50px;
+  width: calc(100% - 0px) !important;
+  padding-right: 44px !important;
+  box-sizing: border-box;
 }
 
 .password-toggle {
   position: absolute;
-  right: 15px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 0;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer;
-  display: flex;
+  padding: 4px;
+  margin: 0;
+  display: flex !important;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: none !important;
+  z-index: 10;
+  overflow: visible !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #9CA3AF !important;
+}
+
+.password-toggle:hover,
+.password-toggle:focus,
+.password-toggle:active {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.password-toggle svg {
+  width: 18px !important;
+  height: 16px !important;
+  min-width: 18px !important;
+  min-height: 16px !important;
+  display: block !important;
+  pointer-events: none;
+  transition: none !important;
+  flex-shrink: 0;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: inherit !important;
+}
+
+.password-toggle svg path,
+.password-toggle svg circle {
+  stroke: #9CA3AF !important;
+  stroke-width: 2 !important;
 }
 
 .password-hint {
@@ -486,18 +532,28 @@ color: #FFF;
 
 .signin-link {
   color: #3b82f6;
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   margin-left: 4px;
+  transition: color 0.2s !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .signin-link:hover {
   text-decoration: underline;
+  transform: none !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.signin-link:active {
+  transform: none !important;
 }
 
 /* Responsive Design */
@@ -646,6 +702,10 @@ color: #FFF;
     padding: 0 12px;
   }
 
+  .password-input-wrapper input {
+    padding-right: 44px !important;
+  }
+
   .phone-input-wrapper input {
     height: 42px;
     padding: 0 12px;
@@ -789,6 +849,10 @@ color: #FFF;
     padding: 0 10px;
   }
 
+  .password-input-wrapper input {
+    padding-right: 44px !important;
+  }
+
   .phone-input-wrapper input {
     height: 40px;
     padding: 0 10px;
@@ -911,13 +975,13 @@ color: #FFF;
 }
 
 [dir="rtl"] .password-input-wrapper input {
-  padding-left: 50px;
-  padding-right: 14px;
+  padding-left: 44px !important;
+  padding-right: 14px !important;
   text-align: right;
 }
 
 [dir="rtl"] .password-toggle {
-  left: 15px;
+  left: 12px;
   right: auto;
 }
 
