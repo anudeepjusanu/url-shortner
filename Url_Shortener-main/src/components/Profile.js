@@ -762,23 +762,38 @@ const Profile = () => {
                           fontSize: '14px'
                         }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          color: '#6B7280',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {showPasswords.current ? '👁️' : '👁️‍🗨️'}
-                      </button>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                  aria-label={showPasswords.current ? "Hide password" : "Show password"}
+                >
+                  <svg
+                    width="18"
+                    height="16"
+                    viewBox="0 0 18 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
+                  >
+                    <path
+                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                    <circle
+                      cx="9"
+                      cy="8"
+                      r="3"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                  </svg>
+                </button>
                     </div>
                     {passwordFieldErrors.currentPassword && (
                       <div style={{
@@ -835,20 +850,45 @@ const Profile = () => {
                         />
                         <button
                           type="button"
+                          className="password-toggle"
                           onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
                           style={{
                             position: 'absolute',
                             right: '12px',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            background: 'none',
+                            background: 'transparent',
                             border: 'none',
-                            color: '#6B7280',
                             cursor: 'pointer',
-                            fontSize: '14px'
+                            // padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
-                          {showPasswords.new ? '👁️' : '👁️‍🗨️'}
+                          <svg
+                            width="18"
+                            height="16"
+                            viewBox="0 0 18 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ display: 'block' }}
+                          >
+                            <path
+                              d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <circle
+                              cx="9"
+                              cy="8"
+                              r="3"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+                          </svg>
                         </button>
                       </div>
                       {passwordFieldErrors.newPassword && (
@@ -899,20 +939,45 @@ const Profile = () => {
                         />
                         <button
                           type="button"
+                          className="password-toggle"
                           onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
                           style={{
                             position: 'absolute',
                             right: '12px',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            background: 'none',
+                            background: 'transparent',
                             border: 'none',
-                            color: '#6B7280',
                             cursor: 'pointer',
-                            fontSize: '14px'
+                            // padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
-                          {showPasswords.confirm ? '👁️' : '👁️‍🗨️'}
+                          <svg
+                            width="18"
+                            height="16"
+                            viewBox="0 0 18 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ display: 'block' }}
+                          >
+                            <path
+                              d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <circle
+                              cx="9"
+                              cy="8"
+                              r="3"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+                          </svg>
                         </button>
                       </div>
                       {passwordFieldErrors.confirmPassword && (

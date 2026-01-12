@@ -495,6 +495,7 @@ const Registration = () => {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <svg
                     width="18"
@@ -502,6 +503,7 @@ const Registration = () => {
                     viewBox="0 0 18 16"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
                   >
                     <path
                       d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
@@ -509,6 +511,7 @@ const Registration = () => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
                     />
                     <circle
                       cx="9"
@@ -516,6 +519,7 @@ const Registration = () => {
                       r="3"
                       stroke="#9CA3AF"
                       strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
                     />
                   </svg>
                 </button>
