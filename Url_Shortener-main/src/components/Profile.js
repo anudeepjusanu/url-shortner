@@ -55,6 +55,14 @@ const Profile = () => {
   });
   const [preferencesLoading, setPreferencesLoading] = useState(false);
 
+  // Modal State for success/error messages
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    type: 'success', // 'success' or 'error'
+    title: '',
+    message: ''
+  });
+
   // Account Stats
   const [accountStats, setAccountStats] = useState({
     totalLinks: 0,
@@ -273,7 +281,12 @@ const Profile = () => {
         setShowApiKey(true);
       }
     } catch (error) {
-      alert("Failed to regenerate API key: " + error.message);
+      setModalConfig({
+        type: 'error',
+        title: t('errors.error') || 'Error',
+        message: "Failed to regenerate API key: " + error.message
+      });
+      setShowModal(true);
     } finally {
       setApiKeyLoading(false);
     }
@@ -282,7 +295,12 @@ const Profile = () => {
   // Handle Copy API Key
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
-    alert(t('common.copied'));
+    setModalConfig({
+      type: 'success',
+      title: t('notifications.success') || 'Success',
+      message: t('common.copied') || 'Copied to clipboard!'
+    });
+    setShowModal(true);
   };
 
   // Handle Preferences Update
@@ -292,9 +310,19 @@ const Profile = () => {
 
     try {
       await api.put("/auth/preferences", preferences);
-      alert(t('notifications.settingsSaved'));
+      setModalConfig({
+        type: 'success',
+        title: t('notifications.success') || 'Success',
+        message: t('notifications.settingsSaved') || 'Settings saved successfully!'
+      });
+      setShowModal(true);
     } catch (error) {
-      alert(t('errors.generic') + ": " + error.message);
+      setModalConfig({
+        type: 'error',
+        title: t('errors.error') || 'Error',
+        message: t('errors.generic') + ": " + error.message
+      });
+      setShowModal(true);
     } finally {
       setPreferencesLoading(false);
     }
@@ -1319,6 +1347,132 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Professional Modal Dialog */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            animation: 'modalSlideIn 0.2s ease-out'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '16px'
+            }}>
+              {modalConfig.type === 'success' ? (
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#DEF7EC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E9F6E" strokeWidth="2">
+                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              ) : (
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FDE8E8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C81E1E" strokeWidth="2">
+                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#111827'
+                }}>
+                  {modalConfig.title}
+                </h3>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <p style={{
+              margin: '0 0 24px 0',
+              fontSize: '14px',
+              color: '#6B7280',
+              lineHeight: '1.5'
+            }}>
+              {modalConfig.message}
+            </p>
+
+            {/* Modal Footer */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px'
+            }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: modalConfig.type === 'success' ? '#0E9F6E' : '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                {t('common.ok') || 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

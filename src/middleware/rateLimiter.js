@@ -107,6 +107,26 @@ const passwordResetLimiter = createRateLimiter({
   keyGenerator: (req) => `password_reset:${req.body.email || ipKeyGenerator(req)}`
 });
 
+// QR Code download limiter - more lenient for downloads
+const qrDownloadLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: (req) => {
+    if (!req.user) return 100; // 100 downloads per hour for non-authenticated
+    
+    const limits = {
+      'admin': 50000,    // Unlimited for admins
+      'premium': 10000,  // 10k downloads per hour for premium
+      'user': 1000       // 1k downloads per hour for regular users
+    };
+    
+    return limits[req.user.role] || 1000;
+  },
+  message: 'Too many QR code downloads, please try again later',
+  keyGenerator: (req) => {
+    return req.user ? `qr_download:user:${req.user.id}` : `qr_download:ip:${ipKeyGenerator(req)}`;
+  }
+});
+
 const dynamicLimiter = (req, res, next) => {
   const endpoint = req.route?.path || req.path;
   const method = req.method;
@@ -142,6 +162,7 @@ module.exports = {
   redirectLimiter,
   strictAuthLimiter,
   passwordResetLimiter,
+  qrDownloadLimiter,
   dynamicLimiter,
   bypassLimiter
 };

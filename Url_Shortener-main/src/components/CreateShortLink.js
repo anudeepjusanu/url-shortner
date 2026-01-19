@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Sidebar from './Sidebar';
-import MainHeader from './MainHeader';
 import AccessDenied from './AccessDenied';
 import { urlsAPI, qrCodeAPI } from '../services/api';
 import { usePermissions } from '../contexts/PermissionContext';
@@ -125,6 +123,53 @@ const CreateShortLink = () => {
   useEffect(() => {
     console.log('Error states updated:', { urlError, customCodeError, titleError });
   }, [urlError, customCodeError, titleError]);
+
+  // Auto-dismiss error messages after 4 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (urlError) {
+      const timer = setTimeout(() => {
+        setUrlError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [urlError]);
+
+  useEffect(() => {
+    if (customCodeError) {
+      const timer = setTimeout(() => {
+        setCustomCodeError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [customCodeError]);
+
+  useEffect(() => {
+    if (titleError) {
+      const timer = setTimeout(() => {
+        setTitleError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [titleError]);
+
+  // Cleanup all errors when component unmounts
+  useEffect(() => {
+    return () => {
+      setError('');
+      setUrlError('');
+      setCustomCodeError('');
+      setTitleError('');
+    };
+  }, []);
 
   useEffect(() => {
     fetchAvailableDomains();
@@ -488,11 +533,6 @@ const CreateShortLink = () => {
 
   return (
     <>
-    <div className="analytics-container">
-      <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-        <div className="analytics-main">
           <div className="create-link-content">
             <div className="page-header">
               <div className="header-info">
@@ -799,9 +839,6 @@ const CreateShortLink = () => {
               )}
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
       {/* Access Denied Modal */}
       {showAccessDenied && (

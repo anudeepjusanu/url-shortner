@@ -79,24 +79,30 @@ const CustomDomains = () => {
     console.log('Next button clicked. Current step:', currentStep);
 
     if (currentStep === 1) {
-      // Step 1 -> Step 2: Validate and create domain, then move to DNS configuration
-      if (!baseDomain.trim()) {
-        setDomainFieldError(t('customDomains.errors.domainRequired') || 'Domain name is required');
-        setError(t('customDomains.errors.domainRequired') || 'Domain name is required');
+      // Step 1 -> Step 2: Validate domain format before proceeding
+      const validation = validateDomainFormat(baseDomain);
+      
+      if (!validation.isValid) {
+        setDomainFieldError(validation.error);
+        setError(validation.error);
         // Focus the domain input field
         const element = document.getElementById('baseDomain');
         if (element) {
           element.focus();
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        return;
+        return; // Don't proceed to next step
       }
 
-      // Create the domain first
-      await handleAddDomain();
+      // Clear any previous errors
+      setDomainFieldError('');
+      setError(null);
 
-      // If domain was created successfully, move to step 2
-      if (!isAddingDomain) {
+      // Create the domain first
+      const success = await handleAddDomain();
+
+      // Only move to step 2 if domain was created successfully
+      if (success) {
         setCurrentStep(2);
         console.log('Moving to step 2 - DNS Configuration');
       }
@@ -355,6 +361,69 @@ const CustomDomains = () => {
   // Domain field error state
   const [domainFieldError, setDomainFieldError] = useState('');
 
+  // Client-side domain validation function
+  const validateDomainFormat = (domain) => {
+    if (!domain || !domain.trim()) {
+      return {
+        isValid: false,
+        error: t('customDomains.errors.domainRequired') || 'Domain name is required'
+      };
+    }
+
+    const trimmedDomain = domain.trim().toLowerCase();
+
+    // Check length
+    if (trimmedDomain.length > 253) {
+      return {
+        isValid: false,
+        error: t('customDomains.errors.domainTooLong') || 'Domain name is too long (max 253 characters)'
+      };
+    }
+
+    // Must have at least one dot (e.g., example.com)
+    if (!trimmedDomain.includes('.')) {
+      return {
+        isValid: false,
+        error: t('customDomains.errors.invalidFormat') || 'Domain must include a TLD (e.g., example.com)'
+      };
+    }
+
+    // Validate domain format - accepts international characters
+    // Must have valid structure: letters/numbers, hyphens, dots
+    const domainRegex = /^([a-zA-Z0-9\u0600-\u06FF\u0750-\u077F]([a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\-]{0,61}[a-zA-Z0-9\u0600-\u06FF\u0750-\u077F])?\.)+[a-zA-Z0-9\u0600-\u06FF\u0750-\u077F]([a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\-]{0,61}[a-zA-Z0-9\u0600-\u06FF\u0750-\u077F])?$/;
+
+    if (!domainRegex.test(trimmedDomain)) {
+      return {
+        isValid: false,
+        error: t('customDomains.errors.invalidFormat') || 'Invalid domain format. Use letters, numbers, hyphens, and dots only'
+      };
+    }
+
+    // Check each label (part between dots)
+    const labels = trimmedDomain.split('.');
+    for (const label of labels) {
+      if (label.length > 63) {
+        return {
+          isValid: false,
+          error: t('customDomains.errors.labelTooLong') || 'Domain label is too long (max 63 characters per part)'
+        };
+      }
+      
+      // Label cannot start or end with hyphen
+      if (label.startsWith('-') || label.endsWith('-')) {
+        return {
+          isValid: false,
+          error: t('customDomains.errors.invalidLabel') || 'Domain parts cannot start or end with a hyphen'
+        };
+      }
+    }
+
+    return {
+      isValid: true,
+      error: null
+    };
+  };
+
   // Step 1: Enter Domain Information
   const renderStep1 = () => (
     <div>
@@ -372,8 +441,18 @@ const CustomDomains = () => {
           value={baseDomain}
           onChange={(e) => {
             setBaseDomain(e.target.value);
+            // Clear error when user starts typing
             if (domainFieldError) setDomainFieldError('');
             if (error) setError(null);
+          }}
+          onBlur={() => {
+            // Validate on blur (when user leaves the field)
+            if (baseDomain.trim()) {
+              const validation = validateDomainFormat(baseDomain);
+              if (!validation.isValid) {
+                setDomainFieldError(validation.error);
+              }
+            }
           }}
           placeholder={t('customDomains.addDomain.domainPlaceholder')}
           style={{

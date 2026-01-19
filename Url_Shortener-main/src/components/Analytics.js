@@ -378,19 +378,40 @@ const Analytics = () => {
         customCode: editFormData.customCode
       });
 
+      console.log('Update response:', response);
+
       if (response && response.success) {
-        // Refresh link data with updated information
-        // Extract the url object from response.data.url (backend wraps it)
-        setLinkData(response.data.url);
+        // Extract the updated URL data from response
+        const updatedUrl = response.data?.url || response.data;
+        
+        console.log('Updated URL data:', updatedUrl);
+        
+        // Update linkData with the complete updated data from backend
+        setLinkData(prevData => ({
+          ...prevData,
+          ...updatedUrl,
+          // Ensure these fields are updated from the backend response
+          title: updatedUrl.title || editFormData.title,
+          shortCode: updatedUrl.shortCode || editFormData.customCode || prevData.shortCode,
+          customCode: updatedUrl.customCode || editFormData.customCode
+        }));
+        
+        // Update analyticsData if it contains url info
+        setAnalyticsData(prevData => ({
+          ...prevData,
+          url: prevData.url ? {
+            ...prevData.url,
+            ...updatedUrl,
+            title: updatedUrl.title || editFormData.title,
+            shortCode: updatedUrl.shortCode || editFormData.customCode || prevData.url?.shortCode,
+            customCode: updatedUrl.customCode || editFormData.customCode
+          } : updatedUrl
+        }));
+        
         setShowEditDialog(false);
 
-        // Refresh analytics data to show updated title
-        if (id) {
-          fetchAnalyticsData();
-        }
-
-        // Show success message instead of alert
-        console.log('Link updated successfully:', response.data.url);
+        // Show success message
+        console.log('Link updated successfully with shortCode:', updatedUrl.shortCode);
       } else {
         const errorMessage = response?.message || t('errors.generic') || 'Failed to update link';
         alert(errorMessage);

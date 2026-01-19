@@ -155,6 +155,34 @@ function MyLinks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-dismiss error messages after 4 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (urlError) {
+      const timer = setTimeout(() => {
+        setUrlError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [urlError]);
+
+  useEffect(() => {
+    if (customCodeError) {
+      const timer = setTimeout(() => {
+        setCustomCodeError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [customCodeError]);
+
   const fetchAvailableDomains = async () => {
     try {
       setLoadingDomains(true);
@@ -697,6 +725,16 @@ function MyLinks() {
                     setDeniedAction('create URLs');
                     setShowAccessDenied(true);
                     return;
+                  }
+                  // Clear all error states when toggling
+                  if (showCreateShortLink) {
+                    // Going back to My Links - clear all errors
+                    setError(null);
+                    setUrlError('');
+                    setCustomCodeError('');
+                    setLongUrl('');
+                    setCustomName('');
+                    setGenerateQR(false);
                   }
                   setShowCreateShortLink((prev) => !prev);
                 }}

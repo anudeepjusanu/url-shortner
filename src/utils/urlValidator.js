@@ -418,21 +418,86 @@ class UrlValidator {
         // Use axios for more reliable HTTP requests in Node.js
         const axios = require('axios');
         
-        const response = await axios.head(url, {
-          timeout: timeout,
-          maxRedirects: 5,
-          validateStatus: () => true, // Don't throw on any status code
-          headers: {
-            'User-Agent': 'URL-Shortener-Validator/1.0'
+        // First try HEAD request (faster, less bandwidth)
+        let response;
+        let method = 'HEAD';
+        
+        try {
+          response = await axios.head(url, {
+            timeout: timeout,
+            maxRedirects: 5,
+            validateStatus: () => true, // Don't throw on any status code
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': '*/*',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive'
+            }
+          });
+          
+          // If HEAD returns 405 (Method Not Allowed) or 501 (Not Implemented), try GET instead
+          if (response.status === 405 || response.status === 501) {
+            console.log(`HEAD request returned ${response.status} for ${url}, trying GET...`);
+            method = 'GET';
+            response = await axios.get(url, {
+              timeout: timeout,
+              maxRedirects: 5,
+              validateStatus: () => true,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive'
+              },
+              // Only fetch headers and minimal body
+              maxContentLength: 2048, // Limit to 2KB
+              responseType: 'stream' // Stream to avoid loading entire response
+            });
+            
+            // Destroy the stream immediately to stop downloading
+            if (response.data && response.data.destroy) {
+              response.data.destroy();
+            }
           }
-        });
+        } catch (headError) {
+          // If HEAD fails, try GET
+          console.log(`${method} request failed for ${url} with ${headError.code || headError.message}, trying GET...`);
+          
+          try {
+            method = 'GET';
+            response = await axios.get(url, {
+              timeout: timeout,
+              maxRedirects: 5,
+              validateStatus: () => true,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive'
+              },
+              maxContentLength: 2048,
+              responseType: 'stream'
+            });
+            
+            // Destroy the stream immediately
+            if (response.data && response.data.destroy) {
+              response.data.destroy();
+            }
+          } catch (getError) {
+            // Both HEAD and GET failed, throw the GET error
+            throw getError;
+          }
+        }
+        
+        console.log(`URL check for ${url}: ${method} returned ${response.status}`);
         
         resolve({
           accessible: response.status >= 200 && response.status < 400,
           status: response.status,
           statusText: response.statusText,
           redirected: response.request?.res?.responseUrl !== url,
-          finalUrl: response.request?.res?.responseUrl || url
+          finalUrl: response.request?.res?.responseUrl || url,
+          method: method
         });
       } catch (error) {
         // Extract meaningful error message
@@ -443,10 +508,13 @@ class UrlValidator {
           errorMessage = error.code;
         }
         
+        console.log(`URL accessibility check failed for ${url}: ${errorMessage}`);
+        
         resolve({
           accessible: false,
           error: errorMessage,
-          code: error.code
+          code: error.code,
+          status: error.response?.status
         });
       }
     });
