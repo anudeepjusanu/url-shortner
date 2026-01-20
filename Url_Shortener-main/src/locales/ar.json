@@ -1,5 +1,6 @@
 {
   "common": {
+    "ok": "حسناً",
     "appName": "مختصر الروابط",
     "brandName": "Snip",
     "loading": "جاري التحميل...",
@@ -785,7 +786,9 @@
       "domainRequired": "اسم النطاق مطلوب",
       "domainInvalid": "يرجى إدخال اسم نطاق صالح (مثال: example.com)",
       "domainExists": "هذا النطاق مسجل بالفعل",
-      "subdomainInvalid": "يمكن أن يحتوي النطاق الفرعي على أحرف وأرقام وشرطات فقط"
+      "subdomainInvalid": "يمكن أن يحتوي النطاق الفرعي على أحرف وأرقام وشرطات فقط",
+      "invalidFormat": "تنسيق النطاق غير صالح"
+
     }
   },
   "subscription": {

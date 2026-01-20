@@ -1,5 +1,6 @@
 {
   "common": {
+    "ok": "OK",
     "appName": "URL Shortener",
     "brandName": "Snip",
     "loading": "Loading...",
@@ -784,7 +785,9 @@
       "domainRequired": "Domain name is required",
       "domainInvalid": "Please enter a valid domain name (e.g., example.com)",
       "domainExists": "This domain is already registered",
-      "subdomainInvalid": "Subdomain can only contain letters, numbers, and hyphens"
+      "subdomainInvalid": "Subdomain can only contain letters, numbers, and hyphens",
+      "invalidFormat": "Invalid domain format"
+
     }
   },
   "subscription": {

@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../contexts/AuthContext";
 import "./ApiDocumentation.css";
 
 const ApiDocumentation = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState("introduction");
   const [copiedCode, setCopiedCode] = useState(null);
   const [expandedEndpoints, setExpandedEndpoints] = useState({});
@@ -453,8 +457,37 @@ System.out.println(response.body());`
             <span className="api-docs-version">v1.0</span>
           </div>
           <div className="api-docs-header-actions">
-            <a href="/login" className="api-docs-btn-secondary">Login</a>
-            <a href="/register" className="api-docs-btn-primary">Get API Key</a>
+            {!user ? (
+              <>
+                <button 
+                  onClick={() => navigate('/login')} 
+                  className="api-docs-btn-secondary"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => navigate('/register')} 
+                  className="api-docs-btn-primary"
+                >
+                  Get API Key
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => navigate('/dashboard')} 
+                  className="api-docs-btn-secondary"
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={() => navigate('/profile')} 
+                  className="api-docs-btn-primary"
+                >
+                  View API Key
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>

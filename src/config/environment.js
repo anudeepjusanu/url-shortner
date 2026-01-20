@@ -29,7 +29,7 @@ const config = {
   BASE_URL: process.env.BASE_URL || 'http://localhost:3000',
   
   DEFAULT_SHORT_CODE_LENGTH: parseInt(process.env.DEFAULT_SHORT_CODE_LENGTH) || 6,
-  MAX_SHORT_CODE_LENGTH: parseInt(process.env.MAX_SHORT_CODE_LENGTH) || 12,
+  MAX_SHORT_CODE_LENGTH: parseInt(process.env.MAX_SHORT_CODE_LENGTH) || 16,
   MIN_SHORT_CODE_LENGTH: parseInt(process.env.MIN_SHORT_CODE_LENGTH) || 4,
   
   CACHE_TTL: {

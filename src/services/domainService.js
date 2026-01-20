@@ -35,10 +35,39 @@ class DomainService {
   async verifyCNAME(domain, targetValue, options = {}) {
     try {
       const records = await dns.resolveCname(domain);
-      const verified = records.some(record =>
-        record.toLowerCase().includes(targetValue.toLowerCase()) ||
-        targetValue.toLowerCase().includes(record.toLowerCase())
-      );
+      
+      // Normalize target value by removing trailing dots and converting to lowercase
+      const normalizedTarget = targetValue.toLowerCase().replace(/\.$/, '');
+      
+      // Check if any record matches the target
+      const verified = records.some(record => {
+        // Normalize record by removing trailing dots and converting to lowercase
+        const normalizedRecord = record.toLowerCase().replace(/\.$/, '');
+        
+        // Check for exact match
+        if (normalizedRecord === normalizedTarget) {
+          return true;
+        }
+        
+        // Check if record ends with target (handles subdomains)
+        // e.g., "www.laghhu.link" should match "laghhu.link"
+        if (normalizedRecord.endsWith(`.${normalizedTarget}`)) {
+          return true;
+        }
+        
+        // Check if target ends with record (reverse case)
+        if (normalizedTarget.endsWith(`.${normalizedRecord}`)) {
+          return true;
+        }
+        
+        // Check if either contains the other (original logic, kept for compatibility)
+        if (normalizedRecord.includes(normalizedTarget) || 
+            normalizedTarget.includes(normalizedRecord)) {
+          return true;
+        }
+        
+        return false;
+      });
 
       return {
         verified,
@@ -118,16 +147,31 @@ class DomainService {
         throw new Error('Domain not found');
       }
 
+      console.log('🔍 Verifying domain:', {
+        domainId,
+        fullDomain: domain.fullDomain,
+        expectedTarget: domain.verificationRecord.value,
+        recordType: domain.verificationRecord.type
+      });
+
       const verification = await this.verifyDNSRecord(
         domain.fullDomain,
         domain.verificationRecord.type,
         domain.verificationRecord.value
       );
 
+      console.log('📋 DNS Verification result:', {
+        verified: verification.verified,
+        records: verification.records,
+        expected: verification.expected,
+        error: verification.error
+      });
+
       domain.verificationRecord.lastChecked = new Date();
 
       if (verification.verified) {
         await domain.markAsVerified();
+        console.log('✅ Domain verified successfully:', domain.fullDomain);
         return {
           success: true,
           verified: true,
@@ -136,6 +180,12 @@ class DomainService {
         };
       } else {
         await domain.markVerificationFailed(verification.error || 'DNS verification failed');
+        console.log('❌ Domain verification failed:', {
+          domain: domain.fullDomain,
+          error: verification.error,
+          records: verification.records,
+          expected: verification.expected
+        });
         return {
           success: false,
           verified: false,
@@ -145,6 +195,7 @@ class DomainService {
         };
       }
     } catch (error) {
+      console.error('❌ Domain verification error:', error);
       return {
         success: false,
         verified: false,

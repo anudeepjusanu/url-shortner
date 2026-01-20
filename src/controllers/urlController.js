@@ -104,12 +104,14 @@ const createUrl = async (req, res) => {
 
     // Check if the URL actually exists and is accessible
     const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+    console.log('Accessibility check result:', accessibilityCheck);
+    
     if (!accessibilityCheck.accessible) {
       // Check for specific error types
       const errorMsg = accessibilityCheck.error || '';
       const status = accessibilityCheck.status;
       
-      // DNS failures - domain doesn't exist
+      // DNS failures - domain doesn't exist (these are critical)
       if (errorMsg.includes('ENOTFOUND') || 
           errorMsg.includes('getaddrinfo') ||
           errorMsg.includes('EAI_AGAIN')) {
@@ -119,7 +121,7 @@ const createUrl = async (req, res) => {
         });
       }
       
-      // Connection refused - server not running
+      // Connection refused - server not running (critical)
       if (errorMsg.includes('ECONNREFUSED')) {
         return res.status(400).json({
           success: false,
@@ -127,24 +129,37 @@ const createUrl = async (req, res) => {
         });
       }
       
-      // HTTP 4xx/5xx errors
+      // HTTP 4xx/5xx errors - but be lenient with some codes
       if (status && status >= 400) {
-        return res.status(400).json({
-          success: false,
-          message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
-        });
+        // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
+        if (status === 401 || status === 403 || status === 405) {
+          console.log(`URL returned ${status}, but allowing it as the server exists`);
+        } else if (status === 404) {
+          return res.status(400).json({
+            success: false,
+            message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
+          });
+        } else if (status >= 500) {
+          // Server errors - allow with warning as the URL might work later
+          console.log(`URL returned server error ${status}, but allowing it`);
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+          });
+        }
       }
       
-      // Timeout or abort - could be slow server, allow with warning
-      if (errorMsg.includes('abort') || errorMsg.includes('timeout')) {
-        // Allow timeout - the URL might just be slow
-        console.log(`URL accessibility check timed out for: ${urlValidation.cleanUrl}`);
+      // Timeout, abort, or bad response - could be slow server or firewall, allow with warning
+      if (errorMsg.includes('abort') || 
+          errorMsg.includes('timeout') || 
+          errorMsg.includes('ETIMEDOUT') ||
+          errorMsg.includes('ERR_BAD_RESPONSE') ||
+          errorMsg.includes('ECONNRESET')) {
+        console.log(`URL accessibility check had issues (${errorMsg}) for: ${urlValidation.cleanUrl}, but allowing it`);
       } else if (errorMsg) {
-        // Other errors - reject
-        return res.status(400).json({
-          success: false,
-          message: `URL is not accessible: ${errorMsg}. Please check the URL and try again.`
-        });
+        // Other errors - log but allow (be lenient)
+        console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
       }
     }
 
@@ -518,28 +533,67 @@ const updateUrl = async (req, res) => {
 
       // Check if the URL actually exists and is accessible
       const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+      console.log('Update URL accessibility check result:', accessibilityCheck);
+      
       if (!accessibilityCheck.accessible) {
+        const errorMsg = accessibilityCheck.error || '';
         const status = accessibilityCheck.status;
-        if (status && status >= 400) {
-          return res.status(400).json({
-            success: false,
-            message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
-          });
-        }
-        if (accessibilityCheck.error && 
-            (accessibilityCheck.error.includes('ENOTFOUND') || 
-             accessibilityCheck.error.includes('ECONNREFUSED') ||
-             accessibilityCheck.error.includes('getaddrinfo'))) {
+        
+        // DNS failures - domain doesn't exist (critical)
+        if (errorMsg.includes('ENOTFOUND') || 
+            errorMsg.includes('getaddrinfo') ||
+            errorMsg.includes('EAI_AGAIN')) {
           return res.status(400).json({
             success: false,
             message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
           });
         }
+        
+        // Connection refused - server not running (critical)
+        if (errorMsg.includes('ECONNREFUSED')) {
+          return res.status(400).json({
+            success: false,
+            message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
+          });
+        }
+        
+        // HTTP 4xx/5xx errors - but be lenient with some codes
+        if (status && status >= 400) {
+          // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
+          if (status === 401 || status === 403 || status === 405) {
+            console.log(`URL returned ${status}, but allowing it as the server exists`);
+          } else if (status === 404) {
+            return res.status(400).json({
+              success: false,
+              message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
+            });
+          } else if (status >= 500) {
+            // Server errors - allow with warning as the URL might work later
+            console.log(`URL returned server error ${status}, but allowing it`);
+          } else {
+            return res.status(400).json({
+              success: false,
+              message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+            });
+          }
+        }
+        
+        // Timeout, abort, or bad response - allow with warning
+        if (errorMsg.includes('abort') || 
+            errorMsg.includes('timeout') || 
+            errorMsg.includes('ETIMEDOUT') ||
+            errorMsg.includes('ERR_BAD_RESPONSE') ||
+            errorMsg.includes('ECONNRESET')) {
+          console.log(`URL accessibility check had issues (${errorMsg}), but allowing it`);
+        } else if (errorMsg) {
+          // Other errors - log but allow (be lenient)
+          console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
+        }
       }
     }
     
     // Check if custom code is being updated and if it's already taken
-    if (customCode !== undefined && customCode !== url.customCode) {
+    if (customCode !== undefined && customCode !== url.shortCode && customCode !== url.customCode) {
       const normalizedCode = normalizeShortCode(customCode);
 
       // Check if the custom code is a reserved alias
@@ -559,8 +613,12 @@ const updateUrl = async (req, res) => {
         });
       }
 
+      // Check if the code is already in use (check both shortCode and customCode)
       const existingUrl = await Url.findOne({
-        customCode: normalizedCode,
+        $or: [
+          { shortCode: normalizedCode },
+          { customCode: normalizedCode }
+        ],
         _id: { $ne: id }
       });
 
@@ -586,24 +644,45 @@ const updateUrl = async (req, res) => {
     if (utm !== undefined) updateData.utm = utm;
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
-    if (customCode !== undefined) updateData.customCode = normalizeShortCode(customCode);
+    
+    // When updating customCode, also update shortCode to match
+    if (customCode !== undefined) {
+      const normalizedCode = normalizeShortCode(customCode);
+      updateData.customCode = normalizedCode;
+      updateData.shortCode = normalizedCode; // Update shortCode as well
+    }
+    
+    // Store old shortCode before updating for cache clearing
+    const oldShortCode = url.shortCode;
+    const oldCustomCode = url.customCode;
     
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
 
-    // Clear cache for short code (use lowercase for case-insensitive consistency)
-    const lowerShortCode = url.shortCode.toLowerCase();
-    await cacheDel(`url:${lowerShortCode}`);
-
-    // If custom code was changed, clear old custom code cache
-    if (customCode !== undefined && url.customCode && customCode !== url.customCode) {
-      await cacheDel(`url:${url.customCode.toLowerCase()}`);
+    // Clear cache for old short codes
+    await cacheDel(`url:${oldShortCode.toLowerCase()}`);
+    if (oldCustomCode) {
+      await cacheDel(`url:${oldCustomCode.toLowerCase()}`);
     }
 
-    // Only cache if URL is active - deactivated URLs should not be cached
+    // If custom code was changed, clear the old cache
+    if (customCode !== undefined && customCode !== oldShortCode) {
+      await cacheDel(`url:${oldShortCode.toLowerCase()}`);
+    }
+
+    // Clear analytics cache for this URL (all periods and groupBy combinations)
+    const analyticsPeriods = ['7d', '30d', '90d', '1y', 'all'];
+    const analyticsGroupBy = ['hour', 'day', 'week', 'month'];
+    for (const period of analyticsPeriods) {
+      for (const groupBy of analyticsGroupBy) {
+        await cacheDel(`analytics:${id}:${period}:${groupBy}`);
+      }
+    }
+
+    // Cache the updated URL with new shortCode
     if (updatedUrl.isActive) {
-      await cacheSet(`url:${lowerShortCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+      await cacheSet(`url:${updatedUrl.shortCode.toLowerCase()}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
       if (updatedUrl.customCode) {
         await cacheSet(`url:${updatedUrl.customCode.toLowerCase()}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
       }
@@ -612,6 +691,7 @@ const updateUrl = async (req, res) => {
       if (updatedUrl.customCode) {
         await cacheDel(`url:${updatedUrl.customCode.toLowerCase()}`);
       }
+      await cacheDel(`url:${updatedUrl.shortCode.toLowerCase()}`);
     }
     
     res.json({

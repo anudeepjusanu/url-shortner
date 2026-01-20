@@ -172,12 +172,14 @@ const validateDomain = (domain) => {
   // - Standard ASCII domains (example.com)
   // - Punycode domains (xn--mgbal82c.com)
   // - Subdomains (sub.example.com)
-  const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  // - Custom TLDs (for development/testing: example.local, example.test)
+  // More lenient validation - accepts any domain with at least one dot
+  const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$/;
 
   if (!domainRegex.test(asciiDomain)) {
     return {
       isValid: false,
-      message: 'Invalid domain name format'
+      message: 'Invalid domain format - supports international domains'
     };
   }
 

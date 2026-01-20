@@ -114,10 +114,20 @@ const getUsers = async (req, res) => {
       User.countDocuments(filter)
     ]);
     
+    // Map users to include fallback lastLogin (use createdAt if never logged in)
+    const usersWithLastLogin = users.map(user => {
+      const userObj = user.toObject();
+      // If lastLogin is null, use createdAt (registration date)
+      if (!userObj.lastLogin) {
+        userObj.lastLogin = userObj.createdAt;
+      }
+      return userObj;
+    });
+    
     res.json({
       success: true,
       data: {
-        users,
+        users: usersWithLastLogin,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
