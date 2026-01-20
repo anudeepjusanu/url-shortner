@@ -34,9 +34,35 @@ const CustomDomains = () => {
   const [addedDomain, setAddedDomain] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState('idle'); // 'idle' | 'checking' | 'success' | 'failed'
   const [copiedField, setCopiedField] = useState(null); // Track which field was copied
+  const [cnameTarget, setCnameTarget] = useState('snip.sa'); // Default CNAME target
 
   // Toast notification state
   const [toast, setToast] = useState(null);
+
+  // Auto-clear error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000); // Clear after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Clear error when opening add modal
+  useEffect(() => {
+    if (showAddModal) {
+      setError(null);
+    }
+  }, [showAddModal]);
+
+  // Clear error when opening DNS modal
+  useEffect(() => {
+    if (showDNSModal) {
+      setError(null);
+    }
+  }, [showDNSModal]);
 
   useEffect(() => {
     fetchDomains();
@@ -45,7 +71,7 @@ const CustomDomains = () => {
   const fetchDomains = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError(null); // Clear any previous errors when fetching
       const response = await domainsAPI.getDomains();
 
       // Handle different response structures
@@ -79,7 +105,7 @@ const CustomDomains = () => {
     console.log('Next button clicked. Current step:', currentStep);
 
     if (currentStep === 1) {
-      // Step 1 -> Step 2: Validate domain format before proceeding
+      // Step 1 -> Step 2: Just validate domain format, don't create yet
       const validation = validateDomainFormat(baseDomain);
       
       if (!validation.isValid) {
@@ -98,14 +124,11 @@ const CustomDomains = () => {
       setDomainFieldError('');
       setError(null);
 
-      // Create the domain first
-      const success = await handleAddDomain();
-
-      // Only move to step 2 if domain was created successfully
-      if (success) {
-        setCurrentStep(2);
-        console.log('Moving to step 2 - DNS Configuration');
-      }
+      // Just move to step 2 to show DNS configuration
+      // Domain will be created in step 3
+      setCurrentStep(2);
+      console.log('Moving to step 2 - DNS Configuration (domain not created yet)');
+      
     } else if (currentStep === 2) {
       // Step 2 -> Step 3: Just move to review step
       setCurrentStep(3);
@@ -157,6 +180,11 @@ const CustomDomains = () => {
       console.log('✅ Domain created successfully');
       const addedDomainData = response.data?.data || response.data || { ...domainData, id: Date.now() };
       setAddedDomain(addedDomainData);
+
+      // Extract CNAME target from response
+      const target = response.data?.data?.cnameTarget || response.data?.cnameTarget || 'laghhu.link';
+      setCnameTarget(target);
+      console.log('CNAME Target set to:', target);
 
       await fetchDomains();
       setError(null);
@@ -215,6 +243,8 @@ const CustomDomains = () => {
     }
 
     try {
+      // Clear previous errors when starting new verification
+      setError(null);
       setVerificationStatus('checking');
       console.log('Verifying domain:', targetId);
 
@@ -268,6 +298,7 @@ const CustomDomains = () => {
     setCopiedField(null);
     setError(null);
     setDomainFieldError('');
+    setCnameTarget('snip.sa'); // Reset to default
     console.log('Wizard reset');
   };
 
@@ -480,7 +511,7 @@ const CustomDomains = () => {
           </div>
         ) : (
           <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
-            {t('customDomains.addDomain.domainName')}
+            {/* {t('customDomains.addDomain.domainName')} */}
           </p>
         )}
       </div>
@@ -504,9 +535,9 @@ const CustomDomains = () => {
             boxSizing: 'border-box'
           }}
         />
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+        {/* <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
           {t('customDomains.addDomain.subdomain')}
-        </p>
+        </p> */}
       </div>
 
       <div style={{
@@ -552,7 +583,7 @@ const CustomDomains = () => {
         marginBottom: '1.5rem'
       }}>
         <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
-          {t('customDomains.verification.instructions')}
+          Review the DNS configuration below. You'll need to add these records to your DNS provider after creating the domain in the next step.
         </p>
       </div>
 
@@ -641,9 +672,9 @@ const CustomDomains = () => {
               backgroundColor: '#FFFFFF',
               border: '1px solid #E5E7EB',
               borderRadius: '4px'
-            }}>{getCurrentDomain()}</span>
+            }}>{cnameTarget}</span>
             <button
-              onClick={() => handleCopyToClipboard(getCurrentDomain(), 'value')}
+              onClick={() => handleCopyToClipboard(cnameTarget, 'value')}
               style={{
                 padding: '6px 10px',
                 backgroundColor: copiedField === 'value' ? '#10B981' : '#FFFFFF',
@@ -811,15 +842,30 @@ const CustomDomains = () => {
       </div>
 
       <div style={{
-        backgroundColor: '#DCFCE7',
-        border: '1px solid #BBF7D0',
+        backgroundColor: '#EFF6FF',
+        border: '1px solid #BFDBFE',
         borderRadius: '6px',
         padding: '1rem',
-        marginTop: '1.5rem'
+        marginTop: '1.5rem',
+        display: 'flex',
+        gap: '0.75rem'
       }}>
-        <p style={{ fontSize: '0.875rem', color: '#166534', margin: 0 }}>
-          {t('customDomains.verification.instructions')}
-        </p>
+        <div style={{ flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: '#3B82F6' }}>
+            <path
+              d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+        <div>
+          <p style={{ fontWeight: '600', fontSize: '0.875rem', color: '#1E40AF', marginBottom: '0.25rem' }}>
+            Ready to create your custom domain
+          </p>
+          <p style={{ fontSize: '0.875rem', color: '#1E40AF', margin: 0 }}>
+            Click "Add Domain" below to create this domain. After creation, configure the DNS records shown in Step 2 at your DNS provider, then verify the domain.
+          </p>
+        </div>
       </div>
     </div>
     );
@@ -978,9 +1024,9 @@ const CustomDomains = () => {
                   backgroundColor: '#FFFFFF',
                   border: '1px solid #E5E7EB',
                   borderRadius: '4px'
-                }}>{getCurrentDomain()}</span>
+                }}>{cnameTarget}</span>
                 <button
-                  onClick={() => handleCopyToClipboard(getCurrentDomain(), 'modal-value')}
+                  onClick={() => handleCopyToClipboard(cnameTarget, 'modal-value')}
                   style={{
                     padding: '6px 10px',
                     backgroundColor: copiedField === 'modal-value' ? '#10B981' : '#FFFFFF',
@@ -1145,13 +1191,20 @@ const CustomDomains = () => {
 
         {renderStepIndicator()}
 
-        <form onSubmit={(e) => {
+        <form onSubmit={async (e) => {
           e.preventDefault();
           console.log('Form submitted! Current step:', currentStep);
-          // Only handle submit on step 3 - close the wizard
+          // Handle submit on step 3 - create domain and close wizard
           if (currentStep === 3) {
-            console.log('Step is 3, closing wizard');
-            resetWizard();
+            console.log('Step 3: Creating domain now...');
+            const success = await handleAddDomain();
+            if (success) {
+              console.log('Domain created successfully, closing wizard');
+              // Wait a moment to show success message, then close
+              setTimeout(() => {
+                resetWizard();
+              }, 1500);
+            }
           } else {
             console.log('Step is NOT 3, ignoring submit. Current step:', currentStep);
           }
@@ -1182,39 +1235,53 @@ const CustomDomains = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                disabled={
-                  (currentStep === 1 && !baseDomain.trim()) ||
-                  (currentStep === 2 && !addedDomain)
-                }
+                disabled={currentStep === 1 && !baseDomain.trim()}
                 style={{
                   padding: '0.5rem 1.5rem',
                   backgroundColor: '#3B82F6',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: ((currentStep === 1 && !baseDomain.trim()) || (currentStep === 2 && !addedDomain)) ? 'not-allowed' : 'pointer',
-                  opacity: ((currentStep === 1 && !baseDomain.trim()) || (currentStep === 2 && !addedDomain)) ? 0.6 : 1,
+                  cursor: (currentStep === 1 && !baseDomain.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: (currentStep === 1 && !baseDomain.trim()) ? 0.6 : 1,
                   fontSize: '0.875rem'
                 }}
               >
-                {currentStep === 1 ? t('customDomains.addDomain.addButton') : t('common.next')}
+                {currentStep === 1 ? t('common.next') : t('common.next')}
               </button>
             ) : (
               <button
                 type="submit"
-                disabled={false}
+                disabled={isAddingDomain}
                 style={{
                   padding: '0.5rem 1.5rem',
-                  backgroundColor: '#10B981',
+                  backgroundColor: isAddingDomain ? '#9CA3AF' : '#10B981',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: 'pointer',
-                  opacity: 1,
-                  fontSize: '0.875rem'
+                  cursor: isAddingDomain ? 'not-allowed' : 'pointer',
+                  opacity: isAddingDomain ? 0.7 : 1,
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                {t('common.close') || 'Finish'}
+                {isAddingDomain ? (
+                  <>
+                    <div style={{
+                      width: '14px',
+                      height: '14px',
+                      border: '2px solid white',
+                      borderTopColor: 'transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    {t('common.creating') || 'Creating...'}
+                  </>
+                ) : (
+                  t('customDomains.addDomain.addButton') || 'Add Domain'
+                )}
               </button>
             )}
           </div>
@@ -1238,6 +1305,14 @@ const CustomDomains = () => {
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; transform: translateY(0); }
+          to { opacity: 0; transform: translateY(-10px); }
         }
         .link-card {
           transition: all 0.2s ease;
@@ -1449,17 +1524,31 @@ const CustomDomains = () => {
                 marginBottom: '16px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                animation: 'fadeIn 0.3s ease-in'
               }}>
-                <span style={{ color: '#991B1B', fontSize: '14px' }}>{error}</span>
-                <button onClick={() => setError(null)} style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#991B1B',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  padding: '0 4px'
-                }}>&times;</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="#991B1B"/>
+                  </svg>
+                  <span style={{ color: '#991B1B', fontSize: '14px' }}>{error}</span>
+                </div>
+                <button 
+                  onClick={() => setError(null)} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#991B1B',
+                    fontSize: '20px',
+                    cursor: 'pointer',
+                    padding: '0 4px',
+                    marginLeft: '8px',
+                    flexShrink: 0
+                  }}
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
               </div>
             )}
 
@@ -1684,6 +1773,8 @@ const CustomDomains = () => {
                         }}>
                           <button
                             onClick={() => {
+                              setError(null); // Clear error when opening DNS modal
+                              setVerificationStatus('idle'); // Reset verification status
                               setSelectedDomain(domain);
                               setShowDNSModal(true);
                             }}

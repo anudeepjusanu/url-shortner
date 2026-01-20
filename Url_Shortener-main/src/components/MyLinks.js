@@ -515,19 +515,73 @@ function MyLinks() {
       console.error('Error creating short link:', err);
       console.log('Error details:', err);
       console.log('Error message:', err.message);
-      console.log('Error response data:', err.response);
+      console.log('Error response data:', err.response?.data);
 
-      // Parse error message to determine which field has the error
-      // Backend returns message in err.response.data.message
-      const errorMessage = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || err.message || t('createLink.errors.general');
+      // Check if backend returned validation errors array (from express-validator)
+      const validationErrors = err.response?.data?.errors;
+      console.log('Validation errors array:', validationErrors);
+      
+      if (validationErrors && Array.isArray(validationErrors) && validationErrors.length > 0) {
+        console.log('Processing validation errors array...');
+        // Handle structured validation errors
+        let hasFieldError = false;
+        validationErrors.forEach(error => {
+          const field = error.field || error.param || error.path;
+          const message = error.message || error.msg;
+          
+          console.log(`Setting error for field "${field}":`, message);
+          
+          if (field === 'originalUrl') {
+            setUrlError(message); // Use the detailed message from errors array
+            hasFieldError = true;
+          } else if (field === 'customCode') {
+            setCustomCodeError(message); // Use the detailed message from errors array
+            hasFieldError = true;
+          }
+        });
+        
+        // Only show toast if no field-specific error was set
+        if (!hasFieldError) {
+          // Use the first error message if available, otherwise use generic message
+          const errorMessage = validationErrors[0]?.message || err.response?.data?.message || t('createLink.errors.general');
+          setError(errorMessage);
+          setToast({
+            type: 'error',
+            message: errorMessage
+          });
+        }
+        setCreateLoading(false);
+        return;
+      }
+
+      // If no errors array, try to extract message from response
+      // First check if there's a detailed message in the response
+      let errorMessage = err.response?.data?.message || err.message || t('createLink.errors.general');
+      
+      // If the message is just "Validation failed", try to get more details
+      if (errorMessage === 'Validation failed' && err.response?.data?.errors && err.response.data.errors.length > 0) {
+        // Extract the actual error message from the first error
+        errorMessage = err.response.data.errors[0].message || err.response.data.errors[0].msg || errorMessage;
+      }
+      
       const errorLower = errorMessage.toLowerCase();
+      
+      console.log('Error message:', errorMessage);
+      console.log('Error message (lowercase):', errorLower);
 
-      // Check if error is about URL (including non-existing URL errors)
+      let fieldErrorSet = false; // Track if we set a field-specific error
+
+      // Check if error is about URL (including validation and non-existing URL errors)
       if (errorLower.includes('url') || 
+          errorLower.includes('domain') ||
+          errorLower.includes('tld') ||
+          errorLower.includes('invalid url') ||
           errorLower.includes('domain could not be found') ||
           errorLower.includes('not accessible') ||
           errorLower.includes('does not exist')) {
+        console.log('Setting URL error:', errorMessage);
         setUrlError(errorMessage);
+        fieldErrorSet = true;
       }
       // Check if error is about alias/custom code
       else if (errorLower.includes('alias') ||
@@ -535,17 +589,23 @@ function MyLinks() {
                errorLower.includes('taken') ||
                errorLower.includes('exists') ||
                errorLower.includes('code')) {
+        console.log('Setting custom code error:', errorMessage);
         setCustomCodeError(errorMessage);
+        fieldErrorSet = true;
       }
 
-      // Set general error as well
-      setError(errorMessage);
-
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: errorMessage
-      });
+      // Only set general error and toast if no field-specific error was set
+      if (!fieldErrorSet) {
+        console.log('No field-specific error set, showing toast:', errorMessage);
+        setError(errorMessage);
+        setToast({
+          type: 'error',
+          message: errorMessage
+        });
+      } else {
+        console.log('Field-specific error was set, not showing toast');
+      }
+      
       setCreateLoading(false);
     }
   };
