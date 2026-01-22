@@ -115,6 +115,9 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 
+// SEO routes - sitemap.xml and robots.txt
+app.use('/', require('./routes/sitemapRoutes'));
+
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
