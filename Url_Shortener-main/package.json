@@ -18,8 +18,8 @@
     "serve": "^14.2.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "CI=false react-app-rewired build",
+    "start": "react-scripts start",
+    "build": "CI=false react-scripts build",
     "build:prod": "REACT_APP_API_URL=https://laghhu.link/api npm run build",
     "build:analyze": "ANALYZE=true npm run build",
     "test": "react-app-rewired test --watchAll=false",
