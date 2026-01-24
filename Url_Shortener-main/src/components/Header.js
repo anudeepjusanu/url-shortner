@@ -1,187 +1,109 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
-import HamburgerMenu from './HamburgerMenu';
+import { Button } from './ui/Button';
 import logo from '../assets/logo.png';
+import { Menu, X } from 'lucide-react';
+import { cn } from '../lib/utils';
 
-const Header = ({ isLanding = false, onGetStarted }) => {
+const Header = ({ isLanding = false }) => {
   const { t } = useTranslation();
   const { currentLanguage, toggleLanguage } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId) => {
-    // Check if we're on the landing page
-    const isOnLandingPage = window.location.pathname === '/';
-    const isOnPrivacyPage = window.location.pathname === '/privacy-policy';
-    const isOnTermsPage = window.location.pathname === '/terms-and-conditions';
-
-    // If we're on a different page, navigate to landing page with hash
-    if (!isOnLandingPage && !isOnPrivacyPage && !isOnTermsPage) {
-      window.location.href = `/#${sectionId}`;
+    if (location.pathname !== '/') {
+      navigate('/#' + sectionId);
       return;
     }
-
-    // If we're on privacy or terms page and clicking features/about/pricing/contact
-    // navigate to landing page
-    if ((isOnPrivacyPage || isOnTermsPage) && 
-        ['features', 'about', 'pricing', 'contact'].includes(sectionId)) {
-      window.location.href = `/#${sectionId}`;
-      return;
-    }
-
-    // Otherwise, scroll to the section on current page
     const element = document.getElementById(sectionId);
     if (element) {
-      const headerOffset = 80; // Account for fixed header
-      const elementPosition = element.offsetTop;
-      const offsetPosition = elementPosition - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    setMobileMenuOpen(false);
   };
-  if (isLanding) {
-    const landingNavItems = [
-      {
-        label: t('header.navigation'),
-        items: [
-          { label: t('header.features'), path: 'features', icon: null },
-          // { label: t('header.pricing'), path: 'pricing', icon: null },
-          { label: t('header.about'), path: 'about', icon: null },
-          { label: t('header.contact'), path: 'contact', icon: null }
-        ]
-      }
-    ];
 
-    const landingHeaderItems = (
-      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-        <div className="language-toggle">
-          <button
-            className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-            onClick={toggleLanguage}
-          >
-            EN
-          </button>
-          <button
-            className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-            onClick={toggleLanguage}
-          >
-            AR
-          </button>
-        </div>
-        <button
-          className="sign-in-btn mobile-sign-in"
-          onClick={onGetStarted}
-          style={{ width: '100%', marginTop: '12px' }}
-        >
-          {t('header.signIn')}
-        </button>
-      </div>
-    );
-
-    return (
-      <header className="landing-header">
-        <div className="landing-header-container">
-          <div className="header-left">
-            <div className="hamburger-wrapper hide-desktop">
-              <HamburgerMenu
-                sidebarItems={landingNavItems}
-                headerItems={landingHeaderItems}
-              />
-            </div>
-            <div className="logo-section">
-              <img 
-                src={logo} 
-                alt="Snip Logo" 
-                className="header-logo-img"
-              />
-            </div>
-          </div>
-          <div className="header-center">
-            <nav className="landing-nav">
-              <button onClick={() => scrollToSection('features')} className="nav-link">{t('header.features')}</button>
-              <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
-              {/* <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button> */}
-              <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
-              <button onClick={() => window.location.href = '/api-docs'} className="nav-link">{t('footer.api')}</button>
-
-            </nav>
-          </div>
-          <div className="create-link-header-right">
-            {/* <div className="language-toggle landing">
-              <button
-                className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-                onClick={toggleLanguage}
-              >
-                EN
-              </button>
-              <button
-                className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-                onClick={toggleLanguage}
-              >
-                AR
-              </button>
-            </div> */}
-                  <div className="create-link-language-toggle">
-        <button
-          className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-          onClick={toggleLanguage}
-        >
-          EN
-        </button>
-        <button
-          className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-          onClick={toggleLanguage}
-        >
-          AR
-        </button>
-      </div>
-
-
-            <button className="sign-in-btn" onClick={onGetStarted}>
-              {t('header.signIn')}
-            </button>
-          </div>
-        </div>
-      </header>
-    );
-  }
+  const navLinks = [
+    { label: t('header.features') || 'Features', action: () => scrollToSection('features') },
+    // { label: t('header.about') || 'About', action: () => scrollToSection('about') },
+    { label: t('header.contact') || 'Contact', action: () => scrollToSection('contact') },
+    { label: t('footer.api') || 'API', action: () => navigate('/api-docs') },
+  ];
 
   return (
-    <header className="header">
-      <div className="header-content">
-        <div className="logo-section">
-          <img 
-            src={logo} 
-            alt="Snip Logo" 
-            className="header-logo-img"
-          />
-        </div>
-        
-        <div className="header-actions">
-          <div className="language-toggle">
-            <button
-              className={`language-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-              onClick={toggleLanguage}
-            >
-              EN
-            </button>
-            <button
-              className={`language-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-              onClick={toggleLanguage}
-            >
-              AR
-            </button>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+            <img src={logo} alt="Logo" className="h-8 w-auto" />
           </div>
-          <div className="user-profile">
-            <div className="user-avatar">
-              <img src="/api/placeholder/32/32" alt="User" />
-            </div>
-            <span className="user-name">Ahmed Al-Rashid</span>
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map((link, idx) => (
+              <button 
+                key={idx} 
+                onClick={link.action}
+                className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="hidden md:flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={toggleLanguage} className="font-semibold">
+               {currentLanguage === 'ar' ? 'English' : 'العربية'}
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/login')}>
+              {t('header.signIn') || 'Sign In'}
+            </Button>
+            <Button onClick={() => navigate('/register')}>
+              {t('landing.hero.cta') || 'Get Started'}
+            </Button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-4">
+             <Button variant="ghost" size="sm" onClick={toggleLanguage} className="font-semibold px-2">
+               {currentLanguage === 'ar' ? 'EN' : 'AR'}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t bg-background p-4 shadow-lg absolute w-full">
+          <nav className="flex flex-col space-y-4">
+            {navLinks.map((link, idx) => (
+              <button 
+                key={idx} 
+                onClick={link.action}
+                className="text-left text-sm font-medium text-slate-600 hover:text-primary py-2"
+              >
+                {link.label}
+              </button>
+            ))}
+            <div className="pt-4 flex flex-col gap-2">
+              <Button variant="outline" onClick={() => navigate('/login')} className="w-full justify-center">
+                {t('header.signIn') || 'Sign In'}
+              </Button>
+              <Button onClick={() => navigate('/register')} className="w-full justify-center">
+                {t('landing.hero.cta') || 'Get Started'}
+              </Button>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

@@ -1,662 +1,194 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import Sidebar from "./Sidebar";
-import MainHeader from "./MainHeader";
 import { urlsAPI } from "../services/api";
-import "./Analytics.css";
-import "./DashboardLayout.css";
+import Toast from "./Toast";
+import { Link as LinkIcon, Copy, RefreshCw, Facebook, Twitter, Instagram, Linkedin, Mail, Search } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/Card';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Label } from './ui/Label';
+import { cn } from "../lib/utils";
 
 const UTMBuilder = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [toast, setToast] = useState(null);
 
   // Form state
-  const [websiteUrl, setWebsiteUrl] = useState('');
-  const [utmSource, setUtmSource] = useState('');
-  const [utmMedium, setUtmMedium] = useState('');
-  const [utmCampaign, setUtmCampaign] = useState('');
-  const [utmTerm, setUtmTerm] = useState('');
-  const [utmContent, setUtmContent] = useState('');
+  const [form, setForm] = useState({
+    url: '',
+    source: '',
+    medium: '',
+    campaign: '',
+    term: '',
+    content: ''
+  });
 
-  // Generated URL state
   const [generatedUrl, setGeneratedUrl] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [creating, setCreating] = useState(false);
+  
+  const presets = [
+    { name: 'Facebook', source: 'facebook', medium: 'social', icon: Facebook, color: 'text-blue-600' },
+    { name: 'Twitter', source: 'twitter', medium: 'social', icon: Twitter, color: 'text-sky-500' },
+    { name: 'Instagram', source: 'instagram', medium: 'social', icon: Instagram, color: 'text-pink-600' },
+    { name: 'LinkedIn', source: 'linkedin', medium: 'social', icon: Linkedin, color: 'text-blue-700' },
+    { name: 'Email', source: 'newsletter', medium: 'email', icon: Mail, color: 'text-slate-600' },
+    { name: 'Google Ads', source: 'google', medium: 'cpc', icon: Search, color: 'text-green-600' },
+  ];
 
-  const generateUtmUrl = () => {
-    if (!websiteUrl) {
-      alert('Please enter a website URL');
-      return;
+  const applyPreset = (p) => {
+    setForm(prev => ({ ...prev, source: p.source, medium: p.medium }));
+  };
+
+  const generateUrl = () => {
+    if (!form.url) {
+        setToast({ type: 'error', message: 'Website URL is required' });
+        return;
     }
-
-    if (!utmSource || !utmMedium || !utmCampaign) {
-      alert('Please fill in at least Source, Medium, and Campaign fields');
-      return;
-    }
-
     try {
-      const url = new URL(websiteUrl);
-      const params = new URLSearchParams();
-
-      if (utmSource) params.append('utm_source', utmSource);
-      if (utmMedium) params.append('utm_medium', utmMedium);
-      if (utmCampaign) params.append('utm_campaign', utmCampaign);
-      if (utmTerm) params.append('utm_term', utmTerm);
-      if (utmContent) params.append('utm_content', utmContent);
-
-      const finalUrl = `${url.origin}${url.pathname}${url.search ? url.search + '&' : '?'}${params.toString()}`;
-      setGeneratedUrl(finalUrl);
-    } catch (err) {
-      alert('Invalid URL format. Please enter a valid URL (e.g., https://example.com)');
+        const url = new URL(form.url);
+        if (form.source) url.searchParams.set('utm_source', form.source);
+        if (form.medium) url.searchParams.set('utm_medium', form.medium);
+        if (form.campaign) url.searchParams.set('utm_campaign', form.campaign);
+        if (form.term) url.searchParams.set('utm_term', form.term);
+        if (form.content) url.searchParams.set('utm_content', form.content);
+        setGeneratedUrl(url.toString());
+    } catch {
+        setToast({ type: 'error', message: 'Invalid Website URL' });
     }
   };
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      alert('Failed to copy URL');
-    }
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedUrl);
+    setToast({ type: 'success', message: 'Copied to clipboard' });
   };
 
   const createShortLink = async () => {
-    if (!generatedUrl) {
-      alert('Please generate a UTM URL first');
-      return;
-    }
-
     try {
-      setCreating(true);
-      const response = await urlsAPI.createUrl({
-        originalUrl: generatedUrl,
-        title: `UTM: ${utmCampaign}`,
-      });
-
-      if (response.success) {
-        alert('Short link created successfully!');
+        await urlsAPI.createUrl({ originalUrl: generatedUrl, title: `UTM: ${form.campaign || 'Campaign'}` });
+        setToast({ type: 'success', message: 'Short link created!' });
         navigate('/my-links');
-      }
     } catch (err) {
-      console.error('Error creating short link:', err);
-      alert(err.message || 'Failed to create short link');
-    } finally {
-      setCreating(false);
+        setToast({ type: 'error', message: 'Failed to create short link' });
     }
-  };
-
-  const resetForm = () => {
-    setWebsiteUrl('');
-    setUtmSource('');
-    setUtmMedium('');
-    setUtmCampaign('');
-    setUtmTerm('');
-    setUtmContent('');
-    setGeneratedUrl('');
-    setCopied(false);
-  };
-
-  // Common UTM presets
-  const commonPresets = {
-    facebook: { source: 'facebook', medium: 'social' },
-    twitter: { source: 'twitter', medium: 'social' },
-    instagram: { source: 'instagram', medium: 'social' },
-    linkedin: { source: 'linkedin', medium: 'social' },
-    email: { source: 'newsletter', medium: 'email' },
-    googleAds: { source: 'google', medium: 'cpc' },
-  };
-
-  const applyPreset = (preset) => {
-    setUtmSource(preset.source);
-    setUtmMedium(preset.medium);
   };
 
   return (
-    <div className="analytics-container">
-      <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-        <div className="analytics-main">
-          <div className="analytics-content">
-            {/* Page Header */}
-            <div className="page-header" style={{
-              marginBottom: '24px'
-            }}>
-              <h1 style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: '#111827',
-                marginBottom: '4px',
-                margin: '0 0 4px 0'
-              }}>UTM Builder</h1>
-              <p style={{
-                color: '#6B7280',
-                fontSize: '14px',
-                margin: 0
-              }}>Create trackable URLs with UTM parameters for your marketing campaigns</p>
-            </div>
-
-            {/* Info Box */}
-            <div style={{
-              background: '#EFF6FF',
-              border: '1px solid #BFDBFE',
-              borderRadius: '8px',
-              padding: '16px',
-              marginBottom: '24px',
-              display: 'flex',
-              gap: '12px'
-            }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
-                <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9V9h2v6zm0-8H9V5h2v2z" fill="#3B82F6"/>
-              </svg>
-              <div>
-                <strong style={{ color: '#1E40AF', display: 'block', marginBottom: '4px' }}>What are UTM parameters?</strong>
-                <p style={{ color: '#1E3A8A', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
-                  UTM parameters are tags added to URLs to track the effectiveness of marketing campaigns.
-                  They help you identify which channels bring the most traffic and conversions.
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Presets */}
-            <div style={{
-              background: '#fff',
-              border: '1px solid #E5E7EB',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '24px'
-            }}>
-              <h3 style={{
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '12px',
-                margin: '0 0 12px 0'
-              }}>Quick Presets</h3>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                gap: '12px'
-              }}>
-                {Object.entries(commonPresets).map(([key, preset]) => (
-                  <button
-                    key={key}
-                    onClick={() => applyPreset(preset)}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#F9FAFB',
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#3B82F6';
-                      e.currentTarget.style.background = '#EFF6FF';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#E5E7EB';
-                      e.currentTarget.style.background = '#F9FAFB';
-                    }}
-                  >
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* UTM Builder Form */}
-            <div style={{
-              background: '#fff',
-              border: '1px solid #E5E7EB',
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '24px'
-            }}>
-              <h3 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '20px',
-                margin: '0 0 20px 0'
-              }}>Build Your UTM URL</h3>
-
-              {/* Website URL */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Website URL *
-                </label>
-                <input
-                  type="url"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  placeholder="https://example.com/page"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>The full website URL (e.g., https://www.example.com)</p>
-              </div>
-
-              {/* UTM Source */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Campaign Source (utm_source) *
-                </label>
-                <input
-                  type="text"
-                  value={utmSource}
-                  onChange={(e) => setUtmSource(e.target.value)}
-                  placeholder="google, facebook, newsletter"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>Identify the advertiser, site, publication, etc. sending traffic</p>
-              </div>
-
-              {/* UTM Medium */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Campaign Medium (utm_medium) *
-                </label>
-                <input
-                  type="text"
-                  value={utmMedium}
-                  onChange={(e) => setUtmMedium(e.target.value)}
-                  placeholder="cpc, email, social, banner"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>Advertising or marketing medium (e.g., cpc, banner, email)</p>
-              </div>
-
-              {/* UTM Campaign */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Campaign Name (utm_campaign) *
-                </label>
-                <input
-                  type="text"
-                  value={utmCampaign}
-                  onChange={(e) => setUtmCampaign(e.target.value)}
-                  placeholder="summer_sale, product_launch"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>Product, promo code, or slogan (e.g., spring_sale)</p>
-              </div>
-
-              {/* UTM Term */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Campaign Term (utm_term)
-                </label>
-                <input
-                  type="text"
-                  value={utmTerm}
-                  onChange={(e) => setUtmTerm(e.target.value)}
-                  placeholder="running+shoes"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>Identify paid search keywords (optional)</p>
-              </div>
-
-              {/* UTM Content */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Campaign Content (utm_content)
-                </label>
-                <input
-                  type="text"
-                  value={utmContent}
-                  onChange={(e) => setUtmContent(e.target.value)}
-                  placeholder="logolink, textlink"
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <p style={{
-                  fontSize: '12px',
-                  color: '#6B7280',
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>Differentiate ads or links that point to the same URL (optional)</p>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                flexWrap: 'wrap'
-              }}>
-                <button
-                  onClick={generateUtmUrl}
-                  style={{
-                    padding: '12px 24px',
-                    background: '#3B82F6',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#2563EB'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#3B82F6'}
-                >
-                  Generate UTM URL
-                </button>
-                <button
-                  onClick={resetForm}
-                  style={{
-                    padding: '12px 24px',
-                    background: '#F3F4F6',
-                    color: '#374151',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#E5E7EB'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#F3F4F6'}
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Generated URL Result */}
-            {generatedUrl && (
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px',
-                marginBottom: '24px'
-              }}>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '16px',
-                  margin: '0 0 16px 0'
-                }}>Generated UTM URL</h3>
-
-                <div style={{
-                  background: '#F9FAFB',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '16px',
-                  wordBreak: 'break-all'
-                }}>
-                  <code style={{
-                    fontSize: '14px',
-                    color: '#1F2937',
-                    lineHeight: '1.6'
-                  }}>{generatedUrl}</code>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  flexWrap: 'wrap'
-                }}>
-                  <button
-                    onClick={copyToClipboard}
-                    style={{
-                      padding: '10px 20px',
-                      background: copied ? '#10B981' : '#3B82F6',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {copied ? (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                        Copy URL
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={createShortLink}
-                    disabled={creating}
-                    style={{
-                      padding: '10px 20px',
-                      background: creating ? '#9CA3AF' : '#10B981',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: creating ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      opacity: creating ? 0.6 : 1,
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                    {creating ? 'Creating...' : 'Create Short Link'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* UTM Parameter Reference */}
-            <div style={{
-              background: '#fff',
-              border: '1px solid #E5E7EB',
-              borderRadius: '12px',
-              padding: '24px'
-            }}>
-              <h3 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>UTM Parameters Reference</h3>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: '16px'
-              }}>
-                {[
-                  {
-                    name: 'utm_source',
-                    desc: 'Identifies which site sent the traffic',
-                    examples: 'google, facebook, newsletter'
-                  },
-                  {
-                    name: 'utm_medium',
-                    desc: 'Identifies what type of link was used',
-                    examples: 'cpc, email, social'
-                  },
-                  {
-                    name: 'utm_campaign',
-                    desc: 'Identifies a specific campaign',
-                    examples: 'summer_sale, product_launch'
-                  },
-                  {
-                    name: 'utm_term',
-                    desc: 'Identifies search terms (for paid ads)',
-                    examples: 'running+shoes, blue+sneakers'
-                  },
-                  {
-                    name: 'utm_content',
-                    desc: 'Identifies what specifically was clicked',
-                    examples: 'logolink, textlink, button'
-                  }
-                ].map((param, idx) => (
-                  <div key={idx} style={{
-                    padding: '16px',
-                    background: '#F9FAFB',
-                    borderRadius: '8px',
-                    border: '1px solid #E5E7EB'
-                  }}>
-                    <h4 style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#3B82F6',
-                      marginBottom: '8px',
-                      margin: '0 0 8px 0',
-                      fontFamily: 'monospace'
-                    }}>{param.name}</h4>
-                    <p style={{
-                      fontSize: '13px',
-                      color: '#374151',
-                      marginBottom: '8px',
-                      margin: '0 0 8px 0'
-                    }}>{param.desc}</p>
-                    <p style={{
-                      fontSize: '12px',
-                      color: '#6B7280',
-                      margin: 0
-                    }}>
-                      <strong>Examples:</strong> {param.examples}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">UTM Builder</h1>
+          <p className="text-muted-foreground">Trace traffic from social media, emails, and other sources.</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         {/* Builder Form */}
+         <Card className="lg:col-span-2">
+            <CardHeader>
+               <CardTitle>Configure Parameters</CardTitle>
+               <CardDescription>Fill out the fields below to generate your tracked URL.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="space-y-2">
+                  <Label>Website URL <span className="text-red-500">*</span></Label>
+                  <Input 
+                    placeholder="https://example.com/landing-page" 
+                    value={form.url} 
+                    onChange={e => setForm({...form, url: e.target.value})} 
+                  />
+               </div>
+
+               <div className="space-y-3">
+                  <Label>Quick Presets</Label>
+                  <div className="flex flex-wrap gap-2">
+                     {presets.map((p, i) => (
+                        <button 
+                           key={i} 
+                           onClick={() => applyPreset(p)}
+                           className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border rounded-md text-sm font-medium transition-colors"
+                        >
+                           <p.icon className={cn("h-4 w-4", p.color)} /> {p.name}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                     <Label>Campaign Source <span className="text-red-500">*</span></Label>
+                     <Input placeholder="google, newsletter" value={form.source} onChange={e => setForm({...form, source: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                     <Label>Campaign Medium <span className="text-red-500">*</span></Label>
+                     <Input placeholder="cpc, banner, email" value={form.medium} onChange={e => setForm({...form, medium: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                     <Label>Campaign Name</Label>
+                     <Input placeholder="summer_sale" value={form.campaign} onChange={e => setForm({...form, campaign: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                     <Label>Campaign Term</Label>
+                     <Input placeholder="running+shoes" value={form.term} onChange={e => setForm({...form, term: e.target.value})} />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                     <Label>Campaign Content</Label>
+                     <Input placeholder="logolink" value={form.content} onChange={e => setForm({...form, content: e.target.value})} />
+                  </div>
+               </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2 bg-slate-50 p-4">
+               <Button variant="ghost" onClick={() => setForm({ url: '', source: '', medium: '', campaign: '', term: '', content: '' })}>Reset</Button>
+               <Button onClick={generateUrl}>Generate URL</Button>
+            </CardFooter>
+         </Card>
+
+         {/* Result Side */}
+         <div className="space-y-6">
+            <Card className="h-fit">
+               <CardHeader>
+                  <CardTitle>Generated URL</CardTitle>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                  {generatedUrl ? (
+                     <>
+                        <div className="p-3 bg-slate-100 rounded-md break-all text-sm font-mono border">
+                           {generatedUrl}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                           <Button className="w-full" onClick={copyToClipboard}>
+                              <Copy className="mr-2 h-4 w-4" /> Copy URL
+                           </Button>
+                           <Button variant="outline" className="w-full" onClick={createShortLink}>
+                              <LinkIcon className="mr-2 h-4 w-4" /> Shorten Link
+                           </Button>
+                        </div>
+                     </>
+                  ) : (
+                     <div className="text-center py-8 text-muted-foreground text-sm">
+                        Fill out the form to generate a URL.
+                     </div>
+                  )}
+               </CardContent>
+            </Card>
+
+            <Card>
+               <CardHeader>
+                  <CardTitle className="text-base">Why use UTMs?</CardTitle>
+               </CardHeader>
+               <CardContent className="text-sm text-muted-foreground space-y-2">
+                  <p>UTM parameters allow you to track the effectiveness of your marketing campaigns across traffic sources and publishing media.</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                     <li>Track ROI of social media</li>
+                     <li>Measure email newsletter performance</li>
+                     <li>A/B test ad placements</li>
+                  </ul>
+               </CardContent>
+            </Card>
+         </div>
       </div>
     </div>
   );

@@ -6,7 +6,11 @@ import { useLanguage } from "../contexts/LanguageContext";
 import OTPDialog from "./OTPDialog";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import logo from '../assets/logo.png';
-import "./Login.css";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Label } from "./ui/Label";
+import { CheckCircle2, ShieldCheck, Zap, AlertCircle, Eye, EyeOff, Globe } from "lucide-react";
+import { cn } from "../lib/utils";
 
 const Login = () => {
   const { t } = useTranslation();
@@ -19,7 +23,6 @@ const Login = () => {
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
   const [otpData, setOtpData] = useState(null);
@@ -27,101 +30,36 @@ const Login = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-
-    // Clear any existing errors for this field
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: null }));
-    }
-
-    // Clear global error
-    if (error) {
-      clearError();
-    }
-
+    if (error) clearError();
     setFormData((prevState) => ({
       ...prevState,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  // Form validation
-  const validateForm = () => {
-    const errors = {};
-    let firstErrorField = null;
-
-    if (!formData.email.trim()) {
-      errors.email = t('auth.login.errorEmailRequired') || 'This field is required';
-      if (!firstErrorField) firstErrorField = 'email';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = t('auth.login.errorEmailInvalid');
-      if (!firstErrorField) firstErrorField = 'email';
-    }
-
-    if (!formData.password) {
-      errors.password = t('auth.login.errorPasswordRequired') || 'This field is required';
-      if (!firstErrorField) firstErrorField = 'password';
-    }
-
-    setFormErrors(errors);
-    
-    // Focus the first field with an error
-    if (firstErrorField) {
-      setTimeout(() => {
-        const element = document.getElementById(firstErrorField);
-        if (element) {
-          element.focus();
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 0);
-    }
-    
-    return Object.keys(errors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous errors
-    setFormErrors({});
     if (error) clearError();
 
-    // Validate form
-    if (!validateForm()) {
-      return;
-    }
-
     try {
-      // Call login API
       const result = await login(formData.email.trim().toLowerCase(), formData.password);
-      console.log('Login result:', result);
-
-      // Check if OTP is required
       if (result.otpRequired && result.otpData) {
-        console.log('OTP required, showing dialog');
         setOtpData(result.otpData);
         setShowOTPDialog(true);
         return;
       }
-
       if (result.success) {
-        // Login successful - navigate to dashboard
-        console.log('Login successful, navigating to dashboard');
         navigate("/dashboard");
       }
-      // Errors are handled by the AuthContext and displayed in the UI
     } catch (error) {
       console.error('Login error:', error);
     }
   };
 
   const handleVerifyOTP = async (otp) => {
-    console.log('Verifying OTP:', otp);
     try {
       const result = await login(formData.email.trim().toLowerCase(), formData.password, otp);
-      console.log('OTP verification result:', result);
-
       if (result.success) {
-        console.log('OTP verified, login successful');
         setShowOTPDialog(false);
         navigate("/dashboard");
       } else {
@@ -134,27 +72,15 @@ const Login = () => {
   };
 
   const handleResendOTP = async () => {
-    console.log('Resending OTP');
     try {
       const result = await login(formData.email.trim().toLowerCase(), formData.password);
-
       if (result.otpRequired && result.otpData) {
-        console.log('OTP resent successfully');
         setOtpData(result.otpData);
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
       throw error;
     }
-  };
-
-  const handleGoogleLogin = () => {
-    // Handle Google login
-    console.log("Google login clicked");
-  };
-
-  const handleForgotPassword = () => {
-    setShowForgotPasswordDialog(true);
   };
 
   const handleForgotPasswordClose = (success) => {
@@ -166,388 +92,153 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      {/* Left Panel - Brand and Features */}
-      <div className="left-panel">
-        <div className="left-content">
-          {/* Brand Section */}
-          <div className="brand-section">
-            <div className="brand-logo">
-              <img 
-                src={logo} 
-                alt="LaghhuLink Logo" 
-                className="auth-logo-img"
-              />
-            </div>
-            <h1 className="brand-title">{t('common.brandName')}</h1>
-            <p className="brand-subtitle">{t('auth.login.brandSubtitle')}</p>
+    <div className="min-h-screen flex w-full">
+      {/* Left Panel - Brand (Hidden on Mobile) */}
+      <div className="hidden lg:flex w-1/2 bg-slate-900 text-white flex-col justify-between p-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-8">
+             <img src={logo} alt="Logo" className="h-10 w-auto brightness-0 invert" />
+             <h1 className="text-2xl font-bold">{t('common.brandName')}</h1>
           </div>
-
-          {/* Features List */}
-          <div className="features-list">
-            <div className="feature-item">
-              <div className="feature-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <g clipPath="url(#clip0_775_2962)">
-                    <path
-                      d="M13.7187 0.218726C14.0125 -0.0750244 14.4875 -0.0750244 14.7781 0.218726L15.7781 1.21873C16.0718 1.51248 16.0718 1.98748 15.7781 2.2781L13.0594 4.99685L14.2781 6.2156C14.4937 6.43123 14.5562 6.7531 14.4406 7.03435C14.325 7.3156 14.05 7.49685 13.7469 7.49685H9.24998C8.83435 7.49685 8.49998 7.16248 8.49998 6.74685V2.24998C8.49998 1.94685 8.68122 1.67185 8.96247 1.55623C9.24372 1.4406 9.5656 1.5031 9.78123 1.71873L11 2.93748L13.7187 0.218726ZM2.24998 8.49998H6.74998C7.1656 8.49998 7.49998 8.83435 7.49998 9.24998V13.75C7.49998 14.0531 7.31873 14.3281 7.03748 14.4437C6.75623 14.5594 6.43435 14.4969 6.21873 14.2812L4.99998 13.0625L2.28123 15.7812C1.98748 16.075 1.51248 16.075 1.22185 15.7812L0.218726 14.7812C-0.0750244 14.4875 -0.0750244 14.0125 0.218726 13.7219L2.93748 11.0031L1.71873 9.78123C1.5031 9.5656 1.4406 9.24372 1.55623 8.96247C1.67185 8.68122 1.94685 8.49998 2.24998 8.49998Z"
-                      fill="#3B82F6"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_775_2962">
-                      <path d="M0 0H16V16H0V0Z" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
-              <div className="feature-content">
-                <h3>{t('auth.login.feature1Title')}</h3>
-                <p>{t('auth.login.feature1Description')}</p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <g clipPath="url(#clip0_775_2965)">
-                    <path
-                      d="M2 2C2 1.44687 1.55313 1 1 1C0.446875 1 0 1.44687 0 2V12.5C0 13.8813 1.11875 15 2.5 15H15C15.5531 15 16 14.5531 16 14C16 13.4469 15.5531 13 15 13H2.5C2.225 13 2 12.775 2 12.5V2ZM14.7063 4.70625C15.0969 4.31563 15.0969 3.68125 14.7063 3.29063C14.3156 2.9 13.6812 2.9 13.2906 3.29063L10 6.58437L8.20625 4.79063C7.81563 4.4 7.18125 4.4 6.79063 4.79063L3.29063 8.29062C2.9 8.68125 2.9 9.31563 3.29063 9.70625C3.68125 10.0969 4.31563 10.0969 4.70625 9.70625L7.5 6.91563L9.29375 8.70938C9.68437 9.1 10.3188 9.1 10.7094 8.70938L14.7094 4.70937L14.7063 4.70625Z"
-                      fill="#3B82F6"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_775_2965">
-                      <path d="M0 0H16V16H0V0Z" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
-              <div className="feature-content">
-                <h3>{t('auth.login.feature2Title')}</h3>
-                <p>{t('auth.login.feature2Description')}</p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <g clipPath="url(#clip0_775_2968)">
-                    <path
-                      d="M8.00001 0C8.14376 0 8.28751 0.03125 8.41876 0.090625L14.3031 2.5875C14.9906 2.87813 15.5031 3.55625 15.5 4.375C15.4844 7.475 14.2094 13.1469 8.82501 15.725C8.30314 15.975 7.69689 15.975 7.17501 15.725C1.79064 13.1469 0.515639 7.475 0.500014 4.375C0.496889 3.55625 1.00939 2.87813 1.69689 2.5875L7.58439 0.090625C7.71251 0.03125 7.85626 0 8.00001 0ZM8.00001 2.0875V13.9C12.3125 11.8125 13.4719 7.19062 13.5 4.41875L8.00001 2.0875Z"
-                      fill="#3B82F6"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_775_2968">
-                      <path d="M0 0H16V16H0V0Z" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
-              <div className="feature-content">
-                <h3>{t('auth.login.feature3Title')}</h3>
-                <p>{t('auth.login.feature3Description')}</p>
-              </div>
-            </div>
+          <div className="space-y-6 max-w-md">
+             <h2 className="text-4xl font-bold leading-tight">{t('auth.login.brandSubtitle') || "Shorten, Share, and Track with confidence."}</h2>
+             <div className="space-y-4">
+               {[
+                 { icon: Zap, title: t('auth.login.feature1Title'), desc: t('auth.login.feature1Description') },
+                 { icon: ShieldCheck, title: t('auth.login.feature3Title'), desc: t('auth.login.feature3Description') },
+                 { icon: CheckCircle2, title: t('auth.login.feature2Title'), desc: t('auth.login.feature2Description') },
+               ].map((feat, i) => (
+                 <div key={i} className="flex gap-4">
+                    <div className="mt-1 bg-white/10 p-2 rounded-lg h-fit">
+                      <feat.icon className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">{feat.title}</h3>
+                      <p className="text-slate-400 text-sm">{feat.desc}</p>
+                    </div>
+                 </div>
+               ))}
+             </div>
           </div>
+        </div>
+        <div className="relative z-10 text-sm text-slate-500">
+          &copy; {new Date().getFullYear()} {t('common.brandName')}. All rights reserved.
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
-      <div className="right-panel">
-        {/* Language Toggle */}
-        <div className="language-toggle">
-          <button
-            className="lang-toggle-btn"
-            onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
-              border: '1px solid #E5E7EB',
-              borderRadius: '8px',
-              background: '#fff',
-              cursor: 'pointer',
-              fontSize: '14px',
-              color: '#6B7280',
-              fontWeight: '500',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#F9FAFB';
-              e.target.style.borderColor = '#D1D5DB';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#fff';
-              e.target.style.borderColor = '#E5E7EB';
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="2" />
-              <path
-                d="M2 7h10M7 2c1.5 0 3 2.686 3 6s-1.5 6-3 6-3-2.686-3-6 1.5-6 3-6z"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-            </svg>
-            {currentLanguage === 'en' ? 'العربية' : 'English'}
-          </button>
-        </div>
+      {/* Right Panel - Form */}
+      <div className="flex-1 flex flex-col justify-center items-center p-4 sm:p-8 bg-slate-50">
+        <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+           
+           {/* Mobile Logo */}
+           <div className="lg:hidden flex justify-center mb-4">
+              <img src={logo} alt="Logo" className="h-10 w-auto" />
+           </div>
 
-        <div className="form-wrapper">
-          {/* Header */}
-          <div className="form-header">
-            <h2>{t('auth.login.title')}</h2>
-            <p>{t('auth.login.subtitle')}</p>
-          </div>
-
-          {/* Google Sign In */}
-          {/* <div className="google-section">
-            <button
-              type="button"
-              className="google-btn"
-              onClick={handleGoogleLogin}
-            >
-              <svg
-                width="19"
-                height="20"
-                viewBox="0 0 19 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+           <div className="flex justify-end">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
+                className="text-slate-500"
               >
-                <path
-                  d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0813L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M9.68813 19.9314C12.3039 19.9314 14.4999 19.0455 16.1039 17.5174L13.0467 15.0813C12.2286 15.6682 11.1306 16.0779 9.68813 16.0779C7.12612 16.0779 4.95165 14.3395 4.17651 11.9366L4.06289 11.9465L1.07231 14.3273L1.0332 14.4391C2.62638 17.6946 5.89889 19.9314 9.68813 19.9314Z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M4.17667 11.9366C3.972 11.3165 3.85486 10.6521 3.85486 9.96562C3.85486 9.27905 3.972 8.61468 4.16591 7.99462L4.1605 7.86257L1.13246 5.44363L1.03339 5.49211C0.37677 6.84302 0 8.36005 0 9.96562C0 11.5712 0.37677 13.0881 1.03339 14.4391L4.17667 11.9366Z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M9.68807 3.85336C11.5073 3.85336 12.7344 4.66168 13.4342 5.33718L16.1649 2.59107C14.4823 0.994704 12.3039 0 9.68807 0C5.89883 0 2.62632 2.23672 1.0332 5.49214L4.16573 7.99466C4.95162 5.59183 7.12608 3.85336 9.68807 3.85336Z"
-                  fill="#EB4335"
-                />
-              </svg>
-              {t('auth.login.googleButton')}
-            </button>
+                <Globe className="mr-2 h-4 w-4" />
+                {currentLanguage === 'en' ? 'العربية' : 'English'}
+              </Button>
+           </div>
 
-            <div className="divider">
-              <hr />
-              <span>{t('auth.login.dividerText')}</span>
-            </div>
-          </div> */}
+           <div className="text-center">
+             <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('auth.login.title')}</h2>
+             <p className="mt-2 text-sm text-slate-600">{t('auth.login.subtitle')}</p>
+           </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="error-banner">
-              <div className="error-content">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" fill="#DC2626"/>
-                  <path d="M8 4V8M8 12H8.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
+           {error && (
+             <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center text-sm border border-red-100">
+               <AlertCircle className="h-5 w-5 mr-3 shrink-0" />
+               {error}
+             </div>
+           )}
 
-          {/* Success Display */}
-          {successMessage && (
-            <div style={{
-              background: '#D1FAE5',
-              border: '1px solid #10B981',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#10B981"/>
-              </svg>
-              <span style={{ color: '#065F46', fontSize: '14px' }}>
-                {successMessage}
-              </span>
-            </div>
-          )}
+           {successMessage && (
+             <div className="bg-green-50 text-green-600 p-4 rounded-lg flex items-center text-sm border border-green-100">
+               <CheckCircle2 className="h-5 w-5 mr-3 shrink-0" />
+               {successMessage}
+             </div>
+           )}
 
-          {/* Login Form */}
-          <form className="login-form" onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <div className="form-field">
-              <label htmlFor="email">{t('auth.login.email')}</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder={t('auth.login.email')}
-                value={formData.email}
-                onChange={handleInputChange}
-                className={formErrors.email ? 'error' : ''}
-                required
-              />
-              {formErrors.email && (
-                <span className="field-error">{formErrors.email}</span>
-              )}
-            </div>
+           <form onSubmit={handleSubmit} className="space-y-6">
+             <div className="space-y-2">
+               <Label htmlFor="email">{t('auth.login.email')}</Label>
+               <Input 
+                 id="email" 
+                 name="email" 
+                 type="email" 
+                 required 
+                 placeholder="name@example.com"
+                 value={formData.email}
+                 onChange={handleInputChange}
+               />
+             </div>
 
-            {/* Password Field */}
-            <div className="form-field">
-              <label htmlFor="password">{t('auth.login.password')}</label>
-              <div className="password-input-wrapper">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  placeholder={t('auth.login.password')}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={formErrors.password ? 'error' : ''}
-                  required
-                />
+             <div className="space-y-2">
+               <div className="flex items-center justify-between">
+                 <Label htmlFor="password">{t('auth.login.password')}</Label>
+               </div>
+               <div className="relative">
+                 <Input 
+                   id="password" 
+                   name="password" 
+                   type={showPassword ? "text" : "password"} 
+                   required 
+                   placeholder="••••••••"
+                   value={formData.password}
+                   onChange={handleInputChange}
+                 />
+                 <button
+                   type="button"
+                   onClick={() => setShowPassword(!showPassword)}
+                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                 >
+                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                 </button>
+               </div>
+             </div>
+
+             <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleInputChange}
+                    className="rounded border-slate-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm text-slate-600">{t('auth.login.rememberMe')}</span>
+                </label>
                 <button
                   type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowForgotPasswordDialog(true)}
+                  className="text-sm font-medium text-primary hover:text-primary/80"
                 >
-                  <svg
-                    width="18"
-                    height="16"
-                    viewBox="0 0 18 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
-                  >
-                    <path
-                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
-                      stroke="#9CA3AF"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ stroke: '#9CA3AF' }}
-                    />
-                    <circle
-                      cx="9"
-                      cy="8"
-                      r="3"
-                      stroke="#9CA3AF"
-                      strokeWidth="2"
-                      style={{ stroke: '#9CA3AF' }}
-                    />
-                  </svg>
+                  {t('auth.login.forgotPassword')}
                 </button>
-              </div>
-              {formErrors.password && (
-                <span className="field-error">{formErrors.password}</span>
-              )}
-            </div>
+             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="form-options">
-              <div className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
-                />
-                <label htmlFor="rememberMe">{t('auth.login.rememberMe')}</label>
-              </div>
-              <button
-                type="button"
-                className="forgot-password-link"
-                onClick={handleForgotPassword}
-              >
-                {t('auth.login.forgotPassword')}
-              </button>
-            </div>
+             <Button className="w-full" size="lg" disabled={loading}>
+               {loading ? 'Please wait...' : t('auth.login.button')}
+             </Button>
+           </form>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className={`sign-in-btn ${loading ? 'loading' : ''}`}
-              disabled={loading}
-            >
-              {loading && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="login-spinner"
-                  style={{
-                    marginRight: '8px',
-                    animation: 'spin 1s linear infinite'
-                  }}
-                >
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeDasharray="37.7"
-                    strokeDashoffset="37.7"
-                    strokeLinecap="round"
-                    style={{
-                      animation: 'spin-dash 1.5s ease-in-out infinite'
-                    }}
-                  />
-                </svg>
-              )}
-              {loading ? t('auth.login.signingIn') : t('auth.login.button')}
-            </button>
-          </form>
-
-          {/* Sign Up Link */}
-          <div className="signup-section">
-            <p>
-              {t('auth.login.noAccount')}
-              <button
-                type="button"
-                className="signup-link"
-                onClick={() => navigate("/register")}
-              >
-                {t('auth.login.signUp')}
-              </button>
-            </p>
-          </div>
+           <div className="text-center text-sm">
+             <span className="text-slate-600">{t('auth.login.noAccount')} </span>
+             <button onClick={() => navigate("/register")} className="font-semibold text-primary hover:underline">
+               {t('auth.login.signUp')}
+             </button>
+           </div>
         </div>
       </div>
 
-      {/* OTP Dialog */}
       <OTPDialog
         isOpen={showOTPDialog}
         onClose={() => setShowOTPDialog(false)}
@@ -557,7 +248,6 @@ const Login = () => {
         loading={loading}
       />
 
-      {/* Forgot Password Dialog */}
       <ForgotPasswordDialog
         isOpen={showForgotPasswordDialog}
         onClose={handleForgotPasswordClose}

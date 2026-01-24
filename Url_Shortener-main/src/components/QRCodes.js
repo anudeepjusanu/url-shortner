@@ -1,68 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Sidebar from "./Sidebar";
-import MainHeader from "./MainHeader";
 import Toast from "./Toast";
-import AccessDenied from "./AccessDenied";
 import { qrCodeAPI, urlsAPI } from "../services/api";
-import { useLanguage } from "../contexts/LanguageContext";
 import { usePermissions } from "../contexts/PermissionContext";
 import { getCurrentDomain, isSystemDomain } from "../utils/domainUtils";
-import "./Analytics.css";
-import "./DashboardLayout.css";
-import "./QRCodes.css";
-import "./DashboardLayout.css";
+import { QrCode, Download, Settings, Trash2, Plus, RefreshCw, CheckSquare, Square, Search } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from './ui/Card';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Label } from './ui/Label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/Dialog';
+import { Badge } from './ui/Badge';
+import { cn } from "../lib/utils";
 
 const QRCodes = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
   const { hasPermission } = usePermissions();
   const [links, setLinks] = useState([]);
   const [filteredLinks, setFilteredLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLink, setSelectedLink] = useState(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [generateLoading, setGenerateLoading] = useState(false);
-  const [downloadLoading, setDownloadLoading] = useState(null);
-  const [bulkLoading, setBulkLoading] = useState(false);
-  const [customizeLoading, setCustomizeLoading] = useState(false);
-  const [showAccessDenied, setShowAccessDenied] = useState(false);
-  const [deniedAction, setDeniedAction] = useState('');
-
-  // QR Code customization options
+  const [selectedLink, setSelectedLink] = useState(null);
   const [qrOptions, setQrOptions] = useState({
     size: 300,
     format: 'png',
     errorCorrection: 'M',
     foregroundColor: '#000000',
     backgroundColor: '#FFFFFF',
-    includeMargin: true,
-    logo: null
+    includeMargin: true
   });
-
-  // Bulk selection
   const [selectedLinks, setSelectedLinks] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-
-  // Delete dialog
-  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
-
-  // Track if we're updating an existing QR code (vs generating new)
-  const [isUpdatingQR, setIsUpdatingQR] = useState(false);
-
-  // Stats
-  const [stats, setStats] = useState({
-    totalQRCodes: 0,
-    totalScans: 0,
-    uniqueScans: 0,
-    activeQRCodes: 0,
-    downloadsToday: 0
-  });
-
-  // Toast notification state
   const [toast, setToast] = useState(null);
+  const [stats, setStats] = useState({ totalQRCodes: 0, totalScans: 0, activeQRCodes: 0, downloadsToday: 0 });
 
   useEffect(() => {
     loadLinks();
@@ -70,26 +41,27 @@ const QRCodes = () => {
   }, []);
 
   useEffect(() => {
-    filterLinks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!searchQuery.trim()) {
+      setFilteredLinks(links);
+    } else {
+      const query = searchQuery.toLowerCase();
+      setFilteredLinks(links.filter(l => 
+        l.shortCode?.toLowerCase().includes(query) || 
+        l.originalUrl?.toLowerCase().includes(query) ||
+        l.title?.toLowerCase().includes(query)
+      ));
+    }
   }, [searchQuery, links]);
 
   const loadLinks = async () => {
     setLoading(true);
     try {
       const response = await urlsAPI.getUrls();
-      if (response && response.success && response.data) {
-        const urls = response.data.urls || [];
-        setLinks(urls);
-        setFilteredLinks(urls);
-      }
-    } catch (error) {
-      console.error("Error loading links:", error);
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: t('errors.failedToLoadLinks') || 'Failed to load links. Please try again.'
-      });
+      const urls = response.data?.urls || [];
+      setLinks(urls);
+      setFilteredLinks(urls);
+    } catch (err) {
+      setToast({ type: 'error', message: 'Failed to load links' });
     } finally {
       setLoading(false);
     }
@@ -98,1444 +70,200 @@ const QRCodes = () => {
   const loadStats = async () => {
     try {
       const response = await qrCodeAPI.getStats();
-      if (response && response.success && response.data) {
+      if (response?.data) {
         setStats({
           totalQRCodes: response.data.totalQRCodes || 0,
           totalScans: response.data.totalScans || 0,
-          uniqueScans: response.data.uniqueScans || 0,
           activeQRCodes: response.data.activeQRCodes || 0,
           downloadsToday: response.data.downloadsToday || 0
         });
       }
-    } catch (error) {
-      console.error("Error loading stats:", error);
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: t('errors.failedToLoadStats') || 'Failed to load statistics. Please refresh the page.'
-      });
+    } catch (err) {
+      console.error(err);
     }
-  };
-
-  const filterLinks = () => {
-    if (!searchQuery.trim()) {
-      setFilteredLinks(links);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = links.filter(link =>
-      link.shortCode?.toLowerCase().includes(query) ||
-      link.originalUrl?.toLowerCase().includes(query) ||
-      link.title?.toLowerCase().includes(query)
-    );
-    setFilteredLinks(filtered);
   };
 
   const generateQRCode = async (linkId) => {
-    // Check permission before generating QR code
-    if (!hasPermission('qrCodes', 'create')) {
-      setDeniedAction('create QR codes');
-      setShowAccessDenied(true);
-      return;
-    }
-
-    setGenerateLoading(true);
     try {
-      const response = await qrCodeAPI.generate(linkId, qrOptions);
-      if (response && response.success && response.data && response.data.qrCode) {
-        // Update the link in state immediately with the new QR code data
-        const updatedSettings = {
-          size: qrOptions.size,
-          format: qrOptions.format,
-          errorCorrection: qrOptions.errorCorrection,
-          foregroundColor: qrOptions.foregroundColor,
-          backgroundColor: qrOptions.backgroundColor,
-          includeMargin: qrOptions.includeMargin
-        };
-
-        setLinks(prevLinks => prevLinks.map(link => {
-          if ((link._id || link.id) === linkId) {
-            return {
-              ...link,
-              qrCode: response.data.qrCode,
-              qrCodeSettings: updatedSettings,
-              qrCodeGenerated: true,
-              qrCodeGeneratedAt: new Date()
-            };
-          }
-          return link;
-        }));
-        setFilteredLinks(prevLinks => prevLinks.map(link => {
-          if ((link._id || link.id) === linkId) {
-            return {
-              ...link,
-              qrCode: response.data.qrCode,
-              qrCodeSettings: updatedSettings,
-              qrCodeGenerated: true,
-              qrCodeGeneratedAt: new Date()
-            };
-          }
-          return link;
-        }));
-
-        setShowGenerateModal(false);
-        setShowCustomizeModal(false);
-        setSelectedLink(null);
-        loadStats();
-
-        // Show success toast
-        setToast({
-          type: 'success',
-          message: t('qrCodes.generateSuccess') || 'QR Code generated successfully!'
-        });
-      }
-    } catch (error) {
-      console.error("Error generating QR code:", error);
-      const errorMsg = error.message || t('qrCodes.generateFailed') || 'Failed to generate QR code';
-
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: errorMsg
-      });
-    } finally {
-      setGenerateLoading(false);
+      await qrCodeAPI.generate(linkId, qrOptions);
+      setToast({ type: 'success', message: 'QR Code generated!' });
+      loadLinks();
+      loadStats();
+      setShowGenerateModal(false);
+    } catch (err) {
+      setToast({ type: 'error', message: 'Failed to generate QR Code' });
     }
   };
 
-  const downloadQRCode = async (linkId, format) => {
-    setDownloadLoading(linkId);
+  const downloadQRCode = async (linkId, format = 'png') => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setToast({
-          type: 'error',
-          message: t('errors.authRequired') || 'Please login to download QR codes.'
-        });
-        setDownloadLoading(null);
-        return;
-      }
-      // Use qrCodeAPI.download for all formats - returns a blob directly
       const blob = await qrCodeAPI.download(linkId, format);
-      
-      // Create download link from blob
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `qrcode-${linkId}.${format}`);
+      link.download = `qrcode-${linkId}.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      setToast({
-        type: 'success',
-        message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
-      });
-      loadLinks();
-      loadStats();
-    } catch (error) {
-      console.error('Error downloading QR code:', error);
-      setToast({
-        type: 'error',
-        message: error.message || t('qrCodes.downloadFailed') || 'Failed to download QR code'
-      });
-    } finally {
-      setDownloadLoading(null);
+      setToast({ type: 'success', message: 'Downloaded successfully' });
+    } catch (err) {
+      setToast({ type: 'error', message: 'Failed to download' });
     }
-  };
-
-  const bulkGenerateQRCodes = async () => {
-    if (selectedLinks.length === 0) {
-      // Show warning toast instead of alert
-      setToast({
-        type: 'warning',
-        message: t('errors.noLinksSelected') || 'Please select at least one link for bulk operation.'
-      });
-      return;
-    }
-
-    // Use window.confirm for confirmation - can be improved with custom modal later
-    const confirmMessage = t('errors.confirmBulkGenerate', { count: selectedLinks.length }) ||
-                          `Are you sure you want to generate QR codes for ${selectedLinks.length} selected link(s)?`;
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    setBulkLoading(true);
-    try {
-      const response = await qrCodeAPI.bulkGenerate(selectedLinks, qrOptions);
-      if (response && response.success) {
-        setSelectedLinks([]);
-        setSelectAll(false);
-        loadLinks();
-        loadStats();
-
-        // Show success toast
-        setToast({
-          type: 'success',
-          message: t('qrCodes.bulkGenerateSuccess', { count: response.data.count }) || `Successfully generated ${response.data.count} QR code(s)!`
-        });
-      }
-    } catch (error) {
-      console.error("Error bulk generating QR codes:", error);
-      const errorMsg = error.message || t('qrCodes.bulkGenerateFailed') || 'Failed to generate QR codes';
-
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: errorMsg
-      });
-    } finally {
-      setBulkLoading(false);
-    }
-  };
-
-  const handleCustomizeClick = async (link) => {
-    // Check permission before customizing QR code
-    if (!hasPermission('qrCodes', 'customize')) {
-      setDeniedAction('customize QR codes');
-      setShowAccessDenied(true);
-      return;
-    }
-
-    try {
-      const linkId = link._id || link.id;
-
-      // Fetch existing QR code customization
-      const response = await qrCodeAPI.getUrlQRCode(linkId);
-
-      if (response && response.success && response.data) {
-        const customization = response.data.customization;
-
-        // Load existing customization or use defaults
-        if (customization) {
-          setQrOptions({
-            size: customization.size || 300,
-            format: customization.format || 'png',
-            errorCorrection: customization.errorCorrection || 'M',
-            foregroundColor: customization.foregroundColor || '#000000',
-            backgroundColor: customization.backgroundColor || '#FFFFFF',
-            includeMargin: customization.includeMargin !== undefined ? customization.includeMargin : true,
-            logo: null
-          });
-        }
-      }
-
-      // Set selected link and open modal
-      setSelectedLink(link);
-      setIsUpdatingQR(true);
-      setShowCustomizeModal(true);
-    } catch (error) {
-      console.error("Error loading QR customization:", error);
-
-      // If error loading, still open with defaults
-      setSelectedLink(link);
-      setIsUpdatingQR(true);
-      setShowCustomizeModal(true);
-
-      // Show warning toast
-      setToast({
-        type: 'warning',
-        message: t('errors.failedToLoadCustomization') || 'Could not load existing customization. Using defaults.'
-      });
-    }
-  };
-
-  console.log(filteredLinks, "98789789")
-
-  const updateQRCodeCustomization = async (linkId) => {
-    setCustomizeLoading(true);
-    try {
-      const response = await qrCodeAPI.updateCustomization(linkId, qrOptions);
-      if (response && response.success && response.data && response.data.qrCode) {
-        // Update the link in the links state with the new qrCode data AND settings
-        const updatedSettings = {
-          size: qrOptions.size,
-          format: qrOptions.format,
-          errorCorrection: qrOptions.errorCorrection,
-          foregroundColor: qrOptions.foregroundColor,
-          backgroundColor: qrOptions.backgroundColor,
-          includeMargin: qrOptions.includeMargin
-        };
-
-        setLinks(prevLinks => prevLinks.map(link => {
-          if ((link._id || link.id) === linkId) {
-            return {
-              ...link,
-              qrCode: response.data.qrCode,
-              qrCodeSettings: updatedSettings,
-              qrCodeGenerated: true,
-              qrCodeGeneratedAt: new Date()
-            };
-          }
-          return link;
-        }));
-        setFilteredLinks(prevLinks => prevLinks.map(link => {
-          if ((link._id || link.id) === linkId) {
-            return {
-              ...link,
-              qrCode: response.data.qrCode,
-              qrCodeSettings: updatedSettings,
-              qrCodeGenerated: true,
-              qrCodeGeneratedAt: new Date()
-            };
-          }
-          return link;
-        }));
-        setShowCustomizeModal(false);
-        setSelectedLink(null);
-        setIsUpdatingQR(false);
-        loadStats();
-
-        // Show success toast
-        setToast({
-          type: 'success',
-          message: t('qrCodes.updateSuccess') || 'QR Code customization updated successfully!'
-        });
-      }
-    } catch (error) {
-      console.error("Error updating QR code customization:", error);
-      const errorMsg = error.message || t('qrCodes.updateFailed') || 'Failed to update QR code customization';
-
-      // Show error toast
-      setToast({
-        type: 'error',
-        message: errorMsg
-      });
-    } finally {
-      setCustomizeLoading(false);
-    }
-  };
-
-  const handleDeleteClick = (link) => {
-    const linkId = link._id || link.id;
-    const shortUrl = getShortUrl(link);
-
-    setDeleteDialog({
-      isOpen: true,
-      linkId: linkId,
-      linkUrl: shortUrl
-    });
-  };
-
-  const handleConfirmDelete = async () => {
-    try {
-      await urlsAPI.deleteUrl(deleteDialog.linkId);
-      await loadLinks();
-      await loadStats();
-      setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
-      // Show success toast
-      setToast({
-        type: 'success',
-        message: t('myLinks.deleteSuccess') || 'QR code and link deleted successfully!'
-      });
-    } catch (error) {
-      console.error("Error deleting:", error);
-      // Show error toast instead of alert
-      setToast({
-        type: 'error',
-        message: t('errors.qrCodeDeleteError') || `Failed to delete: ${error.message}`
-      });
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteDialog({ isOpen: false, linkId: null, linkUrl: '' });
   };
 
   const getShortUrl = (link) => {
-    const currentDomain = getCurrentDomain();
-    console.log(currentDomain,"current")
-    if (typeof link === 'string') {
-      const foundLink = links.find(l => l._id === link || l.id === link);
-      if (!foundLink) return '';
-      const domain = foundLink.domain && !isSystemDomain(foundLink.domain) ? foundLink.domain : currentDomain;
-      return `${domain}/${foundLink.shortCode}`;
-    }
-    const domain = link.domain && !isSystemDomain(link.domain) ? link.domain : currentDomain;
+    const domain = link.domain && !isSystemDomain(link.domain) ? link.domain : getCurrentDomain();
     return `${domain}/${link.shortCode}`;
   };
 
-  const handleSelectLink = (linkId) => {
-    if (selectedLinks.includes(linkId)) {
-      setSelectedLinks(selectedLinks.filter(id => id !== linkId));
-    } else {
-      setSelectedLinks([...selectedLinks, linkId]);
-    }
+  const toggleSelection = (id) => {
+    setSelectedLinks(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedLinks([]);
-    } else {
-      setSelectedLinks(filteredLinks.map(link => link._id || link.id));
-    }
-    setSelectAll(!selectAll);
+  const selectAll = () => {
+    if (selectedLinks.length === filteredLinks.length) setSelectedLinks([]);
+    else setSelectedLinks(filteredLinks.map(l => l._id || l.id));
   };
 
   return (
-    <>
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-      <div className="analytics-container">
-        {/* Toast Notification */}
-        {toast && (
-          <Toast
-            type={toast.type}
-            message={toast.message}
-            onClose={() => setToast(null)}
-          />
-        )}
-
-        <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-        <div className="analytics-main">
-          <div className="analytics-content">
-            {/* Page Header */}
-            <div className="page-header" style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: '24px'
-            }}>
-              <div>
-                <h1 style={{
-                  fontSize: '28px',
-                  fontWeight: '700',
-                  color: '#111827',
-                  marginBottom: '4px',
-                  margin: '0 0 4px 0'
-                }}>{t('qrCodes.title')}</h1>
-                <p style={{
-                  color: '#6B7280',
-                  fontSize: '14px',
-                  margin: 0
-                }}>{t('qrCodes.subtitle')}</p>
-              </div>
-              <button
-                onClick={() => {
-                  if (!hasPermission('qrCodes', 'create')) {
-                    setDeniedAction('create QR codes');
-                    setShowAccessDenied(true);
-                    return;
-                  }
-                  setShowGenerateModal(true);
-                }}
-                disabled={!hasPermission('qrCodes', 'create')}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  border: 'none',
-                  background: '#3B82F6',
-                  color: '#fff',
-                  cursor: hasPermission('qrCodes', 'create') ? 'pointer' : 'not-allowed',
-                  opacity: hasPermission('qrCodes', 'create') ? 1 : 0.6,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-              >
-                <span style={{ fontSize: '18px' }}>+</span> {t('qrCodes.generate.title')}
-              </button>
-            </div>
-
-            {/* Stats Cards */}
-            <section style={{ marginBottom: '24px' }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px'
-              }}>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#3B82F6',
-                    marginBottom: '8px'
-                  }}>{stats.totalQRCodes}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('qrCodes.stats.totalQRCodes')}</div>
-                </div>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#10B981',
-                    marginBottom: '8px'
-                  }}>{links.reduce((sum, link) => sum + (link.qrScanCount || 0), 0).toLocaleString()}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('qrCodes.stats.totalScans')}</div>
-                </div>
-                {/* <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#8B5CF6',
-                    marginBottom: '8px'
-                  }}>{stats.uniqueScans.toLocaleString()}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('qrCodes.stats.uniqueScans')}</div>
-                </div> */}
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#7C3AED',
-                    marginBottom: '8px'
-                  }}>{stats.activeQRCodes}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('qrCodes.stats.activeQRCodes')}</div>
-                </div>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#F59E0B',
-                    marginBottom: '8px'
-                  }}>{stats.downloadsToday}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('qrCodes.stats.downloadsToday')}</div>
-                </div>
-              </div>
-            </section>
-
-            {/* Search and Bulk Actions */}
-            <section style={{ marginBottom: '24px' }}>
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '20px 24px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '16px',
-                  flexWrap: 'wrap'
-                }}>
-                  <div style={{ flex: 1, minWidth: '250px' }}>
-                    <input
-                      type="text"
-                      placeholder={t('myLinks.searchPlaceholder')}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #D1D5DB',
-                        borderRadius: '8px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button
-                      onClick={bulkGenerateQRCodes}
-                      disabled={selectedLinks.length === 0 || bulkLoading}
-                      style={{
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: '1px solid #E5E7EB',
-                        background: (selectedLinks.length === 0 || bulkLoading) ? '#F9FAFB' : '#fff',
-                        color: (selectedLinks.length === 0 || bulkLoading) ? '#9CA3AF' : '#374151',
-                        cursor: (selectedLinks.length === 0 || bulkLoading) ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      {bulkLoading ? (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
-                            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
-                            <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          </svg>
-                          {t('common.generating') || 'Generating...'}
-                        </>
-                      ) : (
-                        `${t('qrCodes.generate.bulkGenerate')} (${selectedLinks.length})`
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setShowCustomizeModal(true)}
-                      style={{
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: '1px solid #E5E7EB',
-                        background: '#fff',
-                        color: '#374151',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {t('qrCodes.generate.customize')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* QR Codes List */}
-            <section>
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  padding: '16px 24px',
-                  borderBottom: '1px solid #E5E7EB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={handleSelectAll}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  <h2 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    margin: 0
-                  }}>{t('qrCodes.title')} ({filteredLinks.length})</h2>
-                </div>
-
-                {loading ? (
-                  <div style={{
-                    padding: '40px',
-                    textAlign: 'center'
-                  }}>
-                    <div className="spinner" style={{
-                      width: '40px',
-                      height: '40px',
-                      border: '4px solid #E5E7EB',
-                      borderTop: '4px solid #3B82F6',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite',
-                      margin: '0 auto 16px'
-                    }}></div>
-                    <p style={{ color: '#6B7280', fontSize: '14px' }}>{t('common.loading')}</p>
-                  </div>
-                ) : filteredLinks.length === 0 ? (
-                  <div style={{
-                    padding: '60px 20px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{
-                      fontSize: '48px',
-                      marginBottom: '16px'
-                    }}>📱</div>
-                    <h3 style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      color: '#111827',
-                      marginBottom: '8px'
-                    }}>{t('qrCodes.noQRCodes')}</h3>
-                    <p style={{
-                      color: '#6B7280',
-                      fontSize: '14px',
-                      marginBottom: '20px'
-                    }}>{t('qrCodes.createFirst')}</p>
-                    <button
-                      onClick={() => setShowGenerateModal(true)}
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: 'none',
-                        background: '#3B82F6',
-                        color: '#fff',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {t('qrCodes.generate.title')}
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ padding: '0' }}>
-
-                    {filteredLinks.map((link, index) => (
-                      <div
-                        key={link._id || link.id || index}
-                        style={{
-                          padding: '20px 24px',
-                          borderBottom: index < filteredLinks.length - 1 ? '1px solid #E5E7EB' : 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '20px',
-                          transition: 'background 0.2s',
-                          cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#F9FAFB'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedLinks.includes(link._id || link.id)}
-                          onChange={() => handleSelectLink(link._id || link.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            cursor: 'pointer'
-                          }}
-                        />
-
-                        {/* QR Code Preview */}
-                        <div style={{
-                          width: '80px',
-                          height: '80px',
-                          background: '#F3F4F6',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          overflow: 'hidden'
-                        }}>
-                          {link.qrCode && link.qrCode.startsWith('<svg') ? (
-                            <span
-                              key={`qr-svg-${link._id || link.id}-${link.qrCodeGeneratedAt}`}
-                              dangerouslySetInnerHTML={{ __html: link.qrCode.replace('width="300"', 'width="70"').replace('height="300"', 'height="70"') }}
-                              style={{ display: 'inline-block', width: '70px', height: '70px' }}
-                            />
-                          ) : link.qrCode && (link.qrCode.startsWith('data:image/') || link.qrCode.startsWith('data:application/')) ? (
-                            <img
-                              key={`qr-img-${link._id || link.id}-${link.qrCodeGeneratedAt}`}
-                              src={link.qrCode}
-                              alt="QR Code"
-                              style={{
-                                width: '70px',
-                                height: '70px',
-                                objectFit: 'contain'
-                              }}
-                            />
-                          ) : (
-                            <img
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(getShortUrl(link))}`}
-                              alt="QR Code"
-                              style={{
-                                width: '70px',
-                                height: '70px'
-                              }}
-                            />
-                          )}
-                        </div>
-
-                        {/* Link Info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#111827',
-                            marginBottom: '4px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {link.title || t('myLinks.table.title')}
-                          </div>
-                          <div style={{
-                            fontSize: '13px',
-                            color: '#3B82F6',
-                            marginBottom: '4px'
-                          }}>
-                            {getShortUrl(link)}
-                          </div>
-                          <div style={{
-                            fontSize: '12px',
-                            color: '#6B7280',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {link.originalUrl}
-                          </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div style={{
-                          display: 'flex',
-                          gap: '24px',
-                          flexShrink: 0
-                        }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#111827'
-                            }}>{link.qrScanCount || 0}</div>
-                            <div style={{
-                              fontSize: '12px',
-                              color: '#6B7280'
-                            }}>{t('qrCodes.stats.totalScans')}</div>
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div style={{
-                          display: 'flex',
-                          flexDirection: isRTL ? 'row-reverse' : 'row',
-                          gap: '8px',
-                          flexShrink: 0
-                        }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              downloadQRCode(link._id || link.id, link?.qrCodeSettings?.format || 'png');
-                            }}
-                            style={{
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              border: '1px solid #E5E7EB',
-                              background: '#fff',
-                              color: '#374151',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row'
-                            }}
-                            title={t('qrCodes.actions.download')}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                              <polyline points="7 10 12 15 17 10"/>
-                              <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                            {t('qrCodes.actions.download')}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!hasPermission('qrCodes', 'customize')) {
-                                setDeniedAction('customize QR codes');
-                                setShowAccessDenied(true);
-                                return;
-                              }
-                              handleCustomizeClick(link);
-                            }}
-                            disabled={!hasPermission('qrCodes', 'customize')}
-                            style={{
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              border: '1px solid #E5E7EB',
-                              background: '#fff',
-                              color: '#374151',
-                              cursor: hasPermission('qrCodes', 'customize') ? 'pointer' : 'not-allowed',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row',
-                              opacity: hasPermission('qrCodes', 'customize') ? 1 : 0.6
-                            }}
-                            title={!hasPermission('qrCodes', 'customize') ? "You don't have permission to customize QR codes" : ""}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                            {t('qrCodes.actions.customize')}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(link);
-                            }}
-                            style={{
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              border: '1px solid #FEE2E2',
-                              background: '#FEE2E2',
-                              color: '#DC2626',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              flexDirection: isRTL ? 'row-reverse' : 'row'
-                            }}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6"/>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                            {t('qrCodes.actions.delete')}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Generate Modal */}
-            {showGenerateModal && (
-              <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000
-              }}>
-                <div style={{
-                  background: '#fff',
-                  borderRadius: '12px',
-                  padding: '28px',
-                  maxWidth: '500px',
-                  width: '90%',
-                  maxHeight: '90vh',
-                  overflow: 'auto'
-                }}>
-                  <h2 style={{
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    color: '#111827',
-                    marginBottom: '16px'
-                  }}>{t('qrCodes.generate.selectLink')}</h2>
-
-                  <div style={{
-                    maxHeight: '400px',
-                    overflow: 'auto',
-                    marginBottom: '20px'
-                  }}>
-                    {links.map((link) => (
-                      <div
-                        key={link._id || link.id}
-                        onClick={() => {
-                          generateQRCode(link._id || link.id);
-                        }}
-                        style={{
-                          padding: '12px',
-                          border: '1px solid #E5E7EB',
-                          borderRadius: '8px',
-                          marginBottom: '8px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#F9FAFB';
-                          e.currentTarget.style.borderColor = '#3B82F6';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.borderColor = '#E5E7EB';
-                        }}
-                      >
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#111827',
-                          marginBottom: '4px'
-                        }}>{link.title || t('myLinks.table.title')}</div>
-                        <div style={{
-                          fontSize: '13px',
-                          color: '#3B82F6'
-                        }}>{getShortUrl(link)}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => setShowGenerateModal(false)}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: '1px solid #E5E7EB',
-                      background: '#fff',
-                      color: '#374151',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t('common.cancel')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Customize Modal */}
-            {showCustomizeModal && (
-              <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000
-              }}>
-                <div style={{
-                  background: '#fff',
-                  borderRadius: '12px',
-                  padding: '28px',
-                  maxWidth: '600px',
-                  width: '90%',
-                  maxHeight: '90vh',
-                  overflow: 'auto'
-                }}>
-                  <h2 style={{
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    color: '#111827',
-                    marginBottom: '20px'
-                  }}>{t('qrCodes.generate.customize')}</h2>
-
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>{t('qrCodes.generate.size')}</label>
-                    <input
-                      type="number"
-                      value={qrOptions.size}
-                      onChange={(e) => setQrOptions({...qrOptions, size: parseInt(e.target.value)})}
-                      min="100"
-                      max="2000"
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #D1D5DB',
-                        borderRadius: '8px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>{t('qrCodes.generate.format')}</label>
-                    <select
-                      value={qrOptions.format}
-                      onChange={(e) => setQrOptions({...qrOptions, format: e.target.value})}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #D1D5DB',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                    <option value="png">PNG (Best for web)</option>
-                    <option value="jpeg">JPEG (Smaller file size)</option>
-                    <option value="gif">GIF (Animated support)</option>
-                    <option value="webp">WebP (Modern format)</option>
-                    <option value="svg">SVG (Scalable vector)</option>
-                    <option value="pdf">PDF (Print ready)</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Choose the format that best suits your needs
-                  </p>
-                  </div>
-
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '16px',
-                    marginBottom: '20px'
-                  }}>
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('qrCodes.generate.foregroundColor')}</label>
-                      <input
-                        type="color"
-                        value={qrOptions.foregroundColor}
-                        onChange={(e) => setQrOptions({...qrOptions, foregroundColor: e.target.value})}
-                        style={{
-                          width: '100%',
-                          height: '42px',
-                          padding: '4px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          cursor: 'pointer'
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('qrCodes.generate.backgroundColor')}</label>
-                      <input
-                        type="color"
-                        value={qrOptions.backgroundColor}
-                        onChange={(e) => setQrOptions({...qrOptions, backgroundColor: e.target.value})}
-                        style={{
-                          width: '100%',
-                          height: '42px',
-                          padding: '4px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          cursor: 'pointer'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>{t('qrCodes.generate.errorCorrection')}</label>
-                    <select
-                      value={qrOptions.errorCorrection}
-                      onChange={(e) => setQrOptions({...qrOptions, errorCorrection: e.target.value})}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #D1D5DB',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <option value="L">{t('qrCodes.errorLevels.low')}</option>
-                      <option value="M">{t('qrCodes.errorLevels.medium')}</option>
-                      <option value="Q">{t('qrCodes.errorLevels.quartile')}</option>
-                      <option value="H">{t('qrCodes.errorLevels.high')}</option>
-                    </select>
-                  </div>
-
-                  <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: '20px',
-                    cursor: 'pointer'
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={qrOptions.includeMargin}
-                      onChange={(e) => setQrOptions({...qrOptions, includeMargin: e.target.checked})}
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        marginRight: '12px',
-                        cursor: 'pointer'
-                      }}
-                    />
-                    <span style={{
-                      fontSize: '14px',
-                      color: '#374151'
-                    }}>{t('qrCodes.generate.includeMargin')}</span>
-                  </label>
-
-                  <div style={{
-                    display: 'flex',
-                    gap: '12px'
-                  }}>
-                    <button
-                      onClick={() => {
-                        setShowCustomizeModal(false);
-                        setSelectedLink(null);
-                        setIsUpdatingQR(false);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: '1px solid #E5E7EB',
-                        background: '#fff',
-                        color: '#374151',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {t('common.cancel')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (selectedLink) {
-                          const linkId = selectedLink._id || selectedLink.id;
-                          if (isUpdatingQR) {
-                            // Update existing QR code
-                            updateQRCodeCustomization(linkId);
-                          } else {
-                            // Generate new QR code
-                            generateQRCode(linkId);
-                          }
-                        } else {
-                          setShowCustomizeModal(false);
-                          setIsUpdatingQR(false);
-                        }
-                      }}
-                      disabled={generateLoading || customizeLoading}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: 'none',
-                        background: (generateLoading || customizeLoading) ? '#9CA3AF' : '#3B82F6',
-                        color: '#fff',
-                        cursor: (generateLoading || customizeLoading) ? 'not-allowed' : 'pointer',
-                        opacity: (generateLoading || customizeLoading) ? 0.7 : 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      {(generateLoading || customizeLoading) ? (
-                        <>
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
-                            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
-                            <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          </svg>
-                          {isUpdatingQR ? (t('common.updating') || 'Updating...') : (t('common.generating') || 'Generating...')}
-                        </>
-                      ) : (
-                        selectedLink ? (isUpdatingQR ? t('common.update') : t('qrCodes.generate.generateButton')) : t('common.save')
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Delete Confirmation Dialog */}
-            {deleteDialog.isOpen && (
-              <div
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 9999
-                }}
-                onClick={handleCancelDelete}
-              >
-                <div
-                  style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    padding: '32px',
-                    maxWidth: '450px',
-                    width: '90%',
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{
-                      width: '64px',
-                      height: '64px',
-                      borderRadius: '50%',
-                      backgroundColor: '#FEE2E2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '20px'
-                    }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                        <line x1="12" y1="9" x2="12" y2="13"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                      </svg>
-                    </div>
-
-                    <h2 style={{
-                      fontSize: '20px',
-                      fontWeight: '700',
-                      color: '#111827',
-                      marginBottom: '12px',
-                      margin: '0 0 12px 0'
-                    }}>
-                      {t('common.deleteQRTitle') || 'Delete QR Code?'}
-                    </h2>
-
-                    <p style={{
-                      fontSize: '14px',
-                      color: '#6B7280',
-                      marginBottom: '8px',
-                      margin: '0 0 8px 0'
-                    }}>
-                      {t('common.deleteQRMessage') || 'Are you sure you want to delete this QR code and link?'}
-                    </p>
-
-                    <p style={{
-                      fontSize: '13px',
-                      color: '#3B82F6',
-                      marginBottom: '24px',
-                      margin: '0 0 24px 0',
-                      wordBreak: 'break-all'
-                    }}>
-                      {deleteDialog.linkUrl}
-                    </p>
-
-                    <div style={{
-                      display: 'flex',
-                      gap: '12px',
-                      width: '100%'
-                    }}>
-                      <button
-                        onClick={handleCancelDelete}
-                        style={{
-                          flex: 1,
-                          padding: '10px 20px',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          border: '1px solid #E5E7EB',
-                          backgroundColor: '#ffffff',
-                          color: '#374151',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
-                      >
-                        {t('common.cancel') || 'Cancel'}
-                      </button>
-                      <button
-                        onClick={handleConfirmDelete}
-                        style={{
-                          flex: 1,
-                          padding: '10px 20px',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          border: 'none',
-                          backgroundColor: '#DC2626',
-                          color: '#ffffff',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#B91C1C'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#DC2626'}
-                      >
-                        {t('common.delete') || 'Delete'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
+    <div className="space-y-6">
+      {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">{t('qrCodes.title')}</h1>
+          <p className="text-muted-foreground">{t('qrCodes.subtitle')}</p>
         </div>
+        <Button onClick={() => setShowGenerateModal(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Generate New
+        </Button>
       </div>
-    </div>
 
-      {/* Access Denied Modal */}
-      {showAccessDenied && (
-        <AccessDenied
-          action={deniedAction}
-          onClose={() => setShowAccessDenied(false)}
-        />
-      )}
-    </>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         {[
+           { label: 'Total QR Codes', value: stats.totalQRCodes, color: 'text-blue-600' },
+           { label: 'Total Scans', value: stats.totalScans, color: 'text-green-600' },
+           { label: 'Active', value: stats.activeQRCodes, color: 'text-purple-600' },
+           { label: 'Downloads Today', value: stats.downloadsToday, color: 'text-orange-600' }
+         ].map((stat, i) => (
+           <Card key={i}>
+             <CardContent className="pt-6 text-center">
+               <div className={cn("text-3xl font-bold mb-1", stat.color)}>{stat.value}</div>
+               <div className="text-sm text-muted-foreground">{stat.label}</div>
+             </CardContent>
+           </Card>
+         ))}
+      </div>
+
+      <div className="flex items-center gap-4 bg-white p-4 rounded-lg border">
+         <div className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search QR codes..." 
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+         </div>
+         {selectedLinks.length > 0 && (
+           <Button variant="outline" onClick={() => {/* Bulk logic implies modal or action */}}>
+             Bulk Actions ({selectedLinks.length})
+           </Button>
+         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {filteredLinks.map(link => (
+          <Card key={link.id || link._id} className={cn("transition-all hover:shadow-md", selectedLinks.includes(link.id || link._id) ? "ring-2 ring-primary" : "")}>
+            <CardHeader className="flex flex-row items-start justify-between pb-2">
+                <div className="space-y-1">
+                   <CardTitle className="text-base truncate w-48">{link.title || 'Untitled'}</CardTitle>
+                   <CardDescription className="truncate w-48">{getShortUrl(link)}</CardDescription>
+                </div>
+                <button onClick={() => toggleSelection(link.id || link._id)}>
+                   {selectedLinks.includes(link.id || link._id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-muted-foreground" />}
+                </button>
+            </CardHeader>
+            <CardContent className="flex justify-center py-6">
+               {link.qrCode ? (
+                 <img src={link.qrCode} alt="QR Code" className="w-32 h-32 object-contain" />
+               ) : (
+                 <div className="w-32 h-32 bg-slate-100 rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+                    No QR Code
+                 </div>
+               )}
+            </CardContent>
+            <CardFooter className="flex justify-between bg-slate-50/50 p-3">
+               <div className="flex gap-2">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                     <QrCode className="h-3 w-3" /> {link.qrScanCount || 0} scans
+                  </span>
+               </div>
+               <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedLink(link); setShowGenerateModal(true); }}>
+                     <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => downloadQRCode(link.id || link._id)}>
+                     <Download className="h-4 w-4" />
+                  </Button>
+               </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog open={showGenerateModal} onOpenChange={setShowGenerateModal}>
+        <DialogContent>
+           <DialogHeader>
+              <DialogTitle>Generate QR Code</DialogTitle>
+              <DialogDescription>Customize your QR code settings.</DialogDescription>
+           </DialogHeader>
+           
+           {!selectedLink ? (
+             <div className="py-4 space-y-4">
+                <Label>Select Link</Label>
+                <select 
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  onChange={(e) => setSelectedLink(links.find(l => (l.id || l._id) === e.target.value))}
+                >
+                   <option value="">Select a link...</option>
+                   {links.map(l => (
+                     <option key={l.id || l._id} value={l.id || l._id}>{l.title || l.shortCode} ({l.originalUrl})</option>
+                   ))}
+                </select>
+             </div>
+           ) : (
+             <div className="py-2">
+                <p className="text-sm font-medium mb-4">Generating for: {selectedLink.title || getShortUrl(selectedLink)}</p>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <Label>Foreground Color</Label>
+                      <div className="flex gap-2">
+                         <Input type="color" className="w-12 p-1" value={qrOptions.foregroundColor} onChange={e => setQrOptions({...qrOptions, foregroundColor: e.target.value})} />
+                         <Input value={qrOptions.foregroundColor} onChange={e => setQrOptions({...qrOptions, foregroundColor: e.target.value})} />
+                      </div>
+                   </div>
+                   <div className="space-y-2">
+                      <Label>Background Color</Label>
+                      <div className="flex gap-2">
+                         <Input type="color" className="w-12 p-1" value={qrOptions.backgroundColor} onChange={e => setQrOptions({...qrOptions, backgroundColor: e.target.value})} />
+                         <Input value={qrOptions.backgroundColor} onChange={e => setQrOptions({...qrOptions, backgroundColor: e.target.value})} />
+                      </div>
+                   </div>
+                </div>
+             </div>
+           )}
+
+           <DialogFooter>
+              <Button variant="outline" onClick={() => setShowGenerateModal(false)}>Cancel</Button>
+              <Button onClick={() => selectedLink && generateQRCode(selectedLink.id || selectedLink._id)} disabled={!selectedLink}>
+                 Generate
+              </Button>
+           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
 export default QRCodes;
-

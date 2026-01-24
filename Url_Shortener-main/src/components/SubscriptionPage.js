@@ -1,436 +1,162 @@
 import React from "react";
 import { useTranslation } from 'react-i18next';
-import Sidebar from "./Sidebar";
-import MainHeader from "./MainHeader";
-import "./Analytics.css";
-import "./DashboardLayout.css";
-import "./SubscriptionPage.css";
-import "./DashboardLayout.css";
+import { CheckCircle2, AlertTriangle, CreditCard, ExternalLink } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/Card';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 const SubscriptionPage = () => {
   const { t } = useTranslation();
+
+  const plans = [
+    {
+       name: t('subscription.starterPlan'),
+       price: '$9',
+       period: t('subscription.perMonth'),
+       features: [t('subscription.feature5kLinks'), t('subscription.featureBasicAnalytics'), t('subscription.featureQrCodes')],
+       buttonText: t('subscription.downgradeButton'),
+       buttonVariant: 'outline',
+       current: false
+    },
+    {
+       name: t('subscription.professionalPlan'),
+       price: '$29',
+       period: t('subscription.perMonth'),
+       features: [t('subscription.feature50kLinks'), t('subscription.featureAdvancedAnalytics'), t('subscription.featureCustomDomains10')],
+       buttonText: t('subscription.currentPlanButton'),
+       buttonVariant: 'secondary',
+       current: true,
+       badge: t('subscription.currentBadge')
+    },
+    {
+       name: t('subscription.enterprisePlan'),
+       price: '$99',
+       period: t('subscription.perMonth'),
+       features: [t('subscription.featureUnlimitedLinks'), t('subscription.featureAdvancedAnalytics'), t('subscription.featureUnlimitedDomains')],
+       buttonText: t('subscription.upgradeButton'),
+       buttonVariant: 'default',
+       current: false
+    }
+  ];
+
   return (
-    <div className="analytics-container">
-      <MainHeader />
-      <div className="analytics-layout">
-        <Sidebar />
-        <div className="analytics-main">
-          <div className="analytics-content">
-            <div className="page-header" style={{
-              marginBottom: '24px'
-            }}>
-              <h1 className="subscription-title" style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: '#111827',
-                marginBottom: '4px',
-                margin: '0 0 4px 0'
-              }}>{t('subscription.pageTitle')}</h1>
-              <p className="subscription-desc" style={{
-                color: '#6B7280',
-                fontSize: '14px',
-                margin: 0
-              }}>{t('subscription.pageSubtitle')}</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900">{t('subscription.pageTitle')}</h1>
+        <p className="text-muted-foreground">{t('subscription.pageSubtitle')}</p>
+      </div>
+
+      {/* Current Plan Overview */}
+      <Card className="border-blue-200 bg-blue-50/50">
+         <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between gap-6">
+               <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                     <h2 className="text-2xl font-bold text-blue-900">{t('subscription.professionalPlan')}</h2>
+                     <Badge className="bg-green-500 hover:bg-green-600">{t('subscription.activeStatus')}</Badge>
+                  </div>
+                  <p className="text-blue-700 max-w-xl">{t('subscription.professionalFeaturesSummary')}</p>
+                  <div className="flex gap-8 text-sm text-blue-800">
+                     <div>
+                        <span className="block font-bold text-lg">12,450</span>
+                        <span className="opacity-80">{t('subscription.linksCreated')}</span>
+                     </div>
+                     <div>
+                        <span className="block font-bold text-lg">3 / 10</span>
+                        <span className="opacity-80">{t('subscription.customDomains')}</span>
+                     </div>
+                  </div>
+               </div>
+               <div className="text-right">
+                  <div className="text-3xl font-bold text-blue-900">$29<span className="text-lg font-normal text-blue-700">/mo</span></div>
+                  <p className="text-sm text-blue-600 mt-1">{t('subscription.nextBilling')} <b>Dec 15, 2024</b></p>
+               </div>
             </div>
+         </CardContent>
+      </Card>
 
-            {/* Professional Plan Card */}
-            <section className="current-plan-section" style={{ marginBottom: '24px' }}>
-              <div className="current-plan-card" style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px',
-                boxShadow: '0 2px 8px 0 rgba(16,30,54,0.03)'
-              }}>
-                <div className="plan-header-row">
-                  <span className="plan-title">{t('subscription.professionalPlan')}</span>
-                  <span className="plan-status active">{t('subscription.activeStatus')}</span>
-                  <span className="plan-price">$29 <span className="plan-price-unit">{t('subscription.perMonth')}</span></span>
-                </div>
-                <div className="plan-subheader">{t('subscription.professionalFeaturesSummary')}</div>
-                <div className="plan-next-billing">{t('subscription.nextBilling')} <b>December 15, 2024</b> • $29{t('subscription.perMonth')}</div>
-                <div className="plan-stats-row">
-                  <div className="plan-stat"><span className="stat-number">12,450</span><span className="stat-label">{t('subscription.linksCreated')}<br/><span className="stat-sub">{t('subscription.of')} 50,000</span></span></div>
-                  <div className="plan-stat"><span className="stat-number">3</span><span className="stat-label">{t('subscription.customDomains')}<br/><span className="stat-sub">{t('subscription.of')} 10</span></span></div>
-                  <div className="plan-stat"><span className="stat-number">245K</span><span className="stat-label">{t('subscription.totalClicks')}<br/><span className="stat-sub">{t('subscription.thisMonth')}</span></span></div>
-                </div>
-                <div className="plan-features-row">
-                  <ul className="plan-features-list">
-                    <li>✔ {t('subscription.feature50kLinks')}</li>
-                    <li>✔ {t('subscription.featureCustomDomains10')}</li>
-                    <li>✔ {t('subscription.featureUtmTracking')}</li>
-                  </ul>
-                  <ul className="plan-features-list">
-                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
-                    <li>✔ {t('subscription.featureQrGeneration')}</li>
-                    <li>✔ {t('subscription.featurePrioritySupport')}</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
+      {/* Plans Grid */}
+      <section>
+         <h3 className="text-lg font-semibold mb-4">{t('subscription.availablePlans')}</h3>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan, i) => (
+               <Card key={i} className={plan.current ? "border-blue-500 shadow-md ring-1 ring-blue-500" : ""}>
+                  <CardHeader>
+                     {plan.badge && <Badge className="w-fit mb-2">{plan.badge}</Badge>}
+                     <CardTitle>{plan.name}</CardTitle>
+                     <div className="flex items-baseline gap-1 mt-2">
+                        <span className="text-3xl font-bold">{plan.price}</span>
+                        <span className="text-muted-foreground text-sm">{plan.period}</span>
+                     </div>
+                  </CardHeader>
+                  <CardContent>
+                     <ul className="space-y-3 mb-6">
+                        {plan.features.map((f, j) => (
+                           <li key={j} className="flex gap-2 text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                              {f}
+                           </li>
+                        ))}
+                     </ul>
+                     <Button className="w-full" variant={plan.buttonVariant} disabled={plan.current}>
+                        {plan.buttonText}
+                     </Button>
+                  </CardContent>
+               </Card>
+            ))}
+         </div>
+      </section>
 
-            {/* Available Plans */}
-            <section className="available-plans-section" style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('subscription.availablePlans')}</h2>
-              <div className="plans-row" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '16px'
-              }}>
-                <div className="plan-card" style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '24px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}>
-                  <div className="plan-card-title" style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '8px'
-                  }}>{t('subscription.starterPlan')}</div>
-                  <div className="plan-card-price" style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#2563EB',
-                    marginBottom: '16px'
-                  }}>$9 <span style={{
-                    fontSize: '14px',
-                    color: '#6B7280',
-                    fontWeight: '400'
-                  }}>{t('subscription.perMonth')}</span></div>
-                  <ul className="plan-card-features" style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: '0 0 20px 0',
-                    color: '#22C55E',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.8',
-                    textAlign: 'left',
-                    width: '100%'
-                  }}>
-                    <li>✔ {t('subscription.feature5kLinks')}</li>
-                    <li>✔ {t('subscription.featureBasicAnalytics')}</li>
-                    <li>✔ {t('subscription.featureQrCodes')}</li>
-                  </ul>
-                  <button className="plan-card-btn downgrade" style={{
-                    width: '100%',
-                    padding: '10px 0',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: '#F3F4F6',
-                    color: '#374151'
-                  }}>{t('subscription.downgradeButton')}</button>
-                </div>
-                <div className="plan-card current" style={{
-                  background: '#fff',
-                  border: '2px solid #2563EB',
-                  borderRadius: '12px',
-                  padding: '24px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  boxShadow: '0 2px 8px 0 rgba(37,99,235,0.08)',
-                  position: 'relative'
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '-12px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: '#2563EB',
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    padding: '4px 12px',
-                    borderRadius: '12px'
-                  }}>{t('subscription.currentBadge')}</div>
-                  <div className="plan-card-title" style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '8px'
-                  }}>{t('subscription.professionalPlan')}</div>
-                  <div className="plan-card-price" style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#2563EB',
-                    marginBottom: '16px'
-                  }}>$29 <span style={{
-                    fontSize: '14px',
-                    color: '#6B7280',
-                    fontWeight: '400'
-                  }}>{t('subscription.perMonth')}</span></div>
-                  <ul className="plan-card-features" style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: '0 0 20px 0',
-                    color: '#22C55E',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.8',
-                    textAlign: 'left',
-                    width: '100%'
-                  }}>
-                    <li>✔ {t('subscription.feature50kLinks')}</li>
-                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
-                    <li>✔ {t('subscription.featureCustomDomains10')}</li>
-                  </ul>
-                  <button className="plan-card-btn current" style={{
-                    width: '100%',
-                    padding: '10px 0',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    cursor: 'default',
-                    background: '#DBEAFE',
-                    color: '#2563EB'
-                  }}>{t('subscription.currentPlanButton')}</button>
-                </div>
-                <div className="plan-card" style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '24px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}>
-                  <div className="plan-card-title" style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '8px'
-                  }}>{t('subscription.enterprisePlan')}</div>
-                  <div className="plan-card-price" style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#2563EB',
-                    marginBottom: '16px'
-                  }}>$99 <span style={{
-                    fontSize: '14px',
-                    color: '#6B7280',
-                    fontWeight: '400'
-                  }}>{t('subscription.perMonth')}</span></div>
-                  <ul className="plan-card-features" style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: '0 0 20px 0',
-                    color: '#22C55E',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.8',
-                    textAlign: 'left',
-                    width: '100%'
-                  }}>
-                    <li>✔ {t('subscription.featureUnlimitedLinks')}</li>
-                    <li>✔ {t('subscription.featureAdvancedAnalytics')}</li>
-                    <li>✔ {t('subscription.featureUnlimitedDomains')}</li>
-                  </ul>
-                  <button className="plan-card-btn upgrade" style={{
-                    width: '100%',
-                    padding: '10px 0',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: '#2563EB',
-                    color: '#fff'
-                  }}>{t('subscription.upgradeButton')}</button>
-                </div>
-              </div>
-            </section>
-
-            {/* Billing Information */}
-            <section className="billing-section" style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('subscription.billingInformation')}</h2>
-              <div className="billing-info-row" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '16px'
-              }}>
-                <div className="billing-info-box" style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px 24px'
-                }}>
-                  <div className="billing-label" style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '12px'
-                  }}>{t('subscription.paymentMethod')}</div>
-                  <div className="billing-value" style={{
-                    marginBottom: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="visa-icon" style={{
-                        background: '#1A1F71',
-                        color: '#fff',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: '700'
-                      }}>VISA</span>
-                      <span className="card-number" style={{
-                        fontSize: '14px',
-                        color: '#374151'
-                      }}>•••• •••• •••• 4242</span>
-                    </div>
-                    <span className="card-expiry" style={{
-                      fontSize: '13px',
-                      color: '#6B7280'
-                    }}>{t('subscription.expires')} 12/26</span>
+      {/* Billing Info & Cancel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <Card>
+            <CardHeader>
+               <CardTitle>{t('subscription.billingInformation')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                     <p className="font-medium text-sm text-muted-foreground">{t('subscription.paymentMethod')}</p>
+                     <div className="flex items-center gap-2">
+                        <span className="bg-blue-900 text-white text-xs font-bold px-1.5 py-0.5 rounded">VISA</span>
+                        <span>•••• 4242</span>
+                     </div>
+                     <p className="text-xs text-muted-foreground">{t('subscription.expires')} 12/26</p>
                   </div>
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="billing-link" style={{
-                    fontSize: '14px',
-                    color: '#2563EB',
-                    textDecoration: 'none',
-                    fontWeight: '500'
-                  }}>{t('subscription.updatePaymentMethod')}</a>
-                </div>
-                <div className="billing-info-box" style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px 24px'
-                }}>
-                  <div className="billing-label" style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '12px'
-                  }}>{t('subscription.billingAddress')}</div>
-                  <div className="billing-value" style={{
-                    fontSize: '14px',
-                    color: '#374151',
-                    lineHeight: '1.6',
-                    marginBottom: '16px'
-                  }}>
-                    {t('subscription.sampleCustomerName')}<br />{t('subscription.sampleStreetAddress')}<br />{t('subscription.sampleCityCountry')}
-                  </div>
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="billing-link" style={{
-                    fontSize: '14px',
-                    color: '#2563EB',
-                    textDecoration: 'none',
-                    fontWeight: '500'
-                  }}>{t('subscription.updateBillingAddress')}</a>
-                </div>
-              </div>
-            </section>
+                  <Button variant="link" size="sm">{t('subscription.updatePaymentMethod')}</Button>
+               </div>
+               <div className="flex justify-between items-start pt-4 border-t">
+                   <div className="space-y-1">
+                     <p className="font-medium text-sm text-muted-foreground">{t('subscription.billingAddress')}</p>
+                     <p className="text-sm">John Doe<br/>123 Main St<br/>New York, NY 10001</p>
+                   </div>
+                   <Button variant="link" size="sm">{t('subscription.updateBillingAddress')}</Button>
+               </div>
+            </CardContent>
+         </Card>
 
-            {/* Cancel Subscription */}
-            <section className="cancel-section">
-              <div className="cancel-box" style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px'
-              }}>
-                <div className="cancel-title" style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '12px'
-                }}>{t('subscription.cancelSubscriptionTitle')}</div>
-                <div className="cancel-desc" style={{
-                  fontSize: '14px',
-                  color: '#6B7280',
-                  lineHeight: '1.6',
-                  marginBottom: '20px'
-                }}>
-                  {t('subscription.cancelSubscriptionDesc')}
-                </div>
-                <div className="cancel-warning" style={{
-                  background: '#FEF3C7',
-                  border: '1px solid #FCD34D',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '20px',
-                  display: 'flex',
-                  gap: '12px'
-                }}>
-                  <span className="warning-icon" style={{
-                    fontSize: '20px',
-                    flexShrink: 0
-                  }}>⚠️</span>
-                  <div style={{
-                    fontSize: '13px',
-                    color: '#78350F'
-                  }}>
-                    <b style={{ display: 'block', marginBottom: '8px' }}>{t('subscription.whatYouWillLose')}</b>
-                    <ul style={{
-                      margin: 0,
-                      paddingLeft: '20px',
-                      lineHeight: '1.8'
-                    }}>
-                      <li>{t('subscription.loseAdvancedAnalytics')}</li>
-                      <li>{t('subscription.loseCustomDomains')}</li>
-                      <li>{t('subscription.losePrioritySupport')}</li>
-                      <li>{t('subscription.loseHigherLimits')}</li>
-                    </ul>
+         <Card>
+            <CardHeader>
+               <CardTitle className="text-red-600">{t('subscription.cancelSubscriptionTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <p className="text-sm text-muted-foreground mb-4">{t('subscription.cancelSubscriptionDesc')}</p>
+               <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4 flex gap-3 text-sm text-amber-800">
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                  <div>
+                     <p className="font-bold mb-1">{t('subscription.whatYouWillLose')}</p>
+                     <ul className="list-disc pl-4 space-y-0.5">
+                        <li>{t('subscription.loseAdvancedAnalytics')}</li>
+                        <li>{t('subscription.loseCustomDomains')}</li>
+                     </ul>
                   </div>
-                </div>
-                <div className="cancel-actions" style={{
-                  display: 'flex',
-                  gap: '12px',
-                  justifyContent: 'flex-end'
-                }}>
-                  <button className="pause-btn" style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: '1px solid #E5E7EB',
-                    background: '#fff',
-                    color: '#374151',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}>{t('subscription.pauseFor3Months')}</button>
-                  <button className="cancel-btn" style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    background: '#DC2626',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}>{t('subscription.cancelSubscriptionButton')}</button>
-                </div>
-              </div>
-            </section>
-
-          </div>
-        </div>
+               </div>
+               <div className="flex gap-2 justify-end">
+                  <Button variant="outline">{t('subscription.pauseFor3Months')}</Button>
+                  <Button variant="destructive">{t('subscription.cancelSubscriptionButton')}</Button>
+               </div>
+            </CardContent>
+         </Card>
       </div>
     </div>
   );

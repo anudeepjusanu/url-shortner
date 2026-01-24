@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { PermissionProvider } from './contexts/PermissionContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
 import './rtl.css';
 import LandingPage from './components/LandingPage';
@@ -37,6 +38,7 @@ function App() {
   return (
     <AuthProvider>
       <PermissionProvider>
+        <ThemeProvider>
         <LanguageProvider>
           <Router>
             <div className="App">
@@ -188,6 +190,7 @@ function App() {
         </div>
       </Router>
         </LanguageProvider>
+        </ThemeProvider>
       </PermissionProvider>
     </AuthProvider>
   );
