@@ -150,7 +150,7 @@ const MainHeader = () => {
       ]
     },
     // Admin section - only show for admin and super_admin users
-    ...(hasRole(['admin', 'super_admin']) ? [{
+    ...(hasRole([ 'super_admin']) ? [{
       label: t('sidebar.admin') || 'Admin',
       items: [
         { label: t('sidebar.userManagement') || 'User Management', path: '/user-management', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 8C11 9.65685 9.65685 11 8 11C6.34315 11 5 9.65685 5 8C5 6.34315 6.34315 5 8 5C9.65685 5 11 6.34315 11 8Z" fill="#6B7280"/><path d="M2 13C2 12.4477 2.44772 12 3 12H13C13.5523 12 14 12.4477 14 13V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V13Z" fill="#6B7280"/></svg> },

@@ -13,14 +13,17 @@
     "typescript": "^4.9.5"
   },
   "devDependencies": {
+    "compression-webpack-plugin": "^11.1.0",
+    "react-app-rewired": "^2.2.1",
     "serve": "^14.2.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
     "build:prod": "REACT_APP_API_URL=https://laghhu.link/api npm run build",
-    "test": "react-scripts test --watchAll=false",
-    "test:watch": "react-scripts test",
+    "build:analyze": "ANALYZE=true npm run build",
+    "test": "react-app-rewired test --watchAll=false",
+    "test:watch": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.{js,jsx}",
     "lint:fix": "eslint src/**/*.{js,jsx} --fix",

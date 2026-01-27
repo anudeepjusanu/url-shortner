@@ -1,0 +1,77 @@
+# Snip - Saudi Arabia's URL Shortener
+
+> snip.sa
+
+# About
+
+Snip is Saudi Arabia's leading URL shortener platform providing advanced link management, analytics, custom domains, QR code generation, and PDPL-compliant data hosting. Create short, branded links and track performance in real-time with data hosted 100% in KSA.
+
+# Features
+
+- URL shortening with custom aliases
+- Custom domain management
+- QR code generation and tracking
+- Advanced analytics and UTM tracking
+- Password-protected links
+- Geo-restrictions
+- PDPL compliance with Saudi data residency
+- Bilingual interface (Arabic/English)
+- REST API for developers
+
+# Public Pages
+
+## Main
+- /: Homepage and link creation
+- /pricing: Subscription plans
+- /features: Feature overview
+- /about: About Snip
+- /contact: Contact information
+
+## Documentation
+- /docs: API documentation
+- /api-reference: Complete API reference
+- /guides: Implementation guides
+
+## Legal
+- /privacy: Privacy policy
+- /terms: Terms of service
+
+# API Endpoints
+
+## Authentication
+- POST /api/auth/register: Create account
+- POST /api/auth/login: User login
+- POST /api/auth/logout: User logout
+
+## URLs
+- POST /api/urls: Create short link
+- GET /api/urls: List user's URLs
+- GET /api/urls/:id: Get URL details
+- PUT /api/urls/:id: Update URL
+- DELETE /api/urls/:id: Delete URL
+
+## Analytics
+- GET /api/analytics/:shortCode: Get link analytics
+- GET /api/analytics/:shortCode/export: Export analytics data
+
+## Domains
+- POST /api/domains: Add custom domain
+- GET /api/domains: List user's domains
+- POST /api/domains/verify: Verify domain DNS
+
+## QR Codes
+- GET /qr/:shortCode: Generate QR code image
+- GET /q/:shortCode: QR code scan redirect
+
+# Technology Stack
+
+- Backend: Node.js, Express
+- Frontend: React, TypeScript, Vite
+- Database: MongoDB
+- Cache: Redis
+- Analytics: Custom analytics engine
+- Deployment: Azure VM, Nginx, PM2
+
+# Contact
+
+For support or inquiries, visit https://snip.sa/contact

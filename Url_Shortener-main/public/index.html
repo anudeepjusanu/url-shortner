@@ -2,56 +2,13 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-N6PTZH22');</script>
-    <!-- End Google Tag Manager -->
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1YDNKSW2C2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-EHT6YWCY3Y');
-    </script>
-    
-    <!-- Hotjar Tracking Code for snip -->
-    <script>
-      (function(h,o,t,j,a,r){
-        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-        h._hjSettings={hjid:6593196,hjsv:6};
-        a=o.getElementsByTagName('head')[0];
-        r=o.createElement('script');r.async=1;
-        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-        a.appendChild(r);
-      })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-    </script>
-    
-    <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '884237064291274');
-      fbq('track', 'PageView');
-    </script>
-    <noscript>
-      <img height="1" width="1" style="display:none"
-           src="https://www.facebook.com/tr?id=884237064291274&ev=PageView&noscript=1"/>
-    </noscript>
-    <!-- End Meta Pixel Code -->
-    
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.ico" />
+    
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+    <link rel="dns-prefetch" href="https://static.hotjar.com" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#2563eb" />
@@ -92,17 +49,22 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
+      "@id": "https://snip.sa/#webapp",
       "name": "Snip URL Shortener",
+      "alternateName": "Snip.sa",
       "description": "Saudi Arabia's trusted URL shortener with advanced analytics, custom domains, QR codes, and PDPL compliance.",
       "url": "https://snip.sa",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
       "offers": {
         "@type": "AggregateOffer",
-        "priceCurrency": "USD",
+        "priceCurrency": "SAR",
         "lowPrice": "0",
-        "highPrice": "29.99",
-        "offerCount": "3"
+        "highPrice": "299",
+        "offerCount": 3,
+        "availability": "https://schema.org/InStock",
+        "url": "https://snip.sa/pricing"
       },
       "featureList": [
         "URL Shortening",
@@ -115,12 +77,29 @@
       ],
       "provider": {
         "@type": "Organization",
+        "@id": "https://snip.sa/#organization",
         "name": "Snip",
         "url": "https://snip.sa"
+      },
+      "author": {
+        "@type": "Organization",
+        "@id": "https://snip.sa/#organization"
       },
       "areaServed": {
         "@type": "Country",
         "name": "Saudi Arabia"
+      },
+      "inLanguage": ["en", "ar"],
+      "potentialAction": {
+        "@type": "UseAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://snip.sa",
+          "actionPlatform": [
+            "https://schema.org/DesktopWebPlatform",
+            "https://schema.org/MobileWebPlatform"
+          ]
+        }
       }
     }
     </script>
@@ -130,12 +109,27 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": "https://snip.sa/#organization",
       "name": "Snip",
       "url": "https://snip.sa",
-      "logo": "https://snip.sa/logo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://snip.sa/logo.png",
+        "width": 512,
+        "height": 512
+      },
       "description": "Saudi Arabia's leading URL shortener and link management platform",
-      "areaServed": "Saudi Arabia",
-      "sameAs": []
+      "areaServed": {
+        "@type": "Country",
+        "name": "Saudi Arabia"
+      },
+      "sameAs": [],
+      "foundingDate": "2024",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "url": "https://snip.sa/contact"
+      }
     }
     </script>
   </head>
@@ -346,5 +340,66 @@
     </noscript>
     
     <div id="root"></div>
+    
+    <!-- Deferred Analytics Scripts - Load after page interactive for better performance -->
+    <script>
+      // Load analytics after page is interactive to prioritize user experience
+      window.addEventListener('load', function() {
+        // Delay analytics loading by 3 seconds
+        setTimeout(function() {
+          // Google Tag Manager
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-N6PTZH22');
+          
+          // Google Analytics
+          var gaScript = document.createElement('script');
+          gaScript.async = true;
+          gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-1YDNKSW2C2';
+          document.head.appendChild(gaScript);
+          
+          gaScript.onload = function() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-EHT6YWCY3Y');
+          };
+          
+          // Hotjar
+          (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:6593196,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+          })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+          
+          // Facebook Pixel
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '884237064291274');
+          fbq('track', 'PageView');
+        }, 3000);
+      });
+    </script>
+    
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N6PTZH22"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    
+    <!-- Meta Pixel noscript -->
+    <noscript>
+      <img height="1" width="1" style="display:none"
+           src="https://www.facebook.com/tr?id=884237064291274&ev=PageView&noscript=1"/>
+    </noscript>
   </body>
 </html>

@@ -26,7 +26,7 @@ const RESERVED_ALIASES = [
 
   // Common system pages
   'about', 'contact', 'help', 'support',
-  'terms', 'privacy', 'legal', 'policy',
+    'legal', 
   'docs', 'documentation', 'guide', 'tutorial',
   'blog', 'news', 'updates', 'changelog',
   'status', 'health', 'ping', 'test',
