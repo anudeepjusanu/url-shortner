@@ -16,6 +16,20 @@ const LandingPage = () => {
     navigate("/register");
   };
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.offsetTop;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // Icon SVGs as components
   const CheckIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -673,29 +687,44 @@ const LandingPage = () => {
                 </p>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <div className="social-links">
-                  <a href="#" className="social-link">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <a href="https://www.facebook.com/snip.saa/" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M13.5 9H16V6h-2.5C11.6 6 10 7.6 10 9.5V12H8v3h2v7h3v-7h2.5l.5-3H13V9.5c0-.3.2-.5.5-.5z"
+                      fill="currentColor"
+                    />
+                  </svg>
+
+                  </a>
+                  <a href="https://x.com/snipsaweb" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path
-                        d="M16 8.05A8.02 8.02 0 008.05 16v-5.61h1.62l.31-2h-1.93V6.75c0-.44.22-.87.91-.87h.87V4.29s-.79-.13-1.54-.13c-1.57 0-2.6.95-2.6 2.68v1.51H3.84v2h1.85V16A8.02 8.02 0 0016 8.05z"
+                        d="M18.9 2H22l-7.1 8.1L23 22h-6.3l-5-6.6L6 22H2.9l7.6-8.7L1 2h6.4l4.6 6L18.9 2z"
                         fill="currentColor"
                       />
                     </svg>
                   </a>
-                  <a href="#" className="social-link">
-                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
-                      <path
-                        d="M14 2.4c-.5.2-1.1.4-1.6.4.6-.4 1-.9 1.2-1.6-.5.3-1.1.5-1.8.7C11.3.9 10.5.5 9.7.5c-1.6 0-2.9 1.3-2.9 2.9 0 .2 0 .4.1.6C4.5 3.8 2.4 2.7.98 1c-.2.4-.3.8-.3 1.3 0 1 .5 1.9 1.3 2.4-.5 0-.9-.2-1.3-.4v.04c0 1.4 1 2.6 2.3 2.8-.2.1-.5.1-.8.1-.2 0-.4 0-.6-.1.4 1.3 1.6 2.2 3 2.2-1.1.9-2.5 1.4-4 1.4-.3 0-.5 0-.8-.04C1.4 11.2 3.1 11.7 5 11.7c6 0 9.3-5 9.3-9.3v-.4c.6-.5 1.2-1.1 1.7-1.8z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </a>
-                  <a href="#" className="social-link">
+                  <a href="https://www.linkedin.com/company/snipweb" className="social-link">
                     <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
                       <path
                         d="M12.8 0H1.2C.5 0 0 .5 0 1.2v13.6c0 .7.5 1.2 1.2 1.2h13.6c.7 0 1.2-.5 1.2-1.2V1.2c0-.7-.5-1.2-1.2-1.2zM4.7 13.6H2.4V6h2.4v7.6zM3.6 5c-.8 0-1.4-.7-1.4-1.4S2.8 2.1 3.6 2.1s1.4.7 1.4 1.4-.6 1.5-1.4 1.5zm8.8 8.6H10V9.9c0-.9 0-2-1.2-2s-1.4.9-1.4 1.9v3.8H5V6h2.3v1c.3-.6 1.1-1.2 2.2-1.2 2.4 0 2.8 1.6 2.8 3.6v4.2z"
                         fill="currentColor"
                       />
                     </svg>
+                  </a>
+                  <a href="https://www.instagram.com/snip.saa/" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M7 2h10c2.8 0 5 2.2 5 5v10c0 2.8-2.2 5-5 5H7c-2.8 0-5-2.2-5-5V7c0-2.8 2.2-5 5-5zm10 2H7c-1.7 0-3 1.3-3 3v10c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V7c0-1.7-1.3-3-3-3z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"
+                        fill="currentColor"
+                      />
+                      <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" />
+                    </svg>
+
                   </a>
                 </div>
               </div>
@@ -705,21 +734,21 @@ const LandingPage = () => {
               <h4>{t('footer.product')}</h4>
               <ul>
                 <li>
-                  <a href="#">{t('footer.features')}</a>
+                  <button onClick={() => scrollToSection('features')} style={{background: 'none', border: 'none', padding: 0, color: '#9ca3af', fontSize: "16px", cursor: 'pointer',  textAlign: 'left'}}>{t('footer.features')}</button>
                 </li>
                 {/* <li>
-                  <a href="#">{t('footer.pricing')}</a>
+                  <button onClick={() => scrollToSection('pricing')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.pricing')}</button>
                 </li> */}
                 <li>
                   <a href="/api-docs">{t('footer.api')}</a>
                 </li>
-                <li>
-                  <a href="#">{t('footer.integrations')}</a>
-                </li>
+                {/* <li>
+                  <button onClick={() => scrollToSection('features')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.integrations')}</button>
+                </li> */}
               </ul>
             </div>
 
-            <div className="footer-section">
+            {/* <div className="footer-section">
               <h4>{t('footer.company')}</h4>
               <ul>
                 <li>
@@ -735,7 +764,7 @@ const LandingPage = () => {
                   <a href="#">{t('footer.contact')}</a>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             <div className="footer-section">
               <h4>{t('footer.legal')}</h4>

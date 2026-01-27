@@ -29,7 +29,7 @@ const RESERVED_ALIASES = [
 
   // Common system pages
   'about', 'contact', 'help', 'support',
-  'terms', 'privacy', 'legal', 'policy',
+    'legal', 
   'terms-and-conditions', 'privacy-policy',
   'docs', 'documentation', 'guide', 'tutorial',
   'api-docs', 'api-documentation',

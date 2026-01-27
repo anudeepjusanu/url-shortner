@@ -334,16 +334,16 @@ const TermsAndConditions = () => {
               <h4>{t('footer.product')}</h4>
               <ul>
                 <li>
-                  <a href="#">{t('footer.features')}</a>
+                  <a href="/#features">{t('footer.features')}</a>
                 </li>
                 {/* <li>
-                  <a href="#">{t('footer.pricing')}</a>
+                  <a href="/#pricing">{t('footer.pricing')}</a>
                 </li> */}
                 <li>
-                  <a href="#">{t('footer.api')}</a>
+                  <a href="/api-docs">{t('footer.api')}</a>
                 </li>
                 <li>
-                  <a href="#">{t('footer.integrations')}</a>
+                  <a href="/#features">{t('footer.integrations')}</a>
                 </li>
               </ul>
             </div>
@@ -352,16 +352,16 @@ const TermsAndConditions = () => {
               <h4>{t('footer.company')}</h4>
               <ul>
                 <li>
-                  <a href="#">{t('footer.about')}</a>
+                  <a href="/#about">{t('footer.about')}</a>
                 </li>
                 <li>
-                  <a href="#">{t('footer.careers')}</a>
+                  <a href="/#about">{t('footer.careers')}</a>
                 </li>
                 <li>
-                  <a href="#">{t('footer.blog')}</a>
+                  <a href="/#about">{t('footer.blog')}</a>
                 </li>
                 <li>
-                  <a href="#">{t('footer.contact')}</a>
+                  <a href="/#contact">{t('footer.contact')}</a>
                 </li>
               </ul>
             </div>

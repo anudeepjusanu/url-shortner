@@ -565,13 +565,11 @@ const Registration = () => {
                 />
                 <label htmlFor="agreeToTerms">
                   {t('auth.register.termsAgree')}{" "}
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="text-link">
+                  <a href="/terms-and-conditions" className="text-link">
                     {t('auth.register.terms')}
                   </a>{" "}
                   {t('auth.register.and')}{" "}
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="text-link">
+                  <a href="/privacy-policy" className="text-link">
                     {t('auth.register.privacy')}
                   </a>
                 </label>
