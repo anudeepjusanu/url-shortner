@@ -541,7 +541,7 @@
   outline: none !important;
   box-shadow: none !important;
   -webkit-tap-highlight-color: transparent;
-  transition: none !important;
+  transition: color 0.2s ease !important;
   z-index: 10;
   overflow: visible !important;
   visibility: visible !important;
@@ -557,6 +557,7 @@
   outline: none !important;
   box-shadow: none !important;
   transform: translateY(-50%) !important;
+  color: #6B7280 !important;
 }
 
 .password-toggle svg {
@@ -575,7 +576,7 @@
 
 .password-toggle svg path,
 .password-toggle svg circle {
-  stroke: #9CA3AF !important;
+  stroke: currentColor !important;
   stroke-width: 2 !important;
 }
 

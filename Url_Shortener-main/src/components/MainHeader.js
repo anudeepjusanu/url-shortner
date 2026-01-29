@@ -10,7 +10,7 @@ import "./MainHeader.css";
 
 const MainHeader = () => {
   const { t } = useTranslation();
-  const { currentLanguage, toggleLanguage } = useLanguage();
+  const { currentLanguage, changeLanguage } = useLanguage();
   const { user, logout } = useAuth();
   const { hasRole } = usePermissions();
   const navigate = useNavigate();
@@ -18,8 +18,40 @@ const MainHeader = () => {
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ right: 0 });
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
+  const languageRef = useRef(null);
+
+  // Language options with flags and native names
+  const languages = [
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+    { code: 'zh-CN', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+    { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
+    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+    { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
+    { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷' }
+  ];
+
+  const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
+
+  // Debug log
+  console.log('MainHeader - Current Language:', currentLanguage, 'Current Lang Object:', currentLang);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fetch user profile when user changes (login/logout)
   useEffect(() => {
@@ -36,16 +68,19 @@ const MainHeader = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
+      if (languageRef.current && !languageRef.current.contains(event.target)) {
+        setLanguageMenuOpen(false);
+      }
     };
 
-    if (showDropdown) {
+    if (showDropdown || languageMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showDropdown]);
+  }, [showDropdown, languageMenuOpen]);
 
   const fetchUserProfile = async () => {
     try {
@@ -169,19 +204,53 @@ const MainHeader = () => {
 
   const headerItems = (
     <>
-      <div className="create-link-language-toggle">
+      <div className="create-link-language-toggle" ref={languageRef}>
         <button
-          className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-          onClick={toggleLanguage}
+          className="create-link-lang-btn-dropdown"
+          onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
         >
-          EN
+          <span className="lang-flag">{currentLang.flag}</span>
+          <span className="lang-name">{currentLang.nativeName}</span>
+          <svg
+            className={`lang-arrow ${languageMenuOpen ? 'open' : ''}`}
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+          >
+            <path
+              d="M3 4.5L6 7.5L9 4.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
-        <button
-          className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-          onClick={toggleLanguage}
-        >
-          AR
-        </button>
+        {languageMenuOpen && (
+          <div className="language-dropdown-menu">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  changeLanguage(lang.code);
+                  setLanguageMenuOpen(false);
+                }}
+                className={`language-dropdown-item ${currentLanguage === lang.code ? 'active' : ''}`}
+              >
+                <span className="lang-flag">{lang.flag}</span>
+                <div className="lang-info">
+                  <div className="lang-native">{lang.nativeName}</div>
+                  <div className="lang-english">{lang.name}</div>
+                </div>
+                {currentLanguage === lang.code && (
+                  <div className="lang-check">✓</div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="create-link-user-profile">
         <div className="create-link-user-avatar">
@@ -239,7 +308,7 @@ const MainHeader = () => {
   );
 
   return (
-    <header className="create-link-header">
+    <header className={`create-link-header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="create-link-header-content">
         <div className="create-link-header-left">
           <div className="hamburger-wrapper-dashboard hide-desktop">
@@ -254,19 +323,79 @@ const MainHeader = () => {
           </div>
         </div>
         <div className="create-link-header-right">
-          <div className="create-link-language-toggle">
+          {/* TEST ELEMENT - REMOVE AFTER DEBUGGING */}
+          <div style={{
+            background: 'red',
+            color: 'white',
+            padding: '10px',
+            fontWeight: 'bold',
+            border: '3px solid yellow'
+          }}>
+            LANGUAGE SELECTOR HERE
+          </div>
+          
+          <div className="create-link-language-toggle" ref={languageRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <button
-              className={`create-link-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
-              onClick={toggleLanguage}
+              className="create-link-lang-btn-dropdown"
+              onClick={() => {
+                console.log('Language button clicked, current state:', languageMenuOpen);
+                setLanguageMenuOpen(!languageMenuOpen);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                color: '#374151'
+              }}
             >
-              EN
+              <span className="lang-flag">{currentLang.flag}</span>
+              <span className="lang-name">{currentLang.nativeName}</span>
+              <svg
+                className={`lang-arrow ${languageMenuOpen ? 'open' : ''}`}
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M3 4.5L6 7.5L9 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
-            <button
-              className={`create-link-lang-btn ${currentLanguage === 'ar' ? 'active' : ''}`}
-              onClick={toggleLanguage}
-            >
-              AR
-            </button>
+            {languageMenuOpen && (
+              <div className="language-dropdown-menu">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setLanguageMenuOpen(false);
+                    }}
+                    className={`language-dropdown-item ${currentLanguage === lang.code ? 'active' : ''}`}
+                  >
+                    <span className="lang-flag">{lang.flag}</span>
+                    <div className="lang-info">
+                      <div className="lang-native">{lang.nativeName}</div>
+                      <div className="lang-english">{lang.name}</div>
+                    </div>
+                    {currentLanguage === lang.code && (
+                      <div className="lang-check">✓</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="create-link-user-profile-wrapper" ref={dropdownRef}>
             <div className="create-link-user-profile" onClick={toggleDropdown} ref={profileRef}>

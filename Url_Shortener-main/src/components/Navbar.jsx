@@ -17,13 +17,30 @@ import logo from '../assets/logo.png';
 
 const Navbar = () => {
   const { t } = useTranslation();
-  const { currentLanguage, toggleLanguage } = useLanguage();
+  const { currentLanguage, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { hasRole } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+
+  // Language options with flags and native names
+  const languages = [
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+    { code: 'zh-CN', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+    { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
+    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+    { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
+    { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷' }
+  ];
+
+  const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   const isActive = (path) => location.pathname === path;
 
@@ -109,10 +126,41 @@ const Navbar = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-            {/* Language Toggle */}
-            <Button variant="ghost" size="sm" onClick={toggleLanguage} className="font-semibold">
-                {currentLanguage === 'ar' ? 'English' : 'العربية'}
-            </Button>
+            {/* Language Dropdown */}
+            <DropdownMenu open={languageMenuOpen} onOpenChange={setLanguageMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="font-semibold flex items-center gap-2">
+                  <span className="text-xl">{currentLang.flag}</span>
+                  <span className="hidden sm:inline">{currentLang.nativeName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>{t('common.language') || 'Language'}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setLanguageMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 cursor-pointer",
+                      currentLanguage === lang.code && "bg-accent"
+                    )}
+                  >
+                    <span className="text-2xl">{lang.flag}</span>
+                    <div className="flex-1">
+                      <div className="font-medium">{lang.nativeName}</div>
+                      <div className="text-xs text-muted-foreground">{lang.name}</div>
+                    </div>
+                    {currentLanguage === lang.code && (
+                      <span className="text-primary">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             {/* Theme Toggle */}
             <Button variant="ghost" size="icon" onClick={toggleTheme}>

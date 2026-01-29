@@ -1,0 +1,1545 @@
+{
+  "common": {
+    "ok": "OK",
+    "appName": "URL Shortener",
+    "brandName": "Snip",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "update": "Update",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "share": "Share",
+    "noLinkSelected": "Please select a specific link to edit",
+    "download": "Download",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "viewMore": "View More",
+    "showLess": "Show Less",
+    "deleteConfirmTitle": "Delete Link?",
+    "deleteConfirmMessage": "Are you sure you want to delete this link?",
+    "deleteDomainTitle": "Delete Domain?",
+    "deleteDomainMessage": "Are you sure you want to delete this custom domain?",
+    "deleteQRTitle": "Delete QR Code?",
+    "deleteQRMessage": "Are you sure you want to delete this QR code and link?",
+    "settings": "Settings",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "language": "Language",
+    "english": "English",
+    "arabic": "Arabic",
+    "hide": "Hide",
+    "show": "Show",
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "generating": "Generating...",
+    "fieldRequired": "This field is required",
+    "updated": "Updated"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} week ago",
+    "weeksAgo_plural": "{{count}} weeks ago",
+    "ago": "ago"
+  },
+  "header": {
+    "navigation": "NAVIGATION",
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "contact": "Contact",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "getStarted": "Get Started",
+    "myLinks": "My Links",
+    "createLink": "Create Link",
+    "analytics": "Analytics",
+    "qrCodes": "QR Codes",
+    "customDomains": "Custom Domains",
+    "subscription": "Subscription",
+    "contentFilter": "Content Filter"
+  },
+  "landing": {
+    "hero": {
+      "title": "Shorten Your URLs & Track Performance",
+      "titleMain": "Shorten, Brand,",
+      "titleAccent": "Track",
+      "subtitle": "Your Links, Optimized for Saudi Arabia",
+      "description": "Fast, secure, and compliant URL shortening with advanced analytics and branded domains.",
+      "cta": "Get Started Free",
+      "tryDemo": "Watch Demo",
+      "formTitle": "Try it now - Shorten your first link",
+      "urlPlaceholder": "Paste your long URL here...",
+      "shortenBtn": "Shorten URL",
+      "complianceNotice": "✓ PDPL Compliant • Data stored in KSA"
+    },
+    "features": {
+      "title": "Powerful Features for Modern Marketers",
+      "subtitle": "Everything you need to manage, track, and optimize your links",
+      "analytics": {
+        "title": "Detailed Analytics",
+        "description": "Track clicks, geographic data, devices, and more with comprehensive analytics"
+      },
+      "customDomain": {
+        "title": "Custom Domains",
+        "description": "Use your own branded domains for professional short links"
+      },
+      "qrCode": {
+        "title": "QR Codes",
+        "description": "Generate and customize QR codes for your short links"
+      },
+      "security": {
+        "title": "Secure & Reliable",
+        "description": "Enterprise-grade security with 99.9% uptime guarantee"
+      },
+      "urlShortening": {
+        "title": "URL Shortening",
+        "description": "Create short, memorable links instantly with our advanced algorithm"
+      },
+      "utmBuilder": {
+        "title": "UTM Builder",
+        "description": "Track campaign performance with built-in UTM parameter generation"
+      },
+      "authintica": {
+        "title": "Authintica Integration",
+        "description": "Secure authentication with Saudi Arabia's trusted identity platform"
+      },
+      "bilingualUI": {
+        "title": "Bilingual UI",
+        "description": "Seamless Arabic and English interface with RTL support"
+      }
+    },
+    "whyChoose": {
+      "title": "Why Businesses Choose Snip",
+      "subtitle": "The smart choice for Saudi marketers and businesses"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "Launch Campaigns Faster",
+        "description": "Create, track, and optimize links in minutes, not hours",
+        "setupTime": "Average setup time",
+        "setupTimeValue": "2 minutes"
+      },
+      "trustCompliance": {
+        "title": "Trust & Compliance First",
+        "description": "PDPL compliant with data hosted locally in Saudi Arabia",
+        "dataResidency": "Data residency",
+        "dataResidencyValue": "100% KSA"
+      },
+      "analytics": {
+        "title": "Actionable Analytics",
+        "description": "Make data-driven decisions with real-time insights",
+        "trackingAccuracy": "Click tracking accuracy",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "Perfect for Saudi Marketers",
+      "feature1": "Custom .sa domain support",
+      "feature2": "Arabic & English interface with RTL support",
+      "feature3": "QR codes for offline campaigns",
+      "feature4": "Authintica integration for secure access",
+      "feature5": "Local support in Arabic & English"
+    },
+    "stats": {
+      "linksCreated": "Links created by Saudi businesses",
+      "linksCreatedValue": "50,000+",
+      "uptime": "Uptime",
+      "uptimeValue": "98%",
+      "clicksTracked": "Clicks tracked",
+      "clicksTrackedValue": "2.5M+",
+      "support": "Support",
+      "supportValue": "24/7"
+    },
+    "testimonials": {
+      "title": "Trusted by Saudi Businesses",
+      "subtitle": "See what our customers say about Snip",
+      "testimonial1": {
+        "text": "Snip's PDPL compliance gives us peace of mind. The analytics are incredibly detailed and help us optimize our campaigns.",
+        "author": "Sarah Al-Rashid",
+        "role": "Marketing Director, TechCorp KSA"
+      },
+      "testimonial2": {
+        "text": "The bilingual interface is perfect for our diverse team. We love the branded domains feature!",
+        "author": "Ahmed Mohammed",
+        "role": "Digital Marketing Manager"
+      },
+      "testimonial3": {
+        "text": "Snip has revolutionized how we track our social media campaigns. The QR codes are a game-changer!",
+        "author": "Fatima Al-Zahra",
+        "role": "E-commerce Director"
+      },
+      "testimonial4": {
+        "text": "Fast, reliable, and secure. Everything we need for our growing business in Saudi Arabia.",
+        "author": "Omar Hassan",
+        "role": "Startup Founder"
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Choose the plan that fits your needs",
+      "free": {
+        "title": "Free",
+        "currency": "$",
+        "amount": "0",
+        "period": "month",
+        "description": "Perfect for personal use and getting started",
+        "feature1": "100 URLs per month",
+        "feature2": "Basic analytics",
+        "feature3": "Standard support",
+        "cta": "Get Started Free"
+      },
+      "pro": {
+        "title": "Pro",
+        "badge": "Most Popular",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "month",
+        "description": "Best for professionals and small teams",
+        "feature1": "Unlimited URLs",
+        "feature2": "Advanced analytics",
+        "feature3": "Custom domains",
+        "feature4": "Password protection",
+        "feature5": "Priority support",
+        "cta": "Start Free Trial"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "month",
+        "description": "For large teams and organizations",
+        "feature1": "Everything in Pro",
+        "feature2": "Unlimited custom domains",
+        "feature3": "Team collaboration",
+        "feature4": "API access",
+        "feature5": "Dedicated support",
+        "cta": "Contact Sales"
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Join thousands of users who trust our platform",
+      "button": "Start for Free"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account",
+      "brandSubtitle": "Welcome back to your dashboard",
+      "email": "Email Address",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "button": "Sign In",
+      "signingIn": "Signing In...",
+      "googleButton": "Sign in with Google",
+      "dividerText": "Or sign in with email",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up here",
+      "errorInvalidCredentials": "Invalid email or password",
+      "errorGeneral": "Login failed. Please try again.",
+      "errorEmailRequired": "Email is required",
+      "errorEmailInvalid": "Please enter a valid email address",
+      "errorPasswordRequired": "Password is required",
+      "feature1Title": "Manage Your Links",
+      "feature1Description": "Access all your shortened URLs in one place",
+      "feature2Title": "Track Performance",
+      "feature2Description": "View detailed analytics and insights",
+      "feature3Title": "Secure & Reliable",
+      "feature3Description": "Your data is protected with enterprise security"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email to receive a verification code",
+      "newPasswordTitle": "Create New Password",
+      "newPasswordSubtitle": "Enter your new password below",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "otp": "Verification Code",
+      "otpPlaceholder": "Enter 6-digit code",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "sendOtp": "Send Verification Code",
+      "resetPassword": "Reset Password",
+      "sending": "Sending...",
+      "resetting": "Resetting...",
+      "backToEmail": "Back to Email",
+      "resendOtp": "Resend Code",
+      "otpSent": "Verification code sent to {email}",
+      "otpResent": "Verification code resent successfully",
+      "successMessage": "Password reset successfully!",
+      "errorEmailRequired": "Email is required",
+      "errorEmailInvalid": "Please enter a valid email address",
+      "errorOtpRequired": "Verification code is required",
+      "errorOtpInvalid": "Verification code must be 6 digits",
+      "errorPasswordRequired": "Password is required",
+      "errorPasswordMinLength": "Password must be at least 8 characters",
+      "errorPasswordsNotMatch": "Passwords do not match",
+      "errorSamePassword": "New password must be different from old password",
+      "errorGeneral": "Failed to reset password. Please try again."
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Get started with your free account",
+      "brandTitle": "Advanced URL Shortener",
+      "brandSubtitle": "Get advanced analytics and professional short links",
+      "languageToggle": "Language Toggle",
+      "googleSignup": "Sign up with Google",
+      "divider": "or sign up with email",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailPlaceholder": "example@example.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter your phone number",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••••",
+      "passwordHint": "Must be at least 8 characters long",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "termsAgree": "I agree to the",
+      "terms": "Terms of Service",
+      "and": "and",
+      "privacy": "Privacy Policy",
+      "pdplConsent": "I agree to the processing of my personal data in accordance with the Personal Data Protection Law",
+      "marketingConsent": "I would like to receive marketing updates and offers",
+      "button": "Create Account",
+      "creating": "Creating Account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in here",
+      "feature1Title": "Fast URL Shortening",
+      "feature1Description": "Create short, shareable links in seconds",
+      "feature2Title": "Advanced Analytics",
+      "feature2Description": "Track your link performance with detailed real-time analytics",
+      "feature3Title": "Enterprise Security",
+      "feature3Description": "Your data is protected with enterprise-grade security and privacy",
+      "errorFullNameRequired": "Full name is required",
+      "errorFirstNameRequired": "First name is required",
+      "errorLastNameRequired": "Last name is required",
+      "errorEmailRequired": "Email address is required",
+      "errorEmailInvalid": "Please enter a valid email address",
+      "errorPasswordRequired": "Password is required",
+      "errorPasswordLength": "Password must be at least 8 characters long",
+      "errorConfirmPasswordRequired": "Please confirm your password",
+      "errorPasswordMismatch": "Passwords do not match",
+      "errorTermsRequired": "You must agree to the Terms of Service and Privacy Policy",
+      "errorDataConsentRequired": "You must agree to data processing consent",
+      "errorEmailExists": "Email already exists",
+      "errorGeneral": "Registration failed. Please try again.",
+      "successMessage": "Account created successfully!"
+    }
+  },
+  "otp": {
+    "title": "Verify OTP",
+    "sentMessage": "We've sent a 6-digit verification code to",
+    "digitLabel": "Digit {{number}}",
+    "verifyButton": "Verify & Sign In",
+    "verifying": "Verifying...",
+    "didntReceive": "Didn't receive the code?",
+    "resendButton": "Resend OTP",
+    "resendIn": "Resend in {{seconds}}s",
+    "goBack": "Go back",
+    "securityTipTitle": "Security Tip:",
+    "securityTipMessage": "Never share your OTP with anyone. We'll never ask for your verification code.",
+    "errorEnterAllDigits": "Please enter all 6 digits of the verification code",
+    "errorInvalidCode": "Invalid verification code. Please check and try again.",
+    "errorExpired": "Verification code has expired. Please request a new one.",
+    "errorTooManyAttempts": "Too many failed attempts. Please request a new code.",
+    "errorResendFailed": "Failed to resend verification code. Please try again.",
+    "errorTooManyRequests": "Too many requests. Please wait a moment before trying again.",
+    "errorNetwork": "Network error. Please check your connection and try again."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "welcomeMessage": "Here's what's happening with your links today.",
+    "vsLastPeriod": "vs last period",
+    "changeVsLastPeriod": "{{change}} vs last period",
+    "createShortLink": "Create Short Link",
+    "createShortLinkDesc": "Transform your long URLs into powerful, trackable short links",
+    "getStarted": "Get Started",
+    "generateQRCode": "Generate QR Code",
+    "generateQRCodeDesc": "Create QR codes for your links to bridge digital and physical campaigns",
+    "createQR": "Create QR",
+    "addCustomDomain": "Add Custom Domain",
+    "addCustomDomainDesc": "Use your own branded domain for professional short links",
+    "setupDomain": "Setup Domain",
+    "shortenYourURL": "Shorten Your URL",
+    "scannedQRCodes": "Scanned QR Codes",
+    "noChartData": "No Click Activity Data Available",
+    "noChartDataDesc": "Start sharing your links to see click trends and activity over time.",
+    "longURL": "Long URL",
+    "longURLPlaceholder": "Paste your long URL here",
+    "customBackhalf": "Custom Name (Optional)",
+    "customBackhalfPlaceholder": "Enter custom name",
+    "campaign": "Campaign Name (Optional)",
+    "campaignPlaceholder": "Enter campaign name",
+    "advancedSettings": "Advanced Settings",
+    "shortenURL": "Shorten URL",
+    "stats": {
+      "totalLinks": "Total Links",
+      "totalClicks": "Total Clicks",
+      "activeLinks": "Active Links",
+      "clickRate": "Click Rate",
+      "totalCustomDomains": "Custom Domains",
+      "active": "Active"
+    },
+    "recentLinks": {
+      "title": "Recent Links",
+      "viewAll": "View All Links",
+      "noLinks": "No links created yet",
+      "createFirst": "Create your first short link"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "createLink": "Create New Link",
+      "viewAnalytics": "View Analytics",
+      "generateQR": "Generate QR Code",
+      "manageSubscription": "Manage Subscription"
+    },
+    "analytics": {
+      "title": "Analytics Overview",
+      "lastSevenDays": "Last 7 Days",
+      "clicksByDate": "Clicks by Date",
+      "topLinks": "Top Performing Links"
+    },
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "last90Days": "Last 90 days",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun",
+    "uniqueVisitors": "Unique Visitors",
+    "changeFromLastWeek": "{{change}} vs last week",
+    "clicks": "{{count}} clicks",
+    "created": "Created {{time}}",
+    "viewAll": "View All",
+    "upgradeTitle": "Upgrade to Professional",
+    "upgradeDescription": "Unlock advanced analytics, custom domains, and priority support to grow your business faster.",
+    "upgradeToPro": "Upgrade to Pro"
+  },
+  "createLink": {
+    "title": "Create Short Link",
+    "subtitle": "Convert your long URL into a short, shareable link",
+    "customCode": "Custom Code",
+    "form": {
+      "originalUrl": "Original URL",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "Custom Alias (Optional)",
+      "customAliasPlaceholder": "my-custom-link",
+      "title": "Link Title (Optional)",
+      "titlePlaceholder": "My awesome link",
+      "description": "Description (Optional)",
+      "descriptionPlaceholder": "Brief description of your link",
+      "tags": "Tags (Optional)",
+      "tagsPlaceholder": "marketing, campaign, product",
+      "domain": "Domain",
+      "selectDomain": "Select Domain",
+      "expirationDate": "Expiration Date (Optional)",
+      "password": "Password Protection (Optional)",
+      "passwordPlaceholder": "Enter password",
+      "createButton": "Create Short Link",
+      "creating": "Creating...",
+      "advancedOptions": "Advanced Options",
+      "utmParameters": "UTM Parameters",
+      "urlHint": "Enter the long URL you want to shorten",
+      "aliasHint": "Leave empty for auto-generated code"
+    },
+    "success": {
+      "title": "Link Created Successfully!",
+      "created": "Short link created successfully!",
+      "yourLink": "Your Short Link:",
+      "copyLink": "Copy Link",
+      "viewAnalytics": "View Analytics",
+      "createAnother": "Create Another Link"
+    },
+    "errors": {
+      "invalidUrl": "Please enter a valid URL (must start with http:// or https://)",
+      "urlRequired": "Original URL is required",
+      "urlTooLong": "URL is too long (maximum 2000 characters)",
+      "aliasExists": "This alias is already taken",
+      "aliasReserved": "This alias is reserved for system use. Please choose a different alias.",
+      "aliasInvalidFormat": "Alias can only contain letters, numbers, hyphens, and underscores",
+      "aliasInvalidLength": "Alias must be between 3 and 50 characters",
+      "aliasInvalidStart": "Alias must start with a letter or number",
+      "titleTooLong": "Title is too long (maximum 100 characters)",
+      "titleInvalidChars": "Title contains invalid characters",
+      "fixErrors": "Please fix the errors below before submitting",
+      "general": "Failed to create link. Please try again."
+    }
+  },
+  "myLinks": {
+    "title": "My Links",
+    "subtitle": "Manage all your shortened URLs",
+    "searchPlaceholder": "Search by title, URL, or short code...",
+    "editLink": "Edit Link",
+    "filters": {
+      "all": "All Links",
+      "active": "Active",
+      "expired": "Expired",
+      "sortBy": "Sort by",
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "mostClicks": "Most Clicks",
+      "leastClicks": "Least Clicks"
+    },
+    "table": {
+      "title": "Title",
+      "shortUrl": "Short URL",
+      "originalUrl": "Original URL",
+      "clicks": "Clicks",
+      "created": "Created",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "copy": "Copy",
+      "edit": "Edit",
+      "qrCode": "QR Code",
+      "analytics": "Analytics",
+      "delete": "Delete"
+    },
+    "confirmDelete": "Are you sure you want to delete this link?",
+    "deleteSuccess": "Link deleted successfully",
+    "deleteError": "Failed to delete link",
+    "noLinks": "No links found",
+    "createFirstLink": "Create your first short link to get started"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Track and analyze your link performance",
+    "overview": {
+      "title": "Overview",
+      "totalClicks": "Total Clicks",
+      "uniqueClicks": "Unique Clicks",
+      "clickRate": "Click Rate",
+      "qrScans": "Scanned QR Codes",
+      "avgClicksPerDay": "Avg. Clicks/Day"
+    },
+    "charts": {
+      "clicksOverTime": "Clicks Over Time",
+      "topCountries": "Top Countries",
+      "topReferrers": "Top Referrers",
+      "devices": "Devices",
+      "browsers": "Browsers",
+      "operatingSystems": "Operating Systems",
+      "topCities": "Top Cities"
+    },
+    "devices": {
+      "mobile": "Mobile",
+      "desktop": "Desktop",
+      "tablet": "Tablet"
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "last24Hours": "Last 24 Hours",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "last90Days": "Last 90 Days",
+      "last1Year": "Last 1 Year",
+      "custom": "Custom Range",
+      "applyFilters": "Apply Filters"
+    },
+    "export": {
+      "title": "Export Data",
+      "csv": "Export as CSV",
+      "pdf": "Export as PDF",
+      "json": "Export as JSON"
+    },
+    "noData": {
+      "title": "No Click Activity Data Available",
+      "chartDescription": "Start sharing your links to see click trends and activity over time.",
+      "countries": "No Geographic Data",
+      "countriesDescription": "Country data will appear once your links are clicked.",
+      "devices": "No Device Data",
+      "devicesDescription": "Device breakdown will show after clicks are recorded.",
+      "browsers": "No Browser Data",
+      "browsersDescription": "Browser statistics will appear after your links are clicked.",
+      "os": "No Operating System Data",
+      "osDescription": "OS distribution will be visible after clicks are tracked.",
+      "cities": "No City Data",
+      "citiesDescription": "City-level analytics will be available once clicks are recorded.",
+      "referrers": "No Referrer Data",
+      "referrersDescription": "Traffic sources will be tracked when visitors click your links."
+    }
+  },
+  "qrCodes": {
+    "title": "QR Code Management",
+    "subtitle": "Generate, customize, and manage QR codes for your links",
+    "stats": {
+      "totalQRCodes": "Total QR Codes",
+      "totalScans": "Total Scans",
+      "uniqueScans": "Unique Scans",
+      "activeQRCodes": "Active QR Codes",
+      "downloadsToday": "Downloads Today"
+    },
+    "generate": {
+      "title": "Generate QR Code",
+      "selectLink": "Select Link for QR Code",
+      "customize": "Customize Settings",
+      "size": "Size (pixels)",
+      "format": "Format",
+      "errorCorrection": "Error Correction Level",
+      "foregroundColor": "Foreground Color",
+      "backgroundColor": "Background Color",
+      "includeMargin": "Include margin around QR code",
+      "generateButton": "Generate QR Code",
+      "bulkGenerate": "Bulk Generate"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "Low (7%)",
+      "medium": "Medium (15%)",
+      "quartile": "Quartile (25%)",
+      "high": "High (30%)"
+    },
+    "actions": {
+      "download": "Download",
+      "customize": "Customize",
+      "delete": "Delete",
+      "preview": "Preview"
+    },
+    "noQRCodes": "No QR Codes Yet",
+    "createFirst": "Generate your first QR code to get started",
+    "generateSuccess": "QR Code generated successfully!",
+    "generateFailed": "Failed to generate QR code",
+    "downloadSuccess": "QR Code downloaded successfully!",
+    "downloadFailed": "Failed to download QR code",
+    "bulkGenerateSuccess": "Successfully generated {{count}} QR code(s)!",
+    "bulkGenerateFailed": "Failed to generate QR codes",
+    "updateSuccess": "QR Code customization updated successfully!",
+    "updateFailed": "Failed to update QR code customization"
+  },
+  "contentFilter": {
+    "title": "Content Filter & Security",
+    "subtitle": "Protect your links with advanced content filtering and security rules",
+    "stats": {
+      "totalFiltered": "Total Filtered",
+      "maliciousBlocked": "Malicious Blocked",
+      "phishingBlocked": "Phishing Blocked",
+      "spamBlocked": "Spam Blocked"
+    },
+    "tabs": {
+      "settings": "Settings",
+      "blocked": "Blocked",
+      "whitelist": "Whitelist",
+      "logs": "Logs"
+    },
+    "settings": {
+      "title": "Filter Settings",
+      "enableContentFilter": "Enable Content Filtering",
+      "enableDescription": "Automatically filter malicious and inappropriate URLs",
+      "blockMaliciousUrls": "Block Malicious URLs",
+      "blockMaliciousDescription": "Block known malware and virus distribution sites",
+      "blockPhishing": "Block Phishing Sites",
+      "blockPhishingDescription": "Protect against phishing and scam websites",
+      "blockAdultContent": "Block Adult Content",
+      "blockAdultDescription": "Filter adult and NSFW content",
+      "blockSpam": "Block Spam URLs",
+      "blockSpamDescription": "Automatically detect and block spam content",
+      "customKeywordFiltering": "Custom Keyword Filtering",
+      "customKeywordDescription": "Block URLs containing specific keywords",
+      "pdplCompliance": "PDPL Compliance Mode",
+      "pdplDescription": "Ensure compliance with Saudi Arabia's Personal Data Protection Law",
+      "saveSettings": "Save Settings",
+      "saving": "Saving..."
+    },
+    "blocked": {
+      "domains": "Blocked Domains",
+      "keywords": "Blocked Keywords",
+      "addDomain": "Add",
+      "addKeyword": "Add",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "keyword",
+      "noDomains": "No blocked domains yet",
+      "noKeywords": "No blocked keywords yet",
+      "remove": "Remove",
+      "confirmRemove": "Remove {{domain}} from blocked list?",
+      "confirmRemoveKeyword": "Remove \"{{keyword}}\" from blocked keywords?"
+    },
+    "whitelist": {
+      "title": "Allowed Domains (Whitelist)",
+      "description": "Domains in the whitelist will bypass all content filters",
+      "addDomain": "Add",
+      "domainPlaceholder": "example.com",
+      "noDomains": "No whitelisted domains yet",
+      "remove": "Remove",
+      "confirmRemove": "Remove {{domain}} from allowed list?"
+    },
+    "logs": {
+      "title": "Filter Activity Logs",
+      "refresh": "Refresh",
+      "noActivity": "No Filter Activity",
+      "noUrls": "No URLs have been filtered yet",
+      "defaultMessage": "URL was blocked by content filter",
+      "noData": "No data available"
+    }
+  },
+  "customDomains": {
+    "title": "Custom Domains",
+    "subtitle": "Add and manage your custom domains for branded short links",
+    "wizard": {
+      "step": "Step {{current}} of {{total}}"
+    },
+    "stats": {
+      "totalDomains": "Total Domains",
+      "activeDomains": "Active Domains",
+      "totalUrls": "Total URLs",
+      "totalClicks": "Total Clicks"
+    },
+    "addDomain": {
+      "title": "Add Custom Domain",
+      "domainName": "Domain Name",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "Subdomain (Optional)",
+      "subdomainPlaceholder": "short",
+      "addButton": "Add Domain",
+      "adding": "Adding..."
+    },
+    "table": {
+      "domain": "Domain",
+      "status": "Status",
+      "urls": "URLs",
+      "clicks": "Clicks",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "inactive": "Inactive",
+      "verified": "Verified",
+      "failed": "Failed"
+    },
+    "actions": {
+      "verify": "Verify",
+      "setDefault": "Set Default",
+      "configure": "Configure",
+      "delete": "Delete"
+    },
+    "verification": {
+      "title": "Domain Verification",
+      "instructions": "Add the following DNS record to verify your domain:",
+      "recordType": "Record Type",
+      "name": "Name",
+      "value": "Value",
+      "verifyButton": "Verify Domain"
+    },
+    "dnsModal": {
+      "title": "Domain Verification",
+      "instruction": "Add the following DNS record to verify your domain:",
+      "configTitle": "DNS Configuration Required:",
+      "type": "Type",
+      "name": "Name",
+      "value": "Value",
+      "checkDns": "Check DNS Configuration",
+      "checking": "Checking DNS...",
+      "success": "DNS record verified successfully!",
+      "failed": "DNS record not found. Please check your configuration.",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "noDomains": "No custom domains added yet",
+    "addFirst": "Add your first custom domain to get started",
+    "domainAdded": "Domain added successfully!",
+    "verificationSuccess": "Domain verified successfully!",
+    "verificationFailed": "Domain verification failed",
+    "deleteSuccess": "Domain deleted successfully",
+    "errors": {
+      "domainRequired": "Domain name is required",
+      "domainInvalid": "Please enter a valid domain name (e.g., example.com)",
+      "domainExists": "This domain is already registered",
+      "subdomainInvalid": "Subdomain can only contain letters, numbers, and hyphens",
+      "invalidFormat": "Invalid domain format"
+    }
+  },
+  "subscription": {
+    "title": "Subscription & Billing",
+    "subtitle": "Manage your subscription plan and billing information",
+    "pageTitle": "Subscription & Billing",
+    "pageSubtitle": "Manage your subscription plan and billing information",
+    "professionalPlan": "Professional Plan",
+    "activeStatus": "Active",
+    "perMonth": "/month",
+    "professionalFeaturesSummary": "Advanced features for growing businesses and marketing teams",
+    "nextBilling": "Next billing:",
+    "linksCreated": "Links Created",
+    "customDomains": "Custom Domains",
+    "totalClicks": "Total Clicks",
+    "of": "of",
+    "thisMonth": "this month",
+    "feature50kLinks": "50,000 Links per month",
+    "featureCustomDomains10": "10 Custom domains",
+    "featureUtmTracking": "UTM tracking & analytics",
+    "featureBulkActions": "Bulk link actions",
+    "featureAdvancedAnalytics": "Advanced analytics dashboard",
+    "featureQrGeneration": "QR code generation",
+    "featurePrioritySupport": "Priority support",
+    "availablePlans": "Available Plans",
+    "starterPlan": "Starter Plan",
+    "feature5kLinks": "5,000 Links per month",
+    "featureBasicAnalytics": "Basic analytics",
+    "featureQrCodes": "QR code generation",
+    "downgradeButton": "Downgrade to Starter",
+    "currentBadge": "CURRENT",
+    "currentPlanButton": "Current Plan",
+    "enterprisePlan": "Enterprise Plan",
+    "featureUnlimitedLinks": "Unlimited Links",
+    "featureUnlimitedDomains": "Unlimited custom domains",
+    "upgradeButton": "Upgrade to Enterprise",
+    "billingInformation": "Billing Information",
+    "paymentMethod": "Payment Method",
+    "expires": "Expires",
+    "updatePaymentMethod": "Update Payment Method",
+    "billingAddress": "Billing Address",
+    "sampleCustomerName": "Ahmed Al-Rashid",
+    "sampleStreetAddress": "123 King Fahd Road",
+    "sampleCityCountry": "Riyadh, Saudi Arabia 12345",
+    "updateBillingAddress": "Update Billing Address",
+    "cancelSubscriptionTitle": "Cancel Subscription",
+    "cancelSubscriptionDesc": "Cancel your subscription and downgrade to the free plan. You'll keep access to all Professional features until your current billing period ends.",
+    "whatYouWillLose": "What you will lose:",
+    "loseAdvancedAnalytics": "Advanced analytics dashboard",
+    "loseCustomDomains": "Custom domains (10)",
+    "losePrioritySupport": "Priority support",
+    "loseHigherLimits": "Higher link limits (50,000/month)",
+    "pauseFor3Months": "Pause for 3 months",
+    "cancelSubscriptionButton": "Cancel Subscription",
+    "currentPlan": {
+      "title": "Current Plan",
+      "free": "Free Plan",
+      "pro": "Pro Plan",
+      "enterprise": "Enterprise Plan",
+      "status": "Status",
+      "active": "Active",
+      "renews": "Renews on",
+      "expires": "Expires on"
+    },
+    "plans": {
+      "title": "Available Plans",
+      "free": {
+        "name": "Free",
+        "price": "0",
+        "features": {
+          "0": "100 URLs per month",
+          "1": "Basic analytics",
+          "2": "Standard short codes",
+          "3": "Community support"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "9.99",
+        "features": {
+          "0": "Unlimited URLs",
+          "1": "Advanced analytics",
+          "2": "Custom domains",
+          "3": "QR codes",
+          "4": "Priority support",
+          "5": "No ads"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "features": {
+          "0": "Everything in Pro",
+          "1": "Dedicated support",
+          "2": "SLA guarantee",
+          "3": "Custom integrations",
+          "4": "Team management",
+          "5": "White-label option"
+        }
+      }
+    },
+    "actions": {
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade",
+      "cancel": "Cancel Subscription",
+      "contactSales": "Contact Sales"
+    },
+    "billing": {
+      "title": "Billing History",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "invoice": "Invoice",
+      "download": "Download"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "paymentMethods": "Payment Methods",
+      "invoices": "Invoices",
+      "usage": "Usage"
+    },
+    "status": {
+      "active": "Active",
+      "trial": "Trial",
+      "pastDue": "Past Due",
+      "cancelled": "Cancelled",
+      "paused": "Paused"
+    },
+    "loadingBillingInfo": "Loading billing information...",
+    "failedToLoadBillingInfo": "Failed to load billing information",
+    "confirmPauseSubscription": "Are you sure you want to pause your subscription?",
+    "subscriptionPausedSuccess": "Subscription paused successfully",
+    "failedToPauseSubscription": "Failed to pause subscription",
+    "subscriptionResumedSuccess": "Subscription resumed successfully",
+    "failedToResumeSubscription": "Failed to resume subscription",
+    "confirmCancelSubscription": "Are you sure you want to cancel? You will lose premium features at the end of your billing period.",
+    "subscriptionWillCancelAtPeriodEnd": "Subscription will cancel at the end of the billing period",
+    "failedToCancelSubscription": "Failed to cancel subscription",
+    "invalidCouponCode": "Invalid coupon code",
+    "couponAppliedSuccess": "Coupon applied successfully!",
+    "failedToApplyCoupon": "Failed to apply coupon",
+    "confirmRemovePaymentMethod": "Are you sure you want to remove this payment method?",
+    "paymentMethodRemoved": "Payment method removed",
+    "failedToRemovePaymentMethod": "Failed to remove payment method",
+    "defaultPaymentMethodUpdated": "Default payment method updated",
+    "failedToUpdateDefaultPaymentMethod": "Failed to update default payment method",
+    "failedToDownloadInvoice": "Failed to download invoice",
+    "trialPeriodActive": "Trial Period Active",
+    "trialEndsOn": "Your trial ends on",
+    "discountApplied": "Discount Applied",
+    "off": "off",
+    "billingCycle": "Billing Cycle",
+    "monthly": "Monthly",
+    "resumeSubscription": "Resume Subscription",
+    "pauseSubscription": "Pause Subscription",
+    "changePlan": "Change Plan",
+    "upcomingInvoice": "Upcoming Invoice",
+    "amountDue": "Amount Due",
+    "dueDate": "Due Date",
+    "lineItems": "Line Items",
+    "applyDiscountCode": "Apply Discount Code",
+    "enterCouponCode": "Enter coupon code",
+    "validate": "Validate",
+    "apply": "Apply",
+    "addPaymentMethod": "Add Payment Method",
+    "noPaymentMethodsYet": "No payment methods added yet",
+    "default": "Default",
+    "setAsDefault": "Set as Default",
+    "noInvoicesYet": "No invoices yet",
+    "currentUsage": "Current Usage",
+    "urlsThisMonth": "URLs This Month",
+    "totalUrlsCreated": "Total URLs Created",
+    "apiCallsThisMonth": "API Calls This Month",
+    "overageCharges": "Overage Charges",
+    "addedToNextInvoice": "Added to next invoice",
+    "included": "included"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "subtitle": "Manage your account information and preferences",
+    "accountOverview": "Account Overview",
+    "currentPlan": "Current Plan",
+    "regionalSettings": "Regional Settings",
+    "tabs": {
+      "general": "General",
+      "security": "Security",
+      "preferences": "Preferences",
+      "apiKeys": "API Keys"
+    },
+    "general": {
+      "personalInfo": "Personal Information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "company": "Company",
+      "website": "Website",
+      "jobTitle": "Role",
+      "updateButton": "Update Profile",
+      "updating": "Updating...",
+      "saveChanges": "Save Changes"
+    },
+    "security": {
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "updatePassword": "Update Password",
+      "twoFactor": "Two-Factor Authentication",
+      "enable2FA": "Enable 2FA",
+      "disable2FA": "Disable 2FA",
+      "sessions": "Active Sessions",
+      "revokeAll": "Revoke All Sessions",
+      "errorCurrentPasswordRequired": "Current password is required",
+      "errorNewPasswordRequired": "New password is required",
+      "errorConfirmPasswordRequired": "Please confirm your new password",
+      "errorPasswordLength": "Password must be at least 8 characters",
+      "errorPasswordMismatch": "Passwords do not match"
+    },
+    "preferences": {
+      "language": "Language",
+      "timezone": "Timezone",
+      "dateFormat": "Date Format",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDesc": "Receive email notifications for important updates",
+      "marketingEmails": "Marketing Emails",
+      "marketingEmailsDesc": "Receive updates about new features and promotions",
+      "weeklyReports": "Weekly Reports",
+      "weeklyReportsDesc": "Get weekly analytics reports sent to your email",
+      "productUpdates": "Product Updates",
+      "securityAlerts": "Security Alerts",
+      "savePreferences": "Save Preferences"
+    },
+    "notifications": {
+      "title": "Notifications"
+    },
+    "apiKeys": {
+      "viewDocs": "View API Docs",
+      "title": "API Keys",
+      "description": "Manage your API keys for programmatic access",
+      "createNew": "Create New Key",
+      "keyName": "Key Name",
+      "key": "Key",
+      "created": "Created",
+      "lastUsed": "Last Used",
+      "revoke": "Revoke",
+      "regenerating": "Regenerating...",
+      "regenerateButton": "Regenerate API Key",
+      "confirmRegenerate": "Are you sure you want to regenerate your API key? The old key will no longer work."
+    }
+  },
+  "userManagement": {
+    "title": "User Management",
+    "subtitle": "Manage user roles and permissions",
+    "loading": "Loading users...",
+    "searchPlaceholder": "Search by name or email...",
+    "filterByRole": "Filter by role:",
+    "noUsersFound": "No users found.",
+    "noUsersWithRole": "No users found with role: {{role}}.",
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "inactiveUsers": "Inactive Users",
+      "newUsers": "New (30 days)"
+    },
+    "roles": {
+      "all": "All",
+      "superAdmin": "Super Admin",
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer",
+      "user": "User"
+    },
+    "userCard": {
+      "status": "Status:",
+      "active": "Active",
+      "inactive": "Inactive",
+      "joined": "Joined:",
+      "lastLogin": "Last Login:",
+      "location": "Location:",
+      "changeRole": "Change Role:"
+    },
+    "viewMode": {
+      "grid": "Grid",
+      "table": "Table"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "plan": "Plan",
+      "joined": "Joined",
+      "location": "Location",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "viewDetails": "View Details",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "activateUser": "Activate User",
+      "deactivateUser": "Deactivate User",
+      "delete": "Delete",
+      "deleteUser": "Delete User"
+    },
+    "modal": {
+      "urls": "URLs",
+      "domains": "Domains",
+      "clicks": "Clicks",
+      "contactInfo": "Contact Info",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Registration Location",
+      "notAvailable": "N/A",
+      "accountActivity": "Account Activity",
+      "joined": "Joined",
+      "lastLogin": "Last Login",
+      "never": "Never",
+      "subscription": "Subscription",
+      "subscriptionStatus": "Status",
+      "inactive": "INACTIVE",
+      "periodEnd": "Period End",
+      "freePlan": "FREE"
+    }
+  },
+  "footer": {
+    "description": "The simplest way to shorten and track your URLs",
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "documentation": "Documentation",
+    "api": "API",
+    "integrations": "Integrations",
+    "company": "Company",
+    "about": "About Us",
+    "blog": "Blog",
+    "careers": "Careers",
+    "contact": "Contact",
+    "support": "Support",
+    "help": "Help Center",
+    "faq": "FAQ",
+    "legal": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "pdplCompliance": "PDPL Compliance",
+    "security": "Security",
+    "copyright": "© 2025 URL Shortener. All rights reserved."
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "linkCreated": "Link created successfully!",
+    "linkUpdated": "Link updated successfully!",
+    "linkDeleted": "Link deleted successfully!",
+    "settingsSaved": "Settings saved successfully!",
+    "profileUpdated": "Profile updated successfully!",
+    "passwordChanged": "Password changed successfully!",
+    "domainAdded": "Domain added successfully!",
+    "domainVerified": "Domain verified successfully!",
+    "subscriptionUpdated": "Subscription updated successfully!",
+    "draftSaved": "Draft saved!"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "networkError": "Network error. Please check your connection.",
+    "unauthorized": "Unauthorized. Please login again.",
+    "notFound": "Resource not found.",
+    "serverError": "Server error. Please try again later.",
+    "validationError": "Please check your input and try again.",
+    "enterDomain": "Please enter a domain",
+    "enterKeyword": "Please enter a keyword",
+    "failedToAddDomain": "Failed to add blocked domain: {{error}}",
+    "failedToRemoveDomain": "Failed to remove blocked domain: {{error}}",
+    "failedToAddKeyword": "Failed to add blocked keyword: {{error}}",
+    "failedToRemoveKeyword": "Failed to remove blocked keyword: {{error}}",
+    "failedToAddAllowedDomain": "Failed to add allowed domain: {{error}}",
+    "failedToRemoveAllowedDomain": "Failed to remove allowed domain: {{error}}",
+    "failedToRegenerateApiKey": "Failed to regenerate API key: {{error}}",
+    "failedToLoadLinks": "Failed to load links. Please try again.",
+    "failedToLoadDomains": "Failed to load available domains. Please refresh the page.",
+    "failedToCopyLink": "Failed to copy link to clipboard. Please try again.",
+    "failedToGenerateQR": "Failed to generate QR code for this link.",
+    "failedToLoadStats": "Failed to load statistics. Please refresh the page.",
+    "failedToVerifyDomain": "Failed to verify domain. Please check your DNS settings and try again.",
+    "failedToCopyText": "Failed to copy to clipboard. Please copy manually.",
+    "noLinksSelected": "Please select at least one link for bulk operation.",
+    "confirmBulkGenerate": "Are you sure you want to generate QR codes for {{count}} selected link(s)?",
+    "domainVerificationError": "Domain verification failed. Please check your DNS records.",
+    "domainAddError": "Failed to add domain. Please check your input and try again.",
+    "domainDeleteError": "Failed to delete domain. Please try again.",
+    "qrCodeDeleteError": "Failed to delete QR code. Please try again.",
+    "failedToLoadCustomization": "Could not load existing customization. Using defaults."
+  },
+  "sidebar": {
+    "urlManagement": "URL Management",
+    "apiDocs": "API Docs",
+    "main": "MAIN",
+    "dashboard": "Dashboard",
+    "myLinks": "My Links",
+    "analytics": "Analytics",
+    "qrCodes": "QR Codes",
+    "settings": "SETTINGS",
+    "customDomains": "Custom Domains",
+    "contentFilter": "Content Filter",
+    "admin": "ADMIN",
+    "userManagement": "User Management",
+    "googleAnalytics": "Google Analytics",
+    "account": "ACCOUNT",
+    "profile": "Profile",
+    "upgradePlan": "Upgrade Plan",
+    "freePlan": "Free Plan",
+    "billing": "Billing & Payments",
+    "upgradeNow": "Upgrade Now"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "Website traffic and user behavior insights",
+    "loading": "Loading Google Analytics...",
+    "refresh": "Refresh",
+    "notConfigured": {
+      "title": "Google Analytics Not Configured",
+      "description": "Please configure Google Analytics credentials in the server environment variables.",
+      "instructions": "Required Environment Variables:"
+    },
+    "dateRange": {
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "90days": "Last 90 days"
+    },
+    "realtime": {
+      "live": "LIVE",
+      "activeUsers": "Active Users Right Now"
+    },
+    "metrics": {
+      "activeUsers": "Active Users",
+      "newUsers": "New Users",
+      "sessions": "Sessions",
+      "pageViews": "Page Views",
+      "avgDuration": "Avg. Duration",
+      "engagementRate": "Engagement Rate",
+      "bounceRate": "Bounce Rate"
+    },
+    "charts": {
+      "trafficOverTime": "Traffic Over Time"
+    },
+    "tables": {
+      "trafficSources": "Traffic Sources",
+      "topPages": "Top Pages",
+      "devices": "Devices",
+      "browsers": "Browsers",
+      "locations": "Top Locations",
+      "source": "Source",
+      "sessions": "Sessions",
+      "users": "Users",
+      "page": "Page",
+      "views": "Views",
+      "country": "Country",
+      "city": "City"
+    }
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last Updated: January 13, 2025",
+    "preamble": {
+      "title": "Preamble",
+      "content": "This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: \"we,\" \"the Company,\" \"the Service,\" or \"this Contract\" refer to Snip Company. \"The Second Party\" refers to the person who requested the service."
+    },
+    "introduction": {
+      "title": "Introduction",
+      "content": "These terms and conditions apply to all our technical services and applications provided through our website. By accessing the website or using any of our services or applications, you agree to comply with these terms and conditions. If you do not agree to these terms, you must stop using the website and services."
+    },
+    "definitions": {
+      "title": "1. Definitions and Terms",
+      "services": "Services: Refers to all technical solutions and applications provided by the Company to government and private entities, including consulting or other technical services.",
+      "client": "Client: Means any government or private entity or individual who uses the services provided by us.",
+      "applications": "Applications: Means any software or technical systems provided by the Company, which can be used online or downloaded from the website.",
+      "website": "Website: The electronic platform through which the Company provides its services and products.",
+      "document": "Document: Refers to the general terms and conditions of use."
+    },
+    "acceptance": {
+      "title": "2. Acceptance of Terms",
+      "content": "By accessing the website and using our services, you agree to the terms and conditions stated in this document and to comply with all regulations and laws. If you do not agree to any of the terms, you must stop using the website and services."
+    },
+    "access": {
+      "title": "3. Access to Services",
+      "content": "To obtain our services, you may need to register through the website and provide accurate and complete information. The Client is responsible for the accuracy of this information and updating it periodically."
+    },
+    "usage": {
+      "title": "4. Use of Services",
+      "item1": "Our services are provided for personal or institutional use only.",
+      "item2": "The Client must use the services within a legal framework and in accordance with authorized uses.",
+      "item3": "It is prohibited to use the services for any illegal purpose or any activity that may lead to violation of others' rights or harm to the website or the Company.",
+      "item4": "It is prohibited to resell, distribute, or exploit the services for any unauthorized purpose without prior written consent from the Company."
+    },
+    "commencement": {
+      "title": "5. Commencement of Service Contract",
+      "content": "The service contract begins from the date of service activation for the Client."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellectual Property Rights",
+      "item1": "The website contains materials protected by intellectual property rights, including texts, software, images, graphics, names, logos, colors, applications, software, and audio files (\"Content\"). They are protected under copyright, trademark rights, and applicable laws in the Kingdom of Saudi Arabia.",
+      "item2": "All intellectual property rights related to applications, software, and designs are the exclusive property of Snip Company or authorized service providers.",
+      "item3": "The Client may not copy, distribute, or modify any of these materials without prior written permission from the Company."
+    },
+    "pricing": {
+      "title": "7. Pricing and Payment",
+      "pricingDesc": "Pricing: Prices are determined based on contracts and agreements concluded between us and the Client. Prices are not publicly displayed on the website.",
+      "paymentDesc": "Payment: The Client must pay the agreed amounts in accordance with the contract or prior written agreement."
+    },
+    "obligations": {
+      "title": "8. Obligations and Responsibilities",
+      "ourObligations": "Our Obligations:",
+      "ourObligationsDesc": "We are committed to providing technical services in accordance with the standards and contracts agreed upon with the Client, implementing requirements accurately and professionally.",
+      "clientResponsibility": "Client Responsibility:",
+      "item1": "Maintaining account and password confidentiality and not sharing them with third parties.",
+      "item2": "Financial and legal obligations resulting from service use.",
+      "item3": "Accuracy of provided data and commitment to updating it when necessary.",
+      "item4": "Providing government licenses if the service requires it, and renewing them on time to ensure continued service delivery.",
+      "item5": "The Client agrees that failure to renew licenses may lead to service interruption."
+    },
+    "dataProtection": {
+      "title": "9. Privacy and Data Protection",
+      "item1": "We are committed to protecting all personal data we collect from the Client in accordance with the Privacy Policy.",
+      "item2": "Data is collected and used in accordance with local and international laws.",
+      "item3": "Data is used to improve services, communicate with clients, and analyze usage.",
+      "item4": "We apply appropriate security measures to protect data from unauthorized access.",
+      "item5": "We will not sell or rent Client data, nor will we share it except with their explicit consent or as required by law."
+    },
+    "modifications": {
+      "title": "10. Modifications to Services and Terms",
+      "item1": "We reserve the right to modify or update the terms or add or remove services at any time.",
+      "item2": "Clients will be notified of any material changes."
+    },
+    "support": {
+      "title": "11. Support and Maintenance",
+      "item1": "We provide technical support through official support channels.",
+      "item2": "Some services may require periodic maintenance, and the Company has the right to perform it at any time."
+    },
+    "limitations": {
+      "title": "12. Limitations and Compensation",
+      "item1": "We are not responsible for any direct or indirect damages resulting from the use of the website or services.",
+      "item2": "The Client agrees to compensate the Company for any losses or claims arising from their illegal use of the services."
+    },
+    "termination": {
+      "title": "13. Termination and Cancellation",
+      "item1": "The Client may terminate the service in accordance with the terms specified in the contract.",
+      "item2": "The Company reserves the right to terminate the service upon violation of any terms."
+    },
+    "forceMajeure": {
+      "title": "14. Force Majeure",
+      "content": "We are not responsible for any delay or disruption resulting from circumstances beyond the Company's control such as natural disasters, government decisions, cyber attacks, and others."
+    },
+    "laws": {
+      "title": "15. Applicable Laws and Dispute Resolution",
+      "item1": "These terms are subject to the laws of the Kingdom of Saudi Arabia.",
+      "item2": "Disputes are resolved through the competent court in Riyadh.",
+      "item3": "If any clause is found to be unenforceable, the other clauses remain in effect."
+    },
+    "delivery": {
+      "title": "16. Delivery and Shipping",
+      "item1": "In case of physical products or licenses, they are delivered according to the agreement with the Client.",
+      "item2": "Licenses may be provided via email or through the Client's account."
+    },
+    "communication": {
+      "title": "17. Client Communication",
+      "intro": "You can contact us via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: 01151083470"
+    },
+    "externalLinks": {
+      "title": "18. External Links",
+      "content": "The website may contain links to external websites, which are beyond our control, and we are not responsible for their content."
+    },
+    "refund": {
+      "title": "19. Cancellation and Refund Policy",
+      "item1": "The Client has the right to request a refund within (20 days) before using or activating the service.",
+      "item2": "The refund request must be submitted in writing with supporting documents.",
+      "item3": "Refunds are processed within (14 days) of approval.",
+      "item4": "The Company has the right to impose administrative fees.",
+      "item5": "No refunds are made after using or activating the service."
+    },
+    "notices": {
+      "title": "20. Notices and Communications",
+      "item1": "By registering and using the website, the Client agrees to receive notifications via email or website notifications.",
+      "item2": "The Client is responsible for updating their data to ensure receipt of notifications."
+    },
+    "specialTerms": {
+      "title": "Special Terms",
+      "content": "The Client is obligated to provide accurate information for communication, technical support, and assistance in providing the service."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: January 13, 2025",
+    "intro": {
+      "title": "Clause 1: Introduction",
+      "content": "Snip respects your privacy and is committed to providing excellent service to all our customers. This Privacy Notice has been drafted in accordance with the Personal Data Protection Law and its regulations in the Kingdom of Saudi Arabia to help you understand the nature of the data we collect from you and how this data will be handled by Snip. Out of Snip's commitment to the privacy and confidentiality of user data, we are dedicated to maintaining the security and confidentiality of this information and using it to deliver the expected level of service in compliance with the applicable terms and conditions in the Kingdom of Saudi Arabia. By using the Snip website, the user consents to this Privacy Policy."
+    },
+    "dataCollection": {
+      "title": "Clause 2: Data to Be Collected and Purpose of Collection",
+      "item1": "Data required upon registration for our services (such as name, email address, physical address, phone number, date of birth, nationality, and gender).",
+      "item2": "Data required for using our services, websites, or mobile applications (such as cookies and usage data).",
+      "item3": "Data exchanged during communication with you (such as customer support requests and feedback)."
+    },
+    "purpose": {
+      "title": "Clause 3: Purpose of Collecting Personal Data",
+      "intro": "To provide the highest level of service and products, we collect and use your personal data for the following purposes:",
+      "item1": "Enabling us to develop, improve, and/or market products and services.",
+      "item2": "Facilitating and supporting our operations and systems to ensure continuity and quality of our services.",
+      "item3": "Understanding customer needs, assessing your eligibility for products and services, and recommending relevant products and services.",
+      "item4": "Notifying you about new products and services.",
+      "item5": "Responding to and following up on inquiries, suggestions, or complaints submitted by the user."
+    },
+    "methods": {
+      "title": "Clause 4: Methods of Data Collection",
+      "item1": "Data provided directly by the user through registration on the website.",
+      "item2": "Data collected through cookies during website visits."
+    },
+    "storage": {
+      "title": "Clause 5: Storage and Destruction of Personal Data",
+      "content": "Personal data is stored within the Kingdom of Saudi Arabia on servers protected by advanced technologies in compliance with the policies and controls of the National Cybersecurity Authority and international standards to prevent unauthorized access and mitigate cybersecurity risks. When the data is no longer needed and as per the regulations, it will be destroyed securely to ensure it cannot be accessed or recovered, in accordance with Snip's policies."
+    },
+    "legalBasis": {
+      "title": "Clause 6: Legal Basis for Collecting and Processing Personal Data",
+      "content": "Personal data is collected and processed based on the consent of the data subject. The data subject may withdraw their consent to collect and process their data at any time, unless there is another legal basis. To do so, please contact Snip's support team via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "rights": {
+      "title": "Clause 7: Rights of the Data Subject",
+      "rightToKnow": {
+        "title": "Right to Information:",
+        "content": "The data subject has the right to know the methods of data collection, the legal basis for collecting and processing it, how it is processed, stored, and destroyed, and with whom it will be shared. Details are provided in this Privacy Policy or can be obtained by contacting us via the information in Clause 9."
+      },
+      "rightToAccess": {
+        "title": "Right to Access Personal Data:",
+        "content": "The data subject may request a copy of their personal data via the email provided in Clause 9. The data will be provided free of charge within 30 working days via email."
+      },
+      "rightToCorrect": {
+        "title": "Right to Correct Personal Data:",
+        "content": "The data subject has the right to request correction of inaccurate, incorrect, or incomplete personal data via the email provided in Clause 9. Requests will be reviewed and decided upon within 30 working days, and the data subject will be notified via email."
+      },
+      "rightToDelete": {
+        "title": "Right to Destroy Personal Data:",
+        "content": "The data subject may request the destruction of their personal data unless there are legal, regulatory, or contractual requirements for retention."
+      },
+      "rightToWithdraw": {
+        "title": "Right to Withdraw Consent for Processing Personal Data:",
+        "content": "The data subject may withdraw their consent for processing personal data at any time, unless there are legitimate purposes requiring otherwise."
+      },
+      "note": "Some requests (such as destruction or withdrawal of consent) may be restricted if legal or regulatory obligations require data retention."
+    },
+    "sharing": {
+      "title": "Clause 8: Sharing/Exchanging Personal Data",
+      "content": "Personal data will not be disclosed to third parties without your consent or a legal basis, as applicable under the law."
+    },
+    "exercising": {
+      "title": "Clause 9: Exercising the Rights of the Data Subject",
+      "content": "The data subject may request access, correction, or destruction of their data by contacting us via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "complaints": {
+      "title": "Clause 10: Complaints and Inquiries",
+      "content": "For any complaints or inquiries related to the Privacy Policy or the handling of personal data, please contact the website management via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Phone: +966539100295"
+    },
+    "updates": {
+      "title": "Clause 11: Updates to the Privacy Policy",
+      "content": "The Privacy Policy was last updated on January 13, 2025. Snip reserves the right to add or modify any terms of the Privacy Policy. The website management will notify the data subject of any changes, and the data subject's account may be terminated if they do not accept the updated Privacy Policy after being notified."
+    }
+  },
+  "adminUrlManagement": {
+    "title": "URL Management",
+    "subtitle": "View and manage all customer links",
+    "accessDenied": "Access Denied",
+    "noPermission": "You don't have permission to view this page.",
+    "stats": {
+      "totalUrls": "Total URLs",
+      "totalClicks": "Total Clicks",
+      "newUrls30d": "New URLs (30d)",
+      "totalUsers": "Total Users"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by URL, short code, title, or creator...",
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "allUsers": "All Users"
+    },
+    "table": {
+      "shortCode": "Short Code",
+      "originalUrl": "Original URL",
+      "creator": "Creator",
+      "clicks": "Clicks",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "loading": "Loading URLs...",
+    "noUrls": "No URLs found matching your criteria.",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {{page}} of {{pages}} ({{total}} total)"
+    },
+    "modal": {
+      "title": "URL Details",
+      "linkInfo": "Link Information",
+      "shortCode": "Short Code",
+      "originalUrl": "Original URL",
+      "linkTitle": "Title",
+      "description": "Description",
+      "domain": "Domain",
+      "creatorInfo": "Creator Information",
+      "name": "Name",
+      "email": "Email",
+      "statistics": "Statistics",
+      "totalClicks": "Total Clicks",
+      "uniqueClicks": "Unique Clicks",
+      "status": "Status",
+      "dates": "Dates",
+      "created": "Created",
+      "lastUpdated": "Last Updated",
+      "expires": "Expires",
+      "tags": "Tags",
+      "activateUrl": "Activate URL",
+      "deactivateUrl": "Deactivate URL",
+      "deleteUrl": "Delete URL"
+    },
+    "messages": {
+      "activateSuccess": "URL activated successfully",
+      "deactivateSuccess": "URL deactivated successfully",
+      "deleteSuccess": "URL deleted successfully",
+      "deleteConfirm": "Are you sure you want to delete this URL? This action cannot be undone.",
+      "updateFailed": "Failed to update URL",
+      "deleteFailed": "Failed to delete URL"
+    }
+  }
+}

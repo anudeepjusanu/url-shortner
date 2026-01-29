@@ -94,14 +94,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex w-full">
       {/* Left Panel - Brand (Hidden on Mobile) */}
-      <div className="hidden lg:flex w-1/2 bg-slate-900 text-white flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-slate-900 text-white flex-col justify-center items-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="relative z-10 max-w-md mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-8">
              <img src={logo} alt="Logo" className="h-10 w-auto brightness-0 invert" />
              <h1 className="text-2xl font-bold">{t('common.brandName')}</h1>
           </div>
-          <div className="space-y-6 max-w-md">
+          <div className="space-y-6 text-center">
              <h2 className="text-4xl font-bold leading-tight">{t('auth.login.brandSubtitle') || "Shorten, Share, and Track with confidence."}</h2>
              <div className="space-y-4">
                {[
@@ -109,7 +109,7 @@ const Login = () => {
                  { icon: ShieldCheck, title: t('auth.login.feature3Title'), desc: t('auth.login.feature3Description') },
                  { icon: CheckCircle2, title: t('auth.login.feature2Title'), desc: t('auth.login.feature2Description') },
                ].map((feat, i) => (
-                 <div key={i} className="flex gap-4">
+                 <div key={i} className="flex gap-4 text-left">
                     <div className="mt-1 bg-white/10 p-2 rounded-lg h-fit">
                       <feat.icon className="h-5 w-5 text-blue-400" />
                     </div>
@@ -121,9 +121,9 @@ const Login = () => {
                ))}
              </div>
           </div>
-        </div>
-        <div className="relative z-10 text-sm text-slate-500">
-          &copy; {new Date().getFullYear()} {t('common.brandName')}. All rights reserved.
+          <div className="mt-12 text-sm text-slate-500 text-center">
+            &copy; {new Date().getFullYear()} {t('common.brandName')}. All rights reserved.
+          </div>
         </div>
       </div>
 
@@ -194,11 +194,15 @@ const Login = () => {
                    placeholder="••••••••"
                    value={formData.password}
                    onChange={handleInputChange}
+                   className="pr-10"
                  />
                  <button
                    type="button"
                    onClick={() => setShowPassword(!showPassword)}
-                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-600 transition-colors duration-200"
+                   style={{ transform: 'translateY(-50%)', pointerEvents: 'auto' }}
+                   onMouseDown={(e) => e.preventDefault()}
+                   tabIndex={-1}
                  >
                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                  </button>
