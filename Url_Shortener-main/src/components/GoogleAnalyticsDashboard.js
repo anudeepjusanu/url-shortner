@@ -75,7 +75,7 @@ const GoogleAnalyticsDashboard = () => {
 
   if (!hasRole(['super_admin'])) return null;
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Loading Analytics...</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t('googleAnalytics.loading')}</div>;
 
   if (!isConfigured) {
     return (
@@ -86,8 +86,8 @@ const GoogleAnalyticsDashboard = () => {
                <div className="bg-orange-100 p-4 rounded-full mb-4">
                   <AlertTriangle className="h-8 w-8 text-orange-600" />
                </div>
-               <h2 className="text-xl font-bold text-orange-900 mb-2">Google Analytics Not Configured</h2>
-               <p className="text-orange-800 max-w-md mb-6">Please configure your Google Analytics credentials in the server environment variables to view insights.</p>
+               <h2 className="text-xl font-bold text-orange-900 mb-2">{t('googleAnalytics.notConfigured.title')}</h2>
+               <p className="text-orange-800 max-w-md mb-6">{t('googleAnalytics.notConfigured.description')}</p>
                <div className="bg-white p-4 rounded border border-orange-200 text-left w-full max-w-lg font-mono text-sm overflow-x-auto">
                   GA_PROPERTY_ID=your_id<br/>
                   GA_CLIENT_EMAIL=email@service.com<br/>
@@ -118,7 +118,7 @@ const GoogleAnalyticsDashboard = () => {
        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
              <h1 className="text-3xl font-bold text-slate-900">{t('googleAnalytics.title')}</h1>
-             <p className="text-muted-foreground">Traffic and behavior insights.</p>
+             <p className="text-muted-foreground">{t('googleAnalytics.subtitle')}</p>
           </div>
           <div className="flex gap-2">
              <select 
@@ -126,9 +126,9 @@ const GoogleAnalyticsDashboard = () => {
                 value={dateRange}
                 onChange={e => setDateRange(e.target.value)}
              >
-                <option value="7daysAgo">Last 7 Days</option>
-                <option value="30daysAgo">Last 30 Days</option>
-                <option value="90daysAgo">Last 90 Days</option>
+                <option value="7daysAgo">{t('googleAnalytics.dateRange.7days')}</option>
+                <option value="30daysAgo">{t('googleAnalytics.dateRange.30days')}</option>
+                <option value="90daysAgo">{t('googleAnalytics.dateRange.90days')}</option>
              </select>
              <Button variant="outline" size="icon" onClick={() => { loadRealtimeData(); loadDashboardData(); }} disabled={refreshing}>
                 <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
@@ -144,7 +144,7 @@ const GoogleAnalyticsDashboard = () => {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
                    </span>
-                   <span className="font-semibold tracking-wider text-blue-100 text-sm uppercase">Realtime Active Users</span>
+                   <span className="font-semibold tracking-wider text-blue-100 text-sm uppercase">{t('googleAnalytics.realtime.activeUsers')}</span>
                 </div>
                 <div className="text-5xl font-bold">{realtimeData.activeUsers}</div>
              </CardContent>
@@ -153,12 +153,12 @@ const GoogleAnalyticsDashboard = () => {
 
        {dashboardData?.overview && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-             <StatCard icon={Users} title="Active Users" value={dashboardData.overview.activeUsers.toLocaleString()} color="bg-blue-50 text-blue-600" />
-             <StatCard icon={UserPlus} title="New Users" value={dashboardData.overview.newUsers.toLocaleString()} color="bg-green-50 text-green-600" />
-             <StatCard icon={MousePointer2} title="Sessions" value={dashboardData.overview.sessions.toLocaleString()} color="bg-purple-50 text-purple-600" />
-             <StatCard icon={FileText} title="Page Views" value={dashboardData.overview.pageViews.toLocaleString()} color="bg-orange-50 text-orange-600" />
-             <StatCard icon={Clock} title="Avg. Duration" value={`${Math.round(dashboardData.overview.avgSessionDuration)}s`} color="bg-pink-50 text-pink-600" />
-             <StatCard icon={TrendingUp} title="Engagement Rate" value={`${dashboardData.overview.engagementRate}%`} color="bg-cyan-50 text-cyan-600" />
+             <StatCard icon={Users} title={t('googleAnalytics.metrics.activeUsers')} value={dashboardData.overview.activeUsers.toLocaleString()} color="bg-blue-50 text-blue-600" />
+             <StatCard icon={UserPlus} title={t('googleAnalytics.metrics.newUsers')} value={dashboardData.overview.newUsers.toLocaleString()} color="bg-green-50 text-green-600" />
+             <StatCard icon={MousePointer2} title={t('googleAnalytics.metrics.sessions')} value={dashboardData.overview.sessions.toLocaleString()} color="bg-purple-50 text-purple-600" />
+             <StatCard icon={FileText} title={t('googleAnalytics.metrics.pageViews')} value={dashboardData.overview.pageViews.toLocaleString()} color="bg-orange-50 text-orange-600" />
+             <StatCard icon={Clock} title={t('googleAnalytics.metrics.avgDuration')} value={`${Math.round(dashboardData.overview.avgSessionDuration)}s`} color="bg-pink-50 text-pink-600" />
+             <StatCard icon={TrendingUp} title={t('googleAnalytics.metrics.engagementRate')} value={`${dashboardData.overview.engagementRate}%`} color="bg-cyan-50 text-cyan-600" />
           </div>
        )}
 
@@ -166,7 +166,7 @@ const GoogleAnalyticsDashboard = () => {
           {/* Traffic Over Time */}
           {dashboardData?.trafficOverTime && (
              <Card className="lg:col-span-2">
-                <CardHeader><CardTitle>Traffic Trend</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('googleAnalytics.charts.trafficOverTime')}</CardTitle></CardHeader>
                 <CardContent>
                    <div className="h-64 flex items-end gap-1">
                       {dashboardData.trafficOverTime.slice(-30).map((d, i) => {
@@ -192,10 +192,10 @@ const GoogleAnalyticsDashboard = () => {
           {/* Top Pages */}
           {dashboardData?.topPages && (
              <Card>
-                <CardHeader><CardTitle>Top Pages</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('googleAnalytics.tables.topPages')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
                    <Table>
-                      <TableHeader><TableRow><TableHead>Page</TableHead><TableHead className="text-right">Views</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead>{t('googleAnalytics.tables.page')}</TableHead><TableHead className="text-right">{t('googleAnalytics.tables.views')}</TableHead></TableRow></TableHeader>
                       <TableBody>
                          {dashboardData.topPages.slice(0, 8).map((p, i) => (
                             <TableRow key={i}>
@@ -212,10 +212,10 @@ const GoogleAnalyticsDashboard = () => {
           {/* Traffic Sources */}
           {dashboardData?.trafficSources && (
              <Card>
-                <CardHeader><CardTitle>Traffic Sources</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('googleAnalytics.tables.trafficSources')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
                    <Table>
-                      <TableHeader><TableRow><TableHead>Source</TableHead><TableHead className="text-right">Users</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead>{t('googleAnalytics.tables.source')}</TableHead><TableHead className="text-right">{t('googleAnalytics.tables.users')}</TableHead></TableRow></TableHeader>
                       <TableBody>
                          {dashboardData.trafficSources.slice(0, 8).map((s, i) => (
                             <TableRow key={i}>
@@ -233,7 +233,7 @@ const GoogleAnalyticsDashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:col-span-2">
              {dashboardData?.devices && (
                 <Card>
-                   <CardHeader><CardTitle>Devices</CardTitle></CardHeader>
+                   <CardHeader><CardTitle>{t('googleAnalytics.tables.devices')}</CardTitle></CardHeader>
                    <CardContent>
                       <div className="space-y-4">
                          {dashboardData.devices.map((d, i) => (
@@ -252,7 +252,7 @@ const GoogleAnalyticsDashboard = () => {
              
              {dashboardData?.geographic && (
                 <Card>
-                   <CardHeader><CardTitle>Top Locations</CardTitle></CardHeader>
+                   <CardHeader><CardTitle>{t('googleAnalytics.tables.locations')}</CardTitle></CardHeader>
                    <CardContent>
                       <div className="space-y-4">
                          {dashboardData.geographic.slice(0, 5).map((g, i) => (

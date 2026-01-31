@@ -110,6 +110,8 @@
       "title": "Reduzieren Sie Ihre URLs und verfolgen Sie die Performance",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Leichtathletik",
+      "mainHeading": "URL-Verkürzer mit benutzerdefinierten Domains",
+      "longDescription": "Erstellen Sie gebrandete Shortlinks mit leistungsstarken Analysen. Verfolgen Sie Klicks, messen Sie die Performance und optimieren Sie Ihre Kampagnen mit unserer unternehmensweiten Link-Management-Plattform.",
       "subtitle": "Deine Links, optimiert für Saudi-Arabien",
       "description": "Schnelle, sichere und konforme URL-Verkürzungen mit fortschrittlicher Analyse und Marken-Domains.",
       "descriptionAlt": "Kostenloser Linkverkürzer mit detaillierten Analysen, QR-Codes und API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Bereit, loszulegen?",
       "subtitle": "Schließen Sie sich Tausenden von Nutzern an, die unserer Plattform vertrauen",
-      "button": "Start kostenlos"
+      "button": "Start kostenlos",
+      "readyToStart": "Bereit, loszulegen?",
+      "joinUsers": "Schließen Sie sich über 1,2 Millionen Nutzern an, die Links mit Snip verkürzen",
+      "getStartedFree": "Starten Sie kostenlos",
+      "noCardRequired": "Keine Kreditkarte erforderlich",
+      "freePlanForever": "Kostenloser Plan für immer",
+      "upgradeAnytime": "Upgrade jederzeit",
+      "fastSupport": "Schnelle Unterstützungsreaktion"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Hast du noch Fragen?",
+    "contactSupport": "Kontakt zum Support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
   },
   "dashboard": {
+    "chartDescription": "Überblick über deine Link-Performance im Zeitverlauf.",
     "title": "Instrumententafel",
     "welcome": "Willkommen zurück",
     "welcomeMessage": "Hier ist, was heute mit deinen Links passiert.",
@@ -707,7 +721,8 @@
       "edit": "Bearbeitung",
       "qrCode": "QR-Code",
       "analytics": "Analytik",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "actions": "Aktionen"
     },
     "emptyState": {
       "noLinks": "Keine Links gefunden.",
@@ -746,13 +761,19 @@
         "generateQR": "QR-Code erstellen",
         "creating": "Erschaffen...",
         "createButton": "Link erstellen"
+      },
+      "deleteLink": {
+        "title": "Link löschen",
+        "message": "Bist du sicher, dass du {{url}} löschen willst? Diese Maßnahme kann nicht rückgängig gemacht werden."
       }
     },
     "confirmDelete": "Bist du sicher, dass du diesen Link löschen möchtest?",
     "deleteSuccess": "Link erfolgreich gelöscht",
     "deleteError": "Link nicht gelöscht",
     "noLinks": "Keine Links gefunden",
-    "createFirstLink": "Erstellen Sie Ihren ersten kurzen Link, um loszulegen"
+    "createFirstLink": "Erstellen Sie Ihren ersten kurzen Link, um loszulegen",
+    "copiedToClipboard": "Kopiert auf Klemmbrett",
+    "failedToCopy": "Nicht kopiert"
   },
   "analytics": {
     "title": "Analytik",
@@ -993,7 +1014,12 @@
     "title": "Benutzerdefinierte Domains",
     "subtitle": "Fügen Sie Ihre eigenen Domains für gebrandete Shortlinks hinzu und verwalten Sie sie",
     "wizard": {
-      "step": "Schritt {{current}} {{total}}"
+      "step": "Schritt {{current}} {{total}}",
+      "connectDomain": "Eine Domain verbinden",
+      "enterDomain": "Gib die Domain ein, die du verbinden möchtest.",
+      "domainNameLabel": "Domainname (z. B. example.com)",
+      "subdomainLabel": "Subdomain (optional, z. B. Link)",
+      "done": "Fertig"
     },
     "stats": {
       "totalDomains": "Gesamtbereiche",
@@ -1023,7 +1049,8 @@
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "verified": "Verifiziert",
-      "failed": "Gescheitert"
+      "failed": "Gescheitert",
+      "default": "Default"
     },
     "actions": {
       "verify": "Verifizieren",
@@ -1037,7 +1064,9 @@
       "recordType": "Plattentyp",
       "name": "Name",
       "value": "Wert",
-      "verifyButton": "Domain verifizieren"
+      "verifyButton": "Domain verifizieren",
+      "unverified": "Unverifiziert",
+      "failed": "Die Verifizierung ist gescheitert. Überprüfe die DNS-Propagation."
     },
     "dnsModal": {
       "title": "Domänenverifizierung",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domain erfolgreich verifiziert!",
     "verificationFailed": "Domain-Verifizierung fehlgeschlagen",
     "deleteSuccess": "Domain erfolgreich gelöscht",
+    "dialogs": {
+      "remove": {
+        "title": "Domain entfernen",
+        "message": "Bist du sicher? Bestehende Links, die diese Domain nutzen, funktionieren dann nicht mehr.",
+        "button": "Entfernen"
+      }
+    },
     "errors": {
       "domainRequired": "Domainname ist erforderlich",
       "domainInvalid": "Bitte geben Sie einen gültigen Domainnamen ein (z. B. example.com) ein.",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API-Schlüssel"
     },
     "general": {
+      "description": "Verwalten Sie Ihr öffentliches Profil und Ihre privaten Daten",
       "personalInfo": "Persönliche Informationen",
       "firstName": "Vorname",
       "lastName": "Nachname",
@@ -1262,17 +1299,18 @@
       "phone": "Telefonnummer",
       "company": "Gesellschaft",
       "website": "Webseite",
-      "jobTitle": "Rolle",
+      "jobTitle": "Berufsbezeichnung",
       "updateButton": "Profil aktualisieren",
-      "updating": "Aktualisierung...",
+      "updating": "Retten...",
       "saveChanges": "Speicheränderungen"
     },
     "security": {
+      "description": "Verwalten Sie Ihr Passwort und Ihre Kontosicherheit",
       "changePassword": "Passwort ändern",
       "currentPassword": "Aktuelles Passwort",
       "newPassword": "Neues Passwort",
       "confirmPassword": "Neues Passwort bestätigen",
-      "updatePassword": "Passwort aktualisieren",
+      "updatePassword": "Passwort ändern",
       "twoFactor": "Zwei-Faktor-Authentifizierung",
       "enable2FA": "2FA aktivieren",
       "disable2FA": "2FA deaktivieren",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Passwörter stimmen nicht überein"
     },
     "preferences": {
+      "title": "Präferenzen",
+      "description": "Verwalten Sie Ihre Benachrichtigungseinstellungen",
       "language": "Sprache",
       "timezone": "Zeitzone",
       "dateFormat": "Datumsformat",
@@ -1307,22 +1347,25 @@
       "description": "Verwalten Sie Ihre API-Schlüssel für programmatischen Zugriff",
       "createNew": "Neuen Schlüssel erstellen",
       "keyName": "Schlüsselname",
-      "key": "Legende",
+      "key": "Ihr API-Schlüssel",
       "created": "Erstellt",
       "lastUsed": "Zuletzt genutzt",
       "revoke": "Widerrufen",
+      "warning": "Behalte diesen Schlüssel geheim. Teilen Sie es nicht öffentlich.",
       "regenerating": "Regenerieren...",
-      "regenerateButton": "API-Schlüssel regenerieren",
-      "confirmRegenerate": "Bist du sicher, dass du deinen API-Schlüssel neu generieren möchtest? Der alte Schlüssel funktioniert dann nicht mehr."
+      "regenerateButton": "Regenerierungsschlüssel",
+      "confirmRegenerate": "Bist du sicher? Dadurch wird dein alter Schlüssel ungültig."
     },
     "messages": {
       "profileUpdated": "Profil erfolgreich aktualisiert",
       "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
-      "failedToUpdate": "Benutzer nicht aktualisiert",
-      "passwordUpdated": "Passwort erfolgreich aktualisiert",
-      "failedToUpdatePassword": "Passwort nicht aktualisiert",
-      "preferencesUpdated": "Einstellungen erfolgreich aktualisiert",
-      "failedToUpdatePreferences": "Einstellungen wurden nicht aktualisiert"
+      "failedToUpdate": "Profil wurde nicht aktualisiert",
+      "passwordUpdated": "Passwort erfolgreich geändert",
+      "failedToUpdatePassword": "Passwort nicht geändert",
+      "preferencesUpdated": "Erfolgreich gespeicherte Einstellungen",
+      "failedToUpdatePreferences": "Einstellungen wurden nicht gespeichert",
+      "apiKeyRegenerated": "API-Schlüssel wurde erfolgreich regeneriert",
+      "failedToRegenerateKey": "API-Schlüssel wurde nicht regeneriert"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Aktionen"
     },
     "actions": {
-      "view": "Ansehen",
+      "title": "Aktionen",
+      "view": "Details anzeigen",
       "viewDetails": "Details anzeigen",
       "activate": "Aktivieren",
       "deactivate": "Deaktivieren",
       "activateUser": "Benutzer aktivieren",
       "deactivateUser": "Benutzer deaktivieren",
-      "delete": "Löschen",
+      "delete": "Benutzer löschen",
       "deleteUser": "Benutzer löschen",
       "makeAdmin": "Mach Verwaltung",
       "removeAdmin": "Admin entfernen"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Kontaktinformationen",
       "email": "E-Mail",
       "phone": "Telefon",
+      "registrationLocation": "Registrierungsstandort",
+      "country": "Land",
+      "city": "Stadt",
+      "region": "Region",
+      "ipAddress": "IP-Adresse",
+      "timezone": "Zeitzone",
+      "countryCode": "Ländercode",
+      "coordinates": "Koordinaten",
       "location": "Registrierungsstandort",
       "locationFields": {
         "country": "Land",
@@ -1417,10 +1469,24 @@
       "inactive": "INAKTIV",
       "periodEnd": "Ende der Periode",
       "freePlan": "KOSTENLOS",
-      "close": "Schließen"
+      "close": "Schließen",
+      "activateUser": "Benutzer aktivieren",
+      "deactivateUser": "Benutzer deaktivieren"
     },
     "messages": {
-      "failedToLoad": "Benutzer wurden nicht geladen"
+      "failedToLoad": "Benutzer wurden nicht geladen",
+      "confirmRoleChange": "Wechselt die Rolle zu {{role}}?",
+      "roleUpdated": "Rolle erfolgreich aktualisiert",
+      "failedToUpdateRole": "Keine Aktualisierung der Rolle",
+      "confirmStatusChange": "Bist du sicher, dass du diesen Nutzer {{action}} willst?",
+      "userStatusUpdated": {
+        "activate": "Benutzer erfolgreich aktiviert",
+        "deactivate": "Der Benutzer wurde erfolgreich deaktiviert"
+      },
+      "failedToUpdateStatus": "Benutzerstatus wurde nicht aktualisiert",
+      "confirmDelete": "Diesen Nutzer löschen? Diese Maßnahme kann nicht rückgängig gemacht werden.",
+      "userDeleted": "Benutzer hat erfolgreich gelöscht",
+      "failedToDelete": "Benutzer nicht gelöscht"
     }
   },
   "footer": {

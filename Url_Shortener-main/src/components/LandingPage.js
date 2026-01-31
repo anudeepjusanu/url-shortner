@@ -51,7 +51,7 @@ const LandingPage = () => {
     <div className={cn("min-h-screen font-sans transition-colors duration-300", darkMode ? "dark bg-slate-900 text-slate-100" : "bg-white text-slate-900")}>
       {/* Top Banner */}
       <div className={cn("text-center py-3 px-4 text-sm font-medium transition-colors", darkMode ? "bg-gradient-to-r from-blue-700 to-purple-700 text-white" : "bg-gradient-to-r from-blue-600 to-purple-600 text-white")}>
-        <span>Free plan available • No credit card required</span>
+        <span>{t('landing.banner.text')}</span>
       </div>
 
       {/* Navigation Header */}
@@ -164,12 +164,11 @@ const LandingPage = () => {
           >
             {/* Main Heading */}
             <h1 className={cn("text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-              URL shortener with{" "}
-              <span className="text-blue-600">custom domains</span>
+              {t('landing.hero.mainHeading')}
             </h1>
             
             <p className={cn("text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-              Create branded short links with your custom domain or use ours. Free link shortener with detailed analytics, QR codes, and API. Track every click, run A/B tests, and optimize your campaigns.
+              {t('landing.hero.longDescription')}
             </p>
             
             {/* CTA Button */}
@@ -179,7 +178,7 @@ const LandingPage = () => {
                 className="h-14 px-10 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => navigate("/register")}
               >
-                Create free account
+                {t('landing.hero.createFreeAccount')}
               </Button>
             </div>
 
@@ -190,7 +189,7 @@ const LandingPage = () => {
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="ml-2 font-medium">Trustpilot</span>
+              <span className="ml-2 font-medium">{t('landing.trust.trustpilot')}</span>
             </div>
 
             {/* URL Shortener Demo */}
@@ -201,10 +200,10 @@ const LandingPage = () => {
               className="max-w-2xl mx-auto"
             >
               <div className={cn("rounded-2xl shadow-2xl border p-6 md:p-8 transition-colors", darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
-                <h3 className={cn("text-lg font-semibold mb-5 text-left transition-colors", darkMode ? "text-white" : "text-slate-900")}>Shorten your link</h3>
+                <h3 className={cn("text-lg font-semibold mb-5 text-left transition-colors", darkMode ? "text-white" : "text-slate-900")}>{t('landing.hero.formTitle')}</h3>
                 <div className="flex flex-col sm:flex-row gap-3 mb-5">
                   <Input 
-                    placeholder="Paste your long URL here..." 
+                    placeholder={t('landing.hero.urlPlaceholder')}
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     className={cn("h-12 text-base flex-1 transition-colors", darkMode ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400" : "")}
@@ -214,20 +213,20 @@ const LandingPage = () => {
                     className="h-12 px-8 shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold" 
                     onClick={handleShortenUrl}
                   >
-                    Shorten
+                    {t('landing.hero.shortenButton')}
                   </Button>
                 </div>
                 <div className={cn("rounded-lg p-4 border transition-colors", darkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-slate-200")}>
-                  <p className={cn("text-sm mb-2 transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>Your short link:</p>
+                  <p className={cn("text-sm mb-2 transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>{t('landing.hero.yourShortLink')}</p>
                   <div className="flex items-center justify-between gap-4">
                     <code className="text-blue-600 font-mono text-sm break-all">https://abc1234.short.gy/my-link</code>
                     <Button variant="ghost" size="sm" className="text-blue-600 shrink-0">
-                      Copy
+                      {t('myLinks.actions.copy')}
                     </Button>
                   </div>
                 </div>
                 <p className={cn("text-sm mt-5 text-center transition-colors", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Want your own domain? <button onClick={() => navigate("/register")} className="text-blue-600 hover:underline font-medium">Create free account</button>
+                  {t('landing.hero.wantOwnDomain')} <button onClick={() => navigate("/register")} className="text-blue-600 hover:underline font-medium">{t('landing.hero.createFreeAccount')}</button>
                 </p>
               </div>
             </motion.div>
@@ -240,10 +239,10 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto">
             {[
-              { icon: <Sparkles className="h-5 w-5" />, text: "Free forever plan", subtext: "Up to 1,000 branded links" },
-              { icon: <Globe2 className="h-5 w-5" />, text: "Custom domain support", subtext: "Use your own domain name" },
-              { icon: <Shield className="h-5 w-5" />, text: "No credit card required", subtext: "Start creating links instantly" },
-              { icon: <BarChart3 className="h-5 w-5" />, text: "Rich analytics included", subtext: "Track clicks and performance" }
+              { icon: <Sparkles className="h-5 w-5" />, textKey: 'landing.features.pills.freePlan', subtextKey: 'landing.features.pills.freePlan' },
+              { icon: <Globe2 className="h-5 w-5" />, textKey: 'landing.features.pills.customDomain', subtextKey: 'landing.features.pills.customDomain' },
+              { icon: <Shield className="h-5 w-5" />, textKey: 'landing.features.pills.noCard', subtextKey: 'landing.features.pills.noCard' },
+              { icon: <BarChart3 className="h-5 w-5" />, textKey: 'landing.features.pills.richAnalytics', subtextKey: 'landing.features.pills.richAnalytics' }
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
@@ -256,8 +255,8 @@ const LandingPage = () => {
                 <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors", darkMode ? "bg-blue-900 text-blue-400" : "bg-blue-100 text-blue-600")}>
                   {feature.icon}
                 </div>
-                <h4 className={cn("font-semibold text-sm mb-1 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{feature.text}</h4>
-                <p className={cn("text-xs transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>{feature.subtext}</p>
+                <h4 className={cn("font-semibold text-sm mb-1 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{t(feature.textKey)}</h4>
+                <p className={cn("text-xs transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>{t(feature.subtextKey)}</p>
               </motion.div>
             ))}
           </div>
@@ -268,10 +267,10 @@ const LandingPage = () => {
       <section className={cn("py-12 md:py-14 transition-colors", darkMode ? "bg-slate-800" : "bg-slate-50")}>
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center max-w-3xl mx-auto">
-            <p className={cn("text-sm mb-6 transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>Used by Fortune 500 companies and startups worldwide</p>
+            <p className={cn("text-sm mb-6 transition-colors", darkMode ? "text-slate-400" : "text-slate-600")}>{t('landing.trust.socialProof')}</p>
             <div className="flex flex-wrap items-center justify-center gap-8 opacity-50">
               {/* Placeholder for company logos */}
-              <div className={cn("text-sm font-semibold transition-colors", darkMode ? "text-slate-500" : "text-slate-400")}>Client confidentiality</div>
+              <div className={cn("text-sm font-semibold transition-colors", darkMode ? "text-slate-500" : "text-slate-400")}>{t('landing.trust.clientConfidentiality')}</div>
             </div>
           </div>
         </div>
@@ -288,10 +287,10 @@ const LandingPage = () => {
               viewport={{ once: true }}
             >
               <h2 className={cn("text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-5 transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-                Everything you need to manage links
+                {t('landing.features.sectionTitle')}
               </h2>
               <p className={cn("text-lg md:text-xl transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-                Advanced link management tools that help you track performance and optimize campaigns
+                {t('landing.features.sectionDescription')}
               </p>
             </motion.div>
           </div>
@@ -300,39 +299,33 @@ const LandingPage = () => {
             {[
               {
                 icon: <BarChart3 className="h-6 w-6" />,
-                title: "Advanced analytics",
-                description: "Track clicks, conversions, and user behavior with detailed insights and real-time reporting",
-                link: "Learn more"
+                titleKey: 'landing.features.analytics.titleAlt',
+                descKey: 'landing.features.analytics.descriptionAlt'
               },
               {
                 icon: <Globe2 className="h-6 w-6" />,
-                title: "Custom domains",
-                description: "Use your own branded domain to create professional short links that build trust",
-                link: "Learn more"
+                titleKey: 'landing.features.customDomain.titleAlt',
+                descKey: 'landing.features.customDomain.descriptionAlt'
               },
               {
                 icon: <Users className="h-6 w-6" />,
-                title: "Team collaboration",
-                description: "Work together with your team, manage permissions, and share link analytics",
-                link: "Learn more"
+                titleKey: 'landing.features.teamCollaboration.title',
+                descKey: 'landing.features.teamCollaboration.description'
               },
               {
                 icon: <QrCode className="h-6 w-6" />,
-                title: "QR codes",
-                description: "Generate dynamic QR codes that can be edited anytime without reprinting",
-                link: "Learn more"
+                titleKey: 'landing.features.qrCode.title',
+                descKey: 'landing.features.qrCode.descriptionAlt'
               },
               {
                 icon: <Code className="h-6 w-6" />,
-                title: "API access",
-                description: "Integrate into your applications with our powerful REST API",
-                link: "Learn more"
+                titleKey: 'landing.features.apiAccess.title',
+                descKey: 'landing.features.apiAccess.description'
               },
               {
                 icon: <Layers className="h-6 w-6" />,
-                title: "Link management",
-                description: "Organize, edit, and manage thousands of links with bulk operations and tags",
-                link: "Learn more"
+                titleKey: 'landing.features.linkManagement.title',
+                descKey: 'landing.features.linkManagement.description'
               }
             ].map((feature, idx) => (
               <motion.div 
@@ -347,12 +340,12 @@ const LandingPage = () => {
                   <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center mb-5 transition-colors", darkMode ? "bg-blue-900 text-blue-400 group-hover:bg-blue-600 group-hover:text-white" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white")}>
                     {feature.icon}
                   </div>
-                  <h3 className={cn("text-xl font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{feature.title}</h3>
+                  <h3 className={cn("text-xl font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{t(feature.titleKey)}</h3>
                   <p className={cn("leading-relaxed mb-4 transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-                    {feature.description}
+                    {t(feature.descKey)}
                   </p>
                   <button className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    {feature.link} <ChevronRight className="h-4 w-4" />
+                    {t('landing.features.learnMore')} <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
               </motion.div>
@@ -366,10 +359,10 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <h2 className={cn("text-3xl md:text-4xl font-bold tracking-tight mb-5 transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-              Connect with your favorite tools
+              {t('landing.integrations.title')}
             </h2>
             <p className={cn("text-lg transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-              Connect {t('common.brandName')} to your existing tools with ready-made integrations and API access
+              {t('landing.integrations.subtitle')}
             </p>
           </div>
           
@@ -406,7 +399,7 @@ const LandingPage = () => {
           
           <div className="text-center mt-10">
             <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mx-auto">
-              View all integrations <ChevronRight className="h-4 w-4" />
+              {t('landing.integrations.viewAll')} <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -417,29 +410,29 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className={cn("text-3xl md:text-4xl font-bold tracking-tight mb-4 transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-              Built for every team
+              {t('landing.teams.title')}
             </h2>
             <p className={cn("text-lg transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-              See how different teams use {t('common.brandName')} to achieve their goals
+              {t('landing.teams.subtitle')}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
             {[
               {
-                title: "Marketing teams",
-                description: "Track campaign performance and optimize conversions",
-                features: ["Campaign tracking", "A/B testing", "ROI measurement", "Conversion optimization"]
+                titleKey: "landing.teams.marketing.title",
+                descriptionKey: "landing.teams.marketing.description",
+                features: ["landing.teams.marketing.feature1", "landing.teams.marketing.feature2", "landing.teams.marketing.feature3", "landing.teams.marketing.feature4"]
               },
               {
-                title: "Sales teams",
-                description: "Personalize outreach and track engagement",
-                features: ["Personalized links", "Engagement tracking", "Lead scoring", "CRM integration"]
+                titleKey: "landing.teams.sales.title",
+                descriptionKey: "landing.teams.sales.description",
+                features: ["landing.teams.sales.feature1", "landing.teams.sales.feature2", "landing.teams.sales.feature3", "landing.teams.sales.feature4"]
               },
               {
-                title: "Infrastructure teams",
-                description: "Enterprise-grade features for large-scale deployment",
-                features: ["SSO authentication", "API access", "System integration", "Unlimited plans"]
+                titleKey: "landing.teams.infrastructure.title",
+                descriptionKey: "landing.teams.infrastructure.description",
+                features: ["landing.teams.infrastructure.feature1", "landing.teams.infrastructure.feature2", "landing.teams.infrastructure.feature3", "landing.teams.infrastructure.feature4"]
               }
             ].map((team, idx) => (
               <motion.div
@@ -450,13 +443,13 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={cn("rounded-xl border p-8 hover:shadow-xl transition-all", darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}
               >
-                <h3 className={cn("text-2xl font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{team.title}</h3>
-                <p className={cn("mb-6 transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{team.description}</p>
+                <h3 className={cn("text-2xl font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{t(team.titleKey)}</h3>
+                <p className={cn("mb-6 transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{t(team.descriptionKey)}</p>
                 <ul className="space-y-3">
-                  {team.features.map((feature, fidx) => (
+                  {team.features.map((featureKey, fidx) => (
                     <li key={fidx} className={cn("flex items-center gap-2 transition-colors", darkMode ? "text-slate-300" : "text-slate-700")}>
                       <Check className="h-5 w-5 text-green-600 shrink-0" />
-                      <span>{feature}</span>
+                      <span>{t(featureKey)}</span>
                     </li>
                   ))}
                 </ul>
@@ -471,19 +464,19 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <h2 className={cn("text-3xl md:text-4xl font-bold tracking-tight mb-4 transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-              Trusted at scale
+              {t('landing.trust.title')}
             </h2>
             <p className={cn("text-lg transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-              Marketing teams, developers, and businesses worldwide rely on {t('common.brandName')} to track what matters
+              {t('landing.trust.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
             {[
-              { value: "50,000+", label: "Links created" },
-              { value: "2.5M+", label: "Clicks tracked" },
-              { value: "10,000+", label: "Active users" },
-              { value: "3+", label: "Years on the market" }
+              { valueKey: "landing.stats.linksCreatedValue", labelKey: "landing.stats.linksCreatedAlt" },
+              { valueKey: "landing.stats.clicksTrackedValue", labelKey: "landing.stats.clicksTracked" },
+              { valueKey: "landing.stats.activeUsersValue", labelKey: "landing.stats.activeUsers" },
+              { valueKey: "landing.stats.yearsOnMarketValue", labelKey: "landing.stats.yearsOnMarket" }
             ].map((stat, idx) => (
               <motion.div
                 key={idx}
@@ -493,8 +486,8 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <div className={cn("text-4xl md:text-5xl font-bold mb-2 transition-colors", darkMode ? "text-blue-400" : "text-blue-600")}>{stat.value}</div>
-                <div className={cn("text-sm md:text-base transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{stat.label}</div>
+                <div className={cn("text-4xl md:text-5xl font-bold mb-2 transition-colors", darkMode ? "text-blue-400" : "text-blue-600")}>{t(stat.valueKey)}</div>
+                <div className={cn("text-sm md:text-base transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{t(stat.labelKey)}</div>
               </motion.div>
             ))}
           </div>
@@ -506,39 +499,21 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <h2 className={cn("text-3xl md:text-4xl font-bold tracking-tight mb-4 transition-colors", darkMode ? "text-white" : "text-slate-900")}>
-              Frequently asked questions
+              {t('landing.faq.title')}
             </h2>
             <p className={cn("text-lg transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>
-              Can't find what you're looking for?
+              {t('landing.faq.subtitle')}
             </p>
           </div>
 
           <div className="space-y-4 max-w-3xl mx-auto">
             {[
-              {
-                question: "How do I get started with " + t('common.brandName') + "?",
-                answer: "Getting started is easy! Simply sign up for a free account, and you can start shortening links immediately. No credit card required for the free plan."
-              },
-              {
-                question: "Can I use my own domain?",
-                answer: "Yes! You can connect your own custom domain to create branded short links. This helps build trust and recognition with your audience."
-              },
-              {
-                question: "What analytics are available?",
-                answer: "We provide comprehensive analytics including click tracking, geographic data, device types, referrers, and conversion tracking. All data is available in real-time."
-              },
-              {
-                question: "Is there an API available?",
-                answer: "Yes, we offer a powerful REST API that allows you to integrate " + t('common.brandName') + " into your applications. You can create, manage, and track links programmatically."
-              },
-              {
-                question: "How secure are my links?",
-                answer: "We take security seriously. All links are served over HTTPS, and we offer password protection, expiration dates, and advanced security features for your links."
-              },
-              {
-                question: "What's included in the free plan?",
-                answer: "The free plan includes 1,000 branded links, basic analytics, QR codes, and API access. Perfect for individuals and small projects."
-              }
+              { questionKey: 'landing.faq.q1.question', answerKey: 'landing.faq.q1.answer' },
+              { questionKey: 'landing.faq.q2.question', answerKey: 'landing.faq.q2.answer' },
+              { questionKey: 'landing.faq.q3.question', answerKey: 'landing.faq.q3.answer' },
+              { questionKey: 'landing.faq.q4.question', answerKey: 'landing.faq.q4.answer' },
+              { questionKey: 'landing.faq.q5.question', answerKey: 'landing.faq.q5.answer' },
+              { questionKey: 'landing.faq.q6.question', answerKey: 'landing.faq.q6.answer' }
             ].map((faq, idx) => (
               <motion.div
                 key={idx}
@@ -548,16 +523,16 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={cn("rounded-xl border p-6 hover:shadow-lg transition-all", darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}
               >
-                <h3 className={cn("text-lg font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{faq.question}</h3>
-                <p className={cn("leading-relaxed transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{faq.answer}</p>
+                <h3 className={cn("text-lg font-bold mb-3 transition-colors", darkMode ? "text-white" : "text-slate-900")}>{t(faq.questionKey)}</h3>
+                <p className={cn("leading-relaxed transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{t(faq.answerKey)}</p>
               </motion.div>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <p className={cn("mb-4 transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>Still have questions?</p>
+            <p className={cn("mb-4 transition-colors", darkMode ? "text-slate-300" : "text-slate-600")}>{t('faqs.stillHaveQuestions')}</p>
             <Button variant="outline" onClick={() => navigate("/contact")} className={darkMode ? "border-slate-600 text-slate-300 hover:bg-slate-800" : ""}>
-              Contact Support
+              {t('faqs.contactSupport')}
             </Button>
           </div>
         </div>
@@ -574,34 +549,34 @@ const LandingPage = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Ready to get started?
+              {t('landing.cta.readyToStart')}
             </h2>
             <p className="text-lg md:text-xl text-blue-100 mb-10">
-              Join over 1.2 million users shortening links with {t('common.brandName')}
+              {t('landing.cta.joinUsers')}
             </p>
             <Button 
               size="lg" 
               className="h-14 px-10 text-lg bg-white text-blue-600 hover:bg-slate-100 font-semibold"
               onClick={() => navigate("/register")}
             >
-              Get started for free
+              {t('landing.cta.getStartedFree')}
             </Button>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-blue-100">
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5" />
-                <span>No credit card required</span>
+                <span>{t('landing.cta.noCardRequired')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5" />
-                <span>Free plan forever</span>
+                <span>{t('landing.cta.freePlanForever')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5" />
-                <span>Upgrade anytime</span>
+                <span>{t('landing.cta.upgradeAnytime')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5" />
-                <span>Fast support response</span>
+                <span>{t('landing.cta.fastSupport')}</span>
               </div>
             </div>
           </motion.div>
@@ -618,34 +593,34 @@ const LandingPage = () => {
                    <span className="text-xl font-bold text-white">{t('common.brandName')}</span>
                  </div>
                  <p className="text-sm leading-relaxed opacity-70 mb-6">
-                   Professional URL shortening with advanced analytics and custom domains.
+                   {t('footer.description')}
                  </p>
               </div>
               
               <div>
-                 <h4 className="text-white font-bold mb-4 text-sm">Product</h4>
+                 <h4 className="text-white font-bold mb-4 text-sm">{t('footer.product')}</h4>
                  <ul className="space-y-2 text-sm">
-                    <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                    <li><a href="#integrations" className="hover:text-white transition-colors">Integrations</a></li>
-                    <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                    <li><a href="/api-docs" className="hover:text-white transition-colors">API</a></li>
+                    <li><a href="#features" className="hover:text-white transition-colors">{t('footer.features')}</a></li>
+                    <li><a href="#integrations" className="hover:text-white transition-colors">{t('footer.integrations')}</a></li>
+                    <li><a href="#pricing" className="hover:text-white transition-colors">{t('footer.pricing')}</a></li>
+                    <li><a href="/api-docs" className="hover:text-white transition-colors">{t('footer.api')}</a></li>
                  </ul>
               </div>
 
               <div>
-                 <h4 className="text-white font-bold mb-4 text-sm">Company</h4>
+                 <h4 className="text-white font-bold mb-4 text-sm">{t('footer.company')}</h4>
                  <ul className="space-y-2 text-sm">
-                    <li><a href="#about" className="hover:text-white transition-colors">About</a></li>
-                    <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
-                    <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
+                    <li><a href="#about" className="hover:text-white transition-colors">{t('footer.about')}</a></li>
+                    <li><a href="#contact" className="hover:text-white transition-colors">{t('footer.contact')}</a></li>
+                    <li><a href="/blog" className="hover:text-white transition-colors">{t('footer.blog')}</a></li>
                  </ul>
               </div>
 
               <div>
-                 <h4 className="text-white font-bold mb-4 text-sm">Legal</h4>
+                 <h4 className="text-white font-bold mb-4 text-sm">{t('footer.legal')}</h4>
                  <ul className="space-y-2 text-sm">
-                    <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                    <li><a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms of Service</a></li>
+                    <li><a href="/privacy-policy" className="hover:text-white transition-colors">{t('footer.privacy')}</a></li>
+                    <li><a href="/terms-and-conditions" className="hover:text-white transition-colors">{t('footer.terms')}</a></li>
                  </ul>
               </div>
            </div>

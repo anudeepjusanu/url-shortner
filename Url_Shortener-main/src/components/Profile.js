@@ -81,10 +81,10 @@ const Profile = () => {
       const res = await api.put("/auth/profile", personalInfo);
       if (res) {
         updateUser(res);
-        setToast({ type: 'success', message: 'Profile updated successfully' });
+        setToast({ type: 'success', message: t('profile.messages.profileUpdated') });
       }
     } catch (err) {
-      setToast({ type: 'error', message: err.message || 'Failed to update user' });
+      setToast({ type: 'error', message: err.message || t('profile.messages.failedToUpdate') });
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ const Profile = () => {
   const updatePassword = async (e) => {
     e.preventDefault();
     if (security.newPassword !== security.confirmPassword) {
-      setToast({ type: 'error', message: 'Passwords do not match' });
+      setToast({ type: 'error', message: t('profile.messages.passwordsDoNotMatch') });
       return;
     }
     setLoading(true);
@@ -102,25 +102,25 @@ const Profile = () => {
         currentPassword: security.currentPassword,
         newPassword: security.newPassword
       });
-      setToast({ type: 'success', message: 'Password changed successfully' });
+      setToast({ type: 'success', message: t('profile.messages.passwordUpdated') });
       setSecurity({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      setToast({ type: 'error', message: err.message || 'Failed to change password' });
+      setToast({ type: 'error', message: err.message || t('profile.messages.failedToUpdatePassword') });
     } finally {
       setLoading(false);
     }
   };
 
   const regenerateKey = async () => {
-    if (!window.confirm("Are you sure? This will invalidate your old key.")) return;
+    if (!window.confirm(t('profile.apiKeys.confirmRegenerate'))) return;
     try {
       const res = await api.post("/auth/regenerate-api-key");
       if (res.apiKey) {
         setApiKey(res.apiKey);
-        setToast({ type: 'success', message: 'API Key regenerated' });
+        setToast({ type: 'success', message: t('profile.messages.apiKeyRegenerated') });
       }
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to regenerate key' });
+      setToast({ type: 'error', message: t('profile.messages.failedToRegenerateKey') });
     }
   };
 
@@ -128,9 +128,9 @@ const Profile = () => {
     e.preventDefault();
     try {
       await api.put("/auth/preferences", preferences);
-      setToast({ type: 'success', message: 'Preferences saved' });
+      setToast({ type: 'success', message: t('profile.messages.preferencesUpdated') });
     } catch (err) {
-        setToast({ type: 'error', message: 'Failed to save preferences' });
+        setToast({ type: 'error', message: t('profile.messages.failedToUpdatePreferences') });
     }
   };
 
@@ -162,7 +162,7 @@ const Profile = () => {
                      {tab === 'security' && <Lock className="h-4 w-4" />}
                      {tab === 'api' && <Key className="h-4 w-4" />}
                      {tab === 'preferences' && <Bell className="h-4 w-4" />}
-                     <span className="capitalize">{tab}</span>
+                     <span className="capitalize">{t(`profile.tabs.${tab}`)}</span>
                   </button>
                ))}
             </CardContent>
@@ -174,32 +174,32 @@ const Profile = () => {
             {activeTab === 'general' && (
                <Card>
                   <CardHeader>
-                     <CardTitle>Personal Information</CardTitle>
-                     <CardDescription>Manage your public profile and private details.</CardDescription>
+                     <CardTitle>{t('profile.general.personalInfo')}</CardTitle>
+                     <CardDescription>{t('profile.general.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                      <form onSubmit={updateProfile} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                            <div className="space-y-2">
-                              <Label>First Name</Label>
+                              <Label>{t('profile.general.firstName')}</Label>
                               <Input value={personalInfo.firstName} onChange={e => setPersonalInfo({...personalInfo, firstName: e.target.value})} />
                            </div>
                            <div className="space-y-2">
-                              <Label>Last Name</Label>
+                              <Label>{t('profile.general.lastName')}</Label>
                               <Input value={personalInfo.lastName} onChange={e => setPersonalInfo({...personalInfo, lastName: e.target.value})} />
                            </div>
                         </div>
                         <div className="space-y-2">
-                           <Label>Email</Label>
+                           <Label>{t('profile.general.email')}</Label>
                            <Input value={personalInfo.email} disabled className="bg-slate-50" />
                         </div>
                         <div className="space-y-2">
-                           <Label>Job Title</Label>
+                           <Label>{t('profile.general.jobTitle')}</Label>
                            <Input value={personalInfo.jobTitle} placeholder="e.g. Marketing Manager" onChange={e => setPersonalInfo({...personalInfo, jobTitle: e.target.value})} />
                         </div>
                         <div className="pt-4 flex justify-end">
                            <Button type="submit" disabled={loading}>
-                              {loading ? 'Saving...' : 'Save Changes'}
+                              {loading ? t('profile.general.updating') : t('profile.general.saveChanges')}
                            </Button>
                         </div>
                      </form>
@@ -211,25 +211,25 @@ const Profile = () => {
             {activeTab === 'security' && (
                <Card>
                   <CardHeader>
-                     <CardTitle>Security</CardTitle>
-                     <CardDescription>Manage your password and account security.</CardDescription>
+                     <CardTitle>{t('profile.security.changePassword')}</CardTitle>
+                     <CardDescription>{t('profile.security.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                      <form onSubmit={updatePassword} className="space-y-4">
                         <div className="space-y-2">
-                           <Label>Current Password</Label>
+                           <Label>{t('profile.security.currentPassword')}</Label>
                            <Input type="password" value={security.currentPassword} onChange={e => setSecurity({...security, currentPassword: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                           <Label>New Password</Label>
+                           <Label>{t('profile.security.newPassword')}</Label>
                            <Input type="password" value={security.newPassword} onChange={e => setSecurity({...security, newPassword: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                           <Label>Confirm New Password</Label>
+                           <Label>{t('profile.security.confirmPassword')}</Label>
                            <Input type="password" value={security.confirmPassword} onChange={e => setSecurity({...security, confirmPassword: e.target.value})} />
                         </div>
                         <div className="pt-4 flex justify-end">
-                           <Button type="submit" disabled={loading}>Change Password</Button>
+                           <Button type="submit" disabled={loading}>{t('profile.security.updatePassword')}</Button>
                         </div>
                      </form>
                   </CardContent>
@@ -240,22 +240,22 @@ const Profile = () => {
             {activeTab === 'api' && (
                <Card>
                   <CardHeader>
-                     <CardTitle>API Configuration</CardTitle>
-                     <CardDescription>Manage your API keys for external integrations.</CardDescription>
+                     <CardTitle>{t('profile.apiKeys.title')}</CardTitle>
+                     <CardDescription>{t('profile.apiKeys.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                      <div className="space-y-2">
-                        <Label>Your API Key</Label>
+                        <Label>{t('profile.apiKeys.key')}</Label>
                         <div className="flex gap-2">
                            <Input value={apiKey} readOnly className="font-mono bg-slate-50" type="password" />
-                           <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(apiKey); setToast({type: 'success', message: 'Copied'}); }}>
+                           <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(apiKey); setToast({type: 'success', message: t('myLinks.copiedToClipboard')}); }}>
                               <Copy className="h-4 w-4" />
                            </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground">Keep this key secret. Do not share it publicly.</p>
+                        <p className="text-xs text-muted-foreground">{t('profile.apiKeys.warning')}</p>
                      </div>
                      <div className="flex justify-end">
-                        <Button variant="destructive" variantType="outline" onClick={regenerateKey}>Regenerate Key</Button>
+                        <Button variant="destructive" variantType="outline" onClick={regenerateKey}>{t('profile.apiKeys.regenerateButton')}</Button>
                      </div>
                   </CardContent>
                </Card>
@@ -265,27 +265,27 @@ const Profile = () => {
             {activeTab === 'preferences' && (
                <Card>
                   <CardHeader>
-                     <CardTitle>Preferences</CardTitle>
-                     <CardDescription>Manage your notification settings.</CardDescription>
+                     <CardTitle>{t('profile.preferences.title')}</CardTitle>
+                     <CardDescription>{t('profile.preferences.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                      <form onSubmit={updatePreferences} className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <div className="space-y-0.5">
-                              <Label className="text-base">Email Notifications</Label>
-                              <p className="text-sm text-muted-foreground">Receive emails about your account activity.</p>
+                              <Label className="text-base">{t('profile.preferences.emailNotifications')}</Label>
+                              <p className="text-sm text-muted-foreground">{t('profile.preferences.emailNotificationsDesc')}</p>
                            </div>
                            <input type="checkbox" checked={preferences.emailNotifications} onChange={e => setPreferences({...preferences, emailNotifications: e.target.checked})} className="toggle" />
                         </div>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <div className="space-y-0.5">
-                              <Label className="text-base">Marketing Emails</Label>
-                              <p className="text-sm text-muted-foreground">Receive news and updates about new features.</p>
+                              <Label className="text-base">{t('profile.preferences.marketingEmails')}</Label>
+                              <p className="text-sm text-muted-foreground">{t('profile.preferences.marketingEmailsDesc')}</p>
                            </div>
                            <input type="checkbox" checked={preferences.marketingEmails} onChange={e => setPreferences({...preferences, marketingEmails: e.target.checked})} className="toggle" />
                         </div>
                         <div className="pt-4 flex justify-end">
-                           <Button type="submit">Save Preferences</Button>
+                           <Button type="submit">{t('profile.preferences.savePreferences')}</Button>
                         </div>
                      </form>
                   </CardContent>

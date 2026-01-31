@@ -64,7 +64,7 @@ const UserManagement = () => {
       const response = await rolesAPI.getUsersWithRoles(params);
       if (response.success) setUsers(response.data.users);
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to load users' });
+      setToast({ type: 'error', message: t('userManagement.messages.failedToLoad') });
     } finally {
       setLoading(false);
     }
@@ -80,38 +80,38 @@ const UserManagement = () => {
   };
 
   const handleRoleChange = async (userId, newRole) => {
-     if(!window.confirm(`Change role to ${newRole}?`)) return;
+     if(!window.confirm(t('userManagement.messages.confirmRoleChange', { role: newRole }))) return;
      try {
         await rolesAPI.updateUserRole(userId, newRole);
-        setToast({ type: 'success', message: 'Role updated' });
+        setToast({ type: 'success', message: t('userManagement.messages.roleUpdated') });
         loadUsers();
      } catch (err) {
-        setToast({ type: 'error', message: 'Failed to update role' });
+        setToast({ type: 'error', message: t('userManagement.messages.failedToUpdateRole') });
      }
   };
 
   const handleStatusToggle = async (userId, currentStatus) => {
      const action = currentStatus ? 'deactivate' : 'activate';
-     if(!window.confirm(`Are you sure you want to ${action} this user?`)) return;
+     if(!window.confirm(t('userManagement.messages.confirmStatusChange', { action }))) return;
      try {
         await userManagementAPI.updateUserStatus(userId, { isActive: !currentStatus });
-        setToast({ type: 'success', message: `User ${action}d` });
+        setToast({ type: 'success', message: t(`userManagement.messages.userStatusUpdated.${action}`) });
         loadUsers();
         loadStats();
      } catch (err) {
-        setToast({ type: 'error', message: `Failed to ${action} user` });
+        setToast({ type: 'error', message: t('userManagement.messages.failedToUpdateStatus') });
      }
   };
 
   const handleDeleteUser = async (userId) => {
-     if(!window.confirm("Delete this user? This cannot be undone.")) return;
+     if(!window.confirm(t('userManagement.messages.confirmDelete'))) return;
      try {
         await userManagementAPI.deleteUser(userId);
-        setToast({ type: 'success', message: 'User deleted' });
+        setToast({ type: 'success', message: t('userManagement.messages.userDeleted') });
         loadUsers();
         loadStats();
      } catch (err) {
-        setToast({ type: 'error', message: 'Failed to delete user' });
+        setToast({ type: 'error', message: t('userManagement.messages.failedToDelete') });
      }
   };
 
@@ -140,20 +140,20 @@ const UserManagement = () => {
                   <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('userManagement.actions.title')}</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => { setSelectedUser(user); setShowUserDetails(true); }}>
-                    <Eye className="mr-2 h-4 w-4" /> View Details
+                    <Eye className="mr-2 h-4 w-4" /> {t('userManagement.actions.view')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin')}>
-                    <Shield className="mr-2 h-4 w-4" /> {user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                    <Shield className="mr-2 h-4 w-4" /> {user.role === 'admin' ? t('userManagement.actions.removeAdmin') : t('userManagement.actions.makeAdmin')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusToggle(user._id, user.isActive)}>
                     {user.isActive ? <Lock className="mr-2 h-4 w-4" /> : <Unlock className="mr-2 h-4 w-4" />}
-                    {user.isActive ? 'Deactivate' : 'Activate'}
+                    {user.isActive ? t('userManagement.actions.deactivate') : t('userManagement.actions.activate')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(user._id)}>
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                    <Trash2 className="mr-2 h-4 w-4" /> {t('userManagement.actions.delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -161,7 +161,7 @@ const UserManagement = () => {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Role</span>
+                <span className="text-sm text-muted-foreground">{t('userManagement.table.role')}</span>
                 <Badge variant={user.role === 'admin' || user.role === 'super_admin' ? 'default' : 'secondary'} className="flex items-center gap-1">
                   {user.role === 'super_admin' && <Crown className="h-3 w-3" />}
                   {user.role === 'admin' && <Shield className="h-3 w-3" />}
@@ -170,14 +170,14 @@ const UserManagement = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
+                <span className="text-sm text-muted-foreground">{t('userManagement.table.status')}</span>
                 {user.isActive ? (
                   <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" /> Active
+                    <CheckCircle2 className="h-3 w-3" /> {t('userManagement.userCard.active')}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 flex items-center gap-1">
-                    <XCircle className="h-3 w-3" /> Inactive
+                    <XCircle className="h-3 w-3" /> {t('userManagement.userCard.inactive')}
                   </Badge>
                 )}
               </div>
@@ -185,7 +185,7 @@ const UserManagement = () => {
               <div className="flex items-center justify-between pt-2 border-t">
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                  {t('userManagement.userCard.joined')} {new Date(user.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
@@ -199,18 +199,18 @@ const UserManagement = () => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>User</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Joined</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>{t('userManagement.table.name')}</TableHead>
+          <TableHead>{t('userManagement.table.role')}</TableHead>
+          <TableHead>{t('userManagement.table.status')}</TableHead>
+          <TableHead>{t('userManagement.table.joined')}</TableHead>
+          <TableHead className="text-right">{t('userManagement.table.actions')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {loading ? (
-          <TableRow><TableCell colSpan={5} className="text-center py-8">Loading...</TableCell></TableRow>
+          <TableRow><TableCell colSpan={5} className="text-center py-8">{t('userManagement.loading')}</TableCell></TableRow>
         ) : users.length === 0 ? (
-          <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No users found.</TableCell></TableRow>
+          <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('userManagement.noUsersFound')}</TableCell></TableRow>
         ) : (
           users.map(user => (
             <TableRow key={user._id}>
@@ -234,9 +234,9 @@ const UserManagement = () => {
               </TableCell>
               <TableCell>
                 {user.isActive ? (
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Active</Badge>
+                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">{t('userManagement.userCard.active')}</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">Inactive</Badge>
+                  <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{t('userManagement.userCard.inactive')}</Badge>
                 )}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
@@ -248,20 +248,20 @@ const UserManagement = () => {
                     <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t('userManagement.actions.title')}</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => { setSelectedUser(user); setShowUserDetails(true); }}>
-                      <Eye className="mr-2 h-4 w-4" /> View Details
+                      <Eye className="mr-2 h-4 w-4" /> {t('userManagement.actions.view')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin')}>
-                      <Shield className="mr-2 h-4 w-4" /> {user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                      <Shield className="mr-2 h-4 w-4" /> {user.role === 'admin' ? t('userManagement.actions.removeAdmin') : t('userManagement.actions.makeAdmin')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleStatusToggle(user._id, user.isActive)}>
                       {user.isActive ? <Lock className="mr-2 h-4 w-4" /> : <Unlock className="mr-2 h-4 w-4" />}
-                      {user.isActive ? 'Deactivate' : 'Activate'}
+                      {user.isActive ? t('userManagement.actions.deactivate') : t('userManagement.actions.activate')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(user._id)}>
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                      <Trash2 className="mr-2 h-4 w-4" /> {t('userManagement.actions.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -291,7 +291,7 @@ const UserManagement = () => {
                 className="h-8"
               >
                 <Grid className="h-4 w-4 mr-1" />
-                Grid
+                {t('userManagement.viewMode.grid')}
               </Button>
               <Button 
                 variant={viewMode === 'table' ? 'default' : 'ghost'} 
@@ -300,7 +300,7 @@ const UserManagement = () => {
                 className="h-8"
               >
                 <List className="h-4 w-4 mr-1" />
-                Table
+                {t('userManagement.viewMode.table')}
               </Button>
             </div>
           </div>
@@ -390,8 +390,8 @@ const UserManagement = () => {
        <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
          <DialogContent className="max-w-2xl">
            <DialogHeader>
-             <DialogTitle>User Details</DialogTitle>
-             <DialogDescription>Comprehensive information about this user.</DialogDescription>
+             <DialogTitle>{t('userManagement.modal.title')}</DialogTitle>
+             <DialogDescription>{t('userManagement.modal.description')}</DialogDescription>
            </DialogHeader>
            {selectedUser && (
              <div className="space-y-6">
@@ -410,9 +410,9 @@ const UserManagement = () => {
                        {selectedUser.role}
                      </Badge>
                      {selectedUser.isActive ? (
-                       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+                       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{t('userManagement.userCard.active')}</Badge>
                      ) : (
-                       <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">Inactive</Badge>
+                       <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{t('userManagement.userCard.inactive')}</Badge>
                      )}
                    </div>
                  </div>
@@ -420,14 +420,14 @@ const UserManagement = () => {
 
                <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-1">
-                   <h4 className="text-sm font-medium text-muted-foreground">Account Created</h4>
+                   <h4 className="text-sm font-medium text-muted-foreground">{t('userManagement.modal.accountCreated')}</h4>
                    <p className="text-sm flex items-center gap-1">
                      <Calendar className="h-3 w-3" />
                      {new Date(selectedUser.createdAt).toLocaleDateString()}
                    </p>
                  </div>
                  <div className="space-y-1">
-                   <h4 className="text-sm font-medium text-muted-foreground">Last Updated</h4>
+                   <h4 className="text-sm font-medium text-muted-foreground">{t('userManagement.modal.lastUpdated')}</h4>
                    <p className="text-sm flex items-center gap-1">
                      <Activity className="h-3 w-3" />
                      {new Date(selectedUser.updatedAt).toLocaleDateString()}
@@ -440,12 +440,12 @@ const UserManagement = () => {
                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                    <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
                      <MapPin className="h-4 w-4" />
-                     Registration Location
+                     {t('userManagement.modal.registrationLocation')}
                    </h4>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                      {selectedUser.registrationLocation.country && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">Country</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.country')}</p>
                          <p className="text-sm text-blue-900 flex items-center gap-1">
                            <Globe className="h-3 w-3" />
                            {selectedUser.registrationLocation.country}
@@ -454,7 +454,7 @@ const UserManagement = () => {
                      )}
                      {selectedUser.registrationLocation.city && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">City</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.city')}</p>
                          <p className="text-sm text-blue-900 flex items-center gap-1">
                            <MapPin className="h-3 w-3" />
                            {selectedUser.registrationLocation.city}
@@ -463,31 +463,31 @@ const UserManagement = () => {
                      )}
                      {selectedUser.registrationLocation.region && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">Region</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.region')}</p>
                          <p className="text-sm text-blue-900">{selectedUser.registrationLocation.region}</p>
                        </div>
                      )}
                      {selectedUser.registrationLocation.ip && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">IP Address</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.ipAddress')}</p>
                          <p className="text-sm text-blue-900 font-mono">{selectedUser.registrationLocation.ip}</p>
                        </div>
                      )}
                      {selectedUser.registrationLocation.timezone && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">Timezone</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.timezone')}</p>
                          <p className="text-sm text-blue-900">{selectedUser.registrationLocation.timezone}</p>
                        </div>
                      )}
                      {selectedUser.registrationLocation.countryCode && (
                        <div className="space-y-1">
-                         <p className="text-xs text-blue-700 font-medium">Country Code</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.countryCode')}</p>
                          <p className="text-sm text-blue-900 font-mono">{selectedUser.registrationLocation.countryCode}</p>
                        </div>
                      )}
                      {(selectedUser.registrationLocation.latitude && selectedUser.registrationLocation.longitude) && (
                        <div className="space-y-1 md:col-span-2">
-                         <p className="text-xs text-blue-700 font-medium">Coordinates</p>
+                         <p className="text-xs text-blue-700 font-medium">{t('userManagement.modal.coordinates')}</p>
                          <p className="text-sm text-blue-900 font-mono">
                            {selectedUser.registrationLocation.latitude}, {selectedUser.registrationLocation.longitude}
                          </p>
@@ -503,26 +503,26 @@ const UserManagement = () => {
                    {selectedUser.urlCount !== undefined && (
                      <div className="p-3 bg-slate-50 rounded-lg text-center">
                        <div className="text-2xl font-bold text-slate-900">{selectedUser.urlCount || 0}</div>
-                       <div className="text-xs text-muted-foreground">URLs Created</div>
+                       <div className="text-xs text-muted-foreground">{t('userManagement.modal.urlsCreated')}</div>
                      </div>
                    )}
                    {selectedUser.totalClicks !== undefined && (
                      <div className="p-3 bg-slate-50 rounded-lg text-center">
                        <div className="text-2xl font-bold text-slate-900">{selectedUser.totalClicks || 0}</div>
-                       <div className="text-xs text-muted-foreground">Total Clicks</div>
+                       <div className="text-xs text-muted-foreground">{t('userManagement.modal.totalClicks')}</div>
                      </div>
                    )}
                    {selectedUser.lastLogin && (
                      <div className="p-3 bg-slate-50 rounded-lg text-center">
                        <div className="text-sm font-bold text-slate-900">{new Date(selectedUser.lastLogin).toLocaleDateString()}</div>
-                       <div className="text-xs text-muted-foreground">Last Login</div>
+                       <div className="text-xs text-muted-foreground">{t('userManagement.modal.lastLogin')}</div>
                      </div>
                    )}
                  </div>
                )}
 
                <div className="flex gap-2 justify-end pt-4 border-t">
-                 <Button variant="outline" onClick={() => setShowUserDetails(false)}>Close</Button>
+                 <Button variant="outline" onClick={() => setShowUserDetails(false)}>{t('userManagement.modal.close')}</Button>
                  <Button 
                    variant={selectedUser.isActive ? "destructive" : "default"}
                    onClick={() => { 
@@ -530,7 +530,7 @@ const UserManagement = () => {
                      setShowUserDetails(false); 
                    }}
                  >
-                   {selectedUser.isActive ? 'Deactivate User' : 'Activate User'}
+                   {selectedUser.isActive ? t('userManagement.modal.deactivateUser') : t('userManagement.modal.activateUser')}
                  </Button>
                </div>
              </div>

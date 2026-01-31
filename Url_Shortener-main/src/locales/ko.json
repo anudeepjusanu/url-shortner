@@ -110,6 +110,8 @@
       "title": "URL 단축 및 성능 추적",
       "titleMain": "쇼튼, 브랜드,",
       "titleAccent": "트랙",
+      "mainHeading": "사용자 지정 도메인을 가진 URL 단축기",
+      "longDescription": "강력한 분석을 활용한 브랜드 짧은 링크를 만드세요. 클릭 수를 추적하고, 성과를 측정하며, 엔터프라이즈급 링크 관리 플랫폼으로 캠페인을 최적화하세요.",
       "subtitle": "당신의 링크는 사우디아라비아에 최적화되어 있습니다",
       "description": "빠르고 안전하며 규정에 맞는 URL 단축 서비스와 고급 분석 및 브랜드 도메인을 지원합니다.",
       "descriptionAlt": "상세한 분석, QR 코드, API 기능이 포함된 무료 링크 단축기",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "시작할 준비가 되셨나요?",
       "subtitle": "우리 플랫폼을 신뢰하는 수천 명의 사용자와 함께하세요",
-      "button": "무료로 시작하세요"
+      "button": "무료로 시작하세요",
+      "readyToStart": "시작할 준비가 되셨나요?",
+      "joinUsers": "Snip과 함께 120만 명 이상의 사용자가 링크를 단축하세요",
+      "getStartedFree": "무료로 시작하세요",
+      "noCardRequired": "신용카드는 필요 없습니다",
+      "freePlanForever": "무료 플랜 영구",
+      "upgradeAnytime": "언제든 업그레이드하세요",
+      "fastSupport": "신속한 지원 대응"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "아직 궁금한 점이 있으신가요?",
+    "contactSupport": "지원 담당자에게 연락하세요"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "네트워크 오류. 연결을 확인하고 다시 시도해 주세요."
   },
   "dashboard": {
+    "chartDescription": "시간에 따른 링크 성과에 대한 개요.",
     "title": "대시보드",
     "welcome": "돌아와서 반가워요",
     "welcomeMessage": "오늘 당신의 링크들에 대해 이야기해 보세요.",
@@ -707,7 +721,8 @@
       "edit": "수정",
       "qrCode": "QR 코드",
       "analytics": "분석",
-      "delete": "삭제"
+      "delete": "삭제",
+      "actions": "작전"
     },
     "emptyState": {
       "noLinks": "링크는 찾지 못했습니다.",
@@ -746,13 +761,19 @@
         "generateQR": "QR 코드 생성",
         "creating": "창조...",
         "createButton": "링크 생성"
+      },
+      "deleteLink": {
+        "title": "링크 삭제",
+        "message": "정말 삭제하고 싶은 거{{url}}? 이 행동은 되돌릴 수 없습니다."
       }
     },
     "confirmDelete": "이 링크를 삭제할 것이 확실한가요?",
     "deleteSuccess": "링크가 성공적으로 삭제되었습니다",
     "deleteError": "링크 삭제에 실패함",
     "noLinks": "링크는 찾지 못했습니다",
-    "createFirstLink": "첫 번째 짧은 링크를 만들어 시작하세요"
+    "createFirstLink": "첫 번째 짧은 링크를 만들어 시작하세요",
+    "copiedToClipboard": "클립보드에 복사함",
+    "failedToCopy": "복사에 실패했습니다"
   },
   "analytics": {
     "title": "분석",
@@ -993,7 +1014,12 @@
     "title": "커스텀 도메인",
     "subtitle": "브랜드 단편 링크를 위해 맞춤 도메인을 추가하고 관리하세요",
     "wizard": {
-      "step": "{{current}} 단계{{total}}"
+      "step": "{{current}} 단계{{total}}",
+      "connectDomain": "도메인 연결",
+      "enterDomain": "연결하고자 하는 도메인을 입력하세요.",
+      "domainNameLabel": "도메인 이름 (예: example.com)",
+      "subdomainLabel": "서브도메인 (선택 사항, 예: 링크)",
+      "done": "끝났어"
     },
     "stats": {
       "totalDomains": "총 도메인",
@@ -1023,7 +1049,8 @@
       "active": "활성",
       "inactive": "비활성화",
       "verified": "검증됨",
-      "failed": "실패"
+      "failed": "실패",
+      "default": "기본 설정"
     },
     "actions": {
       "verify": "검증",
@@ -1037,7 +1064,9 @@
       "recordType": "레코드 유형",
       "name": "이름",
       "value": "가치",
-      "verifyButton": "도메인 검증"
+      "verifyButton": "도메인 검증",
+      "unverified": "미확인",
+      "failed": "검증 실패. DNS 전파를 확인해 보세요."
     },
     "dnsModal": {
       "title": "도메인 검증",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "도메인 인증에 성공했습니다!",
     "verificationFailed": "도메인 검증 실패",
     "deleteSuccess": "도메인 삭제가 성공적으로 완료되었습니다",
+    "dialogs": {
+      "remove": {
+        "title": "도메인 제거",
+        "message": "확실한가요? 이 도메인을 사용하는 기존 링크는 작동하지 않을 것입니다.",
+        "button": "제거"
+      }
+    },
     "errors": {
       "domainRequired": "도메인 이름이 필요합니다",
       "domainInvalid": "유효한 도메인 이름(예: example.com)을 입력해 주세요.",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API 키"
     },
     "general": {
+      "description": "공개 프로필과 비공개 정보를 관리하세요",
       "personalInfo": "개인 정보",
       "firstName": "이름",
       "lastName": "성",
@@ -1262,17 +1299,18 @@
       "phone": "전화번호",
       "company": "회사",
       "website": "웹사이트",
-      "jobTitle": "역할",
+      "jobTitle": "직함",
       "updateButton": "업데이트 프로필",
-      "updating": "업데이트 중입니다...",
+      "updating": "절약...",
       "saveChanges": "저장 변경 사항"
     },
     "security": {
+      "description": "비밀번호와 계정 보안을 관리하세요",
       "changePassword": "비밀번호 변경",
       "currentPassword": "현재 비밀번호",
       "newPassword": "새 비밀번호",
       "confirmPassword": "새 비밀번호 확인",
-      "updatePassword": "비밀번호 업데이트",
+      "updatePassword": "비밀번호 변경",
       "twoFactor": "2단계 인증",
       "enable2FA": "2단계 인증 활성화",
       "disable2FA": "2단계 인증 비활성화",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "비밀번호가 맞지 않습니다"
     },
     "preferences": {
+      "title": "선호",
+      "description": "알림 설정 관리",
       "language": "언어",
       "timezone": "시간대",
       "dateFormat": "날짜 형식",
@@ -1307,22 +1347,25 @@
       "description": "프로그램 접근 권한을 위한 API 키를 관리하세요",
       "createNew": "새 키 생성",
       "keyName": "주요 명칭",
-      "key": "키",
+      "key": "당신의 API 키",
       "created": "창조",
       "lastUsed": "마지막 사용",
       "revoke": "철회",
+      "warning": "이 열쇠는 비밀로 해. 공개적으로 공유하지 마세요.",
       "regenerating": "재생 중...",
-      "regenerateButton": "API 키 재생성",
-      "confirmRegenerate": "API 키를 다시 생성할 것이 확실한가요? 예전 열쇠는 더 이상 작동하지 않습니다."
+      "regenerateButton": "재생 키",
+      "confirmRegenerate": "확실한가요? 이렇게 하면 기존 키가 무효화됩니다."
     },
     "messages": {
       "profileUpdated": "프로필이 성공적으로 업데이트됨",
       "passwordsDoNotMatch": "비밀번호가 맞지 않습니다",
-      "failedToUpdate": "사용자 업데이트 실패",
-      "passwordUpdated": "비밀번호가 성공적으로 업데이트되었습니다",
-      "failedToUpdatePassword": "비밀번호 업데이트 실패",
-      "preferencesUpdated": "환경설정 업데이트가 성공적으로 완료되었습니다",
-      "failedToUpdatePreferences": "환경설정 업데이트 실패"
+      "failedToUpdate": "프로필 업데이트 실패",
+      "passwordUpdated": "비밀번호 변경이 성공적으로 완료되었습니다",
+      "failedToUpdatePassword": "비밀번호 변경 실패",
+      "preferencesUpdated": "환경설정 저장 완료",
+      "failedToUpdatePreferences": "선호 저장 실패",
+      "apiKeyRegenerated": "API 키가 성공적으로 생성되었습니다",
+      "failedToRegenerateKey": "API 키 재생성에 실패했습니다"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "작전"
     },
     "actions": {
-      "view": "전망",
+      "title": "작전",
+      "view": "상세 정보 보기",
       "viewDetails": "상세 정보 보기",
       "activate": "활성화",
       "deactivate": "비활성화",
       "activateUser": "사용자 활성화",
       "deactivateUser": "사용자 비활성화",
-      "delete": "삭제",
+      "delete": "사용자 삭제",
       "deleteUser": "사용자 삭제",
       "makeAdmin": "관리자 설정",
       "removeAdmin": "관리자 제거"
@@ -1395,6 +1439,14 @@
       "contactInfo": "연락처 정보",
       "email": "메일 주소",
       "phone": "전화",
+      "registrationLocation": "등록 장소",
+      "country": "국가",
+      "city": "도시",
+      "region": "지역",
+      "ipAddress": "IP 주소",
+      "timezone": "시간대",
+      "countryCode": "국가 코드",
+      "coordinates": "좌표",
       "location": "등록 장소",
       "locationFields": {
         "country": "국가",
@@ -1417,10 +1469,24 @@
       "inactive": "비활성화",
       "periodEnd": "시대 종료",
       "freePlan": "무료입니다",
-      "close": "닫습니다"
+      "close": "닫습니다",
+      "activateUser": "사용자 활성화",
+      "deactivateUser": "사용자 비활성화"
     },
     "messages": {
-      "failedToLoad": "사용자 불러오기 실패"
+      "failedToLoad": "사용자 불러오기 실패",
+      "confirmRoleChange": "{{role}}로 역할을 바꿀까요?",
+      "roleUpdated": "역할 업데이트 완료",
+      "failedToUpdateRole": "역할 업데이트 실패",
+      "confirmStatusChange": "이 사용자를 {{action}}할 게 확실한가요?",
+      "userStatusUpdated": {
+        "activate": "사용자가 성공적으로 활성화됨",
+        "deactivate": "사용자가 성공적으로 비활성화되었습니다"
+      },
+      "failedToUpdateStatus": "사용자 상태 업데이트 실패",
+      "confirmDelete": "이 사용자를 삭제할까요? 이 행동은 되돌릴 수 없습니다.",
+      "userDeleted": "사용자가 성공적으로 삭제되었습니다",
+      "failedToDelete": "사용자 삭제에 실패했습니다"
     }
   },
   "footer": {

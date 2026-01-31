@@ -110,6 +110,8 @@
       "title": "Acorta tus URLs y controla el rendimiento",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Pista",
+      "mainHeading": "Acortador de URL con dominios personalizados",
+      "longDescription": "Crea enlaces cortos de marca con analíticas potentes. Haz un seguimiento de clics, mide el rendimiento y optimiza tus campañas con nuestra plataforma de gestión de enlaces de nivel empresarial.",
       "subtitle": "Tus enlaces, optimizados para Arabia Saudí",
       "description": "Acortamiento de URL rápido, seguro y conforme con analítica avanzada y dominios de marca.",
       "descriptionAlt": "Acortador de enlaces gratuito con análisis detallados, códigos QR y API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "¿Listo para empezar?",
       "subtitle": "Únete a miles de usuarios que confían en nuestra plataforma",
-      "button": "Empieza gratis"
+      "button": "Empieza gratis",
+      "readyToStart": "¿Listo para empezar?",
+      "joinUsers": "Únete a más de 1,2 millones de usuarios que acortan enlaces con Snip",
+      "getStartedFree": "Empieza gratis",
+      "noCardRequired": "No se requiere tarjeta de crédito",
+      "freePlanForever": "Plan gratuito para siempre",
+      "upgradeAnytime": "Actualiza en cualquier momento",
+      "fastSupport": "Respuesta rápida de soporte"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "¿Aún tienes preguntas?",
+    "contactSupport": "Contacta con el soporte"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Error de red. Por favor, comprueba tu conexión e inténtalo de nuevo."
   },
   "dashboard": {
+    "chartDescription": "Resumen del rendimiento de tus enlaces a lo largo del tiempo.",
     "title": "Salpicadero",
     "welcome": "Bienvenido",
     "welcomeMessage": "Esto es lo que está pasando hoy con tus enlaces.",
@@ -707,7 +721,8 @@
       "edit": "Edición",
       "qrCode": "Código QR",
       "analytics": "Analítica",
-      "delete": "Borrar"
+      "delete": "Borrar",
+      "actions": "Acciones"
     },
     "emptyState": {
       "noLinks": "No se han encontrado enlaces.",
@@ -746,13 +761,19 @@
         "generateQR": "Generar código QR",
         "creating": "Crear...",
         "createButton": "Crear enlace"
+      },
+      "deleteLink": {
+        "title": "Eliminar enlace",
+        "message": "¿Estás seguro de que quieres borrar {{url}}? Esta acción no puede deshacerse."
       }
     },
     "confirmDelete": "¿Estás seguro de que quieres borrar este enlace?",
     "deleteSuccess": "Enlace eliminado con éxito",
     "deleteError": "No se pudo eliminar el enlace",
     "noLinks": "No se han encontrado enlaces",
-    "createFirstLink": "Crea tu primer enlace corto para empezar"
+    "createFirstLink": "Crea tu primer enlace corto para empezar",
+    "copiedToClipboard": "Copiado a la carpeta",
+    "failedToCopy": "No se pudo copiar"
   },
   "analytics": {
     "title": "Analítica",
@@ -993,7 +1014,12 @@
     "title": "Dominios personalizados",
     "subtitle": "Añade y gestiona tus dominios personalizados para enlaces cortos de marca",
     "wizard": {
-      "step": "Paso {{current}} de {{total}}"
+      "step": "Paso {{current}} de {{total}}",
+      "connectDomain": "Conectar un dominio",
+      "enterDomain": "Introduce el dominio al que quieres conectar.",
+      "domainNameLabel": "Nombre de dominio (por ejemplo, example.com)",
+      "subdomainLabel": "Subdominio (opcional, por ejemplo, enlace)",
+      "done": "Hecho"
     },
     "stats": {
       "totalDomains": "Dominios totales",
@@ -1023,7 +1049,8 @@
       "active": "Activo",
       "inactive": "Inactivo",
       "verified": "Verificado",
-      "failed": "Suspendido"
+      "failed": "Suspendido",
+      "default": "Default"
     },
     "actions": {
       "verify": "Verificar",
@@ -1037,7 +1064,9 @@
       "recordType": "Tipo de registro",
       "name": "Nombre",
       "value": "Valor",
-      "verifyButton": "Verificar dominio"
+      "verifyButton": "Verificar dominio",
+      "unverified": "No verificado",
+      "failed": "La verificación falló. Comprueba la propagación del DNS."
     },
     "dnsModal": {
       "title": "Verificación de dominio",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "¡Dominio verificado con éxito!",
     "verificationFailed": "Fallo en la verificación del dominio",
     "deleteSuccess": "Dominio eliminado con éxito",
+    "dialogs": {
+      "remove": {
+        "title": "Eliminar dominio",
+        "message": "¿Estás seguro? Los enlaces existentes que usan este dominio dejarán de funcionar.",
+        "button": "Eliminar"
+      }
+    },
     "errors": {
       "domainRequired": "Se requiere nombre de dominio",
       "domainInvalid": "Por favor, introduce un nombre de dominio válido (por ejemplo, example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "Claves API"
     },
     "general": {
+      "description": "Gestiona tu perfil público y tus datos privados",
       "personalInfo": "Información personal",
       "firstName": "Nombre de pila",
       "lastName": "Apellido",
@@ -1262,17 +1299,18 @@
       "phone": "Número de teléfono",
       "company": "Compañía",
       "website": "Sitio web",
-      "jobTitle": "Función",
+      "jobTitle": "Título del puesto",
       "updateButton": "Perfil de actualización",
-      "updating": "Actualizando...",
+      "updating": "Guardando...",
       "saveChanges": "Guardar cambios"
     },
     "security": {
+      "description": "Gestiona la seguridad de tu contraseña y cuenta",
       "changePassword": "Cambiar contraseña",
       "currentPassword": "Contraseña actual",
       "newPassword": "Nueva contraseña",
       "confirmPassword": "Confirmar nueva contraseña",
-      "updatePassword": "Actualizar contraseña",
+      "updatePassword": "Cambiar contraseña",
       "twoFactor": "Autenticación de dos factores",
       "enable2FA": "Habilitar la 2FA",
       "disable2FA": "Desactivar 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Las contraseñas no coinciden"
     },
     "preferences": {
+      "title": "Preferencias",
+      "description": "Gestiona la configuración de notificaciones",
       "language": "Idioma",
       "timezone": "Huso horario",
       "dateFormat": "Formato de fecha",
@@ -1307,22 +1347,25 @@
       "description": "Gestiona tus claves API para acceso programático",
       "createNew": "Crear nueva clave",
       "keyName": "Nombre clave",
-      "key": "Clave",
+      "key": "Tu clave API",
       "created": "Creación",
       "lastUsed": "Última utilización",
       "revoke": "Revocar",
+      "warning": "Guarda esta clave en secreto. No lo compartas públicamente.",
       "regenerating": "Regeneración...",
-      "regenerateButton": "Clave API de Regeneración",
-      "confirmRegenerate": "¿Estás seguro de que quieres regenerar tu clave API? La llave antigua ya no funcionará."
+      "regenerateButton": "Clave de Regeneración",
+      "confirmRegenerate": "¿Estás seguro? Esto invalidará tu clave antigua."
     },
     "messages": {
       "profileUpdated": "Perfil actualizado con éxito",
       "passwordsDoNotMatch": "Las contraseñas no coinciden",
-      "failedToUpdate": "No se ha podido actualizar al usuario",
-      "passwordUpdated": "Contraseña actualizada con éxito",
-      "failedToUpdatePassword": "No se ha podido actualizar la contraseña",
-      "preferencesUpdated": "Preferencias actualizadas con éxito",
-      "failedToUpdatePreferences": "No se han actualizado las preferencias"
+      "failedToUpdate": "No se ha actualizado el perfil",
+      "passwordUpdated": "Contraseña cambiada con éxito",
+      "failedToUpdatePassword": "No se ha cambiado la contraseña",
+      "preferencesUpdated": "Preferencias guardadas correctamente",
+      "failedToUpdatePreferences": "No se han guardado las preferencias",
+      "apiKeyRegenerated": "API Key se regeneró con éxito",
+      "failedToRegenerateKey": "No se pudo regenerar la clave API"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Acciones"
     },
     "actions": {
-      "view": "Vista",
+      "title": "Acciones",
+      "view": "Ver detalles",
       "viewDetails": "Ver detalles",
       "activate": "Activar",
       "deactivate": "Desactivar",
       "activateUser": "Activar usuario",
       "deactivateUser": "Desactivar usuario",
-      "delete": "Borrar",
+      "delete": "Eliminar usuario",
       "deleteUser": "Eliminar usuario",
       "makeAdmin": "Haz Admin",
       "removeAdmin": "Eliminar administrador"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Información de contacto",
       "email": "Correo electrónico",
       "phone": "Teléfono",
+      "registrationLocation": "Lugar de registro",
+      "country": "País",
+      "city": "Ciudad",
+      "region": "Región",
+      "ipAddress": "Dirección IP",
+      "timezone": "Huso horario",
+      "countryCode": "Código de país",
+      "coordinates": "Coordenadas",
       "location": "Lugar de registro",
       "locationFields": {
         "country": "País",
@@ -1417,10 +1469,24 @@
       "inactive": "INACTIVO",
       "periodEnd": "Fin del periodo",
       "freePlan": "GRATIS",
-      "close": "Cierre"
+      "close": "Cierre",
+      "activateUser": "Activar usuario",
+      "deactivateUser": "Desactivar usuario"
     },
     "messages": {
-      "failedToLoad": "No se han cargado los usuarios"
+      "failedToLoad": "No se han cargado los usuarios",
+      "confirmRoleChange": "¿Cambiar de rol a {{role}}?",
+      "roleUpdated": "Rol actualizado con éxito",
+      "failedToUpdateRole": "No se actualizó el rol",
+      "confirmStatusChange": "¿Estás seguro de que quieres {{action}} este usuario?",
+      "userStatusUpdated": {
+        "activate": "Activado por el usuario con éxito",
+        "deactivate": "El usuario se desactivó con éxito"
+      },
+      "failedToUpdateStatus": "No se ha actualizado el estado del usuario",
+      "confirmDelete": "¿Eliminar a este usuario? Esta acción no puede deshacerse.",
+      "userDeleted": "El usuario eliminó con éxito",
+      "failedToDelete": "No se ha eliminado el usuario"
     }
   },
   "footer": {

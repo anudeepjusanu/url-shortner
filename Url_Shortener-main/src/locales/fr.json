@@ -110,6 +110,8 @@
       "title": "Raccourcir vos URL et suivre les performances",
       "titleMain": "Courten, Brand,",
       "titleAccent": "Piste",
+      "mainHeading": "Raccourcissement d’URL avec des domaines personnalisés",
+      "longDescription": "Créez des liens courts de marque avec des analyses puissantes. Suivez les clics, mesurez la performance et optimisez vos campagnes grâce à notre plateforme de gestion de liens de niveau entreprise.",
       "subtitle": "Vos liens, optimisés pour l’Arabie Saoudite",
       "description": "Raccourcissement rapide des URL rapide, sécurisé et conforme avec des analyses avancées et des domaines de marque.",
       "descriptionAlt": "Raccourcisseur de liens gratuit avec analyses détaillées, codes QR et API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Prêt à commencer ?",
       "subtitle": "Rejoignez des milliers d’utilisateurs qui font confiance à notre plateforme",
-      "button": "Commencez gratuitement"
+      "button": "Commencez gratuitement",
+      "readyToStart": "Prêt à commencer ?",
+      "joinUsers": "Rejoignez plus de 1,2 million d’utilisateurs raccourcissant les liens avec Snip",
+      "getStartedFree": "Commencez gratuitement",
+      "noCardRequired": "Aucune carte de crédit requise",
+      "freePlanForever": "Plan gratuit pour toujours",
+      "upgradeAnytime": "Mise à jour à tout moment",
+      "fastSupport": "Réponse rapide du support"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Vous avez encore des questions ?",
+    "contactSupport": "Contactez le support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Erreur réseau. Veuillez vérifier votre connexion et réessayer."
   },
   "dashboard": {
+    "chartDescription": "Aperçu de la performance de vos liens au fil du temps.",
     "title": "Tableau de bord",
     "welcome": "Bienvenue",
     "welcomeMessage": "Voici ce qui se passe avec vos liens aujourd’hui.",
@@ -707,7 +721,8 @@
       "edit": "Édit",
       "qrCode": "QR Code",
       "analytics": "Analytique",
-      "delete": "Supprimer"
+      "delete": "Supprimer",
+      "actions": "Actions"
     },
     "emptyState": {
       "noLinks": "Aucun lien trouvé.",
@@ -746,13 +761,19 @@
         "generateQR": "Générer un code QR",
         "creating": "Créer...",
         "createButton": "Créer un lien"
+      },
+      "deleteLink": {
+        "title": "Supprimer le lien",
+        "message": "Êtes-vous sûr de vouloir supprimer {{url}} ? Cette action ne peut être annulée."
       }
     },
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce lien ?",
     "deleteSuccess": "Lien supprimé avec succès",
     "deleteError": "Suppression du lien échoué",
     "noLinks": "Aucun lien trouvé",
-    "createFirstLink": "Créez votre premier court lien pour commencer"
+    "createFirstLink": "Créez votre premier court lien pour commencer",
+    "copiedToClipboard": "Copié sur la planche",
+    "failedToCopy": "Échec de copie"
   },
   "analytics": {
     "title": "Analytique",
@@ -993,7 +1014,12 @@
     "title": "Domaines personnalisés",
     "subtitle": "Ajoutez et gérez vos domaines personnalisés pour des liens courts de marque",
     "wizard": {
-      "step": "Étape {{current}} de {{total}}"
+      "step": "Étape {{current}} de {{total}}",
+      "connectDomain": "Connecter un domaine",
+      "enterDomain": "Saisissez le domaine que vous souhaitez connecter.",
+      "domainNameLabel": "Nom de domaine (par exemple example.com)",
+      "subdomainLabel": "Sous-domaine (Optionnel, par exemple lien)",
+      "done": "Marché conclu"
     },
     "stats": {
       "totalDomains": "Domaines totaux",
@@ -1023,7 +1049,8 @@
       "active": "Actifs",
       "inactive": "Inactifs",
       "verified": "Vérifié",
-      "failed": "Échec"
+      "failed": "Échec",
+      "default": "Par défaut"
     },
     "actions": {
       "verify": "Vérifier",
@@ -1037,7 +1064,9 @@
       "recordType": "Record Type",
       "name": "Nom",
       "value": "Valeur",
-      "verifyButton": "Verify Domain"
+      "verifyButton": "Verify Domain",
+      "unverified": "Non vérifié",
+      "failed": "La vérification a échoué. Vérifiez la propagation DNS."
     },
     "dnsModal": {
       "title": "Vérification du domaine",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domaine vérifié avec succès !",
     "verificationFailed": "Échec de la vérification du domaine",
     "deleteSuccess": "Domaine supprimé avec succès",
+    "dialogs": {
+      "remove": {
+        "title": "Supprimer le domaine",
+        "message": "Es-tu sûr? Les liens existants utilisant ce domaine cesseront de fonctionner.",
+        "button": "Retirer"
+      }
+    },
     "errors": {
       "domainRequired": "Un nom de domaine est requis",
       "domainInvalid": "Veuillez saisir un nom de domaine valide (par exemple, example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "Clés API"
     },
     "general": {
+      "description": "Gérez votre profil public et vos informations privées",
       "personalInfo": "Informations personnelles",
       "firstName": "Prénom",
       "lastName": "Nom de famille",
@@ -1262,17 +1299,18 @@
       "phone": "Numéro de téléphone",
       "company": "Entreprise",
       "website": "Site internet",
-      "jobTitle": "Rôle",
+      "jobTitle": "Titre du poste",
       "updateButton": "Mise à jour du profil",
-      "updating": "Mise à jour...",
+      "updating": "Sauver...",
       "saveChanges": "Modifications de sauvegarde"
     },
     "security": {
+      "description": "Gérez la sécurité de votre mot de passe et de votre compte",
       "changePassword": "Changer le mot de passe",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
       "confirmPassword": "Confirmer le nouveau mot de passe",
-      "updatePassword": "Mettre à jour le mot de passe",
+      "updatePassword": "Changer le mot de passe",
       "twoFactor": "Authentification à deux facteurs",
       "enable2FA": "Activez la 2FA",
       "disable2FA": "Désactiver la 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Les mots de passe ne correspondent pas"
     },
     "preferences": {
+      "title": "Préférences",
+      "description": "Gérez vos paramètres de notification",
       "language": "Langue",
       "timezone": "Fuse horaire",
       "dateFormat": "Date Format",
@@ -1307,22 +1347,25 @@
       "description": "Gérez vos clés API pour un accès programmatique",
       "createNew": "Créer une nouvelle clé",
       "keyName": "Nom clé",
-      "key": "Clé",
+      "key": "Votre clé API",
       "created": "Création",
       "lastUsed": "Dernière utilisation",
       "revoke": "Révocation",
+      "warning": "Garde cette clé secrète. Ne le partagez pas publiquement.",
       "regenerating": "Régénération...",
-      "regenerateButton": "Régénérer la clé API",
-      "confirmRegenerate": "Êtes-vous sûr de vouloir régénérer votre clé API ? L’ancienne clé ne fonctionnera plus."
+      "regenerateButton": "Clé de régénération",
+      "confirmRegenerate": "Es-tu sûr? Cela invalidera votre ancienne clé."
     },
     "messages": {
       "profileUpdated": "Profil mis à jour avec succès",
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
-      "failedToUpdate": "Échec de mise à jour de l’utilisateur",
-      "passwordUpdated": "Mot de passe mis à jour avec succès",
-      "failedToUpdatePassword": "Échec de mise à jour du mot de passe",
-      "preferencesUpdated": "Préférences mises à jour avec succès",
-      "failedToUpdatePreferences": "Échec de mettre à jour les préférences"
+      "failedToUpdate": "Échec de mise à jour du profil",
+      "passwordUpdated": "Mot de passe modifié avec succès",
+      "failedToUpdatePassword": "Échec de changer le mot de passe",
+      "preferencesUpdated": "Préférences sauvegardées avec succès",
+      "failedToUpdatePreferences": "Échec de sauvegarder les préférences",
+      "apiKeyRegenerated": "La clé API s’est régénérée avec succès",
+      "failedToRegenerateKey": "Échec à régénérer la clé API"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Actions"
     },
     "actions": {
-      "view": "Vue",
+      "title": "Actions",
+      "view": "Voir les détails",
       "viewDetails": "Voir les détails",
       "activate": "Activez",
       "deactivate": "Désactiver",
       "activateUser": "Activer l’utilisateur",
       "deactivateUser": "Désactiver l’utilisateur",
-      "delete": "Supprimer",
+      "delete": "Supprimer l’utilisateur",
       "deleteUser": "Supprimer l’utilisateur",
       "makeAdmin": "Make Admin",
       "removeAdmin": "Supprimer l’admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Informations de contact",
       "email": "Messagerie électronique",
       "phone": "Téléphone",
+      "registrationLocation": "Lieu d’enregistrement",
+      "country": "Pays",
+      "city": "Ville",
+      "region": "Région",
+      "ipAddress": "Adresse IP",
+      "timezone": "Fuse horaire",
+      "countryCode": "Code de pays",
+      "coordinates": "Coordonnées",
       "location": "Lieu d’enregistrement",
       "locationFields": {
         "country": "Pays",
@@ -1417,10 +1469,24 @@
       "inactive": "INACTIF",
       "periodEnd": "Fin de période",
       "freePlan": "GRATUIT",
-      "close": "Fermer"
+      "close": "Fermer",
+      "activateUser": "Activer l’utilisateur",
+      "deactivateUser": "Désactiver l’utilisateur"
     },
     "messages": {
-      "failedToLoad": "Échec du chargement des utilisateurs"
+      "failedToLoad": "Échec du chargement des utilisateurs",
+      "confirmRoleChange": "Changer de rôle pour {{role}} ?",
+      "roleUpdated": "Rôle mis à jour avec succès",
+      "failedToUpdateRole": "Échec de mise à jour du rôle",
+      "confirmStatusChange": "Êtes-vous sûr de vouloir {{action}} cet utilisateur ?",
+      "userStatusUpdated": {
+        "activate": "Activation utilisateur avec succès",
+        "deactivate": "Utilisateur désactivé avec succès"
+      },
+      "failedToUpdateStatus": "Échec de mise à jour du statut utilisateur",
+      "confirmDelete": "Supprimer cet utilisateur ? Cette action ne peut être annulée.",
+      "userDeleted": "L’utilisateur a supprimé avec succès",
+      "failedToDelete": "Échec de supprimer l’utilisateur"
     }
   },
   "footer": {

@@ -1,13 +1,13 @@
 .privacy-page {
   min-height: 100vh;
   background: #f9fafb;
-  margin-top: 65px;
 }
 
 .privacy-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 80px 80px 60px;
+  padding-top: 100px;
 }
 
 .privacy-content {
@@ -159,6 +159,7 @@
 @media (max-width: 1024px) {
   .privacy-container {
     padding: 60px 60px 40px;
+    padding-top: 90px;
   }
 
   .privacy-content {
@@ -169,8 +170,8 @@
 @media (max-width: 768px) {
   .privacy-container {
     padding: 40px 32px 40px;
+    padding-top: 80px;
   }
-
   .privacy-content {
     padding: 40px 32px;
     border-radius: 16px;

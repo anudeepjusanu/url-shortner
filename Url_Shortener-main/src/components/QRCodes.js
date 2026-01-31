@@ -69,7 +69,7 @@ const QRCodes = () => {
       setLinks(urls);
       setFilteredLinks(urls);
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to load links' });
+      setToast({ type: 'error', message: t('qrCodes.messages.failedToLoad') });
     } finally {
       setLoading(false);
     }
@@ -94,12 +94,12 @@ const QRCodes = () => {
   const generateQRCode = async (linkId) => {
     try {
       await qrCodeAPI.generate(linkId, qrOptions);
-      setToast({ type: 'success', message: 'QR Code generated!' });
+      setToast({ type: 'success', message: t('qrCodes.messages.generated') });
       loadLinks();
       loadStats();
       setShowGenerateModal(false);
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to generate QR Code' });
+      setToast({ type: 'error', message: t('qrCodes.generateFailed') });
     }
   };
 
@@ -113,9 +113,9 @@ const QRCodes = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setToast({ type: 'success', message: 'Downloaded successfully' });
+      setToast({ type: 'success', message: t('qrCodes.downloadSuccess') });
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to download' });
+      setToast({ type: 'error', message: t('qrCodes.downloadFailed') });
     }
   };
 
@@ -139,9 +139,9 @@ const QRCodes = () => {
       await navigator.clipboard.writeText(url);
       setCopiedId(link._id || link.id);
       setTimeout(() => setCopiedId(null), 2000);
-      setToast({ type: 'success', message: 'URL copied to clipboard' });
+      setToast({ type: 'success', message: t('notifications.copied') });
     } catch {
-      setToast({ type: 'error', message: 'Failed to copy URL' });
+      setToast({ type: 'error', message: t('errors.failedToCopyText') });
     }
   };
 
@@ -177,14 +177,14 @@ const QRCodes = () => {
             ) : (
               <div className="w-40 h-40 bg-slate-100 rounded-lg flex flex-col items-center justify-center text-muted-foreground">
                 <QrCode className="h-12 w-12 mb-2" />
-                <span className="text-xs">No QR Code</span>
+                <span className="text-xs">{t('qrCodes.emptyState.noQRCodes')}</span>
               </div>
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-3 bg-slate-50/30 p-4">
             <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Activity className="h-3 w-3" /> {link.qrScanCount || 0} scans
+                <Activity className="h-3 w-3" /> {link.qrScanCount || 0} {t('qrCodes.stats.scans')}
               </span>
               <span className="flex items-center gap-1">
                 <Download className="h-3 w-3" /> {link.qrDownloads || 0}
@@ -256,11 +256,11 @@ const QRCodes = () => {
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-center">
                     <div className="font-bold text-blue-600">{link.qrScanCount || 0}</div>
-                    <div className="text-xs text-muted-foreground">Scans</div>
+                    <div className="text-xs text-muted-foreground">{t('qrCodes.stats.scans')}</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-green-600">{link.qrDownloads || 0}</div>
-                    <div className="text-xs text-muted-foreground">Downloads</div>
+                    <div className="text-xs text-muted-foreground">{t('qrCodes.stats.downloads')}</div>
                   </div>
                 </div>
 
@@ -313,7 +313,7 @@ const QRCodes = () => {
               className="h-8"
             >
               <Grid className="h-4 w-4 mr-1" />
-              Grid
+              {t('qrCodes.viewModes.grid')}
             </Button>
             <Button 
               variant={viewMode === 'list' ? 'default' : 'ghost'} 
@@ -322,21 +322,21 @@ const QRCodes = () => {
               className="h-8"
             >
               <List className="h-4 w-4 mr-1" />
-              List
+              {t('qrCodes.viewModes.list')}
             </Button>
           </div>
           <Button onClick={() => setShowGenerateModal(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Generate New
+            <Plus className="mr-2 h-4 w-4" /> {t('qrCodes.generate.generateNew')}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
          {[
-           { label: 'Total QR Codes', value: stats.totalQRCodes, color: 'text-blue-600', icon: QrCode, bg: 'bg-blue-50' },
-           { label: 'Total Scans', value: stats.totalScans, color: 'text-green-600', icon: Activity, bg: 'bg-green-50' },
-           { label: 'Active', value: stats.activeQRCodes, color: 'text-purple-600', icon: Zap, bg: 'bg-purple-50' },
-           { label: 'Downloads Today', value: stats.downloadsToday, color: 'text-orange-600', icon: TrendingUp, bg: 'bg-orange-50' }
+           { label: t('qrCodes.stats.totalQRCodes'), value: stats.totalQRCodes, color: 'text-blue-600', icon: QrCode, bg: 'bg-blue-50' },
+           { label: t('qrCodes.stats.totalScans'), value: stats.totalScans, color: 'text-green-600', icon: Activity, bg: 'bg-green-50' },
+           { label: t('qrCodes.stats.active'), value: stats.activeQRCodes, color: 'text-purple-600', icon: Zap, bg: 'bg-purple-50' },
+           { label: t('qrCodes.stats.downloadsToday'), value: stats.downloadsToday, color: 'text-orange-600', icon: TrendingUp, bg: 'bg-orange-50' }
          ].map((stat, i) => (
            <Card key={i} className="hover:shadow-md transition-shadow">
              <CardContent className="pt-6 flex items-center gap-4">
@@ -358,7 +358,7 @@ const QRCodes = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search QR codes by title, URL, or short code..." 
+                placeholder={t('qrCodes.search.placeholder')} 
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -366,7 +366,7 @@ const QRCodes = () => {
             </div>
             {selectedLinks.length > 0 && (
               <Badge variant="secondary" className="px-3 py-1">
-                {selectedLinks.length} selected
+                {selectedLinks.length} {t('qrCodes.selection.selected')}
               </Badge>
             )}
           </div>
@@ -381,13 +381,13 @@ const QRCodes = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No QR Codes Found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('qrCodes.emptyState.title')}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              {searchQuery ? 'Try adjusting your search' : 'Create your first QR code to get started'}
+              {searchQuery ? t('qrCodes.emptyState.tryAdjusting') : t('qrCodes.emptyState.createFirst')}
             </p>
             {!searchQuery && (
               <Button onClick={() => setShowGenerateModal(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Generate QR Code
+                <Plus className="mr-2 h-4 w-4" /> {t('qrCodes.generate.generateNew')}
               </Button>
             )}
           </CardContent>
@@ -402,19 +402,19 @@ const QRCodes = () => {
            <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Customize QR Code
+                {t('qrCodes.generate.customizeQRCode')}
               </DialogTitle>
-              <DialogDescription>Create and customize your QR code with advanced options.</DialogDescription>
+              <DialogDescription>{t('qrCodes.generate.description')}</DialogDescription>
            </DialogHeader>
            
            {!selectedLink ? (
              <div className="py-4 space-y-4">
-                <Label>Select Link</Label>
+                <Label>{t('qrCodes.generate.selectLink')}</Label>
                 <select 
                   className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
                   onChange={(e) => setSelectedLink(links.find(l => (l.id || l._id) === e.target.value))}
                 >
-                   <option value="">Select a link...</option>
+                   <option value="">{t('qrCodes.generate.selectLinkPlaceholder')}</option>
                    {links.map(l => (
                      <option key={l.id || l._id} value={l.id || l._id}>
                        {l.title || l.shortCode} - {l.originalUrl.substring(0, 50)}...
@@ -425,7 +425,7 @@ const QRCodes = () => {
            ) : (
              <div className="py-2 space-y-6">
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm font-medium text-blue-900">Generating QR Code for:</p>
+                  <p className="text-sm font-medium text-blue-900">{t('qrCodes.generate.generatingFor')}</p>
                   <p className="text-sm text-blue-700 mt-1">{selectedLink.title || getShortUrl(selectedLink)}</p>
                 </div>
 
@@ -434,7 +434,7 @@ const QRCodes = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Palette className="h-4 w-4" />
-                        Foreground Color
+                        {t('qrCodes.generate.foregroundColor')}
                       </Label>
                       <div className="flex gap-2">
                          <Input 
@@ -454,7 +454,7 @@ const QRCodes = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Palette className="h-4 w-4" />
-                        Background Color
+                        {t('qrCodes.generate.backgroundColor')}
                       </Label>
                       <div className="flex gap-2">
                          <Input 
@@ -474,7 +474,7 @@ const QRCodes = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Sliders className="h-4 w-4" />
-                        Size (px)
+                        {t('qrCodes.generate.sizePx')}
                       </Label>
                       <Input 
                         type="number" 
@@ -488,16 +488,16 @@ const QRCodes = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Image className="h-4 w-4" />
-                        Format
+                        {t('qrCodes.generate.format')}
                       </Label>
                       <select 
                         className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={qrOptions.format}
                         onChange={e => setQrOptions({...qrOptions, format: e.target.value})}
                       >
-                        <option value="png">PNG</option>
-                        <option value="svg">SVG</option>
-                        <option value="jpg">JPG</option>
+                        <option value="png">{t('qrCodes.formats.png')}</option>
+                        <option value="svg">{t('qrCodes.formats.svg')}</option>
+                        <option value="jpg">{t('qrCodes.formats.jpg')}</option>
                       </select>
                     </div>
                   </div>
@@ -505,7 +505,7 @@ const QRCodes = () => {
                   <div className="flex items-center justify-center p-6 bg-slate-50 rounded-lg border-2 border-dashed">
                     <div className="text-center">
                       <QrCode className="h-32 w-32 mx-auto mb-3 text-slate-400" />
-                      <p className="text-sm text-muted-foreground">Preview will appear here</p>
+                      <p className="text-sm text-muted-foreground">{t('qrCodes.generate.previewPlaceholder')}</p>
                     </div>
                   </div>
                 </div>
@@ -514,11 +514,11 @@ const QRCodes = () => {
 
            <DialogFooter>
               <Button variant="outline" onClick={() => { setShowGenerateModal(false); setSelectedLink(null); }}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={() => selectedLink && generateQRCode(selectedLink.id || selectedLink._id)} disabled={!selectedLink}>
                  <Zap className="mr-2 h-4 w-4" />
-                 Generate QR Code
+                 {t('qrCodes.generate.generateButton')}
               </Button>
            </DialogFooter>
         </DialogContent>
@@ -528,8 +528,8 @@ const QRCodes = () => {
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>QR Code Details</DialogTitle>
-            <DialogDescription>View and manage your QR code</DialogDescription>
+            <DialogTitle>{t('qrCodes.dialogs.details.title')}</DialogTitle>
+            <DialogDescription>{t('qrCodes.dialogs.details.description')}</DialogDescription>
           </DialogHeader>
           {selectedQR && (
             <div className="space-y-6">
@@ -546,12 +546,12 @@ const QRCodes = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Title</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('qrCodes.dialogs.details.linkTitle')}</h3>
                     <p className="text-lg font-semibold">{selectedQR.title || 'Untitled'}</p>
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Short URL</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('qrCodes.dialogs.details.shortUrl')}</h3>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-mono bg-slate-100 px-3 py-2 rounded flex-1">{getShortUrl(selectedQR)}</p>
                       <Button variant="outline" size="icon" onClick={() => handleCopyUrl(selectedQR)}>
@@ -561,18 +561,18 @@ const QRCodes = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Original URL</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('qrCodes.dialogs.details.originalUrl')}</h3>
                     <p className="text-sm text-muted-foreground break-all">{selectedQR.originalUrl}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div className="text-center p-3 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{selectedQR.qrScanCount || 0}</div>
-                      <div className="text-xs text-muted-foreground">Total Scans</div>
+                      <div className="text-xs text-muted-foreground">{t('qrCodes.dialogs.details.totalScans')}</div>
                     </div>
                     <div className="text-center p-3 bg-green-50 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">{selectedQR.qrDownloads || 0}</div>
-                      <div className="text-xs text-muted-foreground">Downloads</div>
+                      <div className="text-xs text-muted-foreground">{t('qrCodes.dialogs.details.downloads')}</div>
                     </div>
                   </div>
                 </div>
@@ -581,15 +581,15 @@ const QRCodes = () => {
               <div className="flex gap-2 pt-4 border-t">
                 <Button variant="outline" className="flex-1" onClick={() => downloadQRCode(selectedQR.id || selectedQR._id, 'png')}>
                   <FileDown className="mr-2 h-4 w-4" />
-                  Download PNG
+                  {t('qrCodes.actions.downloadPNG')}
                 </Button>
                 <Button variant="outline" className="flex-1" onClick={() => downloadQRCode(selectedQR.id || selectedQR._id, 'svg')}>
                   <FileDown className="mr-2 h-4 w-4" />
-                  Download SVG
+                  {t('qrCodes.actions.downloadSVG')}
                 </Button>
                 <Button variant="outline" className="flex-1">
                   <Share2 className="mr-2 h-4 w-4" />
-                  Share
+                  {t('qrCodes.actions.share')}
                 </Button>
               </div>
             </div>

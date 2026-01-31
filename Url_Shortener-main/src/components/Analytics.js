@@ -228,13 +228,13 @@ const Analytics = () => {
                 onChange={(e) => setTimeFilter(e.target.value)}
                 className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="90d">Last 90 Days</option>
+                <option value="24h">{t('analytics.filters.last24Hours')}</option>
+                <option value="7d">{t('analytics.filters.last7Days')}</option>
+                <option value="30d">{t('analytics.filters.last30Days')}</option>
+                <option value="90d">{t('analytics.filters.last90Days')}</option>
             </select>
             <Button variant="outline" onClick={exportData}>
-                <Download className="mr-2 h-4 w-4" /> Export
+                <Download className="mr-2 h-4 w-4" /> {t('analytics.export.export')}
             </Button>
         </div>
       </div>
@@ -242,7 +242,7 @@ const Analytics = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('analytics.overview.totalClicks')}</CardTitle>
                 <MousePointer2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -251,7 +251,7 @@ const Analytics = () => {
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Unique Clicks</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('analytics.overview.uniqueClicks')}</CardTitle>
                 <Smartphone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -260,7 +260,7 @@ const Analytics = () => {
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">QR Scans</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('analytics.overview.qrScansAlt')}</CardTitle>
                 <QrCode className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -269,7 +269,7 @@ const Analytics = () => {
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Clicks/Day</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('analytics.overview.avgClicksPerDayAlt')}</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -285,7 +285,7 @@ const Analytics = () => {
       {/* Main Chart */}
       <Card className="col-span-4">
         <CardHeader>
-            <CardTitle>Click Performance</CardTitle>
+            <CardTitle>{t('analytics.charts.clickPerformance')}</CardTitle>
         </CardHeader>
         <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={350}>
@@ -310,19 +310,19 @@ const Analytics = () => {
          {/* Top Countries */}
          <Card>
             <CardHeader>
-                <CardTitle>Top Countries</CardTitle>
+                <CardTitle>{t('analytics.charts.topCountries')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Country</TableHead>
-                            <TableHead className="text-right">Clicks</TableHead>
+                            <TableHead>{t('analytics.tables.country')}</TableHead>
+                            <TableHead className="text-right">{t('analytics.tables.clicks')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {analyticsData.topCountries.length === 0 ? (
-                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No data</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t('analytics.tables.noData')}</TableCell></TableRow>
                         ) : (
                             analyticsData.topCountries.map((item, i) => (
                                 <TableRow key={i}>
@@ -341,7 +341,7 @@ const Analytics = () => {
          {/* Top Devices */}
          <Card>
             <CardHeader>
-                <CardTitle>Top Devices</CardTitle>
+                <CardTitle>{t('analytics.charts.topDevices')}</CardTitle>
             </CardHeader>
             <CardContent>
                  <ResponsiveContainer width="100%" height={250}>
@@ -361,19 +361,19 @@ const Analytics = () => {
          {/* Top Browsers */}
          <Card>
             <CardHeader>
-                <CardTitle>Browsers</CardTitle>
+                <CardTitle>{t('analytics.charts.browsers')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Browser</TableHead>
-                            <TableHead className="text-right">Clicks</TableHead>
+                            <TableHead>{t('analytics.tables.browser')}</TableHead>
+                            <TableHead className="text-right">{t('analytics.tables.clicks')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {analyticsData.topBrowsers.length === 0 ? (
-                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No data</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t('analytics.tables.noData')}</TableCell></TableRow>
                         ) : (
                             analyticsData.topBrowsers.map((item, i) => (
                                 <TableRow key={i}>
@@ -390,19 +390,19 @@ const Analytics = () => {
          {/* Top Referrers */}
          <Card>
             <CardHeader>
-                <CardTitle>Referrers</CardTitle>
+                <CardTitle>{t('analytics.tables.referrers')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Source</TableHead>
-                            <TableHead className="text-right">Clicks</TableHead>
+                            <TableHead>{t('analytics.tables.source')}</TableHead>
+                            <TableHead className="text-right">{t('analytics.tables.clicks')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {analyticsData.topReferrers.length === 0 ? (
-                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No data</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t('analytics.tables.noData')}</TableCell></TableRow>
                         ) : (
                             analyticsData.topReferrers.map((item, i) => (
                                 <TableRow key={i}>

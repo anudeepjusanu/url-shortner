@@ -110,6 +110,8 @@
       "title": "Verkort je URL's en volg de prestaties",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Baan",
+      "mainHeading": "URL-verkorter met aangepaste domeinen",
+      "longDescription": "Maak merkgebonden shortlinks met krachtige analyses. Volg klikken, meet prestaties en optimaliseer je campagnes met ons enterprise-niveau linkmanagementplatform.",
       "subtitle": "Uw links, geoptimaliseerd voor Saoedi-Arabië",
       "description": "Snelle, veilige en conforme URL-verkorting met geavanceerde analyses en merkdomeinen.",
       "descriptionAlt": "Gratis linkverkorting met gedetailleerde analyses, QR-codes en API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Klaar om te beginnen?",
       "subtitle": "Sluit je aan bij duizenden gebruikers die ons platform vertrouwen",
-      "button": "Start gratis"
+      "button": "Start gratis",
+      "readyToStart": "Klaar om te beginnen?",
+      "joinUsers": "Sluit je aan bij meer dan 1,2 miljoen gebruikers die links verkorten met Snip",
+      "getStartedFree": "Begin gratis",
+      "noCardRequired": "Geen creditcard nodig",
+      "freePlanForever": "Gratis abonnement voor altijd",
+      "upgradeAnytime": "Upgrade wanneer je wilt",
+      "fastSupport": "Snelle ondersteuning"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Heb je nog vragen?",
+    "contactSupport": "Contact Support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Netwerkfout. Controleer alsjeblieft je verbinding en probeer het opnieuw."
   },
   "dashboard": {
+    "chartDescription": "Overzicht van de prestaties van je link in de tijd.",
     "title": "Dashboard",
     "welcome": "Setup voortzetten",
     "welcomeMessage": "Dit is wat er vandaag met je links gebeurt.",
@@ -707,7 +721,8 @@
       "edit": "Bewerking",
       "qrCode": "QR-code",
       "analytics": "Analytics",
-      "delete": "Verwijderen"
+      "delete": "Verwijderen",
+      "actions": "Acties"
     },
     "emptyState": {
       "noLinks": "Geen links gevonden.",
@@ -746,13 +761,19 @@
         "generateQR": "QR-code genereren",
         "creating": "Creëren...",
         "createButton": "Maak een link aan"
+      },
+      "deleteLink": {
+        "title": "Link verwijderen",
+        "message": "Weet je zeker dat je {{url}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
     "confirmDelete": "Weet je zeker dat je deze link wilt verwijderen?",
     "deleteSuccess": "Link succesvol verwijderd",
     "deleteError": "Link niet verwijderd",
     "noLinks": "Geen links gevonden",
-    "createFirstLink": "Maak je eerste korte link om te beginnen"
+    "createFirstLink": "Maak je eerste korte link om te beginnen",
+    "copiedToClipboard": "Gekopieerd naar clipboard",
+    "failedToCopy": "Niet gekopieerd"
   },
   "analytics": {
     "title": "Analytics",
@@ -993,7 +1014,12 @@
     "title": "Aangepaste domeinen",
     "subtitle": "Voeg je aangepaste domeinen toe en beheer je voor korte links met merken",
     "wizard": {
-      "step": "Stap {{current}} van {{total}}"
+      "step": "Stap {{current}} van {{total}}",
+      "connectDomain": "Verbind een domein",
+      "enterDomain": "Voer het domein in dat je wilt verbinden.",
+      "domainNameLabel": "Domeinnaam (bijv. example.com)",
+      "subdomainLabel": "Subdomein (Optioneel, bijvoorbeeld link)",
+      "done": "Klaar"
     },
     "stats": {
       "totalDomains": "Totale domeinen",
@@ -1023,7 +1049,8 @@
       "active": "Actief",
       "inactive": "Inactief",
       "verified": "Geverifieerd",
-      "failed": "Mislukt"
+      "failed": "Mislukt",
+      "default": "Standaard"
     },
     "actions": {
       "verify": "Controleer",
@@ -1037,7 +1064,9 @@
       "recordType": "Recordtype",
       "name": "Naam",
       "value": "Waarde",
-      "verifyButton": "Verifieer Domein"
+      "verifyButton": "Verifieer Domein",
+      "unverified": "Niet geverifieerd",
+      "failed": "Verificatie mislukte. Controleer DNS-propagatie."
     },
     "dnsModal": {
       "title": "Domeinverificatie",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domein succesvol geverifieerd!",
     "verificationFailed": "Domeinverificatie mislukt",
     "deleteSuccess": "Domein succesvol verwijderd",
+    "dialogs": {
+      "remove": {
+        "title": "Domein verwijderen",
+        "message": "Weet je het zeker? Bestaande links die dit domein gebruiken, zullen niet meer werken.",
+        "button": "Verwijder"
+      }
+    },
     "errors": {
       "domainRequired": "Domeinnaam is vereist",
       "domainInvalid": "Voer een geldige domeinnaam in (bijv. example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API-sleutels"
     },
     "general": {
+      "description": "Beheer je publieke profiel en privégegevens",
       "personalInfo": "Persoonlijke informatie",
       "firstName": "Voornaam",
       "lastName": "Achternaam",
@@ -1262,17 +1299,18 @@
       "phone": "Telefoonnummer",
       "company": "Bedrijf",
       "website": "Website",
-      "jobTitle": "Rol",
+      "jobTitle": "Functietitel",
       "updateButton": "Profiel bijwerken",
-      "updating": "Update...",
+      "updating": "Redden...",
       "saveChanges": "Wijzigingen in het opslaan"
     },
     "security": {
+      "description": "Beheer je wachtwoord en accountbeveiliging",
       "changePassword": "Wachtwoord wijzigen",
       "currentPassword": "Huidig wachtwoord",
       "newPassword": "Nieuw wachtwoord",
       "confirmPassword": "Bevestig nieuw wachtwoord",
-      "updatePassword": "Wachtwoord bijwerken",
+      "updatePassword": "Wachtwoord wijzigen",
       "twoFactor": "Tweefactorauthenticatie",
       "enable2FA": "Schakel 2FA in",
       "disable2FA": "Deactiveer 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Wachtwoorden komen niet overeen"
     },
     "preferences": {
+      "title": "Voorkeuren",
+      "description": "Beheer je notificatie-instellingen",
       "language": "Taal",
       "timezone": "Tijdzone",
       "dateFormat": "Datumformaat",
@@ -1307,22 +1347,25 @@
       "description": "Beheer je API-sleutels voor programmatische toegang",
       "createNew": "Maak nieuwe sleutel aan",
       "keyName": "Sleutelnaam",
-      "key": "Sleutel",
+      "key": "Uw API-sleutel",
       "created": "Gemaakt",
       "lastUsed": "Laatst gebruikt",
       "revoke": "Intrekken",
+      "warning": "Houd deze sleutel geheim. Deel het niet publiekelijk.",
       "regenerating": "Regenereren...",
-      "regenerateButton": "Regenereer de API-sleutel",
-      "confirmRegenerate": "Weet je zeker dat je je API-sleutel wilt regenereren? De oude sleutel werkt dan niet meer."
+      "regenerateButton": "Regenereren Sleutel",
+      "confirmRegenerate": "Weet je het zeker? Dit maakt je oude sleutel ongeldig."
     },
     "messages": {
       "profileUpdated": "Profiel succesvol bijgewerkt",
       "passwordsDoNotMatch": "Wachtwoorden komen niet overeen",
-      "failedToUpdate": "Gebruiker niet bijgewerkt",
-      "passwordUpdated": "Wachtwoord succesvol bijgewerkt",
-      "failedToUpdatePassword": "Wachtwoord niet bijgewerkt",
-      "preferencesUpdated": "Voorkeuren succesvol bijgewerkt",
-      "failedToUpdatePreferences": "Voorkeuren niet bijgewerkt"
+      "failedToUpdate": "Profiel niet bijgewerkt",
+      "passwordUpdated": "Wachtwoord succesvol gewijzigd",
+      "failedToUpdatePassword": "Wachtwoord niet gewijzigd",
+      "preferencesUpdated": "Voorkeuren succesvol opgeslagen",
+      "failedToUpdatePreferences": "Voorkeuren niet kunnen opslaan",
+      "apiKeyRegenerated": "API Key is succesvol geregenereerd",
+      "failedToRegenerateKey": "Mislukt om de API-sleutel te hergenereren"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Acties"
     },
     "actions": {
-      "view": "Uitzicht",
+      "title": "Acties",
+      "view": "Bekijk details",
       "viewDetails": "Bekijk details",
       "activate": "Activeer",
       "deactivate": "Deactiveer",
       "activateUser": "Activeren Gebruiker",
       "deactivateUser": "Gebruiker deactiveren",
-      "delete": "Verwijderen",
+      "delete": "Gebruiker verwijderen",
       "deleteUser": "Gebruiker verwijderen",
       "makeAdmin": "Maak Admin",
       "removeAdmin": "Verwijder Admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Contactgegevens",
       "email": "E-mail",
       "phone": "Telefoon",
+      "registrationLocation": "Registratielocatie",
+      "country": "Land",
+      "city": "Stad",
+      "region": "Regio",
+      "ipAddress": "IP-adres",
+      "timezone": "Tijdzone",
+      "countryCode": "Landcode",
+      "coordinates": "Coördinaten",
       "location": "Registratielocatie",
       "locationFields": {
         "country": "Land",
@@ -1417,10 +1469,24 @@
       "inactive": "INACTIEF",
       "periodEnd": "Einde van de periode",
       "freePlan": "GRATIS",
-      "close": "Sluit"
+      "close": "Sluit",
+      "activateUser": "Activeren Gebruiker",
+      "deactivateUser": "Gebruiker deactiveren"
     },
     "messages": {
-      "failedToLoad": "Gebruikers niet kunnen laden"
+      "failedToLoad": "Gebruikers niet kunnen laden",
+      "confirmRoleChange": "Rol veranderen naar {{role}}?",
+      "roleUpdated": "Rol succesvol bijgewerkt",
+      "failedToUpdateRole": "Rol niet bijgewerkt",
+      "confirmStatusChange": "Weet je zeker dat je deze gebruiker wilt {{action}}?",
+      "userStatusUpdated": {
+        "activate": "Gebruiker succesvol geactiveerd",
+        "deactivate": "Gebruiker succesvol gedeactiveerd"
+      },
+      "failedToUpdateStatus": "Gebruikersstatus is niet bijgewerkt",
+      "confirmDelete": "Deze gebruiker verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "userDeleted": "Gebruiker succesvol verwijderd",
+      "failedToDelete": "Gebruiker niet verwijderd"
     }
   },
   "footer": {

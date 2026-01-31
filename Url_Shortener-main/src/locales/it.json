@@ -110,6 +110,8 @@
       "title": "Accorcia i tuoi URL e monitora le prestazioni",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Pista",
+      "mainHeading": "Accorciamento URL con domini personalizzati",
+      "longDescription": "Crea link brevi e brandizzati con analisi potenti. Traccia i clic, misura le prestazioni e ottimizza le tue campagne con la nostra piattaforma enterprise di gestione dei link.",
       "subtitle": "I tuoi link, ottimizzati per l'Arabia Saudita",
       "description": "Accorciamento rapido, sicuro e conforme degli URL con analisi avanzate e domini brandizzati.",
       "descriptionAlt": "Accorciatore gratuito di link con analisi dettagliate, codici QR e API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Pronto a iniziare?",
       "subtitle": "Unisciti a migliaia di utenti che si fidano della nostra piattaforma",
-      "button": "Inizia gratis"
+      "button": "Inizia gratis",
+      "readyToStart": "Pronto per iniziare?",
+      "joinUsers": "Unisciti a oltre 1,2 milioni di utenti che accorciano i link con Snip",
+      "getStartedFree": "Inizia gratuitamente",
+      "noCardRequired": "Nessuna carta di credito richiesta",
+      "freePlanForever": "Piano gratuito per sempre",
+      "upgradeAnytime": "Aggiorna quando vuoi",
+      "fastSupport": "Risposta rapida al supporto"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Hai ancora domande?",
+    "contactSupport": "Contatta il supporto"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Errore di rete. Controlla la tua connessione e riprova."
   },
   "dashboard": {
+    "chartDescription": "Panoramica delle prestazioni dei tuoi link nel tempo.",
     "title": "Cruscotto",
     "welcome": "Bentornato",
     "welcomeMessage": "Ecco cosa succede oggi con i tuoi link.",
@@ -707,7 +721,8 @@
       "edit": "Modifica",
       "qrCode": "Codice QR",
       "analytics": "Analitica",
-      "delete": "Elimina"
+      "delete": "Elimina",
+      "actions": "Azioni"
     },
     "emptyState": {
       "noLinks": "Nessun link trovato.",
@@ -746,13 +761,19 @@
         "generateQR": "Genera un codice QR",
         "creating": "Creare...",
         "createButton": "Crea link"
+      },
+      "deleteLink": {
+        "title": "Elimina il link",
+        "message": "Sei sicuro di voler cancellare {{url}}? Questa azione non può essere annullata."
       }
     },
     "confirmDelete": "Sei sicuro di voler cancellare questo link?",
     "deleteSuccess": "Link eliminato con successo",
     "deleteError": "Fallita cancellazione del link",
     "noLinks": "Nessun link trovato",
-    "createFirstLink": "Crea il tuo primo link breve per iniziare"
+    "createFirstLink": "Crea il tuo primo link breve per iniziare",
+    "copiedToClipboard": "Copiato nella cartellina",
+    "failedToCopy": "Non copiato"
   },
   "analytics": {
     "title": "Analitica",
@@ -993,7 +1014,12 @@
     "title": "Domini personalizzati",
     "subtitle": "Aggiungi e gestisci i tuoi domini personalizzati per link brevi brandizzati",
     "wizard": {
-      "step": "Passo {{current}} di {{total}}"
+      "step": "Passo {{current}} di {{total}}",
+      "connectDomain": "Collega un dominio",
+      "enterDomain": "Inserisci il dominio che vuoi collegare.",
+      "domainNameLabel": "Nome di dominio (ad esempio example.com)",
+      "subdomainLabel": "Sottodominio (Opzionale, ad esempio link)",
+      "done": "Fatto"
     },
     "stats": {
       "totalDomains": "Dominio totale",
@@ -1023,7 +1049,8 @@
       "active": "Attivo",
       "inactive": "Inattivi",
       "verified": "Verificato",
-      "failed": "Fallito"
+      "failed": "Fallito",
+      "default": "Predefinito"
     },
     "actions": {
       "verify": "Verifica",
@@ -1037,7 +1064,9 @@
       "recordType": "Tipo di record",
       "name": "Nome",
       "value": "Valore",
-      "verifyButton": "Verifica Dominio"
+      "verifyButton": "Verifica Dominio",
+      "unverified": "Non verificato",
+      "failed": "La verifica è fallita. Controlla la propagazione DNS."
     },
     "dnsModal": {
       "title": "Verifica del dominio",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Dominio verificato con successo!",
     "verificationFailed": "Verifica del dominio fallita",
     "deleteSuccess": "Dominio eliminato con successo",
+    "dialogs": {
+      "remove": {
+        "title": "Rimuovi dominio",
+        "message": "Sei sicuro? I link esistenti che utilizzano questo dominio smetteranno di funzionare.",
+        "button": "Rimuovere"
+      }
+    },
     "errors": {
       "domainRequired": "È richiesto il nome di dominio",
       "domainInvalid": "Si prega di inserire un nome di dominio valido (ad esempio, example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "Chiavi API"
     },
     "general": {
+      "description": "Gestisci il tuo profilo pubblico e i dati privati",
       "personalInfo": "Informazioni personali",
       "firstName": "Nome",
       "lastName": "Cognome",
@@ -1262,17 +1299,18 @@
       "phone": "Numero di telefono",
       "company": "Azienda",
       "website": "Sito web",
-      "jobTitle": "Ruolo",
+      "jobTitle": "Titolo del lavoro",
       "updateButton": "Profilo aggiornato",
-      "updating": "Aggiornamento...",
+      "updating": "Salvando...",
       "saveChanges": "Modifiche ai salvataggi"
     },
     "security": {
+      "description": "Gestisci la sicurezza della password e del tuo account",
       "changePassword": "Cambia password",
       "currentPassword": "Password attuale",
       "newPassword": "Nuova password",
       "confirmPassword": "Conferma nuova password",
-      "updatePassword": "Aggiorna la password",
+      "updatePassword": "Cambia password",
       "twoFactor": "Autenticazione a due fattori",
       "enable2FA": "Abilita la 2FA",
       "disable2FA": "Disabilita la 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Le password non corrispondono"
     },
     "preferences": {
+      "title": "Preferenze",
+      "description": "Gestisci le impostazioni delle notifiche",
       "language": "Lingua",
       "timezone": "Fuso orario",
       "dateFormat": "Formato della data",
@@ -1307,22 +1347,25 @@
       "description": "Gestisci le tue chiavi API per l'accesso programmatico",
       "createNew": "Crea una nuova chiave",
       "keyName": "Nome chiave",
-      "key": "Chiave",
+      "key": "La tua chiave API",
       "created": "Creazione",
       "lastUsed": "Ultimo utilizzo",
       "revoke": "Revoca",
+      "warning": "Tieni segreta questa chiave. Non condividerlo pubblicamente.",
       "regenerating": "Rigenerazione...",
-      "regenerateButton": "Rigenera chiave API",
-      "confirmRegenerate": "Sei sicuro di voler rigenerare la tua chiave API? La vecchia chiave non funzionerà più."
+      "regenerateButton": "Chiave Rigenerativa",
+      "confirmRegenerate": "Sei sicuro? Questo invaliderà la tua vecchia chiave."
     },
     "messages": {
       "profileUpdated": "Profilo aggiornato con successo",
       "passwordsDoNotMatch": "Le password non corrispondono",
-      "failedToUpdate": "Fallimento nell'aggiornamento utente",
-      "passwordUpdated": "Password aggiornata con successo",
-      "failedToUpdatePassword": "Fallita nell'aggiornamento della password",
-      "preferencesUpdated": "Preferenze aggiornate con successo",
-      "failedToUpdatePreferences": "Non è stato aggiornato le preferenze"
+      "failedToUpdate": "Impossibile aggiornamento del profilo",
+      "passwordUpdated": "Password cambiata con successo",
+      "failedToUpdatePassword": "Fallita nella modifica della password",
+      "preferencesUpdated": "Preferenze salvate con successo",
+      "failedToUpdatePreferences": "Non sono riusciti a salvare le preferenze",
+      "apiKeyRegenerated": "API Key si è rigenerata con successo",
+      "failedToRegenerateKey": "Non è riuscito a rigenerare la chiave API"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Azioni"
     },
     "actions": {
-      "view": "Vista",
+      "title": "Azioni",
+      "view": "Visualizza dettagli",
       "viewDetails": "Visualizza dettagli",
       "activate": "Attiva",
       "deactivate": "Disattivazione",
       "activateUser": "Attiva l'utente",
       "deactivateUser": "Disattiva l'utente",
-      "delete": "Elimina",
+      "delete": "Elimina l'utente",
       "deleteUser": "Elimina l'utente",
       "makeAdmin": "Make Admin",
       "removeAdmin": "Rimuovere Admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Informazioni di contatto",
       "email": "E-mail",
       "phone": "Telefono",
+      "registrationLocation": "Luogo di registrazione",
+      "country": "Paese",
+      "city": "Città",
+      "region": "Regione",
+      "ipAddress": "Indirizzo IP",
+      "timezone": "Fuso orario",
+      "countryCode": "Codice paese",
+      "coordinates": "Coordinate",
       "location": "Luogo di registrazione",
       "locationFields": {
         "country": "Paese",
@@ -1417,10 +1469,24 @@
       "inactive": "INATTIVO",
       "periodEnd": "Fine del periodo",
       "freePlan": "GRATIS",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "activateUser": "Attiva l'utente",
+      "deactivateUser": "Disattiva l'utente"
     },
     "messages": {
-      "failedToLoad": "Non è riuscito a caricare gli utenti"
+      "failedToLoad": "Non è riuscito a caricare gli utenti",
+      "confirmRoleChange": "Cambiare ruolo a {{role}}?",
+      "roleUpdated": "Ruolo aggiornato con successo",
+      "failedToUpdateRole": "Fallimento nell'aggiornamento del ruolo",
+      "confirmStatusChange": "Sei sicuro di voler {{action}} questo utente?",
+      "userStatusUpdated": {
+        "activate": "Attivato con successo dall'utente",
+        "deactivate": "L'utente ha disattivato con successo"
+      },
+      "failedToUpdateStatus": "Non aggiornato lo stato dell'utente",
+      "confirmDelete": "Eliminare questo utente? Questa azione non può essere annullata.",
+      "userDeleted": "Utente eliminato con successo",
+      "failedToDelete": "Fallita eliminazione dell'utente"
     }
   },
   "footer": {

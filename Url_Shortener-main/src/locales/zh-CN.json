@@ -110,6 +110,8 @@
       "title": "缩短你的网址并跟踪性能",
       "titleMain": "肖顿，布兰德，",
       "titleAccent": "赛道",
+      "mainHeading": "带有自定义域名的URL缩短器",
+      "longDescription": "创建带有强大分析力的品牌短链接。通过我们的企业级链接管理平台追踪点击量、衡量绩效，并优化您的活动。",
       "subtitle": "你的链接，针对沙特阿拉伯进行了优化",
       "description": "快速、安全且合规的URL缩短，配备先进的分析和品牌域名。",
       "descriptionAlt": "免费链接缩短器，包含详细分析、二维码和API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "准备好开始了吗？",
       "subtitle": "加入成千上万信任我们平台的用户行列",
-      "button": "免费开始"
+      "button": "免费开始",
+      "readyToStart": "准备好开始了吗？",
+      "joinUsers": "加入超过120万用户，用Snip缩短链接",
+      "getStartedFree": "免费开始",
+      "noCardRequired": "不需要信用卡",
+      "freePlanForever": "免费计划永远",
+      "upgradeAnytime": "随时升级",
+      "fastSupport": "快速响应"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "还有疑问吗？",
+    "contactSupport": "联系支持团队"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "网络错误。请检查您的连接并重新尝试。"
   },
   "dashboard": {
+    "chartDescription": "你链接性能随时间的概览。",
     "title": "仪表盘",
     "welcome": "欢迎回来",
     "welcomeMessage": "今天你的链接发生了什么。",
@@ -707,7 +721,8 @@
       "edit": "编辑",
       "qrCode": "二维码",
       "analytics": "分析",
-      "delete": "删除"
+      "delete": "删除",
+      "actions": "行动"
     },
     "emptyState": {
       "noLinks": "未找到链接。",
@@ -746,13 +761,19 @@
         "generateQR": "生成二维码",
         "creating": "创造......",
         "createButton": "创建链接"
+      },
+      "deleteLink": {
+        "title": "删除链接",
+        "message": "你确定要删掉{{url}}？这一行为无法撤销。"
       }
     },
     "confirmDelete": "你确定要删除这个链接吗？",
     "deleteSuccess": "链接已成功删除",
     "deleteError": "链接删除失败",
     "noLinks": "未找到链接",
-    "createFirstLink": "创建你的第一个短链接开始"
+    "createFirstLink": "创建你的第一个短链接开始",
+    "copiedToClipboard": "复制到剪贴板上",
+    "failedToCopy": "复制失败"
   },
   "analytics": {
     "title": "分析",
@@ -993,7 +1014,12 @@
     "title": "自定义域名",
     "subtitle": "添加和管理你的自定义域名，用于品牌短链接",
     "wizard": {
-      "step": "{{current}}{{total}}"
+      "step": "{{current}}{{total}}",
+      "connectDomain": "连接域名",
+      "enterDomain": "输入你想连接的域名。",
+      "domainNameLabel": "域名（例如 example.com）",
+      "subdomainLabel": "子域（可选，例如链接）",
+      "done": "完成"
     },
     "stats": {
       "totalDomains": "总域",
@@ -1023,7 +1049,8 @@
       "active": "活跃",
       "inactive": "已停用",
       "verified": "已验证",
-      "failed": "失败"
+      "failed": "失败",
+      "default": "默认"
     },
     "actions": {
       "verify": "验证",
@@ -1037,7 +1064,9 @@
       "recordType": "记录类型",
       "name": "名称",
       "value": "价值",
-      "verifyButton": "验证域名"
+      "verifyButton": "验证域名",
+      "unverified": "未验证",
+      "failed": "验证失败。检查DNS传播情况。"
     },
     "dnsModal": {
       "title": "域名验证",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "域名认证成功！",
     "verificationFailed": "域名验证失败",
     "deleteSuccess": "域名已成功删除",
+    "dialogs": {
+      "remove": {
+        "title": "移除域名",
+        "message": "是否确定？使用该域名的现有链接将无法使用。",
+        "button": "删除"
+      }
+    },
     "errors": {
       "domainRequired": "域名是必需的",
       "domainInvalid": "请输入有效的域名（例如，example.com）",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API 密钥"
     },
     "general": {
+      "description": "管理您的公开资料和隐私信息",
       "personalInfo": "个人信息",
       "firstName": "名字",
       "lastName": "姓氏",
@@ -1262,17 +1299,18 @@
       "phone": "电话号码",
       "company": "公司",
       "website": "网站",
-      "jobTitle": "职责",
+      "jobTitle": "职位名称",
       "updateButton": "更新简介",
-      "updating": "更新中......",
+      "updating": "拯救......",
       "saveChanges": "存档更改"
     },
     "security": {
+      "description": "管理您的密码和账户安全",
       "changePassword": "更改密码",
       "currentPassword": "当前密码",
       "newPassword": "新密码",
       "confirmPassword": "确认新密码",
-      "updatePassword": "更新密码",
+      "updatePassword": "更改密码",
       "twoFactor": "双因素认证",
       "enable2FA": "启用双步验证",
       "disable2FA": "禁用2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "密码不匹配"
     },
     "preferences": {
+      "title": "偏好",
+      "description": "管理您的通知设置",
       "language": "语言",
       "timezone": "时区",
       "dateFormat": "日期格式",
@@ -1307,22 +1347,25 @@
       "description": "管理你的程序访问API密钥",
       "createNew": "创建新密钥",
       "keyName": "关键名称",
-      "key": "说明",
+      "key": "你的API密钥",
       "created": "创作",
       "lastUsed": "最后一次使用",
       "revoke": "撤销",
+      "warning": "把这把钥匙保密。不要公开分享。",
       "regenerating": "再生中......",
-      "regenerateButton": "重新生成API密钥",
-      "confirmRegenerate": "你确定要重新生成你的 API 密钥吗？旧钥匙将不再使用。"
+      "regenerateButton": "再生密钥",
+      "confirmRegenerate": "是否确定？这样你的旧密钥就会失效。"
     },
     "messages": {
       "profileUpdated": "资料已成功更新",
       "passwordsDoNotMatch": "密码不匹配",
-      "failedToUpdate": "未能更新用户",
-      "passwordUpdated": "密码已成功更新",
-      "failedToUpdatePassword": "密码更新失败",
-      "preferencesUpdated": "偏好设置已成功更新",
-      "failedToUpdatePreferences": "未更新偏好设置"
+      "failedToUpdate": "未能更新个人资料",
+      "passwordUpdated": "密码已成功更改",
+      "failedToUpdatePassword": "密码更改失败",
+      "preferencesUpdated": "偏好设置已成功保存",
+      "failedToUpdatePreferences": "未能保存偏好设置",
+      "apiKeyRegenerated": "API密钥成功重生成",
+      "failedToRegenerateKey": "未能重新生成API密钥"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "行动"
     },
     "actions": {
-      "view": "景观",
+      "title": "行动",
+      "view": "查看详情",
       "viewDetails": "查看详情",
       "activate": "启动",
       "deactivate": "停用",
       "activateUser": "激活用户",
       "deactivateUser": "停用用户",
-      "delete": "删除",
+      "delete": "删除用户",
       "deleteUser": "删除用户",
       "makeAdmin": "让管理员",
       "removeAdmin": "移除管理员"
@@ -1395,6 +1439,14 @@
       "contactInfo": "联系方式",
       "email": "电子邮件",
       "phone": "电话",
+      "registrationLocation": "注册地点",
+      "country": "乡村",
+      "city": "城市",
+      "region": "地区",
+      "ipAddress": "IP地址",
+      "timezone": "时区",
+      "countryCode": "国家代码",
+      "coordinates": "坐标",
       "location": "注册地点",
       "locationFields": {
         "country": "乡村",
@@ -1417,10 +1469,24 @@
       "inactive": "非活跃",
       "periodEnd": "时期结束",
       "freePlan": "免费",
-      "close": "结束"
+      "close": "结束",
+      "activateUser": "激活用户",
+      "deactivateUser": "停用用户"
     },
     "messages": {
-      "failedToLoad": "加载用户失败"
+      "failedToLoad": "加载用户失败",
+      "confirmRoleChange": "换岗位{{role}}？",
+      "roleUpdated": "角色已成功更新",
+      "failedToUpdateRole": "未能更新角色",
+      "confirmStatusChange": "你确定要{{action}}这个用户吗？",
+      "userStatusUpdated": {
+        "activate": "用户成功激活",
+        "deactivate": "用户已成功停用"
+      },
+      "failedToUpdateStatus": "未能更新用户状态",
+      "confirmDelete": "删除这个用户？这一行为无法撤销。",
+      "userDeleted": "用户已成功删除",
+      "failedToDelete": "删除用户失败"
     }
   },
   "footer": {

@@ -15,26 +15,24 @@ app.use((req, res, next) => {
 });
 
 // Trust proxy
-app.set('trust proxy', true);
+const parseTrustProxy = (rawValue) => {
+  if (rawValue === undefined || rawValue === null || rawValue === '') return undefined;
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+  const value = String(rawValue).trim().toLowerCase();
+  if (value === 'false' || value === '0' || value === 'off' || value === 'no') return false;
 
-// Trust proxy - CRITICAL for getting real IP addresses behind reverse proxies (nginx, cloudflare, etc.)
-app.set('trust proxy', true);
+  // `true` is considered unsafe by express-rate-limit (bypassable). Map it to a safer default.
+  if (value === 'true' || value === 'on' || value === 'yes') return 1;
+
+  const asNumber = Number(value);
+  if (Number.isFinite(asNumber)) return asNumber;
+
+  // Allow express trust proxy presets like 'loopback', 'linklocal', etc.
+  return rawValue;
+};
+
+const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
+app.set('trust proxy', trustProxy ?? (process.env.NODE_ENV === 'production' ? 1 : false));
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -67,7 +65,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Global rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.RATE_LIMIT || 500,
+  max: Number(process.env.RATE_LIMIT) || 500,
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again later.'

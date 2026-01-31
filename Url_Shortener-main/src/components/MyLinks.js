@@ -168,9 +168,9 @@ const MyLinks = () => {
       await navigator.clipboard.writeText(url);
       setCopiedId(link.id || link._id);
       setTimeout(() => setCopiedId(null), 2000);
-      setToast({ type: 'success', message: 'Copied to clipboard' });
+      setToast({ type: 'success', message: t('myLinks.copiedToClipboard') });
     } catch {
-      setToast({ type: 'error', message: 'Failed to copy' });
+      setToast({ type: 'error', message: t('myLinks.failedToCopy') });
     }
   };
 
@@ -204,18 +204,18 @@ const MyLinks = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Short Link</TableHead>
-              <TableHead className="hidden md:table-cell">Original URL</TableHead>
-              <TableHead className="hidden sm:table-cell">Created</TableHead>
-              <TableHead>Clicks</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('myLinks.table.shortLink')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('myLinks.table.originalUrl')}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t('myLinks.table.created')}</TableHead>
+              <TableHead>{t('myLinks.table.clicks')}</TableHead>
+              <TableHead className="text-right">{t('myLinks.table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8">{t('myLinks.emptyState.loading')}</TableCell></TableRow>
             ) : filteredLinks.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No links found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('myLinks.emptyState.noLinks')}</TableCell></TableRow>
             ) : (
               filteredLinks.map(link => (
                 <TableRow key={link.id || link._id}>
@@ -255,12 +255,12 @@ const MyLinks = () => {
                           <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t('myLinks.actions.actions')}</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleCopy(link)}>
-                            <Copy className="mr-2 h-4 w-4" /> Copy Link
+                            <Copy className="mr-2 h-4 w-4" /> {t('myLinks.actions.copyLink')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => navigate(`/qr-codes`)}>
-                            <QrCode className="mr-2 h-4 w-4" /> QR Code
+                            <QrCode className="mr-2 h-4 w-4" /> {t('myLinks.actions.qrCode')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
@@ -273,7 +273,7 @@ const MyLinks = () => {
                               });
                             }}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            <Trash2 className="mr-2 h-4 w-4" /> {t('myLinks.actions.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -298,7 +298,7 @@ const MyLinks = () => {
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search links..." 
+                placeholder={t('myLinks.searchLinks')} 
                 className="pl-9" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -308,9 +308,9 @@ const MyLinks = () => {
           <CardContent className="p-0">
             <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
               {loading ? (
-                <div className="p-4 text-center text-muted-foreground">Loading...</div>
+                <div className="p-4 text-center text-muted-foreground">{t('myLinks.emptyState.loading')}</div>
               ) : filteredLinks.length === 0 ? (
-                <div className="p-4 text-center text-muted-foreground">No links found</div>
+                <div className="p-4 text-center text-muted-foreground">{t('myLinks.emptyState.noLinks')}</div>
               ) : (
                 filteredLinks.map(link => (
                   <div
@@ -410,9 +410,9 @@ const MyLinks = () => {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Overall Performance</CardTitle>
+                  <CardTitle className="text-lg">{t('myLinks.performance.title')}</CardTitle>
                   <Button variant="outline" size="sm" onClick={() => navigate(`/analytics/${selectedLink.id || selectedLink._id}`)}>
-                    View Full Report
+                    {t('myLinks.performance.viewFullReport')}
                   </Button>
                 </div>
               </CardHeader>
@@ -421,28 +421,28 @@ const MyLinks = () => {
                   <div className="p-4 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <MousePointer className="h-4 w-4" />
-                      <span>Total Clicks</span>
+                      <span>{t('myLinks.performance.totalClicks')}</span>
                     </div>
                     <div className="text-2xl font-bold">{selectedLink.clicks || selectedLink.clickCount || 0}</div>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <Globe className="h-4 w-4" />
-                      <span>All Clicks</span>
+                      <span>{t('myLinks.performance.allClicks')}</span>
                     </div>
                     <div className="text-2xl font-bold">{selectedLink.clicks || selectedLink.clickCount || 0}</div>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <TrendingUp className="h-4 w-4" />
-                      <span>CTR</span>
+                      <span>{t('myLinks.performance.ctr')}</span>
                     </div>
                     <div className="text-2xl font-bold">-</div>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Last Click</span>
+                      <span>{t('myLinks.performance.lastClick')}</span>
                     </div>
                     <div className="text-sm font-medium">-</div>
                   </div>
@@ -456,14 +456,14 @@ const MyLinks = () => {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Eye className="h-4 w-4" />
-                    Link Preview
+                    {t('myLinks.linkPreview.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-slate-50 rounded-lg p-6 flex items-center justify-center min-h-[200px]">
                     <div className="text-center">
                       <Globe className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-600">Preview not available</p>
+                      <p className="text-sm text-slate-600">{t('myLinks.linkPreview.notAvailable')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -474,11 +474,11 @@ const MyLinks = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
                       <QrCode className="h-4 w-4" />
-                      QR Code
+                      {t('myLinks.actions.qrCode')}
                     </CardTitle>
                     <Button variant="outline" size="sm">
                       <Download className="h-3 w-3 mr-1" />
-                      Download
+                      {t('common.download')}
                     </Button>
                   </div>
                 </CardHeader>
@@ -486,7 +486,7 @@ const MyLinks = () => {
                   <div className="bg-slate-50 rounded-lg p-6 flex items-center justify-center min-h-[200px]">
                     <div className="text-center">
                       <QrCode className="h-24 w-24 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-600">QR Code</p>
+                      <p className="text-sm text-slate-600">{t('myLinks.actions.qrCode')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -498,47 +498,47 @@ const MyLinks = () => {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Settings className="h-4 w-4" />
-                  Optimize
+                  {t('myLinks.optimize.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <details className="group">
                   <summary className="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
-                    <span className="font-medium text-sm">UTM Builder</span>
+                    <span className="font-medium text-sm">{t('myLinks.optimize.utmBuilder')}</span>
                     <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="mt-2 p-3 border rounded-lg text-sm text-slate-600">
-                    UTM parameters help track campaign performance
+                    {t('myLinks.optimize.utmDescription')}
                   </div>
                 </details>
                 
                 <details className="group">
                   <summary className="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
-                    <span className="font-medium text-sm">Traffic Routing</span>
+                    <span className="font-medium text-sm">{t('myLinks.optimize.trafficRouting')}</span>
                     <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="mt-2 p-3 border rounded-lg text-sm text-slate-600">
-                    Configure traffic routing rules
+                    {t('myLinks.optimize.trafficDescription')}
                   </div>
                 </details>
                 
                 <details className="group">
                   <summary className="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
-                    <span className="font-medium text-sm">Deep links</span>
+                    <span className="font-medium text-sm">{t('myLinks.optimize.deepLinks')}</span>
                     <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="mt-2 p-3 border rounded-lg text-sm text-slate-600">
-                    Configure deep linking for mobile apps
+                    {t('myLinks.optimize.deepLinksDescription')}
                   </div>
                 </details>
                 
                 <details className="group">
                   <summary className="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
-                    <span className="font-medium text-sm">Retargeting scripts</span>
+                    <span className="font-medium text-sm">{t('myLinks.optimize.retargeting')}</span>
                     <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="mt-2 p-3 border rounded-lg text-sm text-slate-600">
-                    Add retargeting pixels and scripts
+                    {t('myLinks.optimize.retargetingDescription')}
                   </div>
                 </details>
               </CardContent>
@@ -549,7 +549,7 @@ const MyLinks = () => {
             <CardContent className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <LinkIcon className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500">Select a link to view details</p>
+                <p className="text-slate-500">{t('myLinks.emptyState.selectLink')}</p>
               </div>
             </CardContent>
           </Card>
@@ -577,7 +577,7 @@ const MyLinks = () => {
               className="h-8"
             >
               <List className="h-4 w-4 mr-1" />
-              Simple
+              {t('myLinks.viewModes.simple')}
             </Button>
             <Button 
               variant={viewMode === 'detailed' ? 'default' : 'ghost'} 
@@ -586,7 +586,7 @@ const MyLinks = () => {
               className="h-8"
             >
               <Grid className="h-4 w-4 mr-1" />
-              Detailed
+              {t('myLinks.viewModes.detailed')}
             </Button>
           </div>
           <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto">
@@ -619,7 +619,7 @@ const MyLinks = () => {
                </div>
                
                <div className="space-y-2">
-                  <Label htmlFor="domain">Domain</Label>
+                  <Label htmlFor="domain">{t('myLinks.dialogs.createLink.domain')}</Label>
                   <select 
                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                      value={selectedDomainId}
@@ -633,7 +633,7 @@ const MyLinks = () => {
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                     <Label htmlFor="customName">Custom Alias (Optional)</Label>
+                     <Label htmlFor="customName">{t('myLinks.dialogs.createLink.customAlias')}</Label>
                      <Input 
                         id="customName" 
                         placeholder="my-link" 
@@ -651,15 +651,15 @@ const MyLinks = () => {
                            onChange={(e) => setGenerateQR(e.target.checked)}
                            className="rounded border-slate-300 text-primary focus:ring-primary"
                         />
-                        <span className="text-sm font-medium">Generate QR Code</span>
+                        <span className="text-sm font-medium">{t('myLinks.dialogs.createLink.generateQR')}</span>
                      </label>
                   </div>
                </div>
                
                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>{t('common.cancel')}</Button>
                   <Button type="submit" disabled={createLoading}>
-                     {createLoading ? 'Creating...' : 'Create Link'}
+                     {createLoading ? t('myLinks.dialogs.createLink.creating') : t('myLinks.dialogs.createLink.createButton')}
                   </Button>
                </DialogFooter>
             </form>
@@ -670,15 +670,15 @@ const MyLinks = () => {
       <Dialog open={deleteDialog.isOpen} onOpenChange={(open) => !open && setDeleteDialog(prev => ({ ...prev, isOpen: false }))}>
          <DialogContent>
             <DialogHeader>
-               <DialogTitle>Delete Link</DialogTitle>
+               <DialogTitle>{t('myLinks.dialogs.deleteLink.title')}</DialogTitle>
                <DialogDescription>
-                  Are you sure you want to delete {deleteDialog.linkUrl}? This action cannot be undone.
+                  {t('myLinks.dialogs.deleteLink.message', { url: deleteDialog.linkUrl })}
                </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-               <Button variant="outline" onClick={() => setDeleteDialog(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
+               <Button variant="outline" onClick={() => setDeleteDialog(prev => ({ ...prev, isOpen: false }))}>{t('common.cancel')}</Button>
                <Button variant="destructive" onClick={handleDelete} disabled={deleteLoading}>
-                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                  {deleteLoading ? t('common.delete') + '...' : t('common.delete')}
                </Button>
             </DialogFooter>
          </DialogContent>

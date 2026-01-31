@@ -57,7 +57,7 @@ const AdminUrlManagement = () => {
         setPagination(prev => ({ ...prev, ...response.data.pagination }));
       }
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to load URLs' });
+      setToast({ type: 'error', message: t('adminUrlManagement.messages.failedToLoad') });
     } finally {
       setLoading(false);
     }
@@ -94,22 +94,22 @@ const AdminUrlManagement = () => {
   const handleToggleStatus = async (urlId, currentStatus) => {
      try {
         await adminAPI.updateUrl(urlId, { isActive: !currentStatus });
-        setToast({ type: 'success', message: currentStatus ? 'URL Deactivated' : 'URL Activated' });
+        setToast({ type: 'success', message: currentStatus ? t('adminUrlManagement.messages.deactivateSuccess') : t('adminUrlManagement.messages.activateSuccess') });
         loadUrls();
      } catch (err) {
-        setToast({ type: 'error', message: 'Failed to update status' });
+        setToast({ type: 'error', message: t('adminUrlManagement.messages.updateFailed') });
      }
   };
 
   const handleDeleteUrl = async (urlId) => {
-     if(!window.confirm("Delete this URL? This cannot be undone.")) return;
+     if(!window.confirm(t('adminUrlManagement.messages.deleteConfirm'))) return;
      try {
         await adminAPI.deleteUrl(urlId);
-        setToast({ type: 'success', message: 'URL Deleted' });
+        setToast({ type: 'success', message: t('adminUrlManagement.messages.deleteSuccess') });
         loadUrls();
         setShowUrlDetails(false);
      } catch (err) {
-        setToast({ type: 'error', message: 'Failed to delete URL' });
+        setToast({ type: 'error', message: t('adminUrlManagement.messages.deleteFailed') });
      }
   };
 
@@ -119,9 +119,9 @@ const AdminUrlManagement = () => {
       await navigator.clipboard.writeText(fullUrl);
       setCopiedId(url._id);
       setTimeout(() => setCopiedId(null), 2000);
-      setToast({ type: 'success', message: 'URL copied to clipboard' });
+      setToast({ type: 'success', message: t('myLinks.copiedToClipboard') });
     } catch {
-      setToast({ type: 'error', message: 'Failed to copy URL' });
+      setToast({ type: 'error', message: t('myLinks.copyFailed') });
     }
   };
 
@@ -150,9 +150,9 @@ const AdminUrlManagement = () => {
                 </p>
               </div>
               {url.isActive ? (
-                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 flex-shrink-0">Active</Badge>
+                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 flex-shrink-0">{t('adminUrlManagement.status.active')}</Badge>
               ) : (
-                <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 flex-shrink-0">Inactive</Badge>
+                <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 flex-shrink-0">{t('adminUrlManagement.status.inactive')}</Badge>
               )}
             </div>
 
@@ -168,7 +168,7 @@ const AdminUrlManagement = () => {
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <MousePointer2 className="h-4 w-4" />
-                  Clicks
+                  {t('adminUrlManagement.table.clicks')}
                 </span>
                 <span className="font-bold text-blue-600">{url.clickCount?.toLocaleString() || 0}</span>
               </div>
@@ -182,7 +182,7 @@ const AdminUrlManagement = () => {
             <div className="flex gap-2 pt-3 border-t">
               <Button variant="outline" size="sm" className="flex-1" onClick={() => handleCopyUrl(url)}>
                 <Copy className="h-3 w-3 mr-1" />
-                {copiedId === url._id ? 'Copied!' : 'Copy'}
+                {copiedId === url._id ? t('myLinks.actions.copied') : t('adminUrlManagement.actions.copy')}
               </Button>
               <Button variant="outline" size="sm" onClick={() => { setSelectedUrl(url); setShowUrlDetails(true); }}>
                 <Eye className="h-3 w-3" />
@@ -222,7 +222,7 @@ const AdminUrlManagement = () => {
       </TableHeader>
       <TableBody>
         {loading ? (
-          <TableRow><TableCell colSpan={6} className="text-center py-8">Loading...</TableCell></TableRow>
+          <TableRow><TableCell colSpan={6} className="text-center py-8">{t('adminUrlManagement.loadingUrls')}</TableCell></TableRow>
         ) : urls.length === 0 ? (
           <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('adminUrlManagement.noUrls')}</TableCell></TableRow>
         ) : (
@@ -249,9 +249,9 @@ const AdminUrlManagement = () => {
               </TableCell>
               <TableCell>
                 {url.isActive ? (
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Active</Badge>
+                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">{t('adminUrlManagement.status.active')}</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">Inactive</Badge>
+                  <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{t('adminUrlManagement.status.inactive')}</Badge>
                 )}
               </TableCell>
               <TableCell className="text-right">
@@ -295,7 +295,7 @@ const AdminUrlManagement = () => {
               className="h-8"
             >
               <List className="h-4 w-4 mr-1" />
-              Table
+              {t('adminUrlManagement.viewModes.table')}
             </Button>
             <Button 
               variant={viewMode === 'grid' ? 'default' : 'ghost'} 
@@ -304,7 +304,7 @@ const AdminUrlManagement = () => {
               className="h-8"
             >
               <Grid className="h-4 w-4 mr-1" />
-              Grid
+              {t('adminUrlManagement.viewModes.grid')}
             </Button>
           </div>
         </div>
@@ -402,17 +402,17 @@ const AdminUrlManagement = () => {
                      disabled={pagination.page === 1}
                   >
                      <ChevronLeft className="h-4 w-4 mr-1" />
-                     Previous
+                     {t('adminUrlManagement.pagination.previous')}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                     Page {pagination.page} of {pagination.pages} ({pagination.total} total)
+                     {t('adminUrlManagement.pagination.pageInfo', { page: pagination.page, pages: pagination.pages, total: pagination.total })}
                   </span>
                   <Button 
                      variant="outline" 
                      onClick={() => setPagination(prev => ({...prev, page: prev.page + 1}))}
                      disabled={pagination.page === pagination.pages}
                   >
-                     Next
+                     {t('adminUrlManagement.pagination.next')}
                      <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                </div>
@@ -425,7 +425,7 @@ const AdminUrlManagement = () => {
          <DialogContent className="max-w-3xl">
             <DialogHeader>
                <DialogTitle>{t('adminUrlManagement.modal.title')}</DialogTitle>
-               <DialogDescription>Comprehensive information about this shortened URL.</DialogDescription>
+               <DialogDescription>{t('adminUrlManagement.modal.description')}</DialogDescription>
             </DialogHeader>
             {selectedUrl && (
                <div className="space-y-6">
@@ -449,9 +449,9 @@ const AdminUrlManagement = () => {
                         </a>
                       </div>
                       {selectedUrl.isActive ? (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{t('adminUrlManagement.status.active')}</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">Inactive</Badge>
+                        <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{t('adminUrlManagement.status.inactive')}</Badge>
                       )}
                     </div>
                   </div>
@@ -460,28 +460,28 @@ const AdminUrlManagement = () => {
                     <div className="p-4 bg-blue-50 rounded-lg">
                       <div className="flex items-center gap-2 text-blue-600 mb-1">
                         <MousePointer2 className="h-4 w-4" />
-                        <span className="text-xs font-medium">Total Clicks</span>
+                        <span className="text-xs font-medium">{t('adminUrlManagement.modal.totalClicks')}</span>
                       </div>
                       <p className="text-2xl font-bold text-blue-900">{selectedUrl.clickCount?.toLocaleString() || 0}</p>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg">
                       <div className="flex items-center gap-2 text-green-600 mb-1">
                         <Calendar className="h-4 w-4" />
-                        <span className="text-xs font-medium">Created</span>
+                        <span className="text-xs font-medium">{t('adminUrlManagement.modal.created')}</span>
                       </div>
                       <p className="text-sm font-semibold text-green-900">{new Date(selectedUrl.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg">
                       <div className="flex items-center gap-2 text-purple-600 mb-1">
                         <Activity className="h-4 w-4" />
-                        <span className="text-xs font-medium">Last Updated</span>
+                        <span className="text-xs font-medium">{t('adminUrlManagement.modal.lastUpdated')}</span>
                       </div>
                       <p className="text-sm font-semibold text-purple-900">{new Date(selectedUrl.updatedAt).toLocaleDateString()}</p>
                     </div>
                     <div className="p-4 bg-orange-50 rounded-lg">
                       <div className="flex items-center gap-2 text-orange-600 mb-1">
                         <Globe className="h-4 w-4" />
-                        <span className="text-xs font-medium">Domain</span>
+                        <span className="text-xs font-medium">{t('adminUrlManagement.modal.domain')}</span>
                       </div>
                       <p className="text-sm font-semibold text-orange-900 truncate">snip.sa</p>
                     </div>
@@ -504,10 +504,10 @@ const AdminUrlManagement = () => {
                   </div>
 
                   <div className="flex gap-2 justify-end pt-4 border-t">
-                     <Button variant="outline" onClick={() => setShowUrlDetails(false)}>Close</Button>
+                     <Button variant="outline" onClick={() => setShowUrlDetails(false)}>{t('adminUrlManagement.modal.close')}</Button>
                      <Button variant="outline" onClick={() => handleCopyUrl(selectedUrl)}>
                        <Copy className="h-4 w-4 mr-2" />
-                       Copy URL
+                       {t('adminUrlManagement.modal.copyUrl')}
                      </Button>
                      <Button 
                        variant={selectedUrl.isActive ? "destructive" : "default"}

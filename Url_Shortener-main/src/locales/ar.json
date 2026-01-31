@@ -110,6 +110,8 @@
       "title": "اختصر عناوين URL وتتبع الأداء",
       "titleMain": "شورتن، براند،",
       "titleAccent": "المضمار",
+      "mainHeading": "مختصر الروابط مع نطاقات مخصصة",
+      "longDescription": "أنشئ روابط قصيرة تحمل علامات تجارية باستخدام تحليلات قوية. تتبع النقرات، وقس الأداء، وحسن حملاتك باستخدام منصتنا لإدارة الروابط على مستوى المؤسسات.",
       "subtitle": "روابطك، محسنة للسعودية",
       "description": "اختصار سريع وآمن ومتوافق مع الروابط مع تحليلات متقدمة ونطاقات ذات علامات تجارية.",
       "descriptionAlt": "مختصر روابط مجاني مع تحليلات مفصلة، ورموز QR، وواجهة برمجة تطبيقات",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "هل أنت مستعد للبدء؟",
       "subtitle": "انضم إلى آلاف المستخدمين الذين يثقون في منصتنا",
-      "button": "ابدأ مجانا"
+      "button": "ابدأ مجانا",
+      "readyToStart": "هل أنت مستعد للبدء؟",
+      "joinUsers": "انضم إلى أكثر من 1.2 مليون مستخدم يختصر الروابط باستخدام Snip",
+      "getStartedFree": "ابدأ مجانا",
+      "noCardRequired": "لا حاجة لبطاقة ائتمان",
+      "freePlanForever": "خطة مجانية إلى الأبد",
+      "upgradeAnytime": "الترقية في أي وقت",
+      "fastSupport": "استجابة دعم سريعة"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "هل ما زلت لديك أسئلة؟",
+    "contactSupport": "تواصل مع الدعم"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "خطأ في الشبكة. يرجى التحقق من الاتصال والمحاولة مرة أخرى."
   },
   "dashboard": {
+    "chartDescription": "نظرة عامة على أداء الروابط مع مرور الوقت.",
     "title": "لوحة المعلومات",
     "welcome": "مرحباً بك مرة أخرى",
     "welcomeMessage": "إليك ما يحدث مع روابطكم اليوم.",
@@ -707,7 +721,8 @@
       "edit": "تعديل",
       "qrCode": "رمز QR",
       "analytics": "التحليلات",
-      "delete": "حذف"
+      "delete": "حذف",
+      "actions": "الإجراءات"
     },
     "emptyState": {
       "noLinks": "لم يتم العثور على روابط.",
@@ -746,13 +761,19 @@
         "generateQR": "إنشاء رمز QR",
         "creating": "الخلق...",
         "createButton": "إنشاء رابط"
+      },
+      "deleteLink": {
+        "title": "حذف الرابط",
+        "message": "هل أنت متأكد أنك تريد حذف {{url}}؟ لا يمكن التراجع عن هذا الفعل."
       }
     },
     "confirmDelete": "هل أنت متأكد أنك تريد حذف هذا الرابط؟",
     "deleteSuccess": "تم حذف الرابط بنجاح",
     "deleteError": "فشل في حذف الرابط",
     "noLinks": "لم يتم العثور على روابط",
-    "createFirstLink": "أنشئ أول رابط قصير لك للبدء"
+    "createFirstLink": "أنشئ أول رابط قصير لك للبدء",
+    "copiedToClipboard": "تم نسخها إلى لوحة الكتابة",
+    "failedToCopy": "فشل في النسخ"
   },
   "analytics": {
     "title": "التحليلات",
@@ -993,7 +1014,12 @@
     "title": "النطاقات المخصصة",
     "subtitle": "أضف وقم بإدارة نطاقاتك المخصصة للروابط القصيرة ذات العلامات التجارية",
     "wizard": {
-      "step": "خطوة {{current}} {{total}}"
+      "step": "خطوة {{current}} {{total}}",
+      "connectDomain": "ربط نطاق",
+      "enterDomain": "أدخل النطاق الذي تريد ربطه.",
+      "domainNameLabel": "اسم النطاق (مثلا example.com)",
+      "subdomainLabel": "النطاق الفرعي (اختياري، مثل الرابط)",
+      "done": "تم"
     },
     "stats": {
       "totalDomains": "النطاقات الكلية",
@@ -1023,7 +1049,8 @@
       "active": "نشط",
       "inactive": "غير نشط",
       "verified": "تم التأكيد",
-      "failed": "فشل"
+      "failed": "فشل",
+      "default": "الافتراضي"
     },
     "actions": {
       "verify": "تحقق",
@@ -1037,7 +1064,9 @@
       "recordType": "نوع الأسطوانة",
       "name": "الاسم",
       "value": "القيمة",
-      "verifyButton": "تحقق من النطاق"
+      "verifyButton": "تحقق من النطاق",
+      "unverified": "غير موثق",
+      "failed": "فشل التحقق. تحقق من انتشار DNS."
     },
     "dnsModal": {
       "title": "التحقق من النطاق",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "تم التحقق من النطاق بنجاح!",
     "verificationFailed": "فشل التحقق من النطاق",
     "deleteSuccess": "تم حذف النطاق بنجاح",
+    "dialogs": {
+      "remove": {
+        "title": "إزالة النطاق",
+        "message": "هل أنت متأكد؟ الروابط الموجودة التي تستخدم هذا النطاق ستتوقف عن العمل.",
+        "button": "إزالة"
+      }
+    },
     "errors": {
       "domainRequired": "اسم النطاق مطلوب",
       "domainInvalid": "يرجى إدخال اسم نطاق صالح (مثلا example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "مفاتيح API"
     },
     "general": {
+      "description": "إدارة ملفك الشخصي العام وبياناتك الخاصة",
       "personalInfo": "معلومات شخصية",
       "firstName": "الاسم الأول",
       "lastName": "الاسم الأخير",
@@ -1262,17 +1299,18 @@
       "phone": "رقم الهاتف",
       "company": "الشركة",
       "website": "الموقع الإلكتروني",
-      "jobTitle": "الدور",
+      "jobTitle": "المسمى الوظيفي",
       "updateButton": "تحديث الملف الشخصي",
-      "updating": "جاري التحديث...",
+      "updating": "إنقاذ...",
       "saveChanges": "تغييرات الحفظ"
     },
     "security": {
+      "description": "إدارة كلمات المرور وأمان الحساب",
       "changePassword": "تغيير كلمة المرور",
       "currentPassword": "كلمة المرور الحالية",
       "newPassword": "كلمة المرور الجديدة",
       "confirmPassword": "تأكيد كلمة المرور الجديدة",
-      "updatePassword": "تحديث كلمة المرور",
+      "updatePassword": "تغيير كلمة المرور",
       "twoFactor": "المصادقة ذات العاملين",
       "enable2FA": "تفعيل التحقق بخطوتين",
       "disable2FA": "تعطيل التحقق بخطوتين",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "كلمات المرور لا تتطابق"
     },
     "preferences": {
+      "title": "التفضيلات",
+      "description": "إدارة إعدادات الإشعارات الخاصة بك",
       "language": "اللغة",
       "timezone": "المنطقة الزمنية",
       "dateFormat": "تنسيق التاريخ",
@@ -1307,22 +1347,25 @@
       "description": "إدارة مفاتيح واجهة برمجة التطبيقات للوصول البرمجي",
       "createNew": "إنشاء مفتاح جديد",
       "keyName": "الاسم الرئيسي",
-      "key": "مفتاح",
+      "key": "مفتاح واجهة برمجة التطبيقات الخاص بك",
       "created": "تأسيس",
       "lastUsed": "آخر استخدام",
       "revoke": "إلغاء",
+      "warning": "احتفظ بهذا المفتاح سرا. لا تشاركه علنا.",
       "regenerating": "التجدد...",
-      "regenerateButton": "إعادة إنشاء مفتاح API",
-      "confirmRegenerate": "هل أنت متأكد أنك تريد إعادة توليد مفتاح API الخاص بك؟ المفتاح القديم لن يعمل بعد الآن."
+      "regenerateButton": "مفتاح التجديد",
+      "confirmRegenerate": "هل أنت متأكد؟ هذا سيبطل مفتاحك القديم."
     },
     "messages": {
       "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
       "passwordsDoNotMatch": "كلمات المرور لا تتطابق",
-      "failedToUpdate": "فشل تحديث المستخدم",
-      "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
-      "failedToUpdatePassword": "فشل تحديث كلمة المرور",
-      "preferencesUpdated": "تم تحديث التفضيلات بنجاح",
-      "failedToUpdatePreferences": "فشل تحديث التفضيلات"
+      "failedToUpdate": "فشل تحديث الملف الشخصي",
+      "passwordUpdated": "تم تغيير كلمة المرور بنجاح",
+      "failedToUpdatePassword": "فشل في تغيير كلمة المرور",
+      "preferencesUpdated": "تم حفظ التفضيلات بنجاح",
+      "failedToUpdatePreferences": "فشل في حفظ التفضيلات",
+      "apiKeyRegenerated": "تم إعادة إنشاء مفتاح API بنجاح",
+      "failedToRegenerateKey": "فشل في إعادة توليد مفتاح واجهة برمجة التطبيقات (API)"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "الإجراءات"
     },
     "actions": {
-      "view": "منظر",
+      "title": "الإجراءات",
+      "view": "عرض التفاصيل",
       "viewDetails": "عرض التفاصيل",
       "activate": "تفعيل",
       "deactivate": "تعطيل",
       "activateUser": "تفعيل المستخدم",
       "deactivateUser": "تعطيل المستخدم",
-      "delete": "حذف",
+      "delete": "حذف المستخدم",
       "deleteUser": "حذف المستخدم",
       "makeAdmin": "اجعل المسؤول",
       "removeAdmin": "إزالة المسؤول"
@@ -1395,6 +1439,14 @@
       "contactInfo": "معلومات الاتصال",
       "email": "البريد الإلكتروني",
       "phone": "الهاتف",
+      "registrationLocation": "موقع التسجيل",
+      "country": "كانتري",
+      "city": "المدينة",
+      "region": "المنطقة",
+      "ipAddress": "عنوان IP",
+      "timezone": "المنطقة الزمنية",
+      "countryCode": "رمز الدولة",
+      "coordinates": "الإحداثيات",
       "location": "موقع التسجيل",
       "locationFields": {
         "country": "كانتري",
@@ -1417,10 +1469,24 @@
       "inactive": "غير نشط",
       "periodEnd": "نهاية الفترة",
       "freePlan": "مجاني",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "activateUser": "تفعيل المستخدم",
+      "deactivateUser": "تعطيل المستخدم"
     },
     "messages": {
-      "failedToLoad": "فشل تحميل المستخدمين"
+      "failedToLoad": "فشل تحميل المستخدمين",
+      "confirmRoleChange": "تغيير الدور إلى {{role}}؟",
+      "roleUpdated": "تم تحديث الدور بنجاح",
+      "failedToUpdateRole": "فشل في تحديث الدور",
+      "confirmStatusChange": "هل أنت متأكد أنك تريد {{action}} هذا المستخدم؟",
+      "userStatusUpdated": {
+        "activate": "تم تفعيل المستخدم بنجاح",
+        "deactivate": "تم تعطيل المستخدم بنجاح"
+      },
+      "failedToUpdateStatus": "فشل تحديث حالة المستخدم",
+      "confirmDelete": "هل أحذف هذا المستخدم؟ لا يمكن التراجع عن هذا الفعل.",
+      "userDeleted": "تم حذف المستخدم بنجاح",
+      "failedToDelete": "فشل في حذف المستخدم"
     }
   },
   "footer": {

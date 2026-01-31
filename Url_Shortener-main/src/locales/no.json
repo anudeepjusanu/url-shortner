@@ -110,6 +110,8 @@
       "title": "Forkort URL-ene dine og følg ytelsen",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Friidrett",
+      "mainHeading": "URL-forkorter med egendefinerte domener",
+      "longDescription": "Lag merkevarebaserte shortlenker med kraftig analyse. Spor klikk, mål ytelse og optimaliser kampanjene dine med vår bedriftsnivå lenkehåndteringsplattform.",
       "subtitle": "Dine lenker, optimalisert for Saudi-Arabia",
       "description": "Rask, sikker og samsvarende URL-forkortelse med avansert analyse og merkevaredomener.",
       "descriptionAlt": "Gratis lenkeforkorter med detaljert analyse, QR-koder og API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Klar til å komme i gang?",
       "subtitle": "Bli med tusenvis av brukere som stoler på plattformen vår",
-      "button": "Start for gratis"
+      "button": "Start for gratis",
+      "readyToStart": "Klar til å komme i gang?",
+      "joinUsers": "Bli med over 1,2 millioner brukere som forkorter lenker med Snip",
+      "getStartedFree": "Kom i gang gratis",
+      "noCardRequired": "Ingen kredittkort kreves",
+      "freePlanForever": "Gratis abonnement for alltid",
+      "upgradeAnytime": "Oppgrader når som helst",
+      "fastSupport": "Rask supportrespons"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Har du fortsatt spørsmål?",
+    "contactSupport": "Kontakt Support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Nettverksfeil. Vennligst sjekk tilkoblingen din og prøv igjen."
   },
   "dashboard": {
+    "chartDescription": "Oversikt over lenkeytelsen din over tid.",
     "title": "Dashbord",
     "welcome": "Velkommen tilbake",
     "welcomeMessage": "Slik skjer det med lenkene dine i dag.",
@@ -707,7 +721,8 @@
       "edit": "Redigering",
       "qrCode": "QR-kode",
       "analytics": "Analyse",
-      "delete": "Slett"
+      "delete": "Slett",
+      "actions": "Handlinger"
     },
     "emptyState": {
       "noLinks": "Ingen lenker funnet.",
@@ -746,13 +761,19 @@
         "generateQR": "Generer QR-kode",
         "creating": "Skaper...",
         "createButton": "Opprett lenke"
+      },
+      "deleteLink": {
+        "title": "Slett lenke",
+        "message": "Er du sikker på at du vil slette {{url}}? Denne handlingen kan ikke gjøres om."
       }
     },
     "confirmDelete": "Er du sikker på at du vil slette denne lenken?",
     "deleteSuccess": "Lenke slettet med suksess",
     "deleteError": "Mislykket i å slette lenken",
     "noLinks": "Ingen lenker funnet",
-    "createFirstLink": "Lag din første korte lenke for å komme i gang"
+    "createFirstLink": "Lag din første korte lenke for å komme i gang",
+    "copiedToClipboard": "Kopiert til clipboard",
+    "failedToCopy": "Klarte ikke å kopiere"
   },
   "analytics": {
     "title": "Analyse",
@@ -993,7 +1014,12 @@
     "title": "Egendefinerte domener",
     "subtitle": "Legg til og administrer dine egendefinerte domener for kortprofilerte lenker",
     "wizard": {
-      "step": "Steg {{current}} av {{total}}"
+      "step": "Steg {{current}} av {{total}}",
+      "connectDomain": "Koble til et domene",
+      "enterDomain": "Skriv inn domenet du ønsker å koble til.",
+      "domainNameLabel": "Domenenavn (f.eks. example.com)",
+      "subdomainLabel": "Underdomene (valgfritt, f.eks. lenke)",
+      "done": "Ferdig"
     },
     "stats": {
       "totalDomains": "Totale domener",
@@ -1023,7 +1049,8 @@
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "verified": "Verifisert",
-      "failed": "Strøk"
+      "failed": "Strøk",
+      "default": "Default"
     },
     "actions": {
       "verify": "Verifiser",
@@ -1037,7 +1064,9 @@
       "recordType": "Oppføringstype",
       "name": "Navn",
       "value": "Verdi",
-      "verifyButton": "Verifiser domene"
+      "verifyButton": "Verifiser domene",
+      "unverified": "Uverifisert",
+      "failed": "Verifiseringen mislyktes. Sjekk DNS-propagasjon."
     },
     "dnsModal": {
       "title": "Domeneverifisering",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domenet bekreftet med suksess!",
     "verificationFailed": "Domeneverifisering mislyktes",
     "deleteSuccess": "Domenet slettet vellykket",
+    "dialogs": {
+      "remove": {
+        "title": "Fjern domene",
+        "message": "Er du sikker? Eksisterende lenker som bruker dette domenet vil slutte å fungere.",
+        "button": "Fjern"
+      }
+    },
     "errors": {
       "domainRequired": "Domenenavn er påkrevd",
       "domainInvalid": "Vennligst oppgi et gyldig domenenavn (f.eks. example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API-nøkler"
     },
     "general": {
+      "description": "Administrer din offentlige profil og private opplysninger",
       "personalInfo": "Personlig informasjon",
       "firstName": "Fornavn",
       "lastName": "Etternavn",
@@ -1262,17 +1299,18 @@
       "phone": "Telefonnummer",
       "company": "Selskap",
       "website": "Nettside",
-      "jobTitle": "Rolle",
+      "jobTitle": "Stillingstittel",
       "updateButton": "Oppdater profil",
-      "updating": "Oppdaterer...",
+      "updating": "Redde...",
       "saveChanges": "Endringer i lagring"
     },
     "security": {
+      "description": "Administrer passordet ditt og kontosikkerheten din",
       "changePassword": "Endre passord",
       "currentPassword": "Nåværende passord",
       "newPassword": "Nytt passord",
       "confirmPassword": "Bekreft nytt passord",
-      "updatePassword": "Oppdater passord",
+      "updatePassword": "Endre passord",
       "twoFactor": "Tofaktorautentisering",
       "enable2FA": "Aktiver 2FA",
       "disable2FA": "Deaktiver 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Passordene stemmer ikke overens"
     },
     "preferences": {
+      "title": "Preferanser",
+      "description": "Administrer varslingsinnstillingene dine",
       "language": "Språk",
       "timezone": "Tidssone",
       "dateFormat": "Datoformat",
@@ -1307,22 +1347,25 @@
       "description": "Administrer API-nøklene dine for programmatisk tilgang",
       "createNew": "Opprett ny nøkkel",
       "keyName": "Nøkkelnavn",
-      "key": "Nøkkel",
+      "key": "Din API-nøkkel",
       "created": "Opprettet",
       "lastUsed": "Sist brukt",
       "revoke": "Revoke",
+      "warning": "Hold denne nøkkelen hemmelig. Ikke del det offentlig.",
       "regenerating": "Regenererer...",
-      "regenerateButton": "Regenerer API-nøkkel",
-      "confirmRegenerate": "Er du sikker på at du vil regenerere API-nøkkelen din? Den gamle nøkkelen vil ikke fungere lenger."
+      "regenerateButton": "Regenerer-nøkkel",
+      "confirmRegenerate": "Er du sikker? Dette vil ugyldiggjøre den gamle nøkkelen din."
     },
     "messages": {
       "profileUpdated": "Profil oppdatert vellykket",
       "passwordsDoNotMatch": "Passordene stemmer ikke overens",
-      "failedToUpdate": "Mislykket i å oppdatere brukeren",
-      "passwordUpdated": "Passordet oppdatert med suksess",
-      "failedToUpdatePassword": "Klarte ikke å oppdatere passordet",
-      "preferencesUpdated": "Innstillinger oppdatert med suksess",
-      "failedToUpdatePreferences": "Mislyktes i å oppdatere preferanser"
+      "failedToUpdate": "Mislyktes i å oppdatere profilen",
+      "passwordUpdated": "Passord endret vellykket",
+      "failedToUpdatePassword": "Klarte ikke å endre passord",
+      "preferencesUpdated": "Preferanser lagret vellykket",
+      "failedToUpdatePreferences": "Klarte ikke å lagre preferanser",
+      "apiKeyRegenerated": "API-nøkkelen ble regenerert med suksess",
+      "failedToRegenerateKey": "Klarte ikke å regenerere API-nøkkelen"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Handlinger"
     },
     "actions": {
-      "view": "Utsikt",
+      "title": "Handlinger",
+      "view": "Se detaljer",
       "viewDetails": "Se detaljer",
       "activate": "Aktiver",
       "deactivate": "Deaktiver",
       "activateUser": "Aktiver bruker",
       "deactivateUser": "Deaktiver brukeren",
-      "delete": "Slett",
+      "delete": "Slett bruker",
       "deleteUser": "Slett bruker",
       "makeAdmin": "Gjør administrasjon",
       "removeAdmin": "Fjern Admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Kontaktinformasjon",
       "email": "E-post",
       "phone": "Telefon",
+      "registrationLocation": "Registreringssted",
+      "country": "Land",
+      "city": "By",
+      "region": "Region",
+      "ipAddress": "IP-adresse",
+      "timezone": "Tidssone",
+      "countryCode": "Landkode",
+      "coordinates": "Koordinater",
       "location": "Registreringssted",
       "locationFields": {
         "country": "Land",
@@ -1417,10 +1469,24 @@
       "inactive": "INAKTIV",
       "periodEnd": "Slutt på perioden",
       "freePlan": "GRATIS",
-      "close": "Lukk"
+      "close": "Lukk",
+      "activateUser": "Aktiver bruker",
+      "deactivateUser": "Deaktiver brukeren"
     },
     "messages": {
-      "failedToLoad": "Klarte ikke å laste inn brukere"
+      "failedToLoad": "Klarte ikke å laste inn brukere",
+      "confirmRoleChange": "Bytte rolle til {{role}}?",
+      "roleUpdated": "Rollen ble oppdatert med suksess",
+      "failedToUpdateRole": "Mislyktes i å oppdatere rollen",
+      "confirmStatusChange": "Er du sikker på at du vil {{action}} denne brukeren?",
+      "userStatusUpdated": {
+        "activate": "Brukeraktivering vellykket",
+        "deactivate": "Bruker deaktiverte med suksess"
+      },
+      "failedToUpdateStatus": "Mislyktes i å oppdatere brukerstatus",
+      "confirmDelete": "Slette denne brukeren? Denne handlingen kan ikke gjøres om.",
+      "userDeleted": "Bruker slettet vellykket",
+      "failedToDelete": "Mislyktes i å slette brukeren"
     }
   },
   "footer": {

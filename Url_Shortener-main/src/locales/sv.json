@@ -110,6 +110,8 @@
       "title": "Förkorta dina URL:er och spåra prestanda",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Bana",
+      "mainHeading": "URL-förkortare med anpassade domäner",
+      "longDescription": "Skapa varumärkesbaserade korta länkar med kraftfull analys. Följ klick, mät prestanda och optimera dina kampanjer med vår länkhanteringsplattform i företagsklass.",
       "subtitle": "Dina länkar, optimerade för Saudiarabien",
       "description": "Snabb, säker och regelenligt URL-förkortning med avancerad analys och varumärkesdomäner.",
       "descriptionAlt": "Gratis länkförkortare med detaljerad analys, QR-koder och API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Redo att börja?",
       "subtitle": "Gå med i tusentals användare som litar på vår plattform",
-      "button": "Start gratis"
+      "button": "Start gratis",
+      "readyToStart": "Redo att börja?",
+      "joinUsers": "Gå med över 1,2 miljoner användare som förkortar länkar med Snip",
+      "getStartedFree": "Kom igång gratis",
+      "noCardRequired": "Inget kreditkort krävs",
+      "freePlanForever": "Gratis plan för alltid",
+      "upgradeAnytime": "Uppgradera när som helst",
+      "fastSupport": "Snabb supportrespons"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Har du fortfarande frågor?",
+    "contactSupport": "Kontakta Support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Nätverksfel. Vänligen kontrollera din anslutning och försök igen."
   },
   "dashboard": {
+    "chartDescription": "Översikt över din länkprestanda över tid.",
     "title": "Instrumentpanel",
     "welcome": "Välkommen tillbaka",
     "welcomeMessage": "Så här händer det med dina länkar idag.",
@@ -707,7 +721,8 @@
       "edit": "Redigering",
       "qrCode": "QR-kod",
       "analytics": "Analys",
-      "delete": "Radera"
+      "delete": "Radera",
+      "actions": "Åtgärder"
     },
     "emptyState": {
       "noLinks": "Inga länkar hittades.",
@@ -746,13 +761,19 @@
         "generateQR": "Generera QR-kod",
         "creating": "Skapade...",
         "createButton": "Skapa länk"
+      },
+      "deleteLink": {
+        "title": "Radera länk",
+        "message": "Är du säker på att du vill radera {{url}}? Denna åtgärd kan inte göras ogjort."
       }
     },
     "confirmDelete": "Är du säker på att du vill ta bort den här länken?",
     "deleteSuccess": "Länken raderad framgångsrikt",
     "deleteError": "Misslyckades med att ta bort länken",
     "noLinks": "Inga länkar hittades",
-    "createFirstLink": "Skapa din första korta länk för att komma igång"
+    "createFirstLink": "Skapa din första korta länk för att komma igång",
+    "copiedToClipboard": "Kopierat till skrivplatta",
+    "failedToCopy": "Misslyckades med att kopiera"
   },
   "analytics": {
     "title": "Analys",
@@ -993,7 +1014,12 @@
     "title": "Anpassade domäner",
     "subtitle": "Lägg till och hantera dina egna domäner för korta länkar med varumärken",
     "wizard": {
-      "step": "Steg {{current}} av {{total}}"
+      "step": "Steg {{current}} av {{total}}",
+      "connectDomain": "Koppla en domän",
+      "enterDomain": "Ange domänen du vill koppla upp.",
+      "domainNameLabel": "Domännamn (t.ex. example.com)",
+      "subdomainLabel": "Deldomän (Valfritt, t.ex. länk)",
+      "done": "Klart"
     },
     "stats": {
       "totalDomains": "Totala domäner",
@@ -1023,7 +1049,8 @@
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "verified": "Verifierat",
-      "failed": "Misslyckades"
+      "failed": "Misslyckades",
+      "default": "Standard"
     },
     "actions": {
       "verify": "Verifiera",
@@ -1037,7 +1064,9 @@
       "recordType": "Registertyp",
       "name": "Namn",
       "value": "Värde",
-      "verifyButton": "Verifiera domän"
+      "verifyButton": "Verifiera domän",
+      "unverified": "Obekräftat",
+      "failed": "Verifieringen misslyckades. Kontrollera DNS-propagation."
     },
     "dnsModal": {
       "title": "Domänverifiering",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domänen verifierad framgångsrikt!",
     "verificationFailed": "Domänverifieringen misslyckades",
     "deleteSuccess": "Domänen raderad framgångsrikt",
+    "dialogs": {
+      "remove": {
+        "title": "Ta bort domän",
+        "message": "Är du säker? Befintliga länkar som använder denna domän slutar fungera.",
+        "button": "Ta bort"
+      }
+    },
     "errors": {
       "domainRequired": "Domännamn krävs",
       "domainInvalid": "Ange ett giltigt domännamn (t.ex. example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API-nycklar"
     },
     "general": {
+      "description": "Hantera din offentliga profil och privata uppgifter",
       "personalInfo": "Personlig information",
       "firstName": "Förnamn",
       "lastName": "Efternamn",
@@ -1262,17 +1299,18 @@
       "phone": "Telefonnummer",
       "company": "Företaget",
       "website": "Webbplats",
-      "jobTitle": "Roll",
+      "jobTitle": "Jobbtitel",
       "updateButton": "Uppdatera profilen",
-      "updating": "Uppdaterar...",
+      "updating": "Rädda...",
       "saveChanges": "Sparändringar"
     },
     "security": {
+      "description": "Hantera din lösenords- och kontosäkerhet",
       "changePassword": "Byt lösenord",
       "currentPassword": "Nuvarande lösenord",
       "newPassword": "Nytt lösenord",
       "confirmPassword": "Bekräfta nytt lösenord",
-      "updatePassword": "Uppdatera lösenord",
+      "updatePassword": "Byt lösenord",
       "twoFactor": "Tvåfaktorsautentisering",
       "enable2FA": "Aktivera 2FA",
       "disable2FA": "Inaktivera 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Lösenord stämmer inte överens"
     },
     "preferences": {
+      "title": "Preferenser",
+      "description": "Hantera dina notifikationsinställningar",
       "language": "Språk",
       "timezone": "Tidszon",
       "dateFormat": "Datumformat",
@@ -1307,22 +1347,25 @@
       "description": "Hantera dina API-nycklar för programmatisk åtkomst",
       "createNew": "Skapa ny nyckel",
       "keyName": "Nyckelnamn",
-      "key": "Nyckel",
+      "key": "Din API-nyckel",
       "created": "Skapad",
       "lastUsed": "Senast använd",
       "revoke": "Upphäv",
+      "warning": "Håll denna nyckel hemlig. Dela det inte offentligt.",
       "regenerating": "Återhämtar...",
-      "regenerateButton": "Regenerera API-nyckeln",
-      "confirmRegenerate": "Är du säker på att du vill återskapa din API-nyckel? Den gamla nyckeln fungerar inte längre."
+      "regenerateButton": "Regenerera nyckeln",
+      "confirmRegenerate": "Är du säker? Detta kommer att ogiltigförklara din gamla nyckel."
     },
     "messages": {
       "profileUpdated": "Profil uppdaterad framgångsrikt",
       "passwordsDoNotMatch": "Lösenord stämmer inte överens",
-      "failedToUpdate": "Misslyckades med att uppdatera användaren",
-      "passwordUpdated": "Lösenordet uppdaterades framgångsrikt",
-      "failedToUpdatePassword": "Misslyckades med att uppdatera lösenordet",
-      "preferencesUpdated": "Inställningar uppdaterade framgångsrikt",
-      "failedToUpdatePreferences": "Misslyckades med att uppdatera inställningar"
+      "failedToUpdate": "Misslyckades med att uppdatera profilen",
+      "passwordUpdated": "Lösenord ändrat framgångsrikt",
+      "failedToUpdatePassword": "Misslyckades med att ändra lösenord",
+      "preferencesUpdated": "Inställningar sparade framgångsrikt",
+      "failedToUpdatePreferences": "Misslyckades med att spara inställningar",
+      "apiKeyRegenerated": "API-nyckeln regenererades framgångsrikt",
+      "failedToRegenerateKey": "Misslyckades med att återgenerera API-nyckeln"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Åtgärder"
     },
     "actions": {
-      "view": "Vy",
+      "title": "Åtgärder",
+      "view": "Visa detaljer",
       "viewDetails": "Visa detaljer",
       "activate": "Aktivera",
       "deactivate": "Avaktivera",
       "activateUser": "Aktivera användaren",
       "deactivateUser": "Avaktivera användaren",
-      "delete": "Radera",
+      "delete": "Ta bort användaren",
       "deleteUser": "Ta bort användaren",
       "makeAdmin": "Gör admin",
       "removeAdmin": "Ta bort admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Kontaktinformation",
       "email": "E-post",
       "phone": "Telefon",
+      "registrationLocation": "Registreringsplats",
+      "country": "Land",
+      "city": "Stad",
+      "region": "Region",
+      "ipAddress": "IP-adress",
+      "timezone": "Tidszon",
+      "countryCode": "Landskod",
+      "coordinates": "Koordinater",
       "location": "Registreringsplats",
       "locationFields": {
         "country": "Land",
@@ -1417,10 +1469,24 @@
       "inactive": "INAKTIV",
       "periodEnd": "Slut på perioden",
       "freePlan": "GRATIS",
-      "close": "Stäng"
+      "close": "Stäng",
+      "activateUser": "Aktivera användaren",
+      "deactivateUser": "Avaktivera användaren"
     },
     "messages": {
-      "failedToLoad": "Misslyckades med att ladda användare"
+      "failedToLoad": "Misslyckades med att ladda användare",
+      "confirmRoleChange": "Byta roll till {{role}}?",
+      "roleUpdated": "Rollen uppdaterades framgångsrikt",
+      "failedToUpdateRole": "Misslyckades med att uppdatera rollen",
+      "confirmStatusChange": "Är du säker på att du vill {{action}} den här användaren?",
+      "userStatusUpdated": {
+        "activate": "Användaraktivering framgångsrikt",
+        "deactivate": "Användaren avaktiverades framgångsrikt"
+      },
+      "failedToUpdateStatus": "Misslyckades med att uppdatera användarstatusen",
+      "confirmDelete": "Radera den här användaren? Denna åtgärd kan inte göras ogjort.",
+      "userDeleted": "Användaren raderade framgångsrikt",
+      "failedToDelete": "Misslyckades med att ta bort användaren"
     }
   },
   "footer": {

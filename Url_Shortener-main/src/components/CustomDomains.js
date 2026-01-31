@@ -39,7 +39,7 @@ const CustomDomains = () => {
       const domainsData = response.data?.domains || response.domains || [];
       setDomains(domainsData);
     } catch (err) {
-      setToast({ type: 'error', message: 'Failed to load domains' });
+      setToast({ type: 'error', message: t('errors.failedToLoadDomainsAlt') });
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ const CustomDomains = () => {
       setStep(2);
       fetchDomains();
     } catch (err) {
-      setToast({ type: 'error', message: err.message || 'Failed to add domain' });
+      setToast({ type: 'error', message: err.message || t('errors.failedToAddDomainAlt') });
     }
   };
 
@@ -86,15 +86,15 @@ const CustomDomains = () => {
       await domainsAPI.deleteDomain(deleteDialog.id);
       fetchDomains();
       setDeleteDialog({ isOpen: false, id: null });
-      setToast({ type: 'success', message: 'Domain deleted' });
+      setToast({ type: 'success', message: t('customDomains.deleteSuccess') });
     } catch {
-      setToast({ type: 'error', message: 'Failed to delete' });
+      setToast({ type: 'error', message: t('errors.failedToDelete') });
     }
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    setToast({ type: 'success', message: 'Copied!' });
+    setToast({ type: 'success', message: t('common.copied') });
   };
 
   const resetWizard = () => {
@@ -125,17 +125,17 @@ const CustomDomains = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Domain</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Default</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('customDomains.table.domain')}</TableHead>
+                <TableHead>{t('customDomains.table.status')}</TableHead>
+                <TableHead>{t('customDomains.status.default')}</TableHead>
+                <TableHead className="text-right">{t('customDomains.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
               ) : domains.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No custom domains connected.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.noCustomDomainsConnected')}</TableCell></TableRow>
               ) : (
                 domains.map(domain => (
                   <TableRow key={domain.id || domain._id}>
@@ -145,9 +145,9 @@ const CustomDomains = () => {
                     </TableCell>
                     <TableCell>
                       {domain.verified ? (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Verified</Badge>
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">{t('customDomains.status.verified')}</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50">Unverified</Badge>
+                        <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50">{t('customDomains.verification.unverified')}</Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -157,7 +157,7 @@ const CustomDomains = () => {
                       <div className="flex justify-end gap-2">
                         {!domain.verified && (
                           <Button variant="ghost" size="sm" onClick={() => { setAddedDomain(domain); setShowAddDialog(true); setStep(2); }}>
-                            Verify
+                            {t('customDomains.actions.verify')}
                           </Button>
                         )}
                         <Button variant="ghost" size="icon" onClick={() => setDeleteDialog({ isOpen: true, id: domain.id || domain._id })}>
@@ -178,21 +178,21 @@ const CustomDomains = () => {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {step === 1 ? 'Connect a Domain' : 'Verify Domain Ownership'}
+              {step === 1 ? t('customDomains.wizard.connectDomain') : t('customDomains.verification.title')}
             </DialogTitle>
             <DialogDescription>
-              {step === 1 ? 'Enter the domain you want to connect.' : 'Add the following DNS record to verify ownership.'}
+              {step === 1 ? t('customDomains.wizard.enterDomain') : t('customDomains.verification.instructions')}
             </DialogDescription>
           </DialogHeader>
 
           {step === 1 ? (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Domain Name (e.g. example.com)</Label>
+                <Label>{t('customDomains.wizard.domainNameLabel')}</Label>
                 <Input value={baseDomain} onChange={(e) => setBaseDomain(e.target.value)} placeholder="example.com" />
               </div>
               <div className="space-y-2">
-                <Label>Subdomain (Optional, e.g. link)</Label>
+                <Label>{t('customDomains.wizard.subdomainLabel')}</Label>
                 <Input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} placeholder="link" />
               </div>
             </div>
@@ -200,15 +200,15 @@ const CustomDomains = () => {
             <div className="space-y-4 py-4">
               <div className="bg-slate-50 p-4 rounded-lg border space-y-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Type</span>
+                  <span className="text-muted-foreground">{t('customDomains.verification.recordType')}</span>
                   <span className="font-mono font-bold">CNAME</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Name</span>
+                  <span className="text-muted-foreground">{t('customDomains.verification.name')}</span>
                   <span className="font-mono font-bold">{subdomain || '@'}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Value</span>
+                  <span className="text-muted-foreground">{t('customDomains.verification.value')}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-primary">snip.sa</span>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('snip.sa')}>
@@ -220,12 +220,12 @@ const CustomDomains = () => {
 
               {verificationStatus === 'failed' && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-100 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" /> Verification failed. Check DNS propagation.
+                  <AlertCircle className="h-4 w-4" /> {t('customDomains.verification.failed')}
                 </div>
               )}
               {verificationStatus === 'success' && (
                 <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm border border-green-100 flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Domain verified successfully!
+                  <CheckCircle2 className="h-4 w-4" /> {t('customDomains.verificationSuccess')}
                 </div>
               )}
             </div>
@@ -233,16 +233,16 @@ const CustomDomains = () => {
 
           <DialogFooter>
             {step === 1 ? (
-              <Button onClick={handleAddDomain} disabled={!baseDomain}>Next</Button>
+              <Button onClick={handleAddDomain} disabled={!baseDomain}>{t('common.next')}</Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+                <Button variant="outline" onClick={() => setStep(1)}>{t('common.back')}</Button>
                 {verificationStatus !== 'success' ? (
                   <Button onClick={verifyDomain} disabled={verificationStatus === 'checking'}>
-                    {verificationStatus === 'checking' ? 'Checking...' : 'Verify DNS'}
+                    {verificationStatus === 'checking' ? t('customDomains.dnsModal.checking') : t('customDomains.verification.verifyButton')}
                   </Button>
                 ) : (
-                  <Button onClick={resetWizard}>Done</Button>
+                  <Button onClick={resetWizard}>{t('customDomains.wizard.done')}</Button>
                 )}
               </>
             )}
@@ -254,14 +254,14 @@ const CustomDomains = () => {
       <Dialog open={deleteDialog.isOpen} onOpenChange={(open) => !open && setDeleteDialog({ isOpen: false, id: null })}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Domain</DialogTitle>
+            <DialogTitle>{t('customDomains.dialogs.remove.title')}</DialogTitle>
             <DialogDescription>
-              Are you sure? Existing links using this domain will stop working.
+              {t('customDomains.dialogs.remove.message')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog({ isOpen: false, id: null })}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Remove</Button>
+            <Button variant="outline" onClick={() => setDeleteDialog({ isOpen: false, id: null })}>{t('common.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete}>{t('customDomains.dialogs.remove.button')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

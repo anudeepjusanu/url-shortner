@@ -110,6 +110,8 @@
       "title": "Shorten Your URLs & Track Performance",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Track",
+      "mainHeading": "URL shortener with custom domains",
+      "longDescription": "Create branded short links with powerful analytics. Track clicks, measure performance, and optimize your campaigns with our enterprise-grade link management platform.",
       "subtitle": "Your Links, Optimized for Saudi Arabia",
       "description": "Fast, secure, and compliant URL shortening with advanced analytics and branded domains.",
       "descriptionAlt": "Free link shortener with detailed analytics, QR codes, and API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Ready to Get Started?",
       "subtitle": "Join thousands of users who trust our platform",
-      "button": "Start for Free"
+      "button": "Start for Free",
+      "readyToStart": "Ready to get started?",
+      "joinUsers": "Join over 1.2 million users shortening links with Snip",
+      "getStartedFree": "Get started for free",
+      "noCardRequired": "No credit card required",
+      "freePlanForever": "Free plan forever",
+      "upgradeAnytime": "Upgrade anytime",
+      "fastSupport": "Fast support response"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Still have questions?",
+    "contactSupport": "Contact Support"
   },
   "auth": {
     "login": {
@@ -708,7 +721,8 @@
       "edit": "Edit",
       "qrCode": "QR Code",
       "analytics": "Analytics",
-      "delete": "Delete"
+      "delete": "Delete",
+      "actions": "Actions"
     },
     "emptyState": {
       "noLinks": "No links found.",
@@ -747,13 +761,19 @@
         "generateQR": "Generate QR Code",
         "creating": "Creating...",
         "createButton": "Create Link"
+      },
+      "deleteLink": {
+        "title": "Delete Link",
+        "message": "Are you sure you want to delete {{url}}? This action cannot be undone."
       }
     },
     "confirmDelete": "Are you sure you want to delete this link?",
     "deleteSuccess": "Link deleted successfully",
     "deleteError": "Failed to delete link",
     "noLinks": "No links found",
-    "createFirstLink": "Create your first short link to get started"
+    "createFirstLink": "Create your first short link to get started",
+    "copiedToClipboard": "Copied to clipboard",
+    "failedToCopy": "Failed to copy"
   },
   "analytics": {
     "title": "Analytics",
@@ -994,7 +1014,12 @@
     "title": "Custom Domains",
     "subtitle": "Add and manage your custom domains for branded short links",
     "wizard": {
-      "step": "Step {{current}} of {{total}}"
+      "step": "Step {{current}} of {{total}}",
+      "connectDomain": "Connect a Domain",
+      "enterDomain": "Enter the domain you want to connect.",
+      "domainNameLabel": "Domain Name (e.g. example.com)",
+      "subdomainLabel": "Subdomain (Optional, e.g. link)",
+      "done": "Done"
     },
     "stats": {
       "totalDomains": "Total Domains",
@@ -1024,7 +1049,8 @@
       "active": "Active",
       "inactive": "Inactive",
       "verified": "Verified",
-      "failed": "Failed"
+      "failed": "Failed",
+      "default": "Default"
     },
     "actions": {
       "verify": "Verify",
@@ -1038,7 +1064,9 @@
       "recordType": "Record Type",
       "name": "Name",
       "value": "Value",
-      "verifyButton": "Verify Domain"
+      "verifyButton": "Verify Domain",
+      "unverified": "Unverified",
+      "failed": "Verification failed. Check DNS propagation."
     },
     "dnsModal": {
       "title": "Domain Verification",
@@ -1060,6 +1088,13 @@
     "verificationSuccess": "Domain verified successfully!",
     "verificationFailed": "Domain verification failed",
     "deleteSuccess": "Domain deleted successfully",
+    "dialogs": {
+      "remove": {
+        "title": "Remove Domain",
+        "message": "Are you sure? Existing links using this domain will stop working.",
+        "button": "Remove"
+      }
+    },
     "errors": {
       "domainRequired": "Domain name is required",
       "domainInvalid": "Please enter a valid domain name (e.g., example.com)",
@@ -1254,9 +1289,11 @@
       "general": "General",
       "security": "Security",
       "preferences": "Preferences",
-      "apiKeys": "API Keys"
+      "apiKeys": "API Keys",
+      "api":"API"
     },
     "general": {
+      "description": "Manage your public profile and private details",
       "personalInfo": "Personal Information",
       "firstName": "First Name",
       "lastName": "Last Name",
@@ -1264,17 +1301,18 @@
       "phone": "Phone Number",
       "company": "Company",
       "website": "Website",
-      "jobTitle": "Role",
+      "jobTitle": "Job Title",
       "updateButton": "Update Profile",
-      "updating": "Updating...",
+      "updating": "Saving...",
       "saveChanges": "Save Changes"
     },
     "security": {
+      "description": "Manage your password and account security",
       "changePassword": "Change Password",
       "currentPassword": "Current Password",
       "newPassword": "New Password",
       "confirmPassword": "Confirm New Password",
-      "updatePassword": "Update Password",
+      "updatePassword": "Change Password",
       "twoFactor": "Two-Factor Authentication",
       "enable2FA": "Enable 2FA",
       "disable2FA": "Disable 2FA",
@@ -1287,6 +1325,8 @@
       "errorPasswordMismatch": "Passwords do not match"
     },
     "preferences": {
+      "title": "Preferences",
+      "description": "Manage your notification settings",
       "language": "Language",
       "timezone": "Timezone",
       "dateFormat": "Date Format",
@@ -1309,22 +1349,25 @@
       "description": "Manage your API keys for programmatic access",
       "createNew": "Create New Key",
       "keyName": "Key Name",
-      "key": "Key",
+      "key": "Your API Key",
       "created": "Created",
       "lastUsed": "Last Used",
       "revoke": "Revoke",
+      "warning": "Keep this key secret. Do not share it publicly.",
       "regenerating": "Regenerating...",
-      "regenerateButton": "Regenerate API Key",
-      "confirmRegenerate": "Are you sure you want to regenerate your API key? The old key will no longer work."
+      "regenerateButton": "Regenerate Key",
+      "confirmRegenerate": "Are you sure? This will invalidate your old key."
     },
     "messages": {
       "profileUpdated": "Profile updated successfully",
       "passwordsDoNotMatch": "Passwords do not match",
-      "failedToUpdate": "Failed to update user",
-      "passwordUpdated": "Password updated successfully",
-      "failedToUpdatePassword": "Failed to update password",
-      "preferencesUpdated": "Preferences updated successfully",
-      "failedToUpdatePreferences": "Failed to update preferences"
+      "failedToUpdate": "Failed to update profile",
+      "passwordUpdated": "Password changed successfully",
+      "failedToUpdatePassword": "Failed to change password",
+      "preferencesUpdated": "Preferences saved successfully",
+      "failedToUpdatePreferences": "Failed to save preferences",
+      "apiKeyRegenerated": "API Key regenerated successfully",
+      "failedToRegenerateKey": "Failed to regenerate API key"
     }
   },
   "userManagement": {
@@ -1375,13 +1418,14 @@
       "actions": "Actions"
     },
     "actions": {
-      "view": "View",
+      "title": "Actions",
+      "view": "View Details",
       "viewDetails": "View Details",
       "activate": "Activate",
       "deactivate": "Deactivate",
       "activateUser": "Activate User",
       "deactivateUser": "Deactivate User",
-      "delete": "Delete",
+      "delete": "Delete User",
       "deleteUser": "Delete User",
       "makeAdmin": "Make Admin",
       "removeAdmin": "Remove Admin"
@@ -1397,6 +1441,14 @@
       "contactInfo": "Contact Info",
       "email": "Email",
       "phone": "Phone",
+      "registrationLocation": "Registration Location",
+      "country": "Country",
+      "city": "City",
+      "region": "Region",
+      "ipAddress": "IP Address",
+      "timezone": "Timezone",
+      "countryCode": "Country Code",
+      "coordinates": "Coordinates",
       "location": "Registration Location",
       "locationFields": {
         "country": "Country",
@@ -1419,10 +1471,24 @@
       "inactive": "INACTIVE",
       "periodEnd": "Period End",
       "freePlan": "FREE",
-      "close": "Close"
+      "close": "Close",
+      "activateUser": "Activate User",
+      "deactivateUser": "Deactivate User"
     },
     "messages": {
-      "failedToLoad": "Failed to load users"
+      "failedToLoad": "Failed to load users",
+      "confirmRoleChange": "Change role to {{role}}?",
+      "roleUpdated": "Role updated successfully",
+      "failedToUpdateRole": "Failed to update role",
+      "confirmStatusChange": "Are you sure you want to {{action}} this user?",
+      "userStatusUpdated": {
+        "activate": "User activated successfully",
+        "deactivate": "User deactivated successfully"
+      },
+      "failedToUpdateStatus": "Failed to update user status",
+      "confirmDelete": "Delete this user? This action cannot be undone.",
+      "userDeleted": "User deleted successfully",
+      "failedToDelete": "Failed to delete user"
     }
   },
   "footer": {

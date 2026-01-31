@@ -110,6 +110,8 @@
       "title": "URLを短縮し、パフォーマンスを追跡する",
       "titleMain": "ショーテン、ブランド、",
       "titleAccent": "陸上競技",
+      "mainHeading": "カスタムドメイン付きURLショートナー",
+      "longDescription": "強力な分析ツールでブランド化された短いリンクを作成しましょう。当社のエンタープライズグレードのリンク管理プラットフォームでクリック数を追跡し、パフォーマンスを測定し、キャンペーンを最適化します。",
       "subtitle": "あなたのリンクはサウジアラビア向けに最適化されています",
       "description": "高速で安全かつコンプライアンスに準拠したURL短縮機能と高度な分析とブランドドメイン。",
       "descriptionAlt": "詳細な分析、QRコード、APIを備えた無料のリンク短縮器",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "始める準備はできましたか?",
       "subtitle": "私たちのプラットフォームを信頼する何千人ものユーザーに参加しましょう",
-      "button": "スタート・フォー・フリー"
+      "button": "スタート・フォー・フリー",
+      "readyToStart": "始める準備はできましたか?",
+      "joinUsers": "120万人以上のユーザーがSnipでリンク短縮に参加しましょう",
+      "getStartedFree": "無料で始めましょう",
+      "noCardRequired": "クレジットカードは不要です",
+      "freePlanForever": "フリープランは永遠に",
+      "upgradeAnytime": "いつでもアップグレード可能です",
+      "fastSupport": "迅速なサポート対応"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "まだ質問はありますか?",
+    "contactSupport": "サポートに連絡"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "ネットワークエラーです。接続を確認してからもう一度お試しください。"
   },
   "dashboard": {
+    "chartDescription": "リンクのパフォーマンスを時間経過で概観します。",
     "title": "ダッシュボード",
     "welcome": "再びようこそ",
     "welcomeMessage": "今日のリンクの状況は以下の通りです。",
@@ -707,7 +721,8 @@
       "edit": "編集",
       "qrCode": "QRコード",
       "analytics": "分析",
-      "delete": "削除"
+      "delete": "削除",
+      "actions": "行動"
     },
     "emptyState": {
       "noLinks": "リンクは見つかりませんでした。",
@@ -746,13 +761,19 @@
         "generateQR": "QRコードを生成する",
         "creating": "創造...",
         "createButton": "リンクを作成"
+      },
+      "deleteLink": {
+        "title": "リンクを削除",
+        "message": "本当に{{url}}を削除したいのですか?この行動は取り消せない。"
       }
     },
     "confirmDelete": "本当にこのリンクを削除したいのですか?",
     "deleteSuccess": "リンクは削除されました",
     "deleteError": "リンクの削除に失敗しました",
     "noLinks": "リンクは見つかりませんでした",
-    "createFirstLink": "最初の短いリンクを作成して始めましょう"
+    "createFirstLink": "最初の短いリンクを作成して始めましょう",
+    "copiedToClipboard": "クリップボードにコピー",
+    "failedToCopy": "コピーに失敗しました"
   },
   "analytics": {
     "title": "分析",
@@ -993,7 +1014,12 @@
     "title": "カスタムドメイン",
     "subtitle": "ブランドのショートリンク用にカスタムドメインを追加・管理しましょう",
     "wizard": {
-      "step": "{{current}}{{total}}のステップ"
+      "step": "{{current}}{{total}}のステップ",
+      "connectDomain": "ドメインを接続する",
+      "enterDomain": "接続したいドメインを入力してください。",
+      "domainNameLabel": "ドメイン名(例:example.com)",
+      "subdomainLabel": "サブドメイン(オプション、例:リンク)",
+      "done": "完成です"
     },
     "stats": {
       "totalDomains": "総ドメイン",
@@ -1023,7 +1049,8 @@
       "active": "現役",
       "inactive": "非稼働",
       "verified": "検証済み",
-      "failed": "失敗"
+      "failed": "失敗",
+      "default": "デフォルト"
     },
     "actions": {
       "verify": "検証",
@@ -1037,7 +1064,9 @@
       "recordType": "レコードタイプ",
       "name": "名称",
       "value": "価値",
-      "verifyButton": "ドメインの検証"
+      "verifyButton": "ドメインの検証",
+      "unverified": "未確認",
+      "failed": "検証は失敗しました。DNS伝播を確認してください。"
     },
     "dnsModal": {
       "title": "ドメイン検証",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "ドメインの認証が成功しました!",
     "verificationFailed": "ドメイン検証に失敗",
     "deleteSuccess": "ドメインが正常に削除されました",
+    "dialogs": {
+      "remove": {
+        "title": "ドメインを削除",
+        "message": "確かですか。このドメインを利用している既存のリンクは機能しなくなります。",
+        "button": "削除"
+      }
+    },
     "errors": {
       "domainRequired": "ドメイン名は必須です",
       "domainInvalid": "有効なドメイン名(例:example.com)を入力してください。",
@@ -1255,6 +1291,7 @@
       "apiKeys": "APIキー"
     },
     "general": {
+      "description": "公開プロフィールとプライベート情報を管理しましょう",
       "personalInfo": "個人情報",
       "firstName": "名前",
       "lastName": "姓",
@@ -1262,17 +1299,18 @@
       "phone": "電話番号",
       "company": "会社",
       "website": "ウェブサイト",
-      "jobTitle": "役割",
+      "jobTitle": "職務名",
       "updateButton": "更新プロフィール",
-      "updating": "更新中...",
+      "updating": "セーブ...",
       "saveChanges": "セーブの変更"
     },
     "security": {
+      "description": "パスワードとアカウントのセキュリティを管理しましょう",
       "changePassword": "パスワード変更",
       "currentPassword": "現在のパスワード",
       "newPassword": "新しいパスワード",
       "confirmPassword": "新しいパスワードを確認",
-      "updatePassword": "パスワード更新",
+      "updatePassword": "パスワード変更",
       "twoFactor": "二要素認証",
       "enable2FA": "2段階認証を有効にする",
       "disable2FA": "2段階認証を無効にしてください",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "パスワードが一致しません"
     },
     "preferences": {
+      "title": "選好",
+      "description": "通知設定の管理",
       "language": "言語",
       "timezone": "タイムゾーン",
       "dateFormat": "日付フォーマット",
@@ -1307,22 +1347,25 @@
       "description": "プログラムアクセスのためのAPIキーを管理しましょう",
       "createNew": "新しいキーを作成",
       "keyName": "キーネーム",
-      "key": "キー",
+      "key": "あなたのAPIキー",
       "created": "創設",
       "lastUsed": "最終使用例",
       "revoke": "撤退",
+      "warning": "この鍵は秘密にしておけ。公に共有しないでください。",
       "regenerating": "再生中...",
-      "regenerateButton": "APIキーの再生成",
-      "confirmRegenerate": "本当にAPIキーを再生成したいですか?古い鍵はもう使えなくなる。"
+      "regenerateButton": "再生キー",
+      "confirmRegenerate": "確かですか。これにより古い鍵は無効になります。"
     },
     "messages": {
       "profileUpdated": "プロフィールが正常に更新されました",
       "passwordsDoNotMatch": "パスワードが一致しません",
-      "failedToUpdate": "ユーザーの更新に失敗しました",
-      "passwordUpdated": "パスワードが正常に更新されました",
-      "failedToUpdatePassword": "パスワード更新に失敗しました",
-      "preferencesUpdated": "設定が正常に更新されました",
-      "failedToUpdatePreferences": "設定の更新に失敗しました"
+      "failedToUpdate": "プロフィールの更新に失敗しました",
+      "passwordUpdated": "パスワード変更が成功しました",
+      "failedToUpdatePassword": "パスワード変更に失敗しました",
+      "preferencesUpdated": "設定が正常に保存されました",
+      "failedToUpdatePreferences": "優先順位を保存できなかった",
+      "apiKeyRegenerated": "APIキーが正常に再生成されました",
+      "failedToRegenerateKey": "APIキーの再生成に失敗しました"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "行動"
     },
     "actions": {
-      "view": "眺め",
+      "title": "行動",
+      "view": "詳細を見る",
       "viewDetails": "詳細を見る",
       "activate": "起動",
       "deactivate": "無効化",
       "activateUser": "ユーザーをアクティベート",
       "deactivateUser": "ユーザーを非有効化",
-      "delete": "削除",
+      "delete": "ユーザーを削除",
       "deleteUser": "ユーザーを削除",
       "makeAdmin": "管理者にする",
       "removeAdmin": "管理者を削除してください"
@@ -1395,6 +1439,14 @@
       "contactInfo": "連絡先情報",
       "email": "電子メール",
       "phone": "電話",
+      "registrationLocation": "登録場所",
+      "country": "国",
+      "city": "都市",
+      "region": "地域",
+      "ipAddress": "IPアドレス",
+      "timezone": "タイムゾーン",
+      "countryCode": "国コード",
+      "coordinates": "座標",
       "location": "登録場所",
       "locationFields": {
         "country": "国",
@@ -1417,10 +1469,24 @@
       "inactive": "非稼働",
       "periodEnd": "時代の終わり",
       "freePlan": "無料",
-      "close": "閉じる"
+      "close": "閉じる",
+      "activateUser": "ユーザーをアクティベート",
+      "deactivateUser": "ユーザーを非有効化"
     },
     "messages": {
-      "failedToLoad": "ユーザーの読み込みに失敗しました"
+      "failedToLoad": "ユーザーの読み込みに失敗しました",
+      "confirmRoleChange": "{{role}}に役割を変える?",
+      "roleUpdated": "ロールの更新に成功しました",
+      "failedToUpdateRole": "役割の更新に失敗しました",
+      "confirmStatusChange": "本当にこのユーザーを{{action}}たいですか?",
+      "userStatusUpdated": {
+        "activate": "ユーザーが有効化成功しました",
+        "deactivate": "ユーザーが成功裏に無効化されました"
+      },
+      "failedToUpdateStatus": "ユーザーステータスの更新に失敗しました",
+      "confirmDelete": "このユーザーを削除すべきですか?この行動は取り消せない。",
+      "userDeleted": "ユーザーが削除されました",
+      "failedToDelete": "ユーザーを削除できませんでした"
     }
   },
   "footer": {

@@ -110,6 +110,8 @@
       "title": "Forkort dine URL'er og følg ydeevnen",
       "titleMain": "Shorten, Brand,",
       "titleAccent": "Bane",
+      "mainHeading": "URL-forkorter med brugerdefinerede domæner",
+      "longDescription": "Skab brandede shortlinks med kraftfulde analyser. Spor klik, mål ydeevne og optimer dine kampagner med vores linkstyringsplatform i enterprise-kvalitet.",
       "subtitle": "Dine links, optimeret til Saudi-Arabien",
       "description": "Hurtig, sikker og compliant URL-forkortelse med avanceret analyse og brandede domæner.",
       "descriptionAlt": "Gratis linkforkorter med detaljeret analyse, QR-koder og API",
@@ -388,8 +390,19 @@
     "cta": {
       "title": "Klar til at komme i gang?",
       "subtitle": "Bliv en del af tusindvis af brugere, der stoler på vores platform",
-      "button": "Start gratis"
+      "button": "Start gratis",
+      "readyToStart": "Klar til at komme i gang?",
+      "joinUsers": "Bliv med i over 1,2 millioner brugere, der forkorter links med Snip",
+      "getStartedFree": "Kom i gang gratis",
+      "noCardRequired": "Ingen kreditkort kræves",
+      "freePlanForever": "Gratis abonnement for evigt",
+      "upgradeAnytime": "Opgrader når som helst",
+      "fastSupport": "Hurtig supportrespons"
     }
+  },
+  "faqs": {
+    "stillHaveQuestions": "Har du stadig spørgsmål?",
+    "contactSupport": "Kontakt Support"
   },
   "auth": {
     "login": {
@@ -526,6 +539,7 @@
     "errorNetwork": "Netværksfejl. Tjek venligst din forbindelse og prøv igen."
   },
   "dashboard": {
+    "chartDescription": "Oversigt over din linkpræstation over tid.",
     "title": "Instrumentbræt",
     "welcome": "Velkommen tilbage",
     "welcomeMessage": "Her er, hvad der sker med dine links i dag.",
@@ -707,7 +721,8 @@
       "edit": "Redigering",
       "qrCode": "QR-kode",
       "analytics": "Analyse",
-      "delete": "Slet"
+      "delete": "Slet",
+      "actions": "Handlinger"
     },
     "emptyState": {
       "noLinks": "Ingen links fundet.",
@@ -746,13 +761,19 @@
         "generateQR": "Generer QR-kode",
         "creating": "Skaber...",
         "createButton": "Opret Link"
+      },
+      "deleteLink": {
+        "title": "Slet Link",
+        "message": "Er du sikker på, at du vil slette {{url}}? Denne handling kan ikke gøres om."
       }
     },
     "confirmDelete": "Er du sikker på, at du vil slette dette link?",
     "deleteSuccess": "Link slettet med succes",
     "deleteError": "Manglende sletning af linket",
     "noLinks": "Ingen links fundet",
-    "createFirstLink": "Opret dit første korte link for at komme i gang"
+    "createFirstLink": "Opret dit første korte link for at komme i gang",
+    "copiedToClipboard": "Kopieret til clipboard",
+    "failedToCopy": "Kunne ikke kopiere"
   },
   "analytics": {
     "title": "Analyse",
@@ -993,7 +1014,12 @@
     "title": "Brugerdefinerede domæner",
     "subtitle": "Tilføj og administrer dine brugerdefinerede domæner til brandede korte links",
     "wizard": {
-      "step": "Trin {{current}} af {{total}}"
+      "step": "Trin {{current}} af {{total}}",
+      "connectDomain": "Forbind et domæne",
+      "enterDomain": "Indtast det domæne, du vil forbinde.",
+      "domainNameLabel": "Domænenavn (f.eks. example.com)",
+      "subdomainLabel": "Subdomæne (valgfrit, f.eks. link)",
+      "done": "Færdig"
     },
     "stats": {
       "totalDomains": "Samlede domæner",
@@ -1023,7 +1049,8 @@
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "verified": "Verificeret",
-      "failed": "Mislykkedes"
+      "failed": "Mislykkedes",
+      "default": "Default"
     },
     "actions": {
       "verify": "Bekræft",
@@ -1037,7 +1064,9 @@
       "recordType": "Registreringstype",
       "name": "Navn",
       "value": "Værdi",
-      "verifyButton": "Verificér domænet"
+      "verifyButton": "Verificér domænet",
+      "unverified": "Ubekræftet",
+      "failed": "Verifikationen mislykkedes. Tjek DNS-propagation."
     },
     "dnsModal": {
       "title": "Domæneverifikation",
@@ -1059,6 +1088,13 @@
     "verificationSuccess": "Domænet er bekræftet med succes!",
     "verificationFailed": "Domæneverificering mislykkedes",
     "deleteSuccess": "Domænet slettet med succes",
+    "dialogs": {
+      "remove": {
+        "title": "Fjern domæne",
+        "message": "Er du sikker? Eksisterende links, der bruger dette domæne, vil stoppe med at virke.",
+        "button": "Fjern"
+      }
+    },
     "errors": {
       "domainRequired": "Domænenavn er påkrævet",
       "domainInvalid": "Indtast venligst et gyldigt domænenavn (f.eks. example.com)",
@@ -1255,6 +1291,7 @@
       "apiKeys": "API-nøgler"
     },
     "general": {
+      "description": "Administrer din offentlige profil og private oplysninger",
       "personalInfo": "Personlige oplysninger",
       "firstName": "Fornavn",
       "lastName": "Efternavn",
@@ -1262,17 +1299,18 @@
       "phone": "Telefonnummer",
       "company": "Selskab",
       "website": "Hjemmeside",
-      "jobTitle": "Rolle",
+      "jobTitle": "Jobtitel",
       "updateButton": "Opdater profil",
-      "updating": "Opdaterer...",
+      "updating": "At redde...",
       "saveChanges": "Gemmeændringer"
     },
     "security": {
+      "description": "Administrer din adgangskode og kontosikkerhed",
       "changePassword": "Ændr adgangskode",
       "currentPassword": "Nuværende adgangskode",
       "newPassword": "Ny adgangskode",
       "confirmPassword": "Bekræft ny adgangskode",
-      "updatePassword": "Opdater adgangskode",
+      "updatePassword": "Ændr adgangskode",
       "twoFactor": "To-faktor-autentificering",
       "enable2FA": "Aktiver 2FA",
       "disable2FA": "Deaktiver 2FA",
@@ -1285,6 +1323,8 @@
       "errorPasswordMismatch": "Adgangskoder stemmer ikke overens"
     },
     "preferences": {
+      "title": "Præferencer",
+      "description": "Administrer dine notifikationsindstillinger",
       "language": "Sprog",
       "timezone": "Tidszone",
       "dateFormat": "Datoformat",
@@ -1307,22 +1347,25 @@
       "description": "Administrer dine API-nøgler for programmatisk adgang",
       "createNew": "Opret en ny nøgle",
       "keyName": "Nøglenavn",
-      "key": "Nøgle",
+      "key": "Din API-nøgle",
       "created": "Oprettet",
       "lastUsed": "Sidst brugt",
       "revoke": "Tilbagekald",
+      "warning": "Hold denne nøgle hemmelig. Del det ikke offentligt.",
       "regenerating": "Regenererer...",
-      "regenerateButton": "Regenerer API-nøgle",
-      "confirmRegenerate": "Er du sikker på, at du vil gengenerere din API-nøgle? Den gamle nøgle virker ikke længere."
+      "regenerateButton": "Regenerer nøgle",
+      "confirmRegenerate": "Er du sikker? Dette vil ugyldiggøre din gamle nøgle."
     },
     "messages": {
       "profileUpdated": "Profil opdateret med succes",
       "passwordsDoNotMatch": "Adgangskoder stemmer ikke overens",
-      "failedToUpdate": "Fejlede i at opdatere brugeren",
-      "passwordUpdated": "Adgangskoden blev opdateret korrekt",
-      "failedToUpdatePassword": "Fejlede i at opdatere adgangskoden",
-      "preferencesUpdated": "Præferencer opdateret korrekt",
-      "failedToUpdatePreferences": "Fejlede i at opdatere præferencer"
+      "failedToUpdate": "Fejlede i at opdatere profilen",
+      "passwordUpdated": "Adgangskode ændret med succes",
+      "failedToUpdatePassword": "Fejlede i at ændre adgangskode",
+      "preferencesUpdated": "Indstillinger gemt med succes",
+      "failedToUpdatePreferences": "Gemte ikke præferencer",
+      "apiKeyRegenerated": "API-nøglen blev gendannet med succes",
+      "failedToRegenerateKey": "Kunne ikke gengenerere API-nøglen"
     }
   },
   "userManagement": {
@@ -1373,13 +1416,14 @@
       "actions": "Handlinger"
     },
     "actions": {
-      "view": "Udsigt",
+      "title": "Handlinger",
+      "view": "Se detaljer",
       "viewDetails": "Se detaljer",
       "activate": "Aktiver",
       "deactivate": "Deaktiver",
       "activateUser": "Aktiver bruger",
       "deactivateUser": "Deaktiver bruger",
-      "delete": "Slet",
+      "delete": "Slet bruger",
       "deleteUser": "Slet bruger",
       "makeAdmin": "Lav Admin",
       "removeAdmin": "Fjern admin"
@@ -1395,6 +1439,14 @@
       "contactInfo": "Kontaktinfo",
       "email": "E-mail",
       "phone": "Telefon",
+      "registrationLocation": "Registreringssted",
+      "country": "Land",
+      "city": "By",
+      "region": "Region",
+      "ipAddress": "IP-adresse",
+      "timezone": "Tidszone",
+      "countryCode": "Landkode",
+      "coordinates": "Koordinater",
       "location": "Registreringssted",
       "locationFields": {
         "country": "Land",
@@ -1417,10 +1469,24 @@
       "inactive": "INAKTIV",
       "periodEnd": "Periodens afslutning",
       "freePlan": "GRATIS",
-      "close": "Luk"
+      "close": "Luk",
+      "activateUser": "Aktiver bruger",
+      "deactivateUser": "Deaktiver bruger"
     },
     "messages": {
-      "failedToLoad": "Brugere kunne ikke indlæses"
+      "failedToLoad": "Brugere kunne ikke indlæses",
+      "confirmRoleChange": "Skift rolle til {{role}}?",
+      "roleUpdated": "Rollen opdateret med succes",
+      "failedToUpdateRole": "Fejlede i at opdatere rollen",
+      "confirmStatusChange": "Er du sikker på, at du vil {{action}} denne bruger?",
+      "userStatusUpdated": {
+        "activate": "Brugeraktivering med succes",
+        "deactivate": "Bruger deaktiverede med succes"
+      },
+      "failedToUpdateStatus": "Kunne ikke opdatere brugerstatus",
+      "confirmDelete": "Slette denne bruger? Denne handling kan ikke gøres om.",
+      "userDeleted": "Brugeren slettede succesfuldt",
+      "failedToDelete": "Kunne ikke slette brugeren"
     }
   },
   "footer": {

@@ -315,7 +315,7 @@ const Dashboard = () => {
         <Card className="col-span-4 lg:col-span-3">
             <CardHeader>
                 <CardTitle>{t('dashboard.shortenYourURL')}</CardTitle>
-                <CardDescription>{t('dashboard.createLinkDescription')}</CardDescription>
+            <CardDescription>{t('dashboard.createShortLinkDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleShortenUrl} className="space-y-4">
@@ -323,7 +323,7 @@ const Dashboard = () => {
                         <Label htmlFor="longUrl">{t('dashboard.longURL')}</Label>
                         <Input
                             id="longUrl"
-                            placeholder={t('dashboard.longURLPlaceholderExample')}
+                  placeholder={t('createLink.form.originalUrlPlaceholder')}
                             value={longUrl}
                             onChange={(e) => setLongUrl(e.target.value)}
                             required
@@ -332,7 +332,7 @@ const Dashboard = () => {
                     
                     {availableDomains.length > 0 && (
                         <div className="space-y-2">
-                           <Label htmlFor="domain">{t('dashboard.domain')}</Label>
+                         <Label htmlFor="domain">{t('createLink.form.domain')}</Label>
                            <div className="relative">
                                <select
                                    id="domain"
@@ -354,7 +354,7 @@ const Dashboard = () => {
                             <Label htmlFor="customBackhalf">{t('dashboard.customBackhalf')}</Label>
                             <Input
                                 id="customBackhalf"
-                                placeholder={t('dashboard.customBackhalfPlaceholderExample')}
+                            placeholder={t('createLink.form.customAliasPlaceholder')}
                                 value={customBackhalf}
                                 onChange={(e) => setCustomBackhalf(e.target.value)}
                             />
@@ -363,7 +363,7 @@ const Dashboard = () => {
                              <Label htmlFor="campaign">{t('dashboard.campaign')}</Label>
                             <Input
                                 id="campaign"
-                                placeholder={t('dashboard.campaignPlaceholderExample')}
+                            placeholder={t('dashboard.campaignPlaceholder')}
                                 value={campaign}
                                 onChange={(e) => setCampaign(e.target.value)}
                             />
@@ -405,7 +405,7 @@ const Dashboard = () => {
                       {recentLinks.length === 0 ? (
                           <TableRow>
                               <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                                  {t('dashboard.recentLinks.noLinksYet')}
+                              {t('dashboard.recentLinks.noLinks')}
                               </TableCell>
                           </TableRow>
                       ) : (
@@ -454,9 +454,9 @@ const Dashboard = () => {
        <Dialog open={deleteDialog.isOpen} onOpenChange={(open) => !open && setDeleteDialog({ ...deleteDialog, isOpen: false })}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t('dashboard.deleteDialog.title')}</DialogTitle>
+              <DialogTitle>{t('dashboard.dialogs.deleteLink.title')}</DialogTitle>
                     <DialogDescription>
-                        {t('dashboard.deleteDialog.confirmMessage')} {deleteDialog.linkUrl}? {t('dashboard.deleteDialog.cannotUndo')}
+                {t('dashboard.dialogs.deleteLink.message', { url: deleteDialog.linkUrl })}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
