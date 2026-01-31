@@ -14,6 +14,7 @@ import ruTranslation from './locales/ru.json';
 import nlTranslation from './locales/nl.json';
 import elTranslation from './locales/el.json';
 
+
 const resources = {
   en: {
     translation: enTranslation
