@@ -1,0 +1,124 @@
+---
+title: 'Update URL'
+api: 'PUT https://snip.sa/api/urls/{id}'
+description: 'Update properties of an existing shortened URL'
+---
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  URL ID
+</ParamField>
+
+## Request Body
+
+<Note>
+  You cannot update `originalUrl` or `shortCode`. All fields are optional.
+</Note>
+
+<ParamField body="title" type="string">
+  Updated title
+</ParamField>
+
+<ParamField body="description" type="string">
+  Updated description
+</ParamField>
+
+<ParamField body="tags" type="array">
+  Updated tags array
+</ParamField>
+
+<ParamField body="isActive" type="boolean">
+  Enable or disable the URL
+</ParamField>
+
+<ParamField body="customCode" type="string">
+  Update custom code
+</ParamField>
+
+<ParamField body="expiresAt" type="string">
+  Update expiration date
+</ParamField>
+
+<ParamField body="password" type="string">
+  Update password protection
+</ParamField>
+
+<ParamField body="utm" type="object">
+  Update UTM parameters
+</ParamField>
+
+<ParamField body="restrictions" type="object">
+  Update access restrictions
+</ParamField>
+
+<ParamField body="redirectType" type="number">
+  Update redirect type (301 or 302)
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://snip.sa/api/urls/507f1f77bcf86cd799439011 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "title": "Updated Title",
+    "isActive": true,
+    "tags": ["updated", "tags"]
+  }'
+```
+
+```javascript JavaScript
+const response = await axios.put(
+  'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+  {
+    title: 'Updated Title',
+    isActive: true,
+    tags: ['updated', 'tags']
+  },
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your_api_key_here'
+    }
+  }
+);
+```
+
+```python Python
+response = requests.put(
+    'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+    headers={
+        'Content-Type': 'application/json',
+        'X-API-Key': 'your_api_key_here'
+    },
+    json={
+        'title': 'Updated Title',
+        'isActive': True,
+        'tags': ['updated', 'tags']
+    }
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "URL updated successfully",
+  "data": {
+    "url": {
+      "_id": "507f1f77bcf86cd799439011",
+      "title": "Updated Title",
+      "tags": ["updated", "tags"],
+      "isActive": true,
+      "updatedAt": "2024-01-16T14:20:00.000Z"
+    }
+  }
+}
+```
+
+</ResponseExample>

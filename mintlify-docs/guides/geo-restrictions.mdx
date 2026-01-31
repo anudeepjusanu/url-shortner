@@ -1,0 +1,223 @@
+---
+title: 'Geographic Restrictions'
+description: 'Control access to your URLs based on geographic location'
+---
+
+## Overview
+
+Geographic restrictions allow you to control who can access your shortened URLs based on their location. This is useful for:
+
+- Regional campaigns
+- Compliance with local regulations
+- Content licensing restrictions
+- Targeted marketing
+
+## Allow Specific Countries
+
+Only allow access from specific countries:
+
+```javascript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/us-only-offer',
+  customCode: 'us-offer',
+  title: 'US Only Promotion',
+  restrictions: {
+    allowedCountries: ['US', 'CA']  // Only US and Canada
+  }
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+## Block Specific Countries
+
+Block access from specific countries:
+
+```javascript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/global-content',
+  customCode: 'global',
+  title: 'Global Content',
+  restrictions: {
+    blockedCountries: ['CN', 'RU']  // Block China and Russia
+  }
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+## Country Codes
+
+Use ISO 3166-1 alpha-2 country codes:
+
+| Country | Code | Country | Code |
+|---------|------|---------|------|
+| United States | US | United Kingdom | GB |
+| Canada | CA | Germany | DE |
+| Australia | AU | France | FR |
+| Japan | JP | India | IN |
+| Brazil | BR | Mexico | MX |
+
+[Full list of country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+
+## Device Restrictions
+
+Combine with device restrictions:
+
+```javascript
+{
+  originalUrl: 'https://example.com/mobile-app',
+  restrictions: {
+    allowedCountries: ['US', 'CA', 'GB'],
+    allowedDevices: ['mobile']  // Mobile only
+  }
+}
+```
+
+## Regional Campaigns
+
+Create region-specific campaigns:
+
+```javascript
+// North America Campaign
+const naResponse = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/na-landing',
+  customCode: 'na-promo',
+  title: 'North America Promotion',
+  restrictions: {
+    allowedCountries: ['US', 'CA', 'MX']
+  },
+  utm: {
+    source: 'email',
+    medium: 'campaign',
+    campaign: 'na_spring_2024'
+  }
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+// Europe Campaign
+const euResponse = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/eu-landing',
+  customCode: 'eu-promo',
+  title: 'Europe Promotion',
+  restrictions: {
+    allowedCountries: ['GB', 'DE', 'FR', 'IT', 'ES']
+  },
+  utm: {
+    source: 'email',
+    medium: 'campaign',
+    campaign: 'eu_spring_2024'
+  }
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+## Access Denied Page
+
+When users from restricted locations try to access the URL, they see a custom message explaining the restriction.
+
+## Analytics by Country
+
+Track which countries are trying to access your URLs:
+
+```javascript
+const analytics = await axios.get(
+  'https://snip.sa/api/analytics/507f1f77bcf86cd799439011/geographic',
+  {
+    headers: { 'X-API-Key': 'your_api_key_here' }
+  }
+);
+
+console.log('Top Countries:', analytics.data.data.countries);
+```
+
+## Best Practices
+
+<Check>Use allowedCountries for exclusive regional content</Check>
+<Check>Use blockedCountries for compliance requirements</Check>
+<Check>Test restrictions before launching campaigns</Check>
+<Check>Monitor analytics to understand blocked traffic</Check>
+<Check>Provide clear messaging for restricted users</Check>
+
+## Example: Multi-Region Campaign Manager
+
+```javascript
+class RegionalCampaignManager {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.regions = {
+      northAmerica: ['US', 'CA', 'MX'],
+      europe: ['GB', 'DE', 'FR', 'IT', 'ES', 'NL'],
+      asia: ['JP', 'KR', 'SG', 'HK', 'TW'],
+      oceania: ['AU', 'NZ']
+    };
+  }
+
+  async createRegionalCampaign(baseUrl, campaignName, region) {
+    const countries = this.regions[region];
+    
+    const response = await axios.post('https://snip.sa/api/urls', {
+      originalUrl: `${baseUrl}?region=${region}`,
+      customCode: `${campaignName}-${region}`,
+      title: `${campaignName} - ${region}`,
+      restrictions: {
+        allowedCountries: countries
+      },
+      utm: {
+        source: 'campaign',
+        medium: 'regional',
+        campaign: campaignName,
+        content: region
+      },
+      tags: ['regional', region, campaignName]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey
+      }
+    });
+
+    return response.data;
+  }
+
+  async createGlobalCampaign(baseUrl, campaignName) {
+    const campaigns = [];
+    
+    for (const [region, countries] of Object.entries(this.regions)) {
+      const campaign = await this.createRegionalCampaign(
+        baseUrl,
+        campaignName,
+        region
+      );
+      campaigns.push(campaign);
+    }
+    
+    return campaigns;
+  }
+}
+
+// Usage
+const manager = new RegionalCampaignManager('your_api_key');
+
+// Create campaigns for all regions
+const campaigns = await manager.createGlobalCampaign(
+  'https://example.com/product',
+  'spring_sale_2024'
+);
+
+console.log('Created campaigns:', campaigns.length);
+```

@@ -1,0 +1,109 @@
+---
+title: 'Webhooks'
+description: 'Receive real-time notifications for URL events'
+---
+
+<Note>
+  Webhooks are available on Pro and Enterprise plans.
+</Note>
+
+## Overview
+
+Webhooks allow you to receive real-time HTTP notifications when events occur on your shortened URLs.
+
+## Supported Events
+
+<CardGroup cols={2}>
+  <Card title="url.clicked" icon="mouse-pointer">
+    Triggered when someone clicks your short URL
+  </Card>
+  <Card title="url.created" icon="plus">
+    Triggered when a new URL is created
+  </Card>
+  <Card title="url.updated" icon="pen">
+    Triggered when a URL is updated
+  </Card>
+  <Card title="url.deleted" icon="trash">
+    Triggered when a URL is deleted
+  </Card>
+</CardGroup>
+
+## Setting Up Webhooks
+
+Configure webhooks through your dashboard or API:
+
+```javascript
+const response = await axios.post('https://snip.sa/api/webhooks', {
+  url: 'https://your-server.com/webhook',
+  events: ['url.clicked', 'url.created'],
+  secret: 'your_webhook_secret'
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+## Webhook Payload
+
+### url.clicked Event
+
+```json
+{
+  "event": "url.clicked",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "urlId": "507f1f77bcf86cd799439011",
+    "shortCode": "abc123",
+    "originalUrl": "https://example.com/page",
+    "click": {
+      "country": "US",
+      "city": "New York",
+      "device": "mobile",
+      "browser": "Chrome",
+      "os": "iOS",
+      "referrer": "google.com"
+    }
+  }
+}
+```
+
+## Verifying Webhooks
+
+Verify webhook authenticity using the signature:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = hmac.update(JSON.stringify(payload)).digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(digest)
+  );
+}
+
+// Express.js example
+app.post('/webhook', (req, res) => {
+  const signature = req.headers['x-snip-signature'];
+  const isValid = verifyWebhook(req.body, signature, 'your_webhook_secret');
+  
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process webhook
+  console.log('Event:', req.body.event);
+  res.status(200).send('OK');
+});
+```
+
+## Best Practices
+
+<Check>Always verify webhook signatures</Check>
+<Check>Respond with 200 status quickly</Check>
+<Check>Process webhooks asynchronously</Check>
+<Check>Implement retry logic for failures</Check>
+<Check>Log all webhook events</Check>

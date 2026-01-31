@@ -1,0 +1,82 @@
+---
+title: 'Device Analytics'
+api: 'GET https://snip.sa/api/analytics/{urlId}/devices'
+description: 'Get device and browser analytics'
+---
+
+## Path Parameters
+
+<ParamField path="urlId" type="string" required>
+  URL ID
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://snip.sa/api/analytics/507f1f77bcf86cd799439011/devices \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.get(
+  'https://snip.sa/api/analytics/507f1f77bcf86cd799439011/devices',
+  {
+    headers: { 'X-API-Key': 'your_api_key_here' }
+  }
+);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "devices": [
+      {
+        "type": "mobile",
+        "clicks": 700,
+        "percentage": 56
+      },
+      {
+        "type": "desktop",
+        "clicks": 450,
+        "percentage": 36
+      },
+      {
+        "type": "tablet",
+        "clicks": 100,
+        "percentage": 8
+      }
+    ],
+    "browsers": [
+      {
+        "name": "Chrome",
+        "clicks": 600,
+        "percentage": 48
+      },
+      {
+        "name": "Safari",
+        "clicks": 400,
+        "percentage": 32
+      }
+    ],
+    "operatingSystems": [
+      {
+        "name": "iOS",
+        "clicks": 500,
+        "percentage": 40
+      },
+      {
+        "name": "Android",
+        "clicks": 400,
+        "percentage": 32
+      }
+    ]
+  }
+}
+```
+
+</ResponseExample>

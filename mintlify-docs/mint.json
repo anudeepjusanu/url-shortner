@@ -1,0 +1,138 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Snip API Documentation",
+  "logo": {
+    "dark": "/logo/logo.png",
+    "light": "/logo/logo.png"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#10B981",
+    "light": "#34D399",
+    "dark": "#059669",
+    "anchors": {
+      "from": "#10B981",
+      "to": "#34D399"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:support@nawah.sa"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://snip.sa"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Guides",
+      "url": "guides"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Website",
+      "icon": "globe",
+      "url": "https://snip.sa"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/snip"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/nawah/snip"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "authentication",
+        "rate-limits",
+        "errors"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "URLs",
+      "pages": [
+        "api-reference/urls/create",
+        "api-reference/urls/list",
+        "api-reference/urls/get",
+        "api-reference/urls/update",
+        "api-reference/urls/delete",
+        "api-reference/urls/bulk-delete",
+        "api-reference/urls/stats",
+        "api-reference/urls/domains"
+      ]
+    },
+    {
+      "group": "Analytics",
+      "pages": [
+        "api-reference/analytics/overview",
+        "api-reference/analytics/clicks",
+        "api-reference/analytics/geographic",
+        "api-reference/analytics/devices"
+      ]
+    },
+    {
+      "group": "QR Codes",
+      "pages": [
+        "api-reference/qr-codes/generate",
+        "api-reference/qr-codes/list",
+        "api-reference/qr-codes/customize"
+      ]
+    },
+    {
+      "group": "Domains",
+      "pages": [
+        "api-reference/domains/list",
+        "api-reference/domains/add",
+        "api-reference/domains/verify",
+        "api-reference/domains/delete"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/getting-started",
+        "guides/custom-domains",
+        "guides/utm-tracking",
+        "guides/password-protection",
+        "guides/geo-restrictions",
+        "guides/webhooks"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/nawah",
+    "github": "https://github.com/nawah",
+    "linkedin": "https://www.linkedin.com/company/nawah"
+  },
+  "api": {
+    "baseUrl": "https://snip.sa/api",
+    "auth": {
+      "method": "key",
+      "name": "X-API-Key"
+    },
+    "playground": {
+      "mode": "show"
+    }
+  }
+}

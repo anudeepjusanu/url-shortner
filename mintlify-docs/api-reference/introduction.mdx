@@ -1,0 +1,62 @@
+---
+title: 'API Reference'
+description: 'Complete API reference for Snip URL Shortener'
+---
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://snip.sa/api
+```
+
+## Authentication
+
+Include your API key in all requests:
+
+```bash
+X-API-Key: your_api_key_here
+```
+
+Learn more about [authentication](/authentication).
+
+## Response Format
+
+All responses follow this structure:
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "Error description"
+}
+```
+
+## API Endpoints
+
+<CardGroup cols={2}>
+  <Card title="URLs" icon="link" href="/api-reference/urls/create">
+    Create, manage, and track shortened URLs
+  </Card>
+  <Card title="Analytics" icon="chart-line" href="/api-reference/analytics/overview">
+    Access detailed analytics and statistics
+  </Card>
+  <Card title="QR Codes" icon="qrcode" href="/api-reference/qr-codes/generate">
+    Generate and customize QR codes
+  </Card>
+  <Card title="Domains" icon="globe" href="/api-reference/domains/list">
+    Manage custom domains
+  </Card>
+</CardGroup>

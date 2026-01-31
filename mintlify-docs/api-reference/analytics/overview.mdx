@@ -1,0 +1,94 @@
+---
+title: 'Analytics Overview'
+api: 'GET https://snip.sa/api/analytics/{urlId}'
+description: 'Get comprehensive analytics for a specific URL'
+---
+
+## Path Parameters
+
+<ParamField path="urlId" type="string" required>
+  URL ID to get analytics for
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="startDate" type="string">
+  Start date for analytics (ISO 8601 format)
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  End date for analytics (ISO 8601 format)
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://snip.sa/api/analytics/507f1f77bcf86cd799439011?startDate=2024-01-01&endDate=2024-01-31" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.get(
+  'https://snip.sa/api/analytics/507f1f77bcf86cd799439011',
+  {
+    params: {
+      startDate: '2024-01-01',
+      endDate: '2024-01-31'
+    },
+    headers: {
+      'X-API-Key': 'your_api_key_here'
+    }
+  }
+);
+```
+
+```python Python
+response = requests.get(
+    'https://snip.sa/api/analytics/507f1f77bcf86cd799439011',
+    params={
+        'startDate': '2024-01-01',
+        'endDate': '2024-01-31'
+    },
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "totalClicks": 1250,
+    "uniqueClicks": 890,
+    "clicksByDate": [
+      {
+        "date": "2024-01-15",
+        "clicks": 45
+      }
+    ],
+    "topCountries": [
+      {
+        "country": "US",
+        "clicks": 450
+      }
+    ],
+    "topDevices": [
+      {
+        "device": "mobile",
+        "clicks": 700
+      }
+    ],
+    "topReferrers": [
+      {
+        "referrer": "google.com",
+        "clicks": 300
+      }
+    ]
+  }
+}
+```
+
+</ResponseExample>
