@@ -242,6 +242,8 @@ const getUrlAnalytics = async (req, res) => {
       overview: {
         totalClicks: totalClicks,
         uniqueClicks: uniqueClicks,
+        qrScans: url.qrScanCount || 0,
+        uniqueQrScans: url.uniqueQrScanCount || 0,
         averageClicksPerDay: Math.round(totalClicks / daysDiff),
         lastClicked: url.lastClickedAt,
         // Include all-time stats as well
@@ -540,7 +542,9 @@ const getDashboardAnalytics = async (req, res) => {
         overview: {
           totalUrls,
           totalClicks,
+          uniqueClicks: totalUniqueClicks,
           totalUniqueClicks,
+          qrScans: totalQRScans,
           totalQRScans,
           totalUniqueQRScans,
           totalCustomDomains,
@@ -554,30 +558,42 @@ const getDashboardAnalytics = async (req, res) => {
         },
         topStats: {
           countries: topCountries.map(item => ({
+            _id: item._id?.countryName || item._id?.country || 'Unknown',
             country: item._id?.country || 'Unknown',
             countryName: item._id?.countryName || item._id?.country || 'Unknown',
+            count: item.clicks,
             clicks: item.clicks
           })),
           cities: topCities.map(item => ({
+            _id: item._id?.city || 'Unknown',
             city: item._id?.city || 'Unknown',
             region: item._id?.region || '',
             country: item._id?.country || '',
+            count: item.clicks,
             clicks: item.clicks
           })),
           devices: topDevices.map(item => ({
+            _id: item._id || 'unknown',
             type: item._id || 'unknown',
+            count: item.clicks,
             clicks: item.clicks
           })),
           browsers: topBrowsers.map(item => ({
+            _id: item._id || 'Unknown',
             browser: item._id || 'Unknown',
+            count: item.clicks,
             clicks: item.clicks
           })),
           operatingSystems: topOS.map(item => ({
+            _id: item._id || 'Unknown',
             os: item._id || 'Unknown',
+            count: item.clicks,
             clicks: item.clicks
           })),
           referrers: topReferrers.map(item => ({
+            _id: item._id || 'Direct',
             domain: item._id || 'Direct',
+            count: item.clicks,
             clicks: item.clicks
           }))
         }

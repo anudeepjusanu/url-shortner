@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import logo from '../assets/logo.png';
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import LanguageSelector from "./LanguageSelector";
 import { 
   ArrowRight, Check, CheckCircle2, Shield, Zap, BarChart3, Globe2, Link as LinkIcon,
   QrCode, Users, TrendingUp, Lock, Menu, X, Globe, ChevronRight, Star, Sparkles,
@@ -54,9 +55,9 @@ const LandingPage = () => {
       </div>
 
       {/* Navigation Header */}
-      <nav className={cn("sticky top-0 z-50 border-b transition-colors", darkMode ? "bg-slate-900/95 backdrop-blur-lg border-slate-800" : "bg-white/95 backdrop-blur-lg border-slate-200")}>
-        <div className="container mx-auto px-6 max-w-4xl">
-          <div className="flex items-center justify-between h-20">
+      <nav className={cn("sticky top-0 z-[100] border-b transition-colors overflow-visible", darkMode ? "bg-slate-900/95 backdrop-blur-lg border-slate-800" : "bg-white/95 backdrop-blur-lg border-slate-200")}>
+        <div className="container mx-auto px-6 max-w-4xl overflow-visible">
+          <div className="flex items-center justify-between h-20 overflow-visible">
             {/* Logo */}
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
               <img src={logo} alt="Logo" className={cn("h-9 w-auto transition-all", darkMode && "brightness-0 invert")} />
@@ -64,25 +65,19 @@ const LandingPage = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8 relative">
               <a href="#features" className={cn("text-sm font-medium transition-colors", darkMode ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-slate-900")}>
                 {t('header.features')}
               </a>
               <a href="#integrations" className={cn("text-sm font-medium transition-colors", darkMode ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-slate-900")}>
-                Integrations
+                {t('landing.navigation.integrations') || 'Integrations'}
               </a>
               <a href="#pricing" className={cn("text-sm font-medium transition-colors", darkMode ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-slate-900")}>
                 {t('header.pricing')}
               </a>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
-                className={darkMode ? "text-slate-300 hover:text-white" : "text-slate-600"}
-              >
-                <Globe className="mr-2 h-4 w-4" />
-                {currentLanguage === 'en' ? 'AR' : 'EN'}
-              </Button>
+              <div className="relative">
+                <LanguageSelector className="scale-90" />
+              </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -127,20 +122,14 @@ const LandingPage = () => {
                   {t('header.features')}
                 </a>
                 <a href="#integrations" className={cn("block py-2 text-sm font-medium", darkMode ? "text-slate-300" : "text-slate-700")}>
-                  Integrations
+                  {t('landing.navigation.integrations') || 'Integrations'}
                 </a>
                 <a href="#pricing" className={cn("block py-2 text-sm font-medium", darkMode ? "text-slate-300" : "text-slate-700")}>
                   {t('header.pricing')}
                 </a>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
-                  className="w-full justify-start"
-                >
-                  <Globe className="mr-2 h-4 w-4" />
-                  {currentLanguage === 'en' ? 'العربية' : 'English'}
-                </Button>
+                <div className="py-2">
+                  <LanguageSelector />
+                </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -148,7 +137,7 @@ const LandingPage = () => {
                   className="w-full justify-start"
                 >
                   {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-                  {darkMode ? 'Light Mode' : 'Dark Mode'}
+                  {darkMode ? t('header.theme.light') : t('header.theme.dark')}
                 </Button>
                 <div className="pt-3 space-y-2">
                   <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>

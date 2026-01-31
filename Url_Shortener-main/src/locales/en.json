@@ -4,6 +4,7 @@
     "appName": "URL Shortener",
     "brandName": "Snip",
     "loading": "Loading...",
+    "downloading": "Downloading...",
     "error": "Error",
     "success": "Success",
     "save": "Save",
@@ -50,7 +51,8 @@
     "updating": "Updating...",
     "generating": "Generating...",
     "fieldRequired": "This field is required",
-    "updated": "Updated"
+    "updated": "Updated",
+    "noCustomDomainsConnected": "No custom domains connected."
   },
   "dates": {
     "today": "Today",
@@ -76,7 +78,32 @@
     "qrCodes": "QR Codes",
     "customDomains": "Custom Domains",
     "subscription": "Subscription",
-    "contentFilter": "Content Filter"
+    "contentFilter": "Content Filter",
+    "languages": {
+      "english": "English",
+      "arabic": "Arabic",
+      "chinese": "Chinese",
+      "spanish": "Spanish",
+      "hindi": "Hindi",
+      "french": "French",
+      "portuguese": "Portuguese",
+      "russian": "Russian",
+      "dutch": "Dutch",
+      "greek": "Greek",
+      "german": "German",
+      "italian": "Italian",
+      "japanese": "Japanese",
+      "korean": "Korean",
+      "polish": "Polish",
+      "danish": "Danish",
+      "norwegian": "Norwegian",
+      "swedish": "Swedish",
+      "ukrainian": "Ukrainian"
+    },
+    "theme": {
+      "light": "Light Mode",
+      "dark": "Dark Mode"
+    }
   },
   "landing": {
     "hero": {
@@ -85,27 +112,45 @@
       "titleAccent": "Track",
       "subtitle": "Your Links, Optimized for Saudi Arabia",
       "description": "Fast, secure, and compliant URL shortening with advanced analytics and branded domains.",
+      "descriptionAlt": "Free link shortener with detailed analytics, QR codes, and API",
       "cta": "Get Started Free",
       "tryDemo": "Watch Demo",
       "formTitle": "Try it now - Shorten your first link",
       "urlPlaceholder": "Paste your long URL here...",
       "shortenBtn": "Shorten URL",
-      "complianceNotice": "✓ PDPL Compliant • Data stored in KSA"
+      "shortenButton": "Shorten",
+      "complianceNotice": "✓ PDPL Compliant • Data stored in KSA",
+      "yourShortLink": "Your short link:",
+      "wantOwnDomain": "Want your own domain?",
+      "createFreeAccount": "Create free account"
     },
     "features": {
       "title": "Powerful Features for Modern Marketers",
       "subtitle": "Everything you need to manage, track, and optimize your links",
+      "sectionTitle": "Everything you need to manage links",
+      "sectionDescription": "Advanced link management tools that help you track performance and optimize campaigns",
+      "pills": {
+        "freePlan": "Free forever plan",
+        "customDomain": "Custom domain support",
+        "noCard": "No credit card required",
+        "richAnalytics": "Rich analytics included"
+      },
       "analytics": {
         "title": "Detailed Analytics",
-        "description": "Track clicks, geographic data, devices, and more with comprehensive analytics"
+        "titleAlt": "Advanced analytics",
+        "description": "Track clicks, geographic data, devices, and more with comprehensive analytics",
+        "descriptionAlt": "Track clicks, conversions, and user behavior with detailed insights and real-time reporting"
       },
       "customDomain": {
         "title": "Custom Domains",
-        "description": "Use your own branded domains for professional short links"
+        "titleAlt": "Custom domains",
+        "description": "Use your own branded domains for professional short links",
+        "descriptionAlt": "Use your own branded domain to create professional short links that build trust"
       },
       "qrCode": {
         "title": "QR Codes",
-        "description": "Generate and customize QR codes for your short links"
+        "description": "Generate and customize QR codes for your short links",
+        "descriptionAlt": "Generate dynamic QR codes that can be edited anytime without reprinting"
       },
       "security": {
         "title": "Secure & Reliable",
@@ -126,7 +171,20 @@
       "bilingualUI": {
         "title": "Bilingual UI",
         "description": "Seamless Arabic and English interface with RTL support"
-      }
+      },
+      "teamCollaboration": {
+        "title": "Team collaboration",
+        "description": "Work together with your team, manage permissions, and share link analytics"
+      },
+      "apiAccess": {
+        "title": "API access",
+        "description": "Integrate into your applications with our powerful REST API"
+      },
+      "linkManagement": {
+        "title": "Link management",
+        "description": "Organize, edit, and manage thousands of links with bulk operations and tags"
+      },
+      "learnMore": "Learn more"
     },
     "whyChoose": {
       "title": "Why Businesses Choose Snip",
@@ -163,12 +221,103 @@
     "stats": {
       "linksCreated": "Links created by Saudi businesses",
       "linksCreatedValue": "50,000+",
+      "linksCreatedAlt": "Links created",
       "uptime": "Uptime",
       "uptimeValue": "98%",
       "clicksTracked": "Clicks tracked",
       "clicksTrackedValue": "2.5M+",
       "support": "Support",
-      "supportValue": "24/7"
+      "supportValue": "24/7",
+      "activeUsers": "Active users",
+      "activeUsersValue": "10,000+",
+      "yearsOnMarket": "Years on the market",
+      "yearsOnMarketValue": "5+"
+    },
+    "integrations": {
+      "title": "Connect with your favorite tools",
+      "subtitle": "Connect Snip to your existing tools with ready-made integrations and API access",
+      "viewAll": "View all integrations",
+      "zapier": "Zapier",
+      "slack": "Slack",
+      "googleAnalytics": "Google Analytics",
+      "metaPixel": "Meta Pixel",
+      "mailchimp": "Mailchimp",
+      "googleAds": "Google Ads",
+      "chrome": "Chrome",
+      "wordpress": "WordPress",
+      "ios": "iOS",
+      "make": "Make",
+      "android": "Android",
+      "segment": "Segment"
+    },
+    "teams": {
+      "title": "Built for every team",
+      "subtitle": "See how different teams use Snip to achieve their goals",
+      "marketing": {
+        "title": "Marketing teams",
+        "description": "Track campaign performance and optimize conversions",
+        "feature1": "Campaign tracking",
+        "feature2": "A/B testing",
+        "feature3": "ROI measurement",
+        "feature4": "Conversion optimization"
+      },
+      "sales": {
+        "title": "Sales teams",
+        "description": "Personalize outreach and track engagement",
+        "feature1": "Personalized links",
+        "feature2": "Engagement tracking",
+        "feature3": "Lead scoring",
+        "feature4": "CRM integration"
+      },
+      "infrastructure": {
+        "title": "Infrastructure teams",
+        "description": "Enterprise-grade features for large-scale deployment",
+        "feature1": "SSO authentication",
+        "feature2": "API access",
+        "feature3": "System integration",
+        "feature4": "Unlimited plans"
+      }
+    },
+    "trust": {
+      "title": "Trusted at scale",
+      "subtitle": "Marketing teams, developers, and businesses worldwide rely on Snip to track what matters",
+      "socialProof": "Used by Fortune 500 companies and startups worldwide",
+      "trustpilot": "Trustpilot",
+      "clientConfidentiality": "Client confidentiality"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "Can't find what you're looking for?",
+      "q1": {
+        "question": "How do I get started with Snip?",
+        "answer": "Getting started is easy! Simply sign up for a free account, and you can start shortening links immediately. No credit card required for the free plan."
+      },
+      "q2": {
+        "question": "Can I use my own domain?",
+        "answer": "Yes! You can connect your own custom domain to create branded short links. This helps build trust and recognition with your audience."
+      },
+      "q3": {
+        "question": "What analytics are available?",
+        "answer": "We provide comprehensive analytics including click tracking, geographic data, device types, referrers, and conversion tracking. All data is available in real-time."
+      },
+      "q4": {
+        "question": "Is there an API available?",
+        "answer": "Yes, we offer a powerful REST API that allows you to integrate Snip into your applications. You can create, manage, and track links programmatically."
+      },
+      "q5": {
+        "question": "How secure are my links?",
+        "answer": "We take security seriously. All links are served over HTTPS, and we offer password protection, expiration dates, and advanced security features for your links."
+      },
+      "q6": {
+        "question": "What's included in the free plan?",
+        "answer": "The free plan includes 1,000 branded links, basic analytics, QR codes, and API access. Perfect for individuals and small projects."
+      }
+    },
+    "banner": {
+      "text": "Free plan available • No credit card required"
+    },
+    "navigation": {
+      "integrations": "Integrations"
     },
     "testimonials": {
       "title": "Trusted by Saudi Businesses",
@@ -377,6 +526,7 @@
     "errorNetwork": "Network error. Please check your connection and try again."
   },
   "dashboard": {
+    "chartDescription": "Overview of your link performance over time.",
     "title": "Dashboard",
     "welcome": "Welcome back",
     "welcomeMessage": "Here's what's happening with your links today.",
@@ -409,13 +559,19 @@
       "activeLinks": "Active Links",
       "clickRate": "Click Rate",
       "totalCustomDomains": "Custom Domains",
-      "active": "Active"
+      "active": "Active",
+      "qrScans": "QR Scans"
     },
     "recentLinks": {
       "title": "Recent Links",
       "viewAll": "View All Links",
       "noLinks": "No links created yet",
-      "createFirst": "Create your first short link"
+      "createFirst": "Create your first short link",
+      "shortLink": "Short Link",
+      "originalUrl": "Original URL",
+      "date": "Date",
+      "clicks": "Clicks",
+      "actions": "Actions"
     },
     "quickActions": {
       "title": "Quick Actions",
@@ -428,11 +584,19 @@
       "title": "Analytics Overview",
       "lastSevenDays": "Last 7 Days",
       "clicksByDate": "Clicks by Date",
-      "topLinks": "Top Performing Links"
+      "topLinks": "Top Performing Links",
+      "clickActivity": "Click Activity",
+      "overviewDescription": "Overview of your link performance over time."
     },
-    "last7Days": "Last 7 days",
-    "last30Days": "Last 30 days", 
-    "last90Days": "Last 90 days",
+    "timeFilters": {
+      "last24Hours": "Last 24 hours",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "7days": "7 Days",
+      "30days": "30 Days",
+      "90days": "90 Days"
+    },
     "mon": "Mon",
     "tue": "Tue",
     "wed": "Wed", 
@@ -442,12 +606,21 @@
     "sun": "Sun",
     "uniqueVisitors": "Unique Visitors",
     "changeFromLastWeek": "{{change}} vs last week",
+    "fromLastPeriod": "+ from last period",
     "clicks": "{{count}} clicks",
     "created": "Created {{time}}",
     "viewAll": "View All",
     "upgradeTitle": "Upgrade to Professional",
     "upgradeDescription": "Unlock advanced analytics, custom domains, and priority support to grow your business faster.",
-    "upgradeToPro": "Upgrade to Pro"
+    "upgradeToPro": "Upgrade to Pro",
+    "dialogs": {
+      "deleteLink": {
+        "title": "Delete Link",
+        "message": "Are you sure you want to delete {{url}}? This action cannot be undone.",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      }
+    }
   },
   "createLink": {
     "title": "Create Short Link",
@@ -503,7 +676,12 @@
     "title": "My Links",
     "subtitle": "Manage all your shortened URLs",
     "searchPlaceholder": "Search by title, URL, or short code...",
+    "searchLinks": "Search links...",
     "editLink": "Edit Link",
+    "viewModes": {
+      "simple": "Simple",
+      "detailed": "Detailed"
+    },
     "filters": {
       "all": "All Links",
       "active": "Active",
@@ -517,6 +695,7 @@
     "table": {
       "title": "Title",
       "shortUrl": "Short URL",
+      "shortLink": "Short Link",
       "originalUrl": "Original URL",
       "clicks": "Clicks",
       "created": "Created",
@@ -525,10 +704,50 @@
     },
     "actions": {
       "copy": "Copy",
+      "copyLink": "Copy Link",
       "edit": "Edit",
       "qrCode": "QR Code",
       "analytics": "Analytics",
       "delete": "Delete"
+    },
+    "emptyState": {
+      "noLinks": "No links found.",
+      "selectLink": "Select a link to view details",
+      "loading": "Loading..."
+    },
+    "performance": {
+      "title": "Overall Performance",
+      "viewFullReport": "View Full Report",
+      "totalClicks": "Total Clicks",
+      "allClicks": "All Clicks",
+      "ctr": "CTR",
+      "lastClick": "Last Click"
+    },
+    "linkPreview": {
+      "title": "Link Preview",
+      "notAvailable": "Preview not available"
+    },
+    "optimize": {
+      "title": "Optimize",
+      "utmBuilder": "UTM Builder",
+      "utmDescription": "UTM parameters help track campaign performance",
+      "trafficRouting": "Traffic Routing",
+      "trafficDescription": "Configure traffic routing rules",
+      "deepLinks": "Deep links",
+      "deepLinksDescription": "Configure deep linking for mobile apps",
+      "retargeting": "Retargeting scripts",
+      "retargetingDescription": "Add retargeting pixels and scripts"
+    },
+    "dialogs": {
+      "createLink": {
+        "title": "Create Link",
+        "description": "Create your first short link to get started",
+        "domain": "Domain",
+        "customAlias": "Custom Alias (Optional)",
+        "generateQR": "Generate QR Code",
+        "creating": "Creating...",
+        "createButton": "Create Link"
+      }
     },
     "confirmDelete": "Are you sure you want to delete this link?",
     "deleteSuccess": "Link deleted successfully",
@@ -545,13 +764,17 @@
       "uniqueClicks": "Unique Clicks",
       "clickRate": "Click Rate",
       "qrScans": "Scanned QR Codes",
-      "avgClicksPerDay": "Avg. Clicks/Day"
+      "qrScansAlt": "QR Scans",
+      "avgClicksPerDay": "Avg. Clicks/Day",
+      "avgClicksPerDayAlt": "Avg. Clicks/Day"
     },
     "charts": {
       "clicksOverTime": "Clicks Over Time",
+      "clickPerformance": "Click Performance",
       "topCountries": "Top Countries",
       "topReferrers": "Top Referrers",
       "devices": "Devices",
+      "topDevices": "Top Devices",
       "browsers": "Browsers",
       "operatingSystems": "Operating Systems",
       "topCities": "Top Cities"
@@ -573,9 +796,18 @@
     },
     "export": {
       "title": "Export Data",
+      "export": "Export",
       "csv": "Export as CSV",
       "pdf": "Export as PDF",
       "json": "Export as JSON"
+    },
+    "tables": {
+      "country": "Country",
+      "clicks": "Clicks",
+      "browser": "Browser",
+      "source": "Source",
+      "referrers": "Referrers",
+      "noData": "No data"
     },
     "noData": {
       "title": "No Click Activity Data Available",
@@ -592,30 +824,46 @@
       "citiesDescription": "City-level analytics will be available once clicks are recorded.",
       "referrers": "No Referrer Data",
       "referrersDescription": "Traffic sources will be tracked when visitors click your links."
-    }
+    },
+    "loading": "Loading...",
+    "error": "Failed to fetch analytics data"
   },
   "qrCodes": {
     "title": "QR Code Management",
     "subtitle": "Generate, customize, and manage QR codes for your links",
+    "viewModes": {
+      "grid": "Grid",
+      "list": "List"
+    },
     "stats": {
       "totalQRCodes": "Total QR Codes",
       "totalScans": "Total Scans",
       "uniqueScans": "Unique Scans",
       "activeQRCodes": "Active QR Codes",
-      "downloadsToday": "Downloads Today"
+      "active": "Active",
+      "downloadsToday": "Downloads Today",
+      "scans": "Scans",
+      "downloads": "Downloads"
     },
     "generate": {
       "title": "Generate QR Code",
+      "generateNew": "Generate New",
       "selectLink": "Select Link for QR Code",
+      "selectLinkPlaceholder": "Select a link...",
+      "generatingFor": "Generating QR Code for:",
       "customize": "Customize Settings",
+      "customizeQRCode": "Customize QR Code",
+      "description": "Create and customize your QR code with advanced options.",
       "size": "Size (pixels)",
+      "sizePx": "Size (px)",
       "format": "Format",
       "errorCorrection": "Error Correction Level",
       "foregroundColor": "Foreground Color",
       "backgroundColor": "Background Color",
       "includeMargin": "Include margin around QR code",
       "generateButton": "Generate QR Code",
-      "bulkGenerate": "Bulk Generate"
+      "bulkGenerate": "Bulk Generate",
+      "previewPlaceholder": "Preview will appear here"
     },
     "formats": {
       "png": "PNG",
@@ -631,9 +879,40 @@
     },
     "actions": {
       "download": "Download",
+      "downloadPNG": "Download PNG",
+      "downloadSVG": "Download SVG",
       "customize": "Customize",
       "delete": "Delete",
-      "preview": "Preview"
+      "preview": "Preview",
+      "share": "Share"
+    },
+    "search": {
+      "placeholder": "Search QR codes by title, URL, or short code..."
+    },
+    "selection": {
+      "selected": "selected"
+    },
+    "emptyState": {
+      "title": "No QR Codes Found",
+      "noQRCodes": "No QR Codes Yet",
+      "tryAdjusting": "Try adjusting your search",
+      "createFirst": "Generate your first QR code to get started",
+      "createFirstAlt": "Create your first QR code to get started"
+    },
+    "dialogs": {
+      "details": {
+        "title": "QR Code Details",
+        "description": "View and manage your QR code",
+        "linkTitle": "Title",
+        "shortUrl": "Short URL",
+        "originalUrl": "Original URL",
+        "totalScans": "Total Scans",
+        "downloads": "Downloads"
+      }
+    },
+    "messages": {
+      "failedToLoad": "Failed to load links",
+      "generated": "QR Code generated!"
     },
     "noQRCodes": "No QR Codes Yet",
     "createFirst": "Generate your first QR code to get started",
@@ -1037,6 +1316,15 @@
       "regenerating": "Regenerating...",
       "regenerateButton": "Regenerate API Key",
       "confirmRegenerate": "Are you sure you want to regenerate your API key? The old key will no longer work."
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "failedToUpdate": "Failed to update user",
+      "passwordUpdated": "Password updated successfully",
+      "failedToUpdatePassword": "Failed to update password",
+      "preferencesUpdated": "Preferences updated successfully",
+      "failedToUpdatePreferences": "Failed to update preferences"
     }
   },
   "userManagement": {
@@ -1094,26 +1382,47 @@
       "activateUser": "Activate User",
       "deactivateUser": "Deactivate User",
       "delete": "Delete",
-      "deleteUser": "Delete User"
+      "deleteUser": "Delete User",
+      "makeAdmin": "Make Admin",
+      "removeAdmin": "Remove Admin"
     },
     "modal": {
+      "title": "User Details",
+      "description": "Comprehensive information about this user.",
       "urls": "URLs",
+      "urlsCreated": "URLs Created",
       "domains": "Domains",
       "clicks": "Clicks",
+      "totalClicks": "Total Clicks",
       "contactInfo": "Contact Info",
       "email": "Email",
       "phone": "Phone",
       "location": "Registration Location",
+      "locationFields": {
+        "country": "Country",
+        "city": "City",
+        "region": "Region",
+        "ipAddress": "IP Address",
+        "timezone": "Timezone",
+        "countryCode": "Country Code",
+        "coordinates": "Coordinates"
+      },
       "notAvailable": "N/A",
       "accountActivity": "Account Activity",
+      "accountCreated": "Account Created",
       "joined": "Joined",
       "lastLogin": "Last Login",
+      "lastUpdated": "Last Updated",
       "never": "Never",
       "subscription": "Subscription",
       "subscriptionStatus": "Status",
       "inactive": "INACTIVE",
       "periodEnd": "Period End",
-      "freePlan": "FREE"
+      "freePlan": "FREE",
+      "close": "Close"
+    },
+    "messages": {
+      "failedToLoad": "Failed to load users"
     }
   },
   "footer": {
@@ -1152,8 +1461,10 @@
     "passwordChanged": "Password changed successfully!",
     "domainAdded": "Domain added successfully!",
     "domainVerified": "Domain verified successfully!",
+    "domainDeleted": "Domain deleted",
     "subscriptionUpdated": "Subscription updated successfully!",
-    "draftSaved": "Draft saved!"
+    "draftSaved": "Draft saved!",
+    "copied": "Copied!"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -1184,7 +1495,13 @@
     "domainAddError": "Failed to add domain. Please check your input and try again.",
     "domainDeleteError": "Failed to delete domain. Please try again.",
     "qrCodeDeleteError": "Failed to delete QR code. Please try again.",
-    "failedToLoadCustomization": "Could not load existing customization. Using defaults."
+    "failedToLoadCustomization": "Could not load existing customization. Using defaults.",
+    "failedToUpdateStatus": "Failed to update status",
+    "failedToUpdateRole": "Failed to update role",
+    "failedToUpdateUserRole": "Failed to update user role",
+    "failedToDelete": "Failed to delete",
+    "failedToAddDomainAlt": "Failed to add domain",
+    "failedToLoadDomainsAlt": "Failed to load domains"
   },
   "sidebar": {
     "urlManagement": "URL Management",
@@ -1471,6 +1788,10 @@
     "subtitle": "View and manage all customer links",
     "accessDenied": "Access Denied",
     "noPermission": "You don't have permission to view this page.",
+    "viewModes": {
+      "table": "Table",
+      "grid": "Grid"
+    },
     "stats": {
       "totalUrls": "Total URLs",
       "totalClicks": "Total Clicks",
@@ -1479,6 +1800,7 @@
     },
     "filters": {
       "searchPlaceholder": "Search by URL, short code, title, or creator...",
+      "searchByShortCode": "Search by short code, URL, or creator...",
       "allStatus": "All Status",
       "active": "Active",
       "inactive": "Inactive",
@@ -1495,6 +1817,7 @@
     },
     "actions": {
       "view": "View",
+      "copy": "Copy",
       "activate": "Activate",
       "deactivate": "Deactivate",
       "delete": "Delete"
@@ -1504,7 +1827,9 @@
       "inactive": "Inactive"
     },
     "loading": "Loading URLs...",
+    "loadingUrls": "Loading...",
     "noUrls": "No URLs found matching your criteria.",
+    "noUrlsFound": "No URLs found.",
     "pagination": {
       "previous": "Previous",
       "next": "Next",
@@ -1512,13 +1837,13 @@
     },
     "modal": {
       "title": "URL Details",
+      "description": "Comprehensive information about this shortened URL.",
       "linkInfo": "Link Information",
       "shortCode": "Short Code",
       "originalUrl": "Original URL",
       "linkTitle": "Title",
-      "description": "Description",
       "domain": "Domain",
-      "creatorInfo": "Creator Information",
+      "creatorInfo": "Creator Info",
       "name": "Name",
       "email": "Email",
       "statistics": "Statistics",
@@ -1532,7 +1857,9 @@
       "tags": "Tags",
       "activateUrl": "Activate URL",
       "deactivateUrl": "Deactivate URL",
-      "deleteUrl": "Delete URL"
+      "deleteUrl": "Delete URL",
+      "close": "Close",
+      "copyUrl": "Copy URL"
     },
     "messages": {
       "activateSuccess": "URL activated successfully",
@@ -1540,7 +1867,8 @@
       "deleteSuccess": "URL deleted successfully",
       "deleteConfirm": "Are you sure you want to delete this URL? This action cannot be undone.",
       "updateFailed": "Failed to update URL",
-      "deleteFailed": "Failed to delete URL"
+      "deleteFailed": "Failed to delete URL",
+      "failedToLoad": "Failed to load URLs"
     }
   }
 }

@@ -1,0 +1,1872 @@
+{
+  "common": {
+    "ok": "わかりました",
+    "appName": "URLショートナー",
+    "brandName": "チョキチョキ",
+    "loading": "読み込み中...",
+    "downloading": "ダウンロード中...",
+    "error": "エラー",
+    "success": "成功",
+    "save": "セーブ",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "update": "アップデート",
+    "close": "閉じる",
+    "confirm": "確認してください",
+    "back": "戻る",
+    "next": "次に",
+    "submit": "送信",
+    "search": "検索",
+    "filter": "フィルター",
+    "reset": "リセット",
+    "copy": "了解",
+    "copied": "コピーしました!",
+    "share": "共有",
+    "noLinkSelected": "編集用の特定のリンクを選択してください",
+    "download": "ダウンロード",
+    "export": "輸出",
+    "import": "輸入",
+    "refresh": "リフレッシュ",
+    "logout": "ログアウト",
+    "login": "ログイン",
+    "register": "登録",
+    "viewMore": "詳細を見る",
+    "showLess": "ショー・レス",
+    "deleteConfirmTitle": "リンクを削除?",
+    "deleteConfirmMessage": "本当にこのリンクを削除したいのですか?",
+    "deleteDomainTitle": "ドメインを削除?",
+    "deleteDomainMessage": "このカスタムドメインを削除したいのですか?",
+    "deleteQRTitle": "QRコードを削除する?",
+    "deleteQRMessage": "このQRコードとリンクを削除したいのですか?",
+    "settings": "設定",
+    "profile": "プロフィール",
+    "dashboard": "ダッシュボード",
+    "language": "言語",
+    "english": "英語",
+    "arabic": "アラビア語",
+    "hide": "隠れて",
+    "show": "番組",
+    "creating": "創造...",
+    "updating": "更新中...",
+    "generating": "生成中...",
+    "fieldRequired": "このフィールドは必須です",
+    "updated": "更新",
+    "noCustomDomainsConnected": "カスタムドメインは接続されていません。"
+  },
+  "dates": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "daysAgo": "{{count}}日前",
+    "weeksAgo": "{{count}}週間前",
+    "weeksAgo_plural": "{{count}}週間前",
+    "ago": "前"
+  },
+  "header": {
+    "navigation": "ナビゲーション",
+    "home": "ホーム",
+    "features": "特徴",
+    "pricing": "価格設定",
+    "about": "に関しては",
+    "contact": "連絡先",
+    "signIn": "サインイン",
+    "signUp": "サインアップ",
+    "getStarted": "始めよう",
+    "myLinks": "私のリンク",
+    "createLink": "リンクを作成",
+    "analytics": "分析",
+    "qrCodes": "QRコード",
+    "customDomains": "カスタムドメイン",
+    "subscription": "購読",
+    "contentFilter": "コンテンツフィルター",
+    "languages": {
+      "english": "英語",
+      "arabic": "アラビア語",
+      "chinese": "中国語",
+      "spanish": "スペイン語",
+      "hindi": "ヒンディー語",
+      "french": "フランス語",
+      "portuguese": "ポルトガル語",
+      "russian": "ロシア語",
+      "dutch": "オランダ語",
+      "greek": "ギリシャ語",
+      "german": "ドイツ語",
+      "italian": "イタリア語",
+      "japanese": "日本語",
+      "korean": "韓国語",
+      "polish": "ポーランド語",
+      "danish": "デンマーク語",
+      "norwegian": "ノルウェー語",
+      "swedish": "スウェーデン語",
+      "ukrainian": "ウクライナ語"
+    },
+    "theme": {
+      "light": "ライトモード",
+      "dark": "ダークモード"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "URLを短縮し、パフォーマンスを追跡する",
+      "titleMain": "ショーテン、ブランド、",
+      "titleAccent": "陸上競技",
+      "subtitle": "あなたのリンクはサウジアラビア向けに最適化されています",
+      "description": "高速で安全かつコンプライアンスに準拠したURL短縮機能と高度な分析とブランドドメイン。",
+      "descriptionAlt": "詳細な分析、QRコード、APIを備えた無料のリンク短縮器",
+      "cta": "無料で始めましょう",
+      "tryDemo": "デモを見る",
+      "formTitle": "今すぐ試してみてください - 最初のリンクを短縮しましょう",
+      "urlPlaceholder": "長いURLをここに貼り付けてください...",
+      "shortenBtn": "URL短縮",
+      "shortenButton": "ショーテン",
+      "complianceNotice": "✓ PDPL準拠 • KSAに保存されたデータ",
+      "yourShortLink": "あなたの短いリンク:",
+      "wantOwnDomain": "自分のドメインが欲しいですか?",
+      "createFreeAccount": "無料アカウント作成"
+    },
+    "features": {
+      "title": "現代マーケターのための強力な機能",
+      "subtitle": "リンクの管理、追跡、最適化に必要なすべて",
+      "sectionTitle": "リンク管理に必要なすべて",
+      "sectionDescription": "パフォーマンスの追跡やキャンペーン最適化を支援する高度なリンク管理ツール",
+      "pills": {
+        "freePlan": "フリー・フォーエバープラン",
+        "customDomain": "カスタムドメインサポート",
+        "noCard": "クレジットカードは不要です",
+        "richAnalytics": "豊富な分析が含まれていました"
+      },
+      "analytics": {
+        "title": "詳細な分析",
+        "titleAlt": "高度な分析",
+        "description": "クリック数、地理データ、デバイスなどを包括的な分析で追跡できます",
+        "descriptionAlt": "クリック、コンバージョン、ユーザーの行動を詳細なインサイトとリアルタイムレポートで追跡できます"
+      },
+      "customDomain": {
+        "title": "カスタムドメイン",
+        "titleAlt": "カスタムドメイン",
+        "description": "プロフェッショナルなショートリンクには、自分のブランドドメインを活用しましょう",
+        "descriptionAlt": "自分のブランドドメインを使って、信頼を築くプロフェッショナルなショートリンクを作成しました"
+      },
+      "qrCode": {
+        "title": "QRコード",
+        "description": "短いリンク用のQRコードを生成・カスタマイズしましょう",
+        "descriptionAlt": "再印刷せずにいつでも編集可能な動的QRコードを生成します"
+      },
+      "security": {
+        "title": "安全で信頼できる",
+        "description": "エンタープライズグレードのセキュリティで、稼働率99.9%保証"
+      },
+      "urlShortening": {
+        "title": "URL短縮",
+        "description": "高度なアルゴリズムで短くて記憶に残るリンクを瞬時に作成できます"
+      },
+      "utmBuilder": {
+        "title": "UTMビルダー",
+        "description": "組み込みのUTMパラメータ生成でキャンペーンのパフォーマンスを追跡"
+      },
+      "authintica": {
+        "title": "Authintica 統合",
+        "description": "サウジアラビアの信頼できるアイデンティティプラットフォームでの安全な認証"
+      },
+      "bilingualUI": {
+        "title": "バイリンガルUIです",
+        "description": "RTL対応のシームレスなアラビア語と英語インターフェース"
+      },
+      "teamCollaboration": {
+        "title": "チームコラボレーション",
+        "description": "チームと協力し、権限管理やリンク分析の共有をしましょう"
+      },
+      "apiAccess": {
+        "title": "APIアクセス",
+        "description": "強力なREST APIでアプリケーションに統合しましょう"
+      },
+      "linkManagement": {
+        "title": "リンク管理",
+        "description": "数千のリンクをまとめ、編集、管理し、大量操作とタグを使います"
+      },
+      "learnMore": "詳細情報"
+    },
+    "whyChoose": {
+      "title": "なぜ企業はSnipを選ぶのか",
+      "subtitle": "サウジのマーケターや企業にとって賢明な選択です"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "キャンペーンをより速く立ち上げる",
+        "description": "リンクを作成、追跡、最適化を数分で行えます",
+        "setupTime": "平均セットアップ時間",
+        "setupTimeValue": "2分"
+      },
+      "trustCompliance": {
+        "title": "信頼とコンプライアンス優先",
+        "description": "PDPLはサウジアラビアにローカルホストされているデータに準拠しています",
+        "dataResidency": "データ居住",
+        "dataResidencyValue": "100%サウスカデア"
+      },
+      "analytics": {
+        "title": "実行可能な分析",
+        "description": "リアルタイムの洞察でデータ駆動型の意思決定を行う",
+        "trackingAccuracy": "クリックトラッキングの精度",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "サウジのマーケターにぴったりです",
+      "feature1": "カスタム.saドメインサポート",
+      "feature2": "RTL対応のアラビア語および英語インターフェース",
+      "feature3": "オフラインキャンペーン用のQRコード",
+      "feature4": "安全なアクセスのためのAuthintica統合",
+      "feature5": "アラビア語と英語での地域支援"
+    },
+    "stats": {
+      "linksCreated": "サウジ企業が作成したリンク",
+      "linksCreatedValue": "50,000+",
+      "linksCreatedAlt": "リンク作成",
+      "uptime": "稼働時間",
+      "uptimeValue": "98%",
+      "clicksTracked": "クリック数の追跡",
+      "clicksTrackedValue": "2.5M+",
+      "support": "支援",
+      "supportValue": "24/7",
+      "activeUsers": "現役ユーザー",
+      "activeUsersValue": "10,000+",
+      "yearsOnMarket": "市場での年月",
+      "yearsOnMarketValue": "5+"
+    },
+    "integrations": {
+      "title": "お気に入りのツールとつながりましょう",
+      "subtitle": "既存のツールとSnipを連携し、既存の連携やAPIアクセスを用意しましょう",
+      "viewAll": "すべての統合を見る",
+      "zapier": "ザピア",
+      "slack": "スラック",
+      "googleAnalytics": "Google Analytics",
+      "metaPixel": "メタピクセル",
+      "mailchimp": "メイルチンプ",
+      "googleAds": "Google広告",
+      "chrome": "クローム",
+      "wordpress": "WordPress",
+      "ios": "iOS",
+      "make": "作る",
+      "android": "アンドロイド",
+      "segment": "セグメント"
+    },
+    "teams": {
+      "title": "すべてのチームのために作られています",
+      "subtitle": "異なるチームがどのようにSnipを使って目標を達成するかをご覧ください",
+      "marketing": {
+        "title": "マーケティングチーム",
+        "description": "キャンペーンのパフォーマンスを追跡し、コンバージョンを最適化しましょう",
+        "feature1": "キャンペーン追跡",
+        "feature2": "A/Bテスト",
+        "feature3": "ROI測定",
+        "feature4": "変換最適化"
+      },
+      "sales": {
+        "title": "営業チーム",
+        "description": "パーソナライズされたアウトリーチとエンゲージメントの追跡",
+        "feature1": "パーソナライズされたリンク",
+        "feature2": "エンゲージメントトラッキング",
+        "feature3": "リード得点",
+        "feature4": "CRM統合"
+      },
+      "infrastructure": {
+        "title": "インフラストラクチャーチーム",
+        "description": "大規模展開のためのエンタープライズグレード機能",
+        "feature1": "SSO認証",
+        "feature2": "APIアクセス",
+        "feature3": "システム統合",
+        "feature4": "無制限プラン"
+      }
+    },
+    "trust": {
+      "title": "大規模に信頼されています",
+      "subtitle": "世界中のマーケティングチーム、開発者、企業が重要なことを追跡するためにSnipに依存しています",
+      "socialProof": "世界中のフォーチュン500企業やスタートアップで使用されています",
+      "trustpilot": "トラストパイロット",
+      "clientConfidentiality": "クライアントの機密保持"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "subtitle": "探しているものが見つからない?",
+      "q1": {
+        "question": "Snipはどうやって始めればいいですか?",
+        "answer": "始めるのは簡単です!無料アカウントに登録すれば、すぐにリンク短縮を始められます。無料プランにはクレジットカードは不要です。"
+      },
+      "q2": {
+        "question": "自分のドメインを使ってもいいですか?",
+        "answer": "はい！自分のカスタムドメインを接続して、ブランドの短いリンクを作成できます。これにより、オーディエンスとの信頼や認知を築くことができます。"
+      },
+      "q3": {
+        "question": "どのような分析ツールが利用可能ですか?",
+        "answer": "クリックトラッキング、地理データ、デバイスタイプ、リファラー、コンバージョン追跡など、包括的な分析機能を提供しています。すべてのデータはリアルタイムで利用可能です。"
+      },
+      "q4": {
+        "question": "APIは利用可能でしょうか?",
+        "answer": "はい、私たちは強力なREST APIを提供しており、Snipをアプリケーションに統合できます。リンクを作成、管理、追跡することはプログラム的に可能です。"
+      },
+      "q5": {
+        "question": "リンクの安全性はどの程度ですか?",
+        "answer": "私たちはセキュリティを真剣に考えています。すべてのリンクはHTTPS上で配信されており、パスワード保護、有効期限、高度なセキュリティ機能も提供しています。"
+      },
+      "q6": {
+        "question": "無料プランには何が含まれていますか?",
+        "answer": "無料プランには1,000件のブランドリンク、基本的な分析、QRコード、APIアクセスが含まれています。個人や小規模なプロジェクトに最適です。"
+      }
+    },
+    "banner": {
+      "text": "無料プランが利用可能・クレジットカード不要"
+    },
+    "navigation": {
+      "integrations": "統合"
+    },
+    "testimonials": {
+      "title": "サウジ企業に信頼されています",
+      "subtitle": "お客様がSnipについてどう評価しているかをご覧ください",
+      "testimonial1": {
+        "text": "スニップのPDPL遵守は私たちに安心感を与えてくれます。分析は非常に詳細で、キャンペーンの最適化に役立ちます。",
+        "author": "サラ・アル・ラシード",
+        "role": "テックコープ・サウジアライナ マーケティングディレクター"
+      },
+      "testimonial2": {
+        "text": "バイリンガルインターフェースは多様なチームに最適です。ブランドドメイン機能が大好きです!",
+        "author": "アフメド・モハメド",
+        "role": "デジタルマーケティングマネージャー"
+      },
+      "testimonial3": {
+        "text": "Snipはソーシャルメディアキャンペーンの追跡方法を革命的に変えました。QRコードは本当に画期的です!",
+        "author": "ファティマ・アル・ザフラ",
+        "role": "Eコマースディレクター"
+      },
+      "testimonial4": {
+        "text": "迅速で、信頼性が高く、安全です。サウジアラビアでの成長するビジネスに必要なすべてです。",
+        "author": "オマール・ハッサン",
+        "role": "スタートアップ創業者"
+      }
+    },
+    "pricing": {
+      "title": "シンプルで透明な価格設定",
+      "subtitle": "ご自身のニーズに合ったプランを選びましょう",
+      "free": {
+        "title": "無料",
+        "currency": "$",
+        "amount": "0",
+        "period": "月",
+        "description": "個人的な使い方や初心者に最適です",
+        "feature1": "月に100のURLを",
+        "feature2": "基本的な分析",
+        "feature3": "標準サポート",
+        "cta": "無料で始めましょう"
+      },
+      "pro": {
+        "title": "長所",
+        "badge": "最も人気のあるもの",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "月",
+        "description": "プロや小規模チームに最適です",
+        "feature1": "無制限のURLを",
+        "feature2": "高度な分析",
+        "feature3": "カスタムドメイン",
+        "feature4": "パスワード保護",
+        "feature5": "優先支援",
+        "cta": "無料トライアル開始"
+      },
+      "enterprise": {
+        "title": "エンタープライズ",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "月",
+        "description": "大規模なチームや組織向けに",
+        "feature1": "Proのすべて",
+        "feature2": "無制限のカスタムドメイン",
+        "feature3": "チームコラボレーション",
+        "feature4": "APIアクセス",
+        "feature5": "献身的なサポート",
+        "cta": "営業に連絡"
+      }
+    },
+    "cta": {
+      "title": "始める準備はできましたか?",
+      "subtitle": "私たちのプラットフォームを信頼する何千人ものユーザーに参加しましょう",
+      "button": "スタート・フォー・フリー"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "再びようこそ",
+      "subtitle": "アカウントにサインインしてください",
+      "brandSubtitle": "ダッシュボードへようこそ",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "rememberMe": "覚えていて",
+      "forgotPassword": "パスワードを忘れましたか?",
+      "button": "サインイン",
+      "signingIn": "サインイン中...",
+      "googleButton": "Googleでサインイン",
+      "dividerText": "またはメールでサインインする",
+      "noAccount": "アカウントを持っていませんか?",
+      "signUp": "こちらから登録してください",
+      "errorInvalidCredentials": "メールアドレスまたはパスワードが無効です",
+      "errorGeneral": "ログインに失敗しました。もう一度お試しください。",
+      "errorEmailRequired": "メールが必要です",
+      "errorEmailInvalid": "有効なメールアドレスを入力してください",
+      "errorPasswordRequired": "パスワードが必要です",
+      "feature1Title": "リンクを管理しましょう",
+      "feature1Description": "すべての短縮URLを一か所でアクセスできます",
+      "feature2Title": "トラックパフォーマンス",
+      "feature2Description": "詳細な分析と洞察を見る",
+      "feature3Title": "安全で信頼できる",
+      "feature3Description": "あなたのデータは企業のセキュリティで保護されています"
+    },
+    "forgotPassword": {
+      "title": "パスワードを忘れましたか?",
+      "subtitle": "認証コードを受け取るにはメールアドレスを入力してください",
+      "newPasswordTitle": "新しいパスワードを作成する",
+      "newPasswordSubtitle": "以下に新しいパスワードを入力してください",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力してください",
+      "otp": "検証コード",
+      "otpPlaceholder": "6桁のコードを入力してください",
+      "newPassword": "新しいパスワード",
+      "newPasswordPlaceholder": "新しいパスワードを入力してください",
+      "confirmPassword": "パスワード確認",
+      "confirmPasswordPlaceholder": "新しいパスワードを確認",
+      "sendOtp": "認証コードを送信",
+      "resetPassword": "パスワードリセット",
+      "sending": "送信中...",
+      "resetting": "リセット中...",
+      "backToEmail": "メールに戻る",
+      "resendOtp": "再送信コード",
+      "otpSent": "認証コードが{email}に送信されました",
+      "otpResent": "検証コードの再送信に成功しました",
+      "successMessage": "パスワードリセット成功!",
+      "errorEmailRequired": "メールが必要です",
+      "errorEmailInvalid": "有効なメールアドレスを入力してください",
+      "errorOtpRequired": "認証コードが必要です",
+      "errorOtpInvalid": "認証コードは6桁でなければなりません",
+      "errorPasswordRequired": "パスワードが必要です",
+      "errorPasswordMinLength": "パスワードは最低8文字でなければなりません",
+      "errorPasswordsNotMatch": "パスワードが一致しません",
+      "errorSamePassword": "新しいパスワードは古いパスワードとは異なる必要があります",
+      "errorGeneral": "パスワードリセットに失敗しました。もう一度お試しください。"
+    },
+    "register": {
+      "title": "アカウント作成",
+      "subtitle": "無料アカウントで始めましょう",
+      "brandTitle": "高度なURL短縮器",
+      "brandSubtitle": "高度な分析やプロフェッショナルな短いリンクを入手しましょう",
+      "languageToggle": "言語トグル",
+      "googleSignup": "Googleで登録してください",
+      "divider": "またはメールで登録することもできます",
+      "fullName": "フルネーム",
+      "fullNamePlaceholder": "フルネームを入力してください",
+      "firstName": "名前",
+      "lastName": "姓",
+      "firstNamePlaceholder": "名前を入力してください",
+      "lastNamePlaceholder": "名字を入力してください",
+      "email": "メールアドレス",
+      "emailPlaceholder": "example@example.com",
+      "phone": "電話番号",
+      "phonePlaceholder": "電話番号を入力してください",
+      "password": "パスワード",
+      "passwordPlaceholder": "••••••••••",
+      "passwordHint": "最低でも8文字以上でなければなりません",
+      "confirmPassword": "パスワード確認",
+      "confirmPasswordPlaceholder": "パスワードを再入力してください",
+      "termsAgree": "私は同意します",
+      "terms": "利用規約",
+      "and": "そして",
+      "privacy": "プライバシーポリシー",
+      "pdplConsent": "私は個人データ保護法に従い、私の個人データの処理に同意します",
+      "marketingConsent": "マーケティングの最新情報やオファーを受け取りたいです",
+      "button": "アカウント作成",
+      "creating": "アカウント作成中...",
+      "haveAccount": "すでにアカウントをお持ちですか?",
+      "signIn": "こちらにサインインしてください",
+      "feature1Title": "高速URL短縮",
+      "feature1Description": "数秒で短く共有可能なリンクを作成",
+      "feature2Title": "高度分析",
+      "feature2Description": "詳細なリアルタイム分析でリンクのパフォーマンスを追跡しましょう",
+      "feature3Title": "エンタープライズセキュリティ",
+      "feature3Description": "あなたのデータは企業レベルのセキュリティとプライバシーで保護されています",
+      "errorFullNameRequired": "フルネームが必要です",
+      "errorFirstNameRequired": "名前は必須です",
+      "errorLastNameRequired": "姓は必須です",
+      "errorEmailRequired": "メールアドレスが必要です",
+      "errorEmailInvalid": "有効なメールアドレスを入力してください",
+      "errorPasswordRequired": "パスワードが必要です",
+      "errorPasswordLength": "パスワードは最低8文字でなければなりません",
+      "errorConfirmPasswordRequired": "パスワードを確認してください",
+      "errorPasswordMismatch": "パスワードが一致しません",
+      "errorTermsRequired": "利用規約およびプライバシーポリシーに同意する必要があります",
+      "errorDataConsentRequired": "データ処理の同意に同意しなければなりません",
+      "errorEmailExists": "メールはすでに存在しています",
+      "errorGeneral": "登録に失敗しました。もう一度お試しください。",
+      "successMessage": "アカウント作成が成功しました!"
+    }
+  },
+  "otp": {
+    "title": "OTPの確認",
+    "sentMessage": "6桁の認証コードを送った",
+    "digitLabel": "数字{{number}}",
+    "verifyButton": "確認・サインイン",
+    "verifying": "確認中...",
+    "didntReceive": "コードを受け取っていないのですか?",
+    "resendButton": "OTPを再送信",
+    "resendIn": "{{seconds}}sで再送信",
+    "goBack": "戻ってください",
+    "securityTipTitle": "セキュリティのヒント:",
+    "securityTipMessage": "OTPは絶対に誰にも共有しないでください。認証コードの提供は絶対にしません。",
+    "errorEnterAllDigits": "認証コードの6桁すべてを入力してください",
+    "errorInvalidCode": "無効な検証コード。必ず確認して、もう一度お試しください。",
+    "errorExpired": "認証コードが期限切れです。新しいものをリクエストしてください。",
+    "errorTooManyAttempts": "失敗が多すぎた。新しいコードをリクエストしてください。",
+    "errorResendFailed": "認証コードの再送信に失敗しました。もう一度お試しください。",
+    "errorTooManyRequests": "リクエストが多すぎます。もう一度試す前に少しお待ちください。",
+    "errorNetwork": "ネットワークエラーです。接続を確認してからもう一度お試しください。"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "welcome": "再びようこそ",
+    "welcomeMessage": "今日のリンクの状況は以下の通りです。",
+    "vsLastPeriod": "前期と比較",
+    "changeVsLastPeriod": "{{change}}月と最後の月経の比較",
+    "createShortLink": "短いリンクを作成する",
+    "createShortLinkDesc": "長いURLを強力で追跡可能な短いリンクに変えましょう",
+    "getStarted": "始めよう",
+    "generateQRCode": "QRコードを生成する",
+    "generateQRCodeDesc": "デジタルキャンペーンと物理キャンペーンをつなぐためにリンク用のQRコードを作成しましょう",
+    "createQR": "QRを作成する",
+    "addCustomDomain": "カスタムドメインの追加",
+    "addCustomDomainDesc": "プロフェッショナルなショートリンクには、自分のブランドドメインを活用してください",
+    "setupDomain": "セットアップドメイン",
+    "shortenYourURL": "URLを短縮する",
+    "scannedQRCodes": "スキャンされたQRコード",
+    "noChartData": "クリック活動データは利用できません",
+    "noChartDataDesc": "リンクを共有して、クリックトレンドや活動を時間経過で確認しましょう。",
+    "longURL": "長いURL",
+    "longURLPlaceholder": "長いURLをここに貼り付けてください",
+    "customBackhalf": "カスタムネーム(オプション)",
+    "customBackhalfPlaceholder": "カスタムネームを入力してください",
+    "campaign": "キャンペーン名(任意)",
+    "campaignPlaceholder": "キャンペーン名を入力してください",
+    "advancedSettings": "詳細設定",
+    "shortenURL": "URL短縮",
+    "stats": {
+      "totalLinks": "総リンク",
+      "totalClicks": "総クリック数",
+      "activeLinks": "アクティブなリンク",
+      "clickRate": "クリック率",
+      "totalCustomDomains": "カスタムドメイン",
+      "active": "現役",
+      "qrScans": "QRスキャン"
+    },
+    "recentLinks": {
+      "title": "最近のリンク",
+      "viewAll": "すべてのリンクを表示",
+      "noLinks": "まだリンクは作成されていません",
+      "createFirst": "最初の短いリンクを作成しましょう",
+      "shortLink": "短いリンク",
+      "originalUrl": "元のURL(元のURL)",
+      "date": "日付",
+      "clicks": "クリック音",
+      "actions": "行動"
+    },
+    "quickActions": {
+      "title": "クイックアクション",
+      "createLink": "新しいリンクを作成",
+      "viewAnalytics": "分析を見る",
+      "generateQR": "QRコードを生成する",
+      "manageSubscription": "サブスクリプション管理"
+    },
+    "analytics": {
+      "title": "アナリティクス概要",
+      "lastSevenDays": "最後の7日間",
+      "clicksByDate": "日付別クリック数",
+      "topLinks": "トップパフォーマンスリンク",
+      "clickActivity": "アクティビティをクリックしてください",
+      "overviewDescription": "リンクのパフォーマンスを時間経過で概観します。"
+    },
+    "timeFilters": {
+      "last24Hours": "過去24時間",
+      "last7Days": "最後の7日間",
+      "last30Days": "過去30日間",
+      "last90Days": "過去90日間",
+      "7days": "7日間",
+      "30days": "30日間",
+      "90days": "90日間"
+    },
+    "mon": "モン",
+    "tue": "火曜日",
+    "wed": "ウェディング",
+    "thu": "木",
+    "fri": "金曜日",
+    "sat": "土曜",
+    "sun": "太陽",
+    "uniqueVisitors": "ユニークな訪問者",
+    "changeFromLastWeek": "{{change}}と先週の比較",
+    "fromLastPeriod": "+は前期から",
+    "clicks": "カチッ{{count}}",
+    "created": "創造{{time}}",
+    "viewAll": "すべてを見る",
+    "upgradeTitle": "プロフェッショナルへの昇格",
+    "upgradeDescription": "高度な分析、カスタムドメイン、優先サポートを活用して、ビジネスの成長を加速させましょう。",
+    "upgradeToPro": "プロへのアップグレード",
+    "dialogs": {
+      "deleteLink": {
+        "title": "リンクを削除",
+        "message": "本当に{{url}}を削除したいのですか?この行動は取り消せない。",
+        "cancel": "キャンセル",
+        "delete": "削除"
+      }
+    }
+  },
+  "createLink": {
+    "title": "短いリンクを作成する",
+    "subtitle": "長いURLを短く共有可能なリンクに変換してください",
+    "customCode": "カスタムコード",
+    "form": {
+      "originalUrl": "元のURL(元のURL)",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "カスタムエイリアス(オプション)",
+      "customAliasPlaceholder": "my-custom-link",
+      "title": "リンクタイトル(任意)",
+      "titlePlaceholder": "私の素晴らしいリンク",
+      "description": "説明(任意)",
+      "descriptionPlaceholder": "リンクの簡単な説明",
+      "tags": "タグ(任意)",
+      "tagsPlaceholder": "マーケティング、キャンペーン、製品",
+      "domain": "ドメイン",
+      "selectDomain": "ドメイン選択",
+      "expirationDate": "有効期限(任意)",
+      "password": "パスワード保護(オプション)",
+      "passwordPlaceholder": "パスワードを入力してください",
+      "createButton": "短いリンクを作成する",
+      "creating": "創造...",
+      "advancedOptions": "高度なオプション",
+      "utmParameters": "UTMパラメータ",
+      "urlHint": "短縮したい長いURLを入力してください",
+      "aliasHint": "自動生成コード用に空欄を残す"
+    },
+    "success": {
+      "title": "リンク作成成功!",
+      "created": "短いリンクが成功裏に作成されました!",
+      "yourLink": "あなたの短いリンク:",
+      "copyLink": "リンクをコピー",
+      "viewAnalytics": "分析を見る",
+      "createAnother": "別のリンクを作成"
+    },
+    "errors": {
+      "invalidUrl": "有効なURLを入力してください(http:// または https:// で始まる必要があります)",
+      "urlRequired": "元のURLが必要です",
+      "urlTooLong": "URLが長すぎます(最大2000文字)",
+      "aliasExists": "この別名はすでに使われています",
+      "aliasReserved": "この別名はシステム使用に限定されています。別の別名を選んでください。",
+      "aliasInvalidFormat": "エイリアスは文字、数字、ハイフン、アンダースコアのみを含めます",
+      "aliasInvalidLength": "エイリアスは3文字から50文字の間でなければなりません",
+      "aliasInvalidStart": "別名は文字または数字で始まらなければなりません",
+      "titleTooLong": "タイトルが長すぎます(最大100文字)",
+      "titleInvalidChars": "タイトルには無効な文字が含まれています",
+      "fixErrors": "投稿前に以下の誤りを修正してください",
+      "general": "リンク作成に失敗しました。もう一度お試しください。"
+    }
+  },
+  "myLinks": {
+    "title": "私のリンク",
+    "subtitle": "短縮URLをすべて管理しましょう",
+    "searchPlaceholder": "タイトル、URL、またはショートコードで検索してください...",
+    "searchLinks": "リンクを検索してください...",
+    "editLink": "編集リンク",
+    "viewModes": {
+      "simple": "簡単です",
+      "detailed": "詳細"
+    },
+    "filters": {
+      "all": "すべてのリンク",
+      "active": "現役",
+      "expired": "期限切れ",
+      "sortBy": "並べ替え",
+      "newest": "最新ファースト",
+      "oldest": "最古のファースト",
+      "mostClicks": "最多クリック数",
+      "leastClicks": "最小クリック数"
+    },
+    "table": {
+      "title": "タイトル",
+      "shortUrl": "ショートURL",
+      "shortLink": "短いリンク",
+      "originalUrl": "元のURL(元のURL)",
+      "clicks": "クリック音",
+      "created": "創設",
+      "status": "現状",
+      "actions": "行動"
+    },
+    "actions": {
+      "copy": "了解",
+      "copyLink": "リンクをコピー",
+      "edit": "編集",
+      "qrCode": "QRコード",
+      "analytics": "分析",
+      "delete": "削除"
+    },
+    "emptyState": {
+      "noLinks": "リンクは見つかりませんでした。",
+      "selectLink": "詳細を見るにはリンクを選択してください",
+      "loading": "読み込み中..."
+    },
+    "performance": {
+      "title": "総合成績",
+      "viewFullReport": "全文レポートを見る",
+      "totalClicks": "総クリック数",
+      "allClicks": "全音",
+      "ctr": "CTR",
+      "lastClick": "ラストクリック"
+    },
+    "linkPreview": {
+      "title": "リンクプレビュー",
+      "notAvailable": "プレビューは利用できません"
+    },
+    "optimize": {
+      "title": "最適化",
+      "utmBuilder": "UTMビルダー",
+      "utmDescription": "UTMパラメータはキャンペーンのパフォーマンス追跡に役立ちます",
+      "trafficRouting": "トラフィックルーティング",
+      "trafficDescription": "トラフィックルーティングルールの設定",
+      "deepLinks": "ディープリンク",
+      "deepLinksDescription": "モバイルアプリ向けのディープリンク設定",
+      "retargeting": "リターゲティングスクリプト",
+      "retargetingDescription": "リターゲティングピクセルとスクリプトを追加してください"
+    },
+    "dialogs": {
+      "createLink": {
+        "title": "リンクを作成",
+        "description": "最初の短いリンクを作成して始めましょう",
+        "domain": "ドメイン",
+        "customAlias": "カスタムエイリアス(オプション)",
+        "generateQR": "QRコードを生成する",
+        "creating": "創造...",
+        "createButton": "リンクを作成"
+      }
+    },
+    "confirmDelete": "本当にこのリンクを削除したいのですか?",
+    "deleteSuccess": "リンクは削除されました",
+    "deleteError": "リンクの削除に失敗しました",
+    "noLinks": "リンクは見つかりませんでした",
+    "createFirstLink": "最初の短いリンクを作成して始めましょう"
+  },
+  "analytics": {
+    "title": "分析",
+    "subtitle": "リンクのパフォーマンスを追跡・分析しましょう",
+    "overview": {
+      "title": "概要",
+      "totalClicks": "総クリック数",
+      "uniqueClicks": "ユニークなクリック",
+      "clickRate": "クリック率",
+      "qrScans": "スキャンされたQRコード",
+      "qrScansAlt": "QRスキャン",
+      "avgClicksPerDay": "平均クリック数/日",
+      "avgClicksPerDayAlt": "平均クリック数/日"
+    },
+    "charts": {
+      "clicksOverTime": "クリック数の経過",
+      "clickPerformance": "クリックパフォーマンス",
+      "topCountries": "主要国",
+      "topReferrers": "主要紹介者",
+      "devices": "デバイス",
+      "topDevices": "トップデバイス",
+      "browsers": "ブラウザ",
+      "operatingSystems": "オペレーティングシステム",
+      "topCities": "トップシティ"
+    },
+    "devices": {
+      "mobile": "モバイル",
+      "desktop": "デスクトップ",
+      "tablet": "タブレット"
+    },
+    "filters": {
+      "dateRange": "日付範囲",
+      "last24Hours": "最後の24時間",
+      "last7Days": "最後の7日間",
+      "last30Days": "過去30日間",
+      "last90Days": "過去90日間",
+      "last1Year": "過去1年",
+      "custom": "カスタムレンジ",
+      "applyFilters": "フィルターを適用"
+    },
+    "export": {
+      "title": "輸出データ",
+      "export": "輸出",
+      "csv": "CSVとしてエクスポート",
+      "pdf": "PDFとしてエクスポート",
+      "json": "JSONとしてエクスポート"
+    },
+    "tables": {
+      "country": "国",
+      "clicks": "クリック音",
+      "browser": "ブラウザー",
+      "source": "出典",
+      "referrers": "参照者",
+      "noData": "データなし"
+    },
+    "noData": {
+      "title": "クリック活動データは利用できません",
+      "chartDescription": "リンクを共有して、クリックトレンドや活動を時間経過で確認しましょう。",
+      "countries": "地理データなし",
+      "countriesDescription": "リンクをクリックすると国のデータが表示されます。",
+      "devices": "デバイスデータなし",
+      "devicesDescription": "クリック音が記録された後、デバイスの内訳が表示されます。",
+      "browsers": "ブラウザデータなし",
+      "browsersDescription": "リンクがクリックされた後にはブラウザの統計が表示されます。",
+      "os": "オペレーティングシステムデータなし",
+      "osDescription": "クリック数が追跡された後、OSの分布が確認されます。",
+      "cities": "都市データなし",
+      "citiesDescription": "クリック数が記録されると、市レベルの分析データが利用可能になります。",
+      "referrers": "リファラーデータなし",
+      "referrersDescription": "トラフィックソースは、訪問者がリンクをクリックした際に追跡されます。"
+    },
+    "loading": "読み込み中...",
+    "error": "分析データの取得に失敗しました"
+  },
+  "qrCodes": {
+    "title": "QRコード管理",
+    "subtitle": "リンクのQRコードを生成、カスタマイズ、管理しましょう",
+    "viewModes": {
+      "grid": "グリッド",
+      "list": "一覧"
+    },
+    "stats": {
+      "totalQRCodes": "総QRコード",
+      "totalScans": "トータルスキャン",
+      "uniqueScans": "ユニークなスキャン",
+      "activeQRCodes": "アクティブQRコード",
+      "active": "現役",
+      "downloadsToday": "現在のダウンロード",
+      "scans": "スキャン",
+      "downloads": "ダウンロード"
+    },
+    "generate": {
+      "title": "QRコードを生成する",
+      "generateNew": "新規生成",
+      "selectLink": "QRコードのリンクを選択してください",
+      "selectLinkPlaceholder": "リンクを選択してください...",
+      "generatingFor": "以下のQRコード生成:",
+      "customize": "設定のカスタマイズ",
+      "customizeQRCode": "QRコードをカスタマイズ",
+      "description": "高度なオプションでQRコードを作成・カスタマイズできます。",
+      "size": "サイズ(ピクセル数)",
+      "sizePx": "サイズ(px)",
+      "format": "フォーマット",
+      "errorCorrection": "誤り訂正レベル",
+      "foregroundColor": "前景色",
+      "backgroundColor": "背景色",
+      "includeMargin": "QRコードの周りに余白を設けましょう",
+      "generateButton": "QRコードを生成する",
+      "bulkGenerate": "バルクジェネレーター",
+      "previewPlaceholder": "プレビューはこちらに掲載されます"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "ロー(7%)",
+      "medium": "中型(15%)",
+      "quartile": "四分位数(25%)",
+      "high": "高値(30%)"
+    },
+    "actions": {
+      "download": "ダウンロード",
+      "downloadPNG": "PNGをダウンロード",
+      "downloadSVG": "SVGをダウンロード",
+      "customize": "カスタマイズ",
+      "delete": "削除",
+      "preview": "プレビュー",
+      "share": "共有"
+    },
+    "search": {
+      "placeholder": "タイトル、URL、またはショートコードでQRコードを検索できます..."
+    },
+    "selection": {
+      "selected": "選ばれました"
+    },
+    "emptyState": {
+      "title": "QRコードは見つかりませんでした",
+      "noQRCodes": "まだQRコードは出ていません",
+      "tryAdjusting": "検索内容を調整してみてください",
+      "createFirst": "最初のQRコードを生成して始めましょう",
+      "createFirstAlt": "最初のQRコードを作成し、始めましょう"
+    },
+    "dialogs": {
+      "details": {
+        "title": "QRコード詳細",
+        "description": "QRコードの閲覧と管理",
+        "linkTitle": "タイトル",
+        "shortUrl": "ショートURL",
+        "originalUrl": "元のURL(元のURL)",
+        "totalScans": "トータルスキャン",
+        "downloads": "ダウンロード"
+      }
+    },
+    "messages": {
+      "failedToLoad": "リンクの読み込みに失敗しました",
+      "generated": "QRコード生成!"
+    },
+    "noQRCodes": "まだQRコードは出ていません",
+    "createFirst": "最初のQRコードを生成して始めましょう",
+    "generateSuccess": "QRコードが無事に生成されました!",
+    "generateFailed": "QRコードの生成に失敗しました",
+    "downloadSuccess": "QRコードのダウンロードが成功しました!",
+    "downloadFailed": "QRコードのダウンロードに失敗しました",
+    "bulkGenerateSuccess": "QRコードを{{count}}つつも無事生成しました!",
+    "bulkGenerateFailed": "QRコードの生成に失敗しました",
+    "updateSuccess": "QRコードのカスタマイズが無事に更新されました!",
+    "updateFailed": "QRコードのカスタマイズ更新に失敗しました"
+  },
+  "contentFilter": {
+    "title": "コンテンツフィルターとセキュリティ",
+    "subtitle": "高度なコンテンツフィルタリングとセキュリティルールでリンクを保護しましょう",
+    "stats": {
+      "totalFiltered": "トータルフィルタド",
+      "maliciousBlocked": "悪意のあるブロック",
+      "phishingBlocked": "フィッシングをブロック",
+      "spamBlocked": "スパムブロック"
+    },
+    "tabs": {
+      "settings": "設定",
+      "blocked": "ブロックされました",
+      "whitelist": "ホワイトリスト",
+      "logs": "ログ"
+    },
+    "settings": {
+      "title": "フィルター設定",
+      "enableContentFilter": "コンテンツフィルタリングを有効にする",
+      "enableDescription": "悪意のあるURLや不適切なURLを自動的にフィルタリングします",
+      "blockMaliciousUrls": "悪意のあるURLをブロックする",
+      "blockMaliciousDescription": "既知のマルウェアやウイルスの配布サイトをブロックする",
+      "blockPhishing": "ブロックフィッシングサイト",
+      "blockPhishingDescription": "フィッシングや詐欺サイトから守る",
+      "blockAdultContent": "アダルトコンテンツをブロックしてください",
+      "blockAdultDescription": "成人向けおよびNSFWコンテンツをフィルタリングしてください",
+      "blockSpam": "スパムURLをブロックする",
+      "blockSpamDescription": "スパムコンテンツを自動検出しブロックします",
+      "customKeywordFiltering": "カスタムキーワードフィルタリング",
+      "customKeywordDescription": "特定のキーワードを含むURLをブロックしてください",
+      "pdplCompliance": "PDPL準拠モード",
+      "pdplDescription": "サウジアラビアの個人データ保護法の遵守を確保する",
+      "saveSettings": "セーブ設定",
+      "saving": "セーブ..."
+    },
+    "blocked": {
+      "domains": "ブロックされたドメイン",
+      "keywords": "ブロックされたキーワード",
+      "addDomain": "追加",
+      "addKeyword": "追加",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "キーワード",
+      "noDomains": "まだブロックされたドメインはありません",
+      "noKeywords": "まだブロックされたキーワードはありません",
+      "remove": "削除",
+      "confirmRemove": "ブロックリストから{{domain}}を削除できますか?",
+      "confirmRemoveKeyword": "ブロックされたキーワードから「{{keyword}}」を削除する?"
+    },
+    "whitelist": {
+      "title": "許可ドメイン(ホワイトリスト)",
+      "description": "ホワイトリスト内のドメインはすべてのコンテンツフィルターを回避します",
+      "addDomain": "追加",
+      "domainPlaceholder": "example.com",
+      "noDomains": "まだホワイトリスト入りドメインはありません",
+      "remove": "削除",
+      "confirmRemove": "許可リストから{{domain}}を削除できますか?"
+    },
+    "logs": {
+      "title": "フィルター活動ログ",
+      "refresh": "リフレッシュ",
+      "noActivity": "フィルターなしアクティビティ",
+      "noUrls": "まだURLはフィルタリングされていません",
+      "defaultMessage": "URLはコンテンツフィルターによってブロックされました",
+      "noData": "データは利用できません"
+    }
+  },
+  "customDomains": {
+    "title": "カスタムドメイン",
+    "subtitle": "ブランドのショートリンク用にカスタムドメインを追加・管理しましょう",
+    "wizard": {
+      "step": "{{current}}{{total}}のステップ"
+    },
+    "stats": {
+      "totalDomains": "総ドメイン",
+      "activeDomains": "アクティブドメイン",
+      "totalUrls": "総URL数",
+      "totalClicks": "総クリック数"
+    },
+    "addDomain": {
+      "title": "カスタムドメインの追加",
+      "domainName": "ドメイン名",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "サブドメイン(任意)",
+      "subdomainPlaceholder": "ショート",
+      "addButton": "ドメイン追加",
+      "adding": "付け加えて..."
+    },
+    "table": {
+      "domain": "ドメイン",
+      "status": "現状",
+      "urls": "URL",
+      "clicks": "クリック音",
+      "created": "創設",
+      "actions": "行動"
+    },
+    "status": {
+      "pending": "保留中",
+      "active": "現役",
+      "inactive": "非稼働",
+      "verified": "検証済み",
+      "failed": "失敗"
+    },
+    "actions": {
+      "verify": "検証",
+      "setDefault": "デフォルト設定",
+      "configure": "構成",
+      "delete": "削除"
+    },
+    "verification": {
+      "title": "ドメイン検証",
+      "instructions": "ドメインを検証するために以下のDNSレコードを追加してください:",
+      "recordType": "レコードタイプ",
+      "name": "名称",
+      "value": "価値",
+      "verifyButton": "ドメインの検証"
+    },
+    "dnsModal": {
+      "title": "ドメイン検証",
+      "instruction": "ドメインを検証するために以下のDNSレコードを追加してください:",
+      "configTitle": "DNS設定が必要:",
+      "type": "種類",
+      "name": "名称",
+      "value": "価値",
+      "checkDns": "DNS設定を確認してください",
+      "checking": "DNSを確認中...",
+      "success": "DNSレコードの確認が成功しました!",
+      "failed": "DNSレコードが見つかりません。設定を確認してください。",
+      "copy": "了解",
+      "copied": "コピー"
+    },
+    "noDomains": "カスタムドメインはまだ追加されていません",
+    "addFirst": "最初のカスタムドメインを追加して始めましょう",
+    "domainAdded": "ドメインが成功裏に追加されました!",
+    "verificationSuccess": "ドメインの認証が成功しました!",
+    "verificationFailed": "ドメイン検証に失敗",
+    "deleteSuccess": "ドメインが正常に削除されました",
+    "errors": {
+      "domainRequired": "ドメイン名は必須です",
+      "domainInvalid": "有効なドメイン名(例:example.com)を入力してください。",
+      "domainExists": "このドメインはすでに登録されています",
+      "subdomainInvalid": "サブドメインは文字、数字、ハイフンのみを含めることができます",
+      "invalidFormat": "無効なドメインフォーマット"
+    }
+  },
+  "subscription": {
+    "title": "購読と請求",
+    "subtitle": "サブスクリプションプランと請求情報を管理しましょう",
+    "pageTitle": "購読と請求",
+    "pageSubtitle": "サブスクリプションプランと請求情報を管理しましょう",
+    "professionalPlan": "プロフェッショナルプラン",
+    "activeStatus": "現役",
+    "perMonth": "/月",
+    "professionalFeaturesSummary": "成長中の企業やマーケティングチーム向けの高度な機能",
+    "nextBilling": "次の請求:",
+    "linksCreated": "リンクが作成されました",
+    "customDomains": "カスタムドメイン",
+    "totalClicks": "総クリック数",
+    "of": "の",
+    "thisMonth": "今月のことだ",
+    "feature50kLinks": "月間50,000リンク",
+    "featureCustomDomains10": "10 カスタムドメイン",
+    "featureUtmTracking": "UTMトラッキング&アナリティクス",
+    "featureBulkActions": "バルクリンクアクション",
+    "featureAdvancedAnalytics": "高度な分析ダッシュボード",
+    "featureQrGeneration": "QRコード生成",
+    "featurePrioritySupport": "優先支援",
+    "availablePlans": "利用可能なプラン",
+    "starterPlan": "スタータープラン",
+    "feature5kLinks": "月間5,000件のリンク",
+    "featureBasicAnalytics": "基本的な分析",
+    "featureQrCodes": "QRコード生成",
+    "downgradeButton": "スターターへの格下げ",
+    "currentBadge": "現在の",
+    "currentPlanButton": "現行計画",
+    "enterprisePlan": "エンタープライズプラン",
+    "featureUnlimitedLinks": "無制限リンク",
+    "featureUnlimitedDomains": "無制限のカスタムドメイン",
+    "upgradeButton": "エンタープライズへのアップグレード",
+    "billingInformation": "請求情報",
+    "paymentMethod": "支払い方法",
+    "expires": "期限切れ",
+    "updatePaymentMethod": "支払い方法の更新",
+    "billingAddress": "請求住所",
+    "sampleCustomerName": "アフメド・アル・ラシード",
+    "sampleStreetAddress": "123キング・ファハド・ロード",
+    "sampleCityCountry": "リヤド、サウジアラビア 12345",
+    "updateBillingAddress": "請求先住所の更新",
+    "cancelSubscriptionTitle": "購読をキャンセルする",
+    "cancelSubscriptionDesc": "サブスクリプションを解約して無料プランにダウングレードしてください。現在の請求期間が終了するまで、すべてのProfessional機能へのアクセスを保持します。",
+    "whatYouWillLose": "失うもの:",
+    "loseAdvancedAnalytics": "高度な分析ダッシュボード",
+    "loseCustomDomains": "カスタムドメイン(10)",
+    "losePrioritySupport": "優先支援",
+    "loseHigherLimits": "リンク上限(月50,000件)",
+    "pauseFor3Months": "3ヶ月間休止",
+    "cancelSubscriptionButton": "購読をキャンセルする",
+    "currentPlan": {
+      "title": "現行計画",
+      "free": "フリープラン",
+      "pro": "プロプラン",
+      "enterprise": "エンタープライズプラン",
+      "status": "現状",
+      "active": "現役",
+      "renews": "更新",
+      "expires": "有効期限切れ"
+    },
+    "plans": {
+      "title": "利用可能なプラン",
+      "free": {
+        "name": "無料",
+        "price": "0",
+        "features": [
+          "月に100のURLを",
+          "基本的な分析",
+          "標準ショートコード",
+          "地域社会の支援"
+        ]
+      },
+      "pro": {
+        "name": "長所",
+        "price": "9.99",
+        "features": [
+          "無制限のURLを",
+          "高度な分析",
+          "カスタムドメイン",
+          "QRコード",
+          "優先支援",
+          "広告はありません"
+        ]
+      },
+      "enterprise": {
+        "name": "エンタープライズ",
+        "price": "習慣",
+        "features": [
+          "Proのすべて",
+          "献身的なサポート",
+          "SLA保証",
+          "カスタム統合",
+          "チームマネジメント",
+          "ホワイトラベルオプション"
+        ]
+      }
+    },
+    "actions": {
+      "upgrade": "アップグレード",
+      "downgrade": "格下げ",
+      "cancel": "購読をキャンセルする",
+      "contactSales": "営業に連絡"
+    },
+    "billing": {
+      "title": "請求履歴",
+      "date": "日付",
+      "amount": "金額",
+      "status": "現状",
+      "invoice": "請求書",
+      "download": "ダウンロード"
+    },
+    "tabs": {
+      "overview": "概要",
+      "paymentMethods": "支払い方法",
+      "invoices": "請求書",
+      "usage": "使用例"
+    },
+    "status": {
+      "active": "現役",
+      "trial": "裁判",
+      "pastDue": "延期",
+      "cancelled": "中止",
+      "paused": "一時停止"
+    },
+    "loadingBillingInfo": "請求情報の読み込み中...",
+    "failedToLoadBillingInfo": "請求情報の読み込みに失敗しました",
+    "confirmPauseSubscription": "本当にサブスクリプションを一時停止したいですか?",
+    "subscriptionPausedSuccess": "サブスクリプションが正常に一時停止されました",
+    "failedToPauseSubscription": "サブスクリプションの一時停止に失敗しました",
+    "subscriptionResumedSuccess": "購読は無事に再開されました",
+    "failedToResumeSubscription": "サブスクリプション再開に失敗しました",
+    "confirmCancelSubscription": "本当にキャンセルしたいの?請求期間終了時にプレミアム機能が失われます。",
+    "subscriptionWillCancelAtPeriodEnd": "サブスクリプションは請求期間終了時にキャンセルされます",
+    "failedToCancelSubscription": "サブスクリプションの解約に失敗しました",
+    "invalidCouponCode": "無効なクーポンコード",
+    "couponAppliedSuccess": "クーポンが無事に適用されました!",
+    "failedToApplyCoupon": "クーポンの適用失敗",
+    "confirmRemovePaymentMethod": "この支払い方法を本当に削除したいですか?",
+    "paymentMethodRemoved": "支払い方法が削除されました",
+    "failedToRemovePaymentMethod": "支払い方法の削除に失敗しました",
+    "defaultPaymentMethodUpdated": "デフォルトの支払い方法が更新されました",
+    "failedToUpdateDefaultPaymentMethod": "デフォルトの支払い方法の更新に失敗しました",
+    "failedToDownloadInvoice": "請求書のダウンロードに失敗しました",
+    "trialPeriodActive": "試用期間有効",
+    "trialEndsOn": "あなたの裁判は",
+    "discountApplied": "割引適用",
+    "off": "おかしい",
+    "billingCycle": "請求サイクル",
+    "monthly": "月刊",
+    "resumeSubscription": "履歴書購読",
+    "pauseSubscription": "一時停止購読",
+    "changePlan": "チェンジプラン",
+    "upcomingInvoice": "今後の請求書",
+    "amountDue": "支払額",
+    "dueDate": "予定日",
+    "lineItems": "項目",
+    "applyDiscountCode": "割引コードを適用",
+    "enterCouponCode": "クーポンコードを入力してください",
+    "validate": "検証",
+    "apply": "応募してください",
+    "addPaymentMethod": "支払い方法の追加",
+    "noPaymentMethodsYet": "まだ支払い方法は追加されていません",
+    "default": "デフォルト",
+    "setAsDefault": "デフォルト設定",
+    "noInvoicesYet": "まだ請求書は出ていません",
+    "currentUsage": "現在の利用状況",
+    "urlsThisMonth": "今月のURLについて",
+    "totalUrlsCreated": "作成されたURL数の合計",
+    "apiCallsThisMonth": "今月のAPIコール",
+    "overageCharges": "過剰料金",
+    "addedToNextInvoice": "次の請求書に追加",
+    "included": "収録"
+  },
+  "profile": {
+    "title": "プロファイル設定",
+    "subtitle": "アカウント情報や設定を管理しましょう",
+    "accountOverview": "アカウント概要",
+    "currentPlan": "現行計画",
+    "regionalSettings": "地域設定",
+    "tabs": {
+      "general": "全般",
+      "security": "セキュリティ",
+      "preferences": "選好",
+      "apiKeys": "APIキー"
+    },
+    "general": {
+      "personalInfo": "個人情報",
+      "firstName": "名前",
+      "lastName": "姓",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "company": "会社",
+      "website": "ウェブサイト",
+      "jobTitle": "役割",
+      "updateButton": "更新プロフィール",
+      "updating": "更新中...",
+      "saveChanges": "セーブの変更"
+    },
+    "security": {
+      "changePassword": "パスワード変更",
+      "currentPassword": "現在のパスワード",
+      "newPassword": "新しいパスワード",
+      "confirmPassword": "新しいパスワードを確認",
+      "updatePassword": "パスワード更新",
+      "twoFactor": "二要素認証",
+      "enable2FA": "2段階認証を有効にする",
+      "disable2FA": "2段階認証を無効にしてください",
+      "sessions": "アクティブセッション",
+      "revokeAll": "すべてのセッションを取り消す",
+      "errorCurrentPasswordRequired": "現在のパスワードが必要です",
+      "errorNewPasswordRequired": "新しいパスワードが必要です",
+      "errorConfirmPasswordRequired": "新しいパスワードを確認してください",
+      "errorPasswordLength": "パスワードは最低8文字でなければなりません",
+      "errorPasswordMismatch": "パスワードが一致しません"
+    },
+    "preferences": {
+      "language": "言語",
+      "timezone": "タイムゾーン",
+      "dateFormat": "日付フォーマット",
+      "emailNotifications": "メール通知",
+      "emailNotificationsDesc": "重要な更新のメール通知を受け取る",
+      "marketingEmails": "マーケティングメール",
+      "marketingEmailsDesc": "新機能やプロモーションの最新情報を受け取りましょう",
+      "weeklyReports": "週次報告",
+      "weeklyReportsDesc": "週次分析レポートをメールでお届けします",
+      "productUpdates": "製品アップデート",
+      "securityAlerts": "セキュリティアラート",
+      "savePreferences": "セーブ設定"
+    },
+    "notifications": {
+      "title": "通知"
+    },
+    "apiKeys": {
+      "viewDocs": "APIドキュメントを見る",
+      "title": "APIキー",
+      "description": "プログラムアクセスのためのAPIキーを管理しましょう",
+      "createNew": "新しいキーを作成",
+      "keyName": "キーネーム",
+      "key": "キー",
+      "created": "創設",
+      "lastUsed": "最終使用例",
+      "revoke": "撤退",
+      "regenerating": "再生中...",
+      "regenerateButton": "APIキーの再生成",
+      "confirmRegenerate": "本当にAPIキーを再生成したいですか?古い鍵はもう使えなくなる。"
+    },
+    "messages": {
+      "profileUpdated": "プロフィールが正常に更新されました",
+      "passwordsDoNotMatch": "パスワードが一致しません",
+      "failedToUpdate": "ユーザーの更新に失敗しました",
+      "passwordUpdated": "パスワードが正常に更新されました",
+      "failedToUpdatePassword": "パスワード更新に失敗しました",
+      "preferencesUpdated": "設定が正常に更新されました",
+      "failedToUpdatePreferences": "設定の更新に失敗しました"
+    }
+  },
+  "userManagement": {
+    "title": "ユーザー管理",
+    "subtitle": "ユーザーロールと権限の管理",
+    "loading": "ユーザーを読み込み中...",
+    "searchPlaceholder": "名前またはメールアドレスで検索...",
+    "filterByRole": "役割別フィルター:",
+    "noUsersFound": "ユーザーは見つかりませんでした。",
+    "noUsersWithRole": "ロール:{{role}}でユーザーが見つかりませんでした。",
+    "stats": {
+      "totalUsers": "総利用者数",
+      "activeUsers": "アクティブユーザー",
+      "inactiveUsers": "非アクティブユーザー",
+      "newUsers": "新品(30日)"
+    },
+    "roles": {
+      "all": "すべての",
+      "superAdmin": "スーパー管理者",
+      "admin": "管理",
+      "editor": "編集者",
+      "viewer": "ビューアー",
+      "user": "ユーザー"
+    },
+    "userCard": {
+      "status": "状況:",
+      "active": "現役",
+      "inactive": "非稼働",
+      "joined": "参加者:",
+      "lastLogin": "最終ログイン:",
+      "location": "所在地:",
+      "changeRole": "役割の変更:"
+    },
+    "viewMode": {
+      "grid": "グリッド",
+      "table": "表"
+    },
+    "table": {
+      "name": "名称",
+      "email": "電子メール",
+      "phone": "電話",
+      "role": "役割",
+      "status": "現状",
+      "plan": "計画",
+      "joined": "加入",
+      "location": "所在地",
+      "lastLogin": "最後のログイン",
+      "actions": "行動"
+    },
+    "actions": {
+      "view": "眺め",
+      "viewDetails": "詳細を見る",
+      "activate": "起動",
+      "deactivate": "無効化",
+      "activateUser": "ユーザーをアクティベート",
+      "deactivateUser": "ユーザーを非有効化",
+      "delete": "削除",
+      "deleteUser": "ユーザーを削除",
+      "makeAdmin": "管理者にする",
+      "removeAdmin": "管理者を削除してください"
+    },
+    "modal": {
+      "title": "ユーザー詳細",
+      "description": "このユーザーに関する包括的な情報。",
+      "urls": "URL",
+      "urlsCreated": "作成されたURLs",
+      "domains": "ドメイン",
+      "clicks": "クリック音",
+      "totalClicks": "総クリック数",
+      "contactInfo": "連絡先情報",
+      "email": "電子メール",
+      "phone": "電話",
+      "location": "登録場所",
+      "locationFields": {
+        "country": "国",
+        "city": "都市",
+        "region": "地域",
+        "ipAddress": "IPアドレス",
+        "timezone": "タイムゾーン",
+        "countryCode": "国コード",
+        "coordinates": "座標"
+      },
+      "notAvailable": "該当なし",
+      "accountActivity": "アカウント活動",
+      "accountCreated": "アカウント作成",
+      "joined": "加入",
+      "lastLogin": "最後のログイン",
+      "lastUpdated": "最終更新",
+      "never": "一度もない",
+      "subscription": "購読",
+      "subscriptionStatus": "現状",
+      "inactive": "非稼働",
+      "periodEnd": "時代の終わり",
+      "freePlan": "無料",
+      "close": "閉じる"
+    },
+    "messages": {
+      "failedToLoad": "ユーザーの読み込みに失敗しました"
+    }
+  },
+  "footer": {
+    "description": "URLを短縮し追跡する最も簡単な方法です",
+    "product": "製品",
+    "features": "特徴",
+    "pricing": "価格設定",
+    "documentation": "文書",
+    "api": "API",
+    "integrations": "統合",
+    "company": "会社",
+    "about": "我々について",
+    "blog": "ブログ",
+    "careers": "経歴",
+    "contact": "連絡先",
+    "support": "支援",
+    "help": "ヘルプセンター",
+    "faq": "FAQ",
+    "legal": "法的",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "pdplCompliance": "PDPL準拠",
+    "security": "セキュリティ",
+    "copyright": "© 2025年URLショートナー。無断転載を禁じます。"
+  },
+  "notifications": {
+    "success": "成功",
+    "error": "エラー",
+    "warning": "警告",
+    "info": "情報",
+    "linkCreated": "リンク作成成功!",
+    "linkUpdated": "リンクが正常に更新されました!",
+    "linkDeleted": "リンクが正常に削除されました!",
+    "settingsSaved": "設定が正常に保存されました!",
+    "profileUpdated": "プロフィールが正常に更新されました!",
+    "passwordChanged": "パスワード変更に成功しました!",
+    "domainAdded": "ドメインが成功裏に追加されました!",
+    "domainVerified": "ドメインの認証が成功しました!",
+    "domainDeleted": "ドメイン削除済み",
+    "subscriptionUpdated": "購読が無事に更新されました!",
+    "draftSaved": "ドラフト保存!",
+    "copied": "コピーしました!"
+  },
+  "errors": {
+    "generic": "何かがうまくいかなかった。もう一度お試しください。",
+    "networkError": "ネットワークエラーです。接続を確認してください。",
+    "unauthorized": "無許可だ。もう一度ログインしてください。",
+    "notFound": "リソースが見つかりません。",
+    "serverError": "サーバーエラー。後でもう一度お試しください。",
+    "validationError": "入力を確認して、もう一度お試しください。",
+    "enterDomain": "ドメインを入力してください",
+    "enterKeyword": "キーワードを入力してください",
+    "failedToAddDomain": "ブロックドメインの追加に失敗しました:{{error}}",
+    "failedToRemoveDomain": "ブロックされたドメインの削除に失敗しました:{{error}}",
+    "failedToAddKeyword": "ブロックされたキーワードを追加できませんでした:{{error}}",
+    "failedToRemoveKeyword": "ブロックされたキーワードの削除に失敗しました:{{error}}",
+    "failedToAddAllowedDomain": "許可ドメインの追加に失敗:{{error}}",
+    "failedToRemoveAllowedDomain": "許可ドメインの削除に失敗しました:{{error}}",
+    "failedToRegenerateApiKey": "APIキーの再生成に失敗しました:{{error}}",
+    "failedToLoadLinks": "リンクの読み込みに失敗しました。もう一度お試しください。",
+    "failedToLoadDomains": "利用可能なドメインの読み込みに失敗しました。ページを更新してください。",
+    "failedToCopyLink": "クリップボードへのリンクをコピーできませんでした。もう一度お試しください。",
+    "failedToGenerateQR": "このリンクのQRコードを生成できませんでした。",
+    "failedToLoadStats": "統計の読み込みに失敗しました。ページを更新してください。",
+    "failedToVerifyDomain": "ドメインの検証に失敗しました。DNS設定を確認して、もう一度お試しください。",
+    "failedToCopyText": "クリップボードへのコピーに失敗しました。手動でコピーしてください。",
+    "noLinksSelected": "一括操作のために少なくとも1つのリンクを選択してください。",
+    "confirmBulkGenerate": "選択したリンク{{count}}QRコードを生成したいと本当に思っていますか?",
+    "domainVerificationError": "ドメイン認証に失敗しました。DNS記録を確認してください。",
+    "domainAddError": "ドメインの追加に失敗しました。入力を確認して、もう一度お試しください。",
+    "domainDeleteError": "ドメインの削除に失敗しました。もう一度お試しください。",
+    "qrCodeDeleteError": "QRコードの削除に失敗しました。もう一度お試しください。",
+    "failedToLoadCustomization": "既存のカスタマイズを読み込めませんでした。デフォルトを使っています。",
+    "failedToUpdateStatus": "ステータスの更新に失敗しました",
+    "failedToUpdateRole": "役割の更新に失敗しました",
+    "failedToUpdateUserRole": "ユーザーロールの更新に失敗しました",
+    "failedToDelete": "削除に失敗しました",
+    "failedToAddDomainAlt": "ドメインの追加に失敗しました",
+    "failedToLoadDomainsAlt": "ドメインの読み込みに失敗しました"
+  },
+  "sidebar": {
+    "urlManagement": "URL管理",
+    "apiDocs": "APIドキュメント",
+    "main": "メイン",
+    "dashboard": "ダッシュボード",
+    "myLinks": "私のリンク",
+    "analytics": "分析",
+    "qrCodes": "QRコード",
+    "settings": "設定",
+    "customDomains": "カスタムドメイン",
+    "contentFilter": "コンテンツフィルター",
+    "admin": "管理",
+    "userManagement": "ユーザー管理",
+    "googleAnalytics": "Google Analytics",
+    "account": "アカウント",
+    "profile": "プロフィール",
+    "upgradePlan": "アップグレードプラン",
+    "freePlan": "フリープラン",
+    "billing": "請求および支払い",
+    "upgradeNow": "今すぐアップグレード"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "ウェブサイトのトラフィックとユーザー行動のインサイト",
+    "loading": "Google Analyticsを読み込み中...",
+    "refresh": "リフレッシュ",
+    "notConfigured": {
+      "title": "Google Analyticsの設定されていません",
+      "description": "Google Analyticsの認証情報はサーバー環境変数で設定してください。",
+      "instructions": "必要な環境変数:"
+    },
+    "dateRange": {
+      "7days": "最後の7日間",
+      "30days": "過去30日間",
+      "90days": "過去90日間"
+    },
+    "realtime": {
+      "live": "ライブ",
+      "activeUsers": "現在アクティブユーザー"
+    },
+    "metrics": {
+      "activeUsers": "アクティブユーザー",
+      "newUsers": "新規ユーザー",
+      "sessions": "セッション",
+      "pageViews": "ページビュー",
+      "avgDuration": "平均持続時間",
+      "engagementRate": "エンゲージメント率",
+      "bounceRate": "バウンスレート"
+    },
+    "charts": {
+      "trafficOverTime": "時間経過による交通"
+    },
+    "tables": {
+      "trafficSources": "交通源",
+      "topPages": "トップページ",
+      "devices": "デバイス",
+      "browsers": "ブラウザ",
+      "locations": "主要ロケーション",
+      "source": "出典",
+      "sessions": "セッション",
+      "users": "ユーザー",
+      "page": "ページ",
+      "views": "表示モード",
+      "country": "国",
+      "city": "都市"
+    }
+  },
+  "terms": {
+    "title": "利用規約",
+    "lastUpdated": "最終更新日:2025年1月13日",
+    "preamble": {
+      "title": "前文",
+      "content": "この前文およびその後の条項は、本文書の一般的な利用規約の不可欠な一部です。「私たち」、「会社」、「サービス」、または「本契約」はSnip Companyを指します。「第二の当事者」とは、サービスを依頼した本人を指します。"
+    },
+    "introduction": {
+      "title": "紹介",
+      "content": "これらの利用規約は、当社ウェブサイトを通じて提供されるすべての技術サービスおよびアプリケーションに適用されます。ウェブサイトにアクセスしたり、当社のサービスやアプリケーションを利用することで、これらの利用規約に従うことに同意したものとみなされます。これらの条件に同意しない場合は、ウェブサイトおよびサービスの利用を中止しなければなりません。"
+    },
+    "definitions": {
+      "title": "1. 定義と用語",
+      "services": "サービス:政府および民間団体に対して当社が提供するすべての技術ソリューションおよびアプリケーション、コンサルティングやその他の技術サービスを指します。",
+      "client": "クライアント:当社が提供するサービスを利用する政府、民間団体、個人を指します。",
+      "applications": "アプリケーション:当社が提供するソフトウェアまたは技術システムで、オンラインで使用またはウェブサイトからダウンロード可能なものを指します。",
+      "website": "ウェブサイト:当社がサービスおよび製品を提供する電子プラットフォームです。",
+      "document": "文書:一般的な利用規約を指します。"
+    },
+    "acceptance": {
+      "title": "2. 条件の受諾",
+      "content": "ウェブサイトにアクセスし、当社のサービスを利用することで、本書類に記載された利用規約に同意し、すべての規則および法律を遵守することに同意したものとみなされます。いずれかの条件に同意しない場合は、ウェブサイトおよびサービスの利用を中止しなければなりません。"
+    },
+    "access": {
+      "title": "3. サービスへのアクセス",
+      "content": "サービスを利用するには、ウェブサイトからの登録と正確かつ完全な情報提供が必要かもしれません。クライアントはこの情報の正確性と定期的な更新に責任を持ちます。"
+    },
+    "usage": {
+      "title": "4. サービスの利用",
+      "item1": "当サービスは個人または機関利用のみを目的として提供されています。",
+      "item2": "クライアントは法的枠組みの中で、かつ合法的な利用に従ってサービスを利用しなければなりません。",
+      "item3": "違法な目的や他者の権利侵害やウェブサイト・当社への損害につながる可能性のある活動での利用は禁止されています。",
+      "item4": "当社の事前の書面による同意なしに、サービスを無断で再販、配布、または利用することは禁止されています。"
+    },
+    "commencement": {
+      "title": "5. サービス契約の開始",
+      "content": "サービス契約はクライアントのサービス開始日から始まります。"
+    },
+    "intellectualProperty": {
+      "title": "6. 知的財産権",
+      "item1": "ウェブサイトには、テキスト、ソフトウェア、画像、グラフィック、名前、ロゴ、色、アプリケーション、ソフトウェア、音声ファイル(「コンテンツ」)など、知的財産権で保護された資料が含まれています。これらはサウジアラビア王国の著作権、商標権、適用法で保護されています。",
+      "item2": "アプリケーション、ソフトウェア、設計に関するすべての知的財産権は、Snip Companyまたは認可されたサービス提供者の独占財産です。",
+      "item3": "クライアントは、当社の事前書面による許可なしに、これらの資料のコピー、配布、改変を行うことはできません。"
+    },
+    "pricing": {
+      "title": "7. 価格設定と支払い",
+      "pricingDesc": "価格設定:価格は当社とクライアント間で締結された契約や合意に基づいて決定されます。価格はウェブサイト上で公開されていません。",
+      "paymentDesc": "支払い:クライアントは契約または事前の書面による合意に従い、合意された金額を支払わなければなりません。"
+    },
+    "obligations": {
+      "title": "8. 義務と責任",
+      "ourObligations": "私たちの義務:",
+      "ourObligationsDesc": "私たちは、クライアントと合意した基準および契約に従い、技術的サービスを提供し、要件を正確かつ専門的に実施することにコミットしています。",
+      "clientResponsibility": "クライアントの責任:",
+      "item1": "アカウントとパスワードの機密性を維持し、第三者と共有しないこと。",
+      "item2": "サービス利用に伴う経済的および法的義務。",
+      "item3": "提供されたデータの正確性と、必要に応じて更新するコミットメント。",
+      "item4": "サービスが必要とする場合は政府のライセンスを提供し、継続的なサービス提供を確保するために期限内に更新すること。",
+      "item5": "クライアントは、ライセンス更新を怠るとサービス中断につながる可能性があることに同意しています。"
+    },
+    "dataProtection": {
+      "title": "9. プライバシーとデータ保護",
+      "item1": "私たちはプライバシーポリシーに従い、クライアントから収集したすべての個人データを保護することを約束しています。",
+      "item2": "データは国内外の法律に従って収集・使用されます。",
+      "item3": "データはサービスの改善、顧客とのコミュニケーション、利用状況の分析に活用されます。",
+      "item4": "不正アクセスからデータを保護するために適切なセキュリティ対策を講じています。",
+      "item5": "クライアントのデータを販売または賃貸することはせず、明確な同意または法律で求められる場合に限り共有しません。"
+    },
+    "modifications": {
+      "title": "10. サービスおよび条件の変更",
+      "item1": "利用規約をいつでも変更・更新したり、サービスを追加・削除したりする権利を留保します。",
+      "item2": "重要な変更があればクライアントに通知されます。"
+    },
+    "support": {
+      "title": "11. 支援と維持",
+      "item1": "公式サポートチャネルを通じて技術サポートを提供しています。",
+      "item2": "一部のサービスは定期的なメンテナンスが必要になる場合があり、会社はいつでもそれを実施する権利を有します。"
+    },
+    "limitations": {
+      "title": "12. 制限と補償",
+      "item1": "ウェブサイトやサービスの利用に起因する直接的または間接的な損害については責任を負いません。",
+      "item2": "クライアントは、サービスの違法利用に起因する損失や請求について会社に補償することに同意します。"
+    },
+    "termination": {
+      "title": "13. 解約と打ち消し",
+      "item1": "クライアントは契約に定められた条件に従いサービスを終了することができます。",
+      "item2": "当社は、いかなる条項に違反した場合もサービスを終了する権利を留保します。"
+    },
+    "forceMajeure": {
+      "title": "14. 不可抗力",
+      "content": "自然災害、政府の決定、サイバー攻撃など、会社の制御外の状況による遅延や混乱については、当社は責任を負いません。"
+    },
+    "laws": {
+      "title": "15. 適用法および紛争解決",
+      "item1": "これらの用語はサウジアラビア王国の法律の対象となります。",
+      "item2": "紛争はリヤドの管轄裁判所を通じて解決されます。",
+      "item3": "もしいずれかの条項が執行不能と判断された場合、他の条項は引き続き有効です。"
+    },
+    "delivery": {
+      "title": "16. 配達と輸送",
+      "item1": "物理的な製品やライセンスの場合、クライアントとの契約に従って納品されます。",
+      "item2": "ライセンスはメールまたはクライアントのアカウントを通じて提供される場合があります。"
+    },
+    "communication": {
+      "title": "17. クライアントとのコミュニケーション",
+      "intro": "以下を通じてお問い合わせいただけます:",
+      "email": "メール:support@nawah.sa",
+      "phone": "電話:01151083470"
+    },
+    "externalLinks": {
+      "title": "18. 外部リンク",
+      "content": "ウェブサイトには外部ウェブサイトへのリンクが含まれている場合があり、それらは当社の管理外であり、その内容については責任を負いません。"
+    },
+    "refund": {
+      "title": "19. キャンセルおよび返金ポリシー",
+      "item1": "クライアントはサービスを利用または有効化する20日以内に返金を要求する権利があります。",
+      "item2": "返金申請は書面で提出し、裏付け書類も添付する必要があります。",
+      "item3": "返金は承認後14日以内に処理されます。",
+      "item4": "会社は管理手数料を課す権利を有します。",
+      "item5": "サービスを利用または有効化した後は返金されません。"
+    },
+    "notices": {
+      "title": "20. 通知および通信",
+      "item1": "登録およびウェブサイト利用により、クライアントはメールまたはウェブサイト通知を受け取ることに同意します。",
+      "item2": "クライアントは通知の受信を確保するためにデータを更新する責任があります。"
+    },
+    "specialTerms": {
+      "title": "特別用語",
+      "content": "クライアントは、コミュニケーション、技術サポート、サービス提供支援のために正確な情報を提供する義務があります。"
+    }
+  },
+  "privacy": {
+    "title": "プライバシーポリシー",
+    "lastUpdated": "最終更新日:2025年1月13日",
+    "intro": {
+      "title": "条項1:導入",
+      "content": "Snipはお客様のプライバシーを尊重し、すべてのお客様に優れたサービスを提供することに全力を尽くしています。このプライバシー通知は、サウジアラビア王国の個人データ保護法およびその規則に従って作成され、当社があなたから収集するデータの性質と、Snipによるそのデータの取り扱いについて理解する手助けをすることを目的としています。Snipがユーザーデータのプライバシーと機密性にコミットし、この情報のセキュリティと機密性を維持し、サウジアラビア王国の適用される利用規約に準拠した期待されるサービスを提供するために活用することに専念しています。Snipのウェブサイトを利用することで、ユーザーは本プライバシーポリシーに同意したものとみなされます。"
+    },
+    "dataCollection": {
+      "title": "条項2:収集すべきデータおよび収集目的",
+      "item1": "サービス登録時に必要となる情報(氏名、メールアドレス、住所、電話番号、生年月日、国籍、性別など)。",
+      "item2": "サービス、ウェブサイト、モバイルアプリケーション(クッキーや使用データなど)を利用するために必要なデータ。",
+      "item3": "お客様とのやり取り中に交換されたデータ(カスタマーサポートの依頼やフィードバックなど)。"
+    },
+    "purpose": {
+      "title": "第3条:個人データの収集目的",
+      "intro": "最高レベルのサービスと製品を提供するため、私たちは以下の目的であなたの個人データを収集・使用します。",
+      "item1": "これにより、製品やサービスの開発、改善、マーケティングが可能になります。",
+      "item2": "サービスの継続性と質を確保するために、業務とシステムの円滑化と支援を行っています。",
+      "item3": "顧客のニーズを理解し、製品やサービスの適格性を評価し、関連する商品やサービスを推奨すること。",
+      "item4": "新商品やサービスのお知らせです。",
+      "item5": "ユーザーからの問い合わせ、提案、苦情に対応し、フォローアップします。"
+    },
+    "methods": {
+      "title": "条項4:データ収集方法",
+      "item1": "データはウェブサイトでの登録を通じてユーザーが直接提供します。",
+      "item2": "ウェブサイト訪問時にクッキーを通じて収集されたデータ。"
+    },
+    "storage": {
+      "title": "条項5:個人データの保存および破壊",
+      "content": "個人データは、サウジアラビア王国内の先進技術で保護されたサーバーに保存されており、国家サイバーセキュリティ庁の方針と管理および国際基準に準拠し、不正アクセスを防ぎ、サイバーセキュリティリスクを軽減しています。データが不要になった場合、規則に従い、Snipの方針に従いアクセスや回復ができないよう安全に破棄されます。"
+    },
+    "legalBasis": {
+      "title": "第6条:個人データの収集および処理の法的根拠",
+      "content": "個人データは、データ主体の同意に基づいて収集・処理されます。データ主体は、他の法的根拠がない限り、いつでもデータの収集および処理への同意を撤回することができます。そのためには、以下を通じてSnipのサポートチームにご連絡ください:",
+      "email": "メール:support@nawah.sa",
+      "phone": "電話:+966539100295"
+    },
+    "rights": {
+      "title": "第7条:データ主体の権利",
+      "rightToKnow": {
+        "title": "情報公開:",
+        "content": "データ主体は、データ収集の方法、収集・処理の法的根拠、どのように処理・保存・破棄されるか、そして誰と共有されるかを知る権利があります。詳細は本プライバシーポリシーに記載されているか、第9条の情報からお問い合わせいただくことができます。"
+      },
+      "rightToAccess": {
+        "title": "個人データへのアクセス権:",
+        "content": "データ主体は、第9条に記載されたメールアドレスを通じて個人情報のコピーを請求することができます。データは30営業日以内にメールで無料で提供されます。"
+      },
+      "rightToCorrect": {
+        "title": "個人データの修正権:",
+        "content": "データ主体は、第9条に記載された電子メールを通じて、不正確、不正確、または不完全な個人データの訂正を求める権利を有します。申請は30営業日以内に審査・決定され、データ主体にはメールで通知されます。"
+      },
+      "rightToDelete": {
+        "title": "個人データを破棄する権利:",
+        "content": "データ主体は、法的、規制的、または契約上の保持要件がない限り、個人データの破棄を要求することができます。"
+      },
+      "rightToWithdraw": {
+        "title": "個人データ処理に対する同意撤回の権利:",
+        "content": "データ主体は、正当な目的がない限り、個人データの処理に対する同意をいつでも撤回することができます。"
+      },
+      "note": "一部の要求(同意の破棄や撤回など)は、法的または規制上の義務でデータの保持が求められる場合に制限されることがあります。"
+    },
+    "sharing": {
+      "title": "条項8:個人データの共有/交換",
+      "content": "個人情報は、法律に基づき、あなたの同意または法的根拠なしに第三者に開示されることはありません。"
+    },
+    "exercising": {
+      "title": "第9条:データ主体の権利行使",
+      "content": "データ主体は以下の方法でアクセス、訂正、または破棄を私たちに連絡して申請できます:",
+      "email": "メール:support@nawah.sa",
+      "phone": "電話:+966539100295"
+    },
+    "complaints": {
+      "title": "第10条:苦情および問い合わせ",
+      "content": "プライバシーポリシーや個人データの取り扱いに関する苦情やお問い合わせは、以下の方法を通じてウェブサイト管理部門にお問い合わせください。",
+      "email": "メール:support@nawah.sa",
+      "phone": "電話:+966539100295"
+    },
+    "updates": {
+      "title": "第11条:プライバシーポリシーの更新",
+      "content": "プライバシーポリシーは2025年1月13日に最終更新されました。Snipはプライバシーポリシーのいかなる条項を追加または修正する権利を有します。ウェブサイトの管理者は変更をデータ主体に通知し、通知後に更新されたプライバシーポリシーを受け入れない場合、そのアカウントは終了されることがあります。"
+    }
+  },
+  "adminUrlManagement": {
+    "title": "URL管理",
+    "subtitle": "すべての顧客リンクを表示・管理",
+    "accessDenied": "アクセス拒否",
+    "noPermission": "このページを閲覧する権限はありません。",
+    "viewModes": {
+      "table": "表",
+      "grid": "グリッド"
+    },
+    "stats": {
+      "totalUrls": "総URL数",
+      "totalClicks": "総クリック数",
+      "newUrls30d": "新しいURL(30d)",
+      "totalUsers": "総利用者数"
+    },
+    "filters": {
+      "searchPlaceholder": "URL、ショートコード、タイトル、またはクリエイターで検索します...",
+      "searchByShortCode": "ショートコード、URL、またはクリエイターで検索してください...",
+      "allStatus": "全ステータス",
+      "active": "現役",
+      "inactive": "非稼働",
+      "allUsers": "すべてのユーザー"
+    },
+    "table": {
+      "shortCode": "ショートコード",
+      "originalUrl": "元のURL(元のURL)",
+      "creator": "クリエイター",
+      "clicks": "クリック音",
+      "status": "現状",
+      "created": "創設",
+      "actions": "行動"
+    },
+    "actions": {
+      "view": "眺め",
+      "copy": "了解",
+      "activate": "起動",
+      "deactivate": "無効化",
+      "delete": "削除"
+    },
+    "status": {
+      "active": "現役",
+      "inactive": "非稼働"
+    },
+    "loading": "URLの読み込み中...",
+    "loadingUrls": "読み込み中...",
+    "noUrls": "あなたの条件に合うURLは見つかりませんでした。",
+    "noUrlsFound": "URLは見つかりませんでした。",
+    "pagination": {
+      "previous": "先の",
+      "next": "次に",
+      "pageInfo": "{{pages}}ページ {{page}}ページ(合計{{total}})"
+    },
+    "modal": {
+      "title": "URL詳細",
+      "description": "この短縮URLに関する包括的な情報。",
+      "linkInfo": "リンク情報",
+      "shortCode": "ショートコード",
+      "originalUrl": "元のURL(元のURL)",
+      "linkTitle": "タイトル",
+      "domain": "ドメイン",
+      "creatorInfo": "クリエイター情報",
+      "name": "名称",
+      "email": "電子メール",
+      "statistics": "統計",
+      "totalClicks": "総クリック数",
+      "uniqueClicks": "ユニークなクリック",
+      "status": "現状",
+      "dates": "日付",
+      "created": "創設",
+      "lastUpdated": "最終更新",
+      "expires": "期限切れ",
+      "tags": "タグ",
+      "activateUrl": "URLを有効化してください",
+      "deactivateUrl": "URLを非アクティブ化",
+      "deleteUrl": "URLを削除してください",
+      "close": "閉じる",
+      "copyUrl": "URLをコピー"
+    },
+    "messages": {
+      "activateSuccess": "URLが正常に有効化されました",
+      "deactivateSuccess": "URLが正常に無効化されました",
+      "deleteSuccess": "URLが正常に削除されました",
+      "deleteConfirm": "本当にこのURLを削除したいですか?この行動は取り消せない。",
+      "updateFailed": "URLの更新に失敗しました",
+      "deleteFailed": "URLの削除に失敗しました",
+      "failedToLoad": "URLの読み込みに失敗しました"
+    }
+  }
+}

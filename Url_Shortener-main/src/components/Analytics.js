@@ -58,13 +58,24 @@ const Analytics = () => {
       });
 
       const backendData = response.data;
+      console.log('📊 Frontend received analytics data:', {
+        overview: backendData.overview,
+        topStatsKeys: Object.keys(backendData.topStats || {}),
+        topCountriesCount: backendData.topStats?.countries?.length || 0,
+        topDevicesCount: backendData.topStats?.devices?.length || 0,
+        topBrowsersCount: backendData.topStats?.browsers?.length || 0,
+        topReferrersCount: backendData.topStats?.referrers?.length || 0
+      });
+      
       const recentClicks = backendData.recentClicks || backendData.clicks || [];
       
       const overviewTotals = {
         totalClicks: backendData.overview?.totalClicks || backendData.url?.clickCount || 0,
         uniqueClicks: backendData.overview?.uniqueClicks || backendData.url?.uniqueClickCount || 0,
-        qrScans: backendData.url?.qrScanCount || backendData.overview?.qrScans || 0,
-        averageTime: backendData.overview?.averageClicksPerDay ? `${backendData.overview.averageClicksPerDay}/day` : '0/day'
+        qrScans: backendData.overview?.qrScans || backendData.url?.qrScanCount || 0,
+        averageTime: backendData.overview?.averageClicksPerDay 
+          ? `${backendData.overview.averageClicksPerDay}/day` 
+          : '0/day'
       };
 
       let timeSeries = backendData.timeSeries || backendData.clickActivity || backendData.activity || [];
@@ -79,18 +90,26 @@ const Analytics = () => {
          clickActivity = [{ label: 'Historical', date: new Date().toISOString(), clicks: overviewTotals.totalClicks }];
       }
 
-      // Process Stats
-      const processStats = (data, key, nameKey = '_id') => {
-         return (data || []).map(item => ({
-            name: item[nameKey]?.country || item[nameKey] || item.country || item.name || 'Unknown',
-            value: item.count || item.clicks || 0
-         })).sort((a, b) => b.value - a.value).slice(0, 5);
-      };
+      // Process Stats - Fixed to properly extract data from backend response
+      const topCountries = (backendData.topStats?.countries || []).map(item => ({
+        name: item._id?.countryName || item._id?.country || item._id || 'Unknown',
+        value: item.count || item.clicks || 0
+      })).sort((a, b) => b.value - a.value).slice(0, 5);
 
-      const topCountries = processStats(backendData.topStats?.countries, 'countries');
-      const topDevices = processStats(backendData.topStats?.devices, 'devices', 'type');
-      const topBrowsers = processStats(backendData.topStats?.browsers, 'browsers', 'browser');
-      const topReferrers = processStats(backendData.topStats?.referrers, 'referrers', 'domain');
+      const topDevices = (backendData.topStats?.devices || []).map(item => ({
+        name: item._id || item.type || 'unknown',
+        value: item.count || item.clicks || 0
+      })).sort((a, b) => b.value - a.value).slice(0, 5);
+
+      const topBrowsers = (backendData.topStats?.browsers || []).map(item => ({
+        name: item._id || item.browser || 'Unknown',
+        value: item.count || item.clicks || 0
+      })).sort((a, b) => b.value - a.value).slice(0, 5);
+
+      const topReferrers = (backendData.topStats?.referrers || []).map(item => ({
+        name: item._id || item.domain || 'Direct',
+        value: item.count || item.clicks || 0
+      })).sort((a, b) => b.value - a.value).slice(0, 5);
 
       setAnalyticsData({
         ...overviewTotals,
@@ -124,6 +143,15 @@ const Analytics = () => {
       const backendData = response.data;
       const data = backendData.overview || backendData;
 
+      console.log('📊 Frontend received dashboard analytics:', {
+        overview: data,
+        topStatsKeys: Object.keys(backendData.topStats || {}),
+        topCountriesCount: backendData.topStats?.countries?.length || 0,
+        topDevicesCount: backendData.topStats?.devices?.length || 0,
+        topBrowsersCount: backendData.topStats?.browsers?.length || 0,
+        topReferrersCount: backendData.topStats?.referrers?.length || 0
+      });
+
       let clickActivity = (backendData.chartData?.clicksByDay || []).map(item => ({
           date: item.date,
           label: formatDateLabel(item.date),
@@ -132,14 +160,27 @@ const Analytics = () => {
 
       setAnalyticsData({
         totalClicks: data.totalClicks || 0,
-        uniqueClicks: data.uniqueClicks || 0,
-        qrScans: data.qrScans || 0,
+        uniqueClicks: data.uniqueClicks || data.totalUniqueClicks || 0,
+        qrScans: data.qrScans || data.totalQRScans || 0,
         totalUrls: totalUrls,
+        averageTime: data.averageClicksPerUrl ? `${data.averageClicksPerUrl}/url` : '0',
         clickActivity,
-        topCountries: (backendData.topStats?.countries || []).map(i => ({ name: i._id, value: i.count })).slice(0, 5),
-        topDevices: (backendData.topStats?.devices || []).map(i => ({ name: i._id, value: i.count })).slice(0, 5),
-        topBrowsers: (backendData.topStats?.browsers || []).map(i => ({ name: i._id, value: i.count })).slice(0, 5),
-        topReferrers: (backendData.topStats?.referrers || []).map(i => ({ name: i._id, value: i.count })).slice(0, 5),
+        topCountries: (backendData.topStats?.countries || []).map(i => ({ 
+          name: i.countryName || i.country || i._id || 'Unknown', 
+          value: i.clicks || i.count || 0 
+        })).slice(0, 5),
+        topDevices: (backendData.topStats?.devices || []).map(i => ({ 
+          name: i.type || i._id || 'unknown', 
+          value: i.clicks || i.count || 0 
+        })).slice(0, 5),
+        topBrowsers: (backendData.topStats?.browsers || []).map(i => ({ 
+          name: i.browser || i._id || 'Unknown', 
+          value: i.clicks || i.count || 0 
+        })).slice(0, 5),
+        topReferrers: (backendData.topStats?.referrers || []).map(i => ({ 
+          name: i.domain || i._id || 'Direct', 
+          value: i.clicks || i.count || 0 
+        })).slice(0, 5),
       });
 
     } catch (err) {
@@ -232,7 +273,11 @@ const Analytics = () => {
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{analyticsData.averageTime || '0'}</div>
+                <div className="text-2xl font-bold">
+                  {typeof analyticsData.averageTime === 'string' 
+                    ? analyticsData.averageTime 
+                    : `${analyticsData.averageTime || 0}/day`}
+                </div>
             </CardContent>
         </Card>
       </div>

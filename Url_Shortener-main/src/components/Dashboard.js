@@ -216,17 +216,17 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="bg-primary/5 border-primary/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('dashboard.stats.totalClicks')}</CardTitle>
                   <MousePointer2 className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalClicks.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">+ from last period</p>
+                  <p className="text-xs text-muted-foreground">{t('dashboard.fromLastPeriod')}</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Links</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('dashboard.stats.activeLinks')}</CardTitle>
                   <LinkIcon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -235,7 +235,7 @@ const Dashboard = () => {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">QR Scans</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('dashboard.stats.qrScans')}</CardTitle>
                   <QrCode className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -244,7 +244,7 @@ const Dashboard = () => {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Custom Domains</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('dashboard.stats.totalCustomDomains')}</CardTitle>
                   <Globe className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -259,18 +259,18 @@ const Dashboard = () => {
         <Card className="col-span-4 lg:col-span-4">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Click Activity</CardTitle>
+                    <CardTitle>{t('dashboard.analytics.clickActivity')}</CardTitle>
                     <select
                         value={timeFilter}
                         onChange={(e) => setTimeFilter(e.target.value)}
                         className="text-sm border rounded p-1 bg-transparent"
                     >
-                        <option value="Last 7 days">7 Days</option>
-                        <option value="Last 30 days">30 Days</option>
-                        <option value="Last 90 days">90 Days</option>
+                        <option value="Last 7 days">{t('dashboard.timeFilters.7days')}</option>
+                        <option value="Last 30 days">{t('dashboard.timeFilters.30days')}</option>
+                        <option value="Last 90 days">{t('dashboard.timeFilters.90days')}</option>
                     </select>
                 </div>
-                <CardDescription>Overview of your link performance over time.</CardDescription>
+                <CardDescription>{t('dashboard.chartDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={300}>
@@ -315,7 +315,7 @@ const Dashboard = () => {
         <Card className="col-span-4 lg:col-span-3">
             <CardHeader>
                 <CardTitle>{t('dashboard.shortenYourURL')}</CardTitle>
-                <CardDescription>Paste a long URL to create a new short link.</CardDescription>
+                <CardDescription>{t('dashboard.createLinkDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleShortenUrl} className="space-y-4">
@@ -323,7 +323,7 @@ const Dashboard = () => {
                         <Label htmlFor="longUrl">{t('dashboard.longURL')}</Label>
                         <Input
                             id="longUrl"
-                            placeholder="https://example.com/very-long-url..."
+                            placeholder={t('dashboard.longURLPlaceholderExample')}
                             value={longUrl}
                             onChange={(e) => setLongUrl(e.target.value)}
                             required
@@ -332,7 +332,7 @@ const Dashboard = () => {
                     
                     {availableDomains.length > 0 && (
                         <div className="space-y-2">
-                           <Label htmlFor="domain">Domain</Label>
+                           <Label htmlFor="domain">{t('dashboard.domain')}</Label>
                            <div className="relative">
                                <select
                                    id="domain"
@@ -354,7 +354,7 @@ const Dashboard = () => {
                             <Label htmlFor="customBackhalf">{t('dashboard.customBackhalf')}</Label>
                             <Input
                                 id="customBackhalf"
-                                placeholder="my-link"
+                                placeholder={t('dashboard.customBackhalfPlaceholderExample')}
                                 value={customBackhalf}
                                 onChange={(e) => setCustomBackhalf(e.target.value)}
                             />
@@ -363,7 +363,7 @@ const Dashboard = () => {
                              <Label htmlFor="campaign">{t('dashboard.campaign')}</Label>
                             <Input
                                 id="campaign"
-                                placeholder="Summer Sale"
+                                placeholder={t('dashboard.campaignPlaceholderExample')}
                                 value={campaign}
                                 onChange={(e) => setCampaign(e.target.value)}
                             />
@@ -384,9 +384,9 @@ const Dashboard = () => {
       <Card>
           <CardHeader>
               <div className="flex items-center justify-between">
-                  <CardTitle>Recent Links</CardTitle>
+                  <CardTitle>{t('dashboard.recentLinks.title')}</CardTitle>
                   <Button variant="outline" size="sm" onClick={() => navigate('/my-links')}>
-                      View All <ArrowUpRight className="ml-2 h-4 w-4" />
+                      {t('dashboard.recentLinks.viewAll')} <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Button>
               </div>
           </CardHeader>
@@ -394,18 +394,18 @@ const Dashboard = () => {
               <Table>
                   <TableHeader>
                       <TableRow>
-                          <TableHead>Short Link</TableHead>
-                          <TableHead className="hidden md:table-cell">Original URL</TableHead>
-                          <TableHead className="hidden sm:table-cell">Date</TableHead>
-                          <TableHead>Clicks</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('dashboard.recentLinks.shortLink')}</TableHead>
+                          <TableHead className="hidden md:table-cell">{t('dashboard.recentLinks.originalUrl')}</TableHead>
+                          <TableHead className="hidden sm:table-cell">{t('dashboard.recentLinks.date')}</TableHead>
+                          <TableHead>{t('dashboard.recentLinks.clicks')}</TableHead>
+                          <TableHead className="text-right">{t('dashboard.recentLinks.actions')}</TableHead>
                       </TableRow>
                   </TableHeader>
                   <TableBody>
                       {recentLinks.length === 0 ? (
                           <TableRow>
                               <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                                  No links created yet.
+                                  {t('dashboard.recentLinks.noLinksYet')}
                               </TableCell>
                           </TableRow>
                       ) : (
@@ -454,14 +454,14 @@ const Dashboard = () => {
        <Dialog open={deleteDialog.isOpen} onOpenChange={(open) => !open && setDeleteDialog({ ...deleteDialog, isOpen: false })}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete Link</DialogTitle>
+                    <DialogTitle>{t('dashboard.deleteDialog.title')}</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete {deleteDialog.linkUrl}? This action cannot be undone.
+                        {t('dashboard.deleteDialog.confirmMessage')} {deleteDialog.linkUrl}? {t('dashboard.deleteDialog.cannotUndo')}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}>Cancel</Button>
-                    <Button variant="destructive" onClick={handleConfirmDelete}>Delete</Button>
+                    <Button variant="outline" onClick={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}>{t('common.cancel')}</Button>
+                    <Button variant="destructive" onClick={handleConfirmDelete}>{t('common.delete')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

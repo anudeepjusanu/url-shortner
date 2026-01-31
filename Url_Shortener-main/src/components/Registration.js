@@ -2,20 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
-import { useLanguage } from "../contexts/LanguageContext";
 import OTPDialog from "./OTPDialog";
+import LanguageSelector from "./LanguageSelector";
 import logo from '../assets/logo.png';
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
-import { CheckCircle2, ShieldCheck, Zap, AlertCircle, Eye, EyeOff, Globe } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Zap, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { cn } from "../lib/utils";
 
 const Registration = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
-  const { currentLanguage, changeLanguage } = useLanguage();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -166,15 +165,7 @@ const Registration = () => {
            </div>
 
            <div className="flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => changeLanguage(currentLanguage === 'en' ? 'ar' : 'en')}
-                className="text-slate-500"
-              >
-                <Globe className="mr-2 h-4 w-4" />
-                {currentLanguage === 'en' ? 'العربية' : 'English'}
-              </Button>
+              <LanguageSelector />
            </div>
 
            <div className="text-center">

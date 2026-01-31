@@ -1,0 +1,1872 @@
+{
+  "common": {
+    "ok": "OKEJ",
+    "appName": "URL-förkortare",
+    "brandName": "Snip",
+    "loading": "Laddar...",
+    "downloading": "Laddar ner...",
+    "error": "Fel",
+    "success": "Framgång",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Radera",
+    "edit": "Redigering",
+    "update": "Uppdatering",
+    "close": "Stäng",
+    "confirm": "Bekräfta",
+    "back": "Tillbaka",
+    "next": "Nästa",
+    "submit": "Skicka in",
+    "search": "Sökning",
+    "filter": "Filter",
+    "reset": "Återställ",
+    "copy": "Kopiera",
+    "copied": "Kopierat!",
+    "share": "Dela",
+    "noLinkSelected": "Vänligen välj en specifik länk för att redigera",
+    "download": "Ladda ner",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Uppdatera",
+    "logout": "Utloggning",
+    "login": "Logga in",
+    "register": "Registrera dig",
+    "viewMore": "Visa mer",
+    "showLess": "Visa mindre",
+    "deleteConfirmTitle": "Radera länken?",
+    "deleteConfirmMessage": "Är du säker på att du vill ta bort den här länken?",
+    "deleteDomainTitle": "Ta bort domänen?",
+    "deleteDomainMessage": "Är du säker på att du vill ta bort denna anpassade domän?",
+    "deleteQRTitle": "Radera QR-kod?",
+    "deleteQRMessage": "Är du säker på att du vill ta bort den här QR-koden och länken?",
+    "settings": "Miljöer",
+    "profile": "Profil",
+    "dashboard": "Instrumentpanel",
+    "language": "Språk",
+    "english": "Engelska",
+    "arabic": "Arabiska",
+    "hide": "Göm dig",
+    "show": "Show",
+    "creating": "Skapade...",
+    "updating": "Uppdaterar...",
+    "generating": "Genererar...",
+    "fieldRequired": "Detta område är obligatoriskt",
+    "updated": "Uppdaterad",
+    "noCustomDomainsConnected": "Inga egna domäner anslutna."
+  },
+  "dates": {
+    "today": "I dag",
+    "yesterday": "Igår",
+    "daysAgo": "{{count}} dagar sedan",
+    "weeksAgo": "För {{count}} vecka sedan",
+    "weeksAgo_plural": "För {{count}} veckor sedan",
+    "ago": "Sedan"
+  },
+  "header": {
+    "navigation": "NAVIGATION",
+    "home": "Hem",
+    "features": "Funktioner",
+    "pricing": "Prissättning",
+    "about": "Om",
+    "contact": "Kontakt",
+    "signIn": "Logga in",
+    "signUp": "Registrera sig",
+    "getStarted": "Kom igång",
+    "myLinks": "Mina länkar",
+    "createLink": "Skapa länk",
+    "analytics": "Analys",
+    "qrCodes": "QR-koder",
+    "customDomains": "Anpassade domäner",
+    "subscription": "Prenumeration",
+    "contentFilter": "Innehållsfilter",
+    "languages": {
+      "english": "Engelska",
+      "arabic": "Arabiska",
+      "chinese": "Kinesiska",
+      "spanish": "Spanska",
+      "hindi": "Hindi",
+      "french": "Franska",
+      "portuguese": "Portugisiska",
+      "russian": "Ryska",
+      "dutch": "Nederländska",
+      "greek": "Grekiska",
+      "german": "Tyska",
+      "italian": "Italienska",
+      "japanese": "Japanska",
+      "korean": "Koreanska",
+      "polish": "Polska",
+      "danish": "Danska",
+      "norwegian": "Norska",
+      "swedish": "Svenska",
+      "ukrainian": "Ukrainska"
+    },
+    "theme": {
+      "light": "Ljusläge",
+      "dark": "Mörkt läge"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Förkorta dina URL:er och spåra prestanda",
+      "titleMain": "Shorten, Brand,",
+      "titleAccent": "Bana",
+      "subtitle": "Dina länkar, optimerade för Saudiarabien",
+      "description": "Snabb, säker och regelenligt URL-förkortning med avancerad analys och varumärkesdomäner.",
+      "descriptionAlt": "Gratis länkförkortare med detaljerad analys, QR-koder och API",
+      "cta": "Kom igång gratis",
+      "tryDemo": "Titta på demon",
+      "formTitle": "Prova nu – Förkorta din första länk",
+      "urlPlaceholder": "Klistra in din långa URL här...",
+      "shortenBtn": "Förkorta URL",
+      "shortenButton": "Shorten",
+      "complianceNotice": "✓ PDPL-kompatibel • Data lagrad i KSA",
+      "yourShortLink": "Din korta länk:",
+      "wantOwnDomain": "Vill du ha din egen domän?",
+      "createFreeAccount": "Skapa ett gratis konto"
+    },
+    "features": {
+      "title": "Kraftfulla funktioner för moderna marknadsförare",
+      "subtitle": "Allt du behöver för att hantera, spåra och optimera dina länkar",
+      "sectionTitle": "Allt du behöver för att hantera länkar",
+      "sectionDescription": "Avancerade länkhanteringsverktyg som hjälper dig att följa upp prestanda och optimera kampanjer",
+      "pills": {
+        "freePlan": "Gratis plan för alltid",
+        "customDomain": "Stöd för anpassad domän",
+        "noCard": "Inget kreditkort krävs",
+        "richAnalytics": "Rik analys inkluderade"
+      },
+      "analytics": {
+        "title": "Detaljerad analys",
+        "titleAlt": "Avancerad analys",
+        "description": "Följ klick, geografisk data, enheter och mer med omfattande analys",
+        "descriptionAlt": "Följ klick, konverteringar och användarbeteende med detaljerade insikter och rapportering i realtid"
+      },
+      "customDomain": {
+        "title": "Anpassade domäner",
+        "titleAlt": "Anpassade domäner",
+        "description": "Använd dina egna varumärkesdomäner för professionella korta länkar",
+        "descriptionAlt": "Använd din egen varumärkesdomän för att skapa professionella korta länkar som bygger förtroende"
+      },
+      "qrCode": {
+        "title": "QR-koder",
+        "description": "Generera och anpassa QR-koder för dina korta länkar",
+        "descriptionAlt": "Generera dynamiska QR-koder som kan redigeras när som helst utan att behöva skriva ut om"
+      },
+      "security": {
+        "title": "Säkert och pålitligt",
+        "description": "Företagssäkerhet med 99,9 % uppehållstidsgaranti"
+      },
+      "urlShortening": {
+        "title": "URL-förkortning",
+        "description": "Skapa korta, minnesvärda länkar direkt med vår avancerade algoritm"
+      },
+      "utmBuilder": {
+        "title": "UTM Builder",
+        "description": "Spåra kampanjprestanda med inbyggd UTM-parametergenerering"
+      },
+      "authintica": {
+        "title": "Authintica-integration",
+        "description": "Säker autentisering med Saudiarabiens betrodda identitetsplattform"
+      },
+      "bilingualUI": {
+        "title": "Tvåspråkigt UI",
+        "description": "Sömlöst arabiskt och engelskt gränssnitt med RTL-stöd"
+      },
+      "teamCollaboration": {
+        "title": "Teamsamarbete",
+        "description": "Arbeta tillsammans med ditt team, hantera behörigheter och dela länkanalys"
+      },
+      "apiAccess": {
+        "title": "API-åtkomst",
+        "description": "Integrera i dina applikationer med vårt kraftfulla REST API"
+      },
+      "linkManagement": {
+        "title": "Länkhantering",
+        "description": "Organisera, redigera och hantera tusentals länkar med massoperationer och taggar"
+      },
+      "learnMore": "Lära sig mer"
+    },
+    "whyChoose": {
+      "title": "Varför företag väljer Snip",
+      "subtitle": "Det smarta valet för saudiska marknadsförare och företag"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "Starta kampanjer snabbare",
+        "description": "Skapa, spåra och optimera länkar på minuter, inte timmar",
+        "setupTime": "Genomsnittlig förberedningstid",
+        "setupTimeValue": "2 minuter"
+      },
+      "trustCompliance": {
+        "title": "Förtroende och efterlevnad först",
+        "description": "PDPL-kompatibel med data som är lokalt lagrad i Saudiarabien",
+        "dataResidency": "Dataresidens",
+        "dataResidencyValue": "100% KSA"
+      },
+      "analytics": {
+        "title": "Handlingsbar analys",
+        "description": "Fatta datadrivna beslut med realtidsinsikter",
+        "trackingAccuracy": "Klickspårningsnoggrannhet",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "Perfekt för saudiska marknadsförare",
+      "feature1": "Stöd för anpassade .sa-domäner",
+      "feature2": "Arabiskt och engelskt gränssnitt med RTL-stöd",
+      "feature3": "QR-koder för offlinekampanjer",
+      "feature4": "Authintica-integration för säker åtkomst",
+      "feature5": "Lokalt stöd på arabiska och engelska"
+    },
+    "stats": {
+      "linksCreated": "Länkar skapade av saudiska företag",
+      "linksCreatedValue": "50,000+",
+      "linksCreatedAlt": "Länkar skapade",
+      "uptime": "Uppetid",
+      "uptimeValue": "98%",
+      "clicksTracked": "Klick spåras",
+      "clicksTrackedValue": "2,5M+",
+      "support": "Stöd",
+      "supportValue": "24/7",
+      "activeUsers": "Aktiva användare",
+      "activeUsersValue": "10,000+",
+      "yearsOnMarket": "År på marknaden",
+      "yearsOnMarketValue": "5+"
+    },
+    "integrations": {
+      "title": "Koppla upp dig med dina favoritverktyg",
+      "subtitle": "Koppla Snip till dina befintliga verktyg med färdiga integrationer och API-åtkomst",
+      "viewAll": "Visa alla integrationer",
+      "zapier": "Zapier",
+      "slack": "Slack",
+      "googleAnalytics": "Google Analytics",
+      "metaPixel": "Meta Pixel",
+      "mailchimp": "Mailchimp",
+      "googleAds": "Google Ads",
+      "chrome": "Krom",
+      "wordpress": "WordPress",
+      "ios": "iOS",
+      "make": "Gör",
+      "android": "Android",
+      "segment": "Segment"
+    },
+    "teams": {
+      "title": "Byggd för varje lag",
+      "subtitle": "Se hur olika team använder Snip för att nå sina mål",
+      "marketing": {
+        "title": "Marknadsföringsteam",
+        "description": "Följ kampanjens prestation och optimera konverteringar",
+        "feature1": "Kampanjspårning",
+        "feature2": "A/B-testning",
+        "feature3": "ROI-mätning",
+        "feature4": "Konverteringsoptimering"
+      },
+      "sales": {
+        "title": "Försäljningsteam",
+        "description": "Anpassa kontakten och följ engagemanget",
+        "feature1": "Personliga länkar",
+        "feature2": "Engagemangsspårning",
+        "feature3": "Ledande poäng",
+        "feature4": "CRM-integration"
+      },
+      "infrastructure": {
+        "title": "Infrastrukturteam",
+        "description": "Företagsfunktioner för storskalig distribution",
+        "feature1": "SSO-autentisering",
+        "feature2": "API-åtkomst",
+        "feature3": "Systemintegration",
+        "feature4": "Obegränsade abonnemang"
+      }
+    },
+    "trust": {
+      "title": "Betrodd i stor skala",
+      "subtitle": "Marknadsföringsteam, utvecklare och företag världen över förlitar sig på Snip för att följa det som är viktigt",
+      "socialProof": "Används av Fortune 500-företag och startups världen över",
+      "trustpilot": "Trustpilot",
+      "clientConfidentiality": "Kundsekretess"
+    },
+    "faq": {
+      "title": "Vanliga frågor",
+      "subtitle": "Kan du inte hitta det du letar efter?",
+      "q1": {
+        "question": "Hur kommer jag igång med Snip?",
+        "answer": "Att komma igång är enkelt! Registrera dig helt enkelt för ett gratis konto, så kan du börja förkorta länkar direkt. Inget kreditkort krävs för gratisplanen."
+      },
+      "q2": {
+        "question": "Kan jag använda min egen domän?",
+        "answer": "Ja! Du kan koppla din egen anpassade domän för att skapa korta länkar med varumärken. Detta hjälper till att bygga förtroende och igenkänning hos din publik."
+      },
+      "q3": {
+        "question": "Vilka analyser finns tillgängliga?",
+        "answer": "Vi tillhandahåller omfattande analys inklusive klickspårning, geografiska data, enhetstyper, hänvisningar och konverteringsspårning. All data är tillgänglig i realtid."
+      },
+      "q4": {
+        "question": "Finns det ett API tillgängligt?",
+        "answer": "Ja, vi erbjuder ett kraftfullt REST API som låter dig integrera Snip i dina applikationer. Du kan skapa, hantera och spåra länkar programmatiskt."
+      },
+      "q5": {
+        "question": "Hur säkra är mina länkar?",
+        "answer": "Vi tar säkerheten på allvar. Alla länkar hanteras via HTTPS, och vi erbjuder lösenordsskydd, utgångsdatum och avancerade säkerhetsfunktioner för dina länkar."
+      },
+      "q6": {
+        "question": "Vad ingår i gratisplanen?",
+        "answer": "Den kostnadsfria planen inkluderar 1 000 varumärkeslänkar, grundläggande analys, QR-koder och API-åtkomst. Perfekt för individer och små projekt."
+      }
+    },
+    "banner": {
+      "text": "Gratis abonnemang tillgängligt • Inget kreditkort krävs"
+    },
+    "navigation": {
+      "integrations": "Integrationer"
+    },
+    "testimonials": {
+      "title": "Betrodd av saudiska företag",
+      "subtitle": "Se vad våra kunder säger om Snip",
+      "testimonial1": {
+        "text": "Snips PDPL-efterlevnad ger oss sinnesro. Analyserna är otroligt detaljerade och hjälper oss att optimera våra kampanjer.",
+        "author": "Sarah Al-Rashid",
+        "role": "Marknadschef, TechCorp KSA"
+      },
+      "testimonial2": {
+        "text": "Det tvåspråkiga gränssnittet är perfekt för vårt mångsidiga team. Vi älskar funktionen med varumärkesdomäner!",
+        "author": "Ahmed Mohammed",
+        "role": "Digital marknadsföringschef"
+      },
+      "testimonial3": {
+        "text": "Snip har revolutionerat hur vi spårar våra kampanjer i sociala medier. QR-koderna är en riktig game-changer!",
+        "author": "Fatima Al-Zahra",
+        "role": "E-handelsdirektör"
+      },
+      "testimonial4": {
+        "text": "Snabb, pålitlig och säker. Allt vi behöver för vår växande verksamhet i Saudiarabien.",
+        "author": "Omar Hassan",
+        "role": "Startup-grundare"
+      }
+    },
+    "pricing": {
+      "title": "Enkel, transparent prissättning",
+      "subtitle": "Välj den plan som passar dina behov",
+      "free": {
+        "title": "Gratis",
+        "currency": "$",
+        "amount": "0",
+        "period": "månad",
+        "description": "Perfekt för personligt bruk och för att komma igång",
+        "feature1": "100 URL:er per månad",
+        "feature2": "Grundläggande analys",
+        "feature3": "Standardstöd",
+        "cta": "Kom igång gratis"
+      },
+      "pro": {
+        "title": "Fördel",
+        "badge": "Mest populär",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "månad",
+        "description": "Bäst för proffs och små team",
+        "feature1": "Obegränsade URL:er",
+        "feature2": "Avancerad analys",
+        "feature3": "Anpassade domäner",
+        "feature4": "Lösenordsskydd",
+        "feature5": "Prioriterat stöd",
+        "cta": "Starta gratis provperiod"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "månad",
+        "description": "För stora team och organisationer",
+        "feature1": "Allt i Pro",
+        "feature2": "Obegränsade anpassade domäner",
+        "feature3": "Teamsamarbete",
+        "feature4": "API-åtkomst",
+        "feature5": "Dedikerat stöd",
+        "cta": "Kontakta försäljning"
+      }
+    },
+    "cta": {
+      "title": "Redo att börja?",
+      "subtitle": "Gå med i tusentals användare som litar på vår plattform",
+      "button": "Start gratis"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Välkommen tillbaka",
+      "subtitle": "Logga in på ditt konto",
+      "brandSubtitle": "Välkommen tillbaka till din instrumentpanel",
+      "email": "E-postadress",
+      "password": "Lösenord",
+      "rememberMe": "Kom ihåg mig",
+      "forgotPassword": "Glömt lösenord?",
+      "button": "Logga in",
+      "signingIn": "Loggar in...",
+      "googleButton": "Logga in med Google",
+      "dividerText": "Eller logga in med e-post",
+      "noAccount": "Har du inget konto?",
+      "signUp": "Anmäl dig här",
+      "errorInvalidCredentials": "Ogiltigt e-post eller lösenord",
+      "errorGeneral": "Inloggningen misslyckades. Försök igen, tack.",
+      "errorEmailRequired": "E-post krävs",
+      "errorEmailInvalid": "Vänligen ange en giltig e-postadress",
+      "errorPasswordRequired": "Lösenord krävs",
+      "feature1Title": "Hantera dina länkar",
+      "feature1Description": "Få tillgång till alla dina förkortade URL:er på ett ställe",
+      "feature2Title": "Banprestanda",
+      "feature2Description": "Se detaljerad analys och insikter",
+      "feature3Title": "Säkert och pålitligt",
+      "feature3Description": "Dina data är skyddade med företagssäkerhet"
+    },
+    "forgotPassword": {
+      "title": "Glömt lösenord?",
+      "subtitle": "Ange din e-postadress för att få en verifieringskod",
+      "newPasswordTitle": "Skapa nytt lösenord",
+      "newPasswordSubtitle": "Ange ditt nya lösenord nedan",
+      "email": "E-postadress",
+      "emailPlaceholder": "Ange din e-postadress",
+      "otp": "Verifieringskod",
+      "otpPlaceholder": "Ange en sexsiffrig kod",
+      "newPassword": "Nytt lösenord",
+      "newPasswordPlaceholder": "Ange nytt lösenord",
+      "confirmPassword": "Bekräfta lösenord",
+      "confirmPasswordPlaceholder": "Bekräfta nytt lösenord",
+      "sendOtp": "Skicka verifieringskod",
+      "resetPassword": "Återställ lösenord",
+      "sending": "Skickar...",
+      "resetting": "Återställer...",
+      "backToEmail": "Tillbaka till e-post",
+      "resendOtp": "Skicka om kod",
+      "otpSent": "Verifieringskod skickad till {email}",
+      "otpResent": "Verifieringskod skickad om framgångsrikt",
+      "successMessage": "Lösenordsåterställning lyckades!",
+      "errorEmailRequired": "E-post krävs",
+      "errorEmailInvalid": "Vänligen ange en giltig e-postadress",
+      "errorOtpRequired": "Verifieringskod krävs",
+      "errorOtpInvalid": "Verifieringskoden måste vara 6 siffror",
+      "errorPasswordRequired": "Lösenord krävs",
+      "errorPasswordMinLength": "Lösenordet måste vara minst 8 tecken",
+      "errorPasswordsNotMatch": "Lösenord stämmer inte överens",
+      "errorSamePassword": "Det nya lösenordet måste vara annorlunda än det gamla lösenordet",
+      "errorGeneral": "Misslyckades med att återställa lösenordet. Försök igen, tack."
+    },
+    "register": {
+      "title": "Skapa konto",
+      "subtitle": "Kom igång med ditt gratiskonto",
+      "brandTitle": "Avancerad URL-förkortare",
+      "brandSubtitle": "Få avancerade analyser och professionella korta länkar",
+      "languageToggle": "Språkvipp",
+      "googleSignup": "Registrera dig med Google",
+      "divider": "Eller registrera dig via e-post",
+      "fullName": "Fullständigt namn",
+      "fullNamePlaceholder": "Ange ditt fullständiga namn",
+      "firstName": "Förnamn",
+      "lastName": "Efternamn",
+      "firstNamePlaceholder": "Ange ditt förnamn",
+      "lastNamePlaceholder": "Ange ditt efternamn",
+      "email": "E-postadress",
+      "emailPlaceholder": "example@example.com",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "Ange ditt telefonnummer",
+      "password": "Lösenord",
+      "passwordPlaceholder": "••••••••••",
+      "passwordHint": "Måste vara minst 8 tecken lång",
+      "confirmPassword": "Bekräfta lösenord",
+      "confirmPasswordPlaceholder": "Ange ditt lösenord igen",
+      "termsAgree": "Jag går med på",
+      "terms": "Användarvillkor",
+      "and": "och",
+      "privacy": "Integritetspolicy",
+      "pdplConsent": "Jag samtycker till behandlingen av mina personuppgifter i enlighet med lagen om skydd av personuppgifter.",
+      "marketingConsent": "Jag skulle vilja få marknadsföringsuppdateringar och erbjudanden",
+      "button": "Skapa konto",
+      "creating": "Skapar konto...",
+      "haveAccount": "Har du redan ett konto?",
+      "signIn": "Logga in här",
+      "feature1Title": "Snabb förkortning av URL:er",
+      "feature1Description": "Skapa korta, delbara länkar på några sekunder",
+      "feature2Title": "Avancerad analys",
+      "feature2Description": "Följ din länkprestanda med detaljerad realtidsanalys",
+      "feature3Title": "Företagssäkerhet",
+      "feature3Description": "Dina data skyddas med företagssäkerhet och integritet",
+      "errorFullNameRequired": "Fullständigt namn krävs",
+      "errorFirstNameRequired": "Förnamn krävs",
+      "errorLastNameRequired": "Efternamn krävs",
+      "errorEmailRequired": "E-postadress krävs",
+      "errorEmailInvalid": "Vänligen ange en giltig e-postadress",
+      "errorPasswordRequired": "Lösenord krävs",
+      "errorPasswordLength": "Lösenordet måste vara minst 8 tecken långt",
+      "errorConfirmPasswordRequired": "Vänligen bekräfta ditt lösenord",
+      "errorPasswordMismatch": "Lösenord stämmer inte överens",
+      "errorTermsRequired": "Du måste godkänna användarvillkoren och integritetspolicyn",
+      "errorDataConsentRequired": "Du måste godkänna samtycke till databehandlingssamtycke",
+      "errorEmailExists": "E-post finns redan",
+      "errorGeneral": "Registreringen misslyckades. Försök igen, tack.",
+      "successMessage": "Konto skapat framgångsrikt!"
+    }
+  },
+  "otp": {
+    "title": "Verifiera OTP",
+    "sentMessage": "Vi har skickat en sexsiffrig verifieringskod till",
+    "digitLabel": "Siffra {{number}}",
+    "verifyButton": "Verifiera och logga in",
+    "verifying": "Verifierar...",
+    "didntReceive": "Fick du inte koden?",
+    "resendButton": "Skicka OTP igen",
+    "resendIn": "Skicka in om {{seconds}}s",
+    "goBack": "Gå tillbaka",
+    "securityTipTitle": "Säkerhetstips:",
+    "securityTipMessage": "Dela aldrig din OTP med någon. Vi kommer aldrig att be om din verifieringskod.",
+    "errorEnterAllDigits": "Vänligen ange alla 6 siffror i verifieringskoden",
+    "errorInvalidCode": "Ogiltig verifieringskod. Vänligen kontrollera och försök igen.",
+    "errorExpired": "Verifieringskoden har gått ut. Vänligen beställ en ny.",
+    "errorTooManyAttempts": "För många misslyckade försök. Vänligen begär en ny kod.",
+    "errorResendFailed": "Misslyckades med att skicka om verifieringskoden. Försök igen, tack.",
+    "errorTooManyRequests": "För många önskemål. Vänligen vänta en stund innan du försöker igen.",
+    "errorNetwork": "Nätverksfel. Vänligen kontrollera din anslutning och försök igen."
+  },
+  "dashboard": {
+    "title": "Instrumentpanel",
+    "welcome": "Välkommen tillbaka",
+    "welcomeMessage": "Så här händer det med dina länkar idag.",
+    "vsLastPeriod": "jämfört med sista perioden",
+    "changeVsLastPeriod": "{{change}} jämfört med sista perioden",
+    "createShortLink": "Skapa kort länk",
+    "createShortLinkDesc": "Omvandla dina långa URL:er till kraftfulla, spårbara korta länkar",
+    "getStarted": "Kom igång",
+    "generateQRCode": "Generera QR-kod",
+    "generateQRCodeDesc": "Skapa QR-koder för dina länkar för att koppla samman digitala och fysiska kampanjer",
+    "createQR": "Skapa QR",
+    "addCustomDomain": "Lägg till anpassad domän",
+    "addCustomDomainDesc": "Använd din egen varumärkesdomän för professionella korta länkar",
+    "setupDomain": "Installationsdomän",
+    "shortenYourURL": "Förkorta din URL",
+    "scannedQRCodes": "Skannade QR-koder",
+    "noChartData": "Ingen klickaktivitetsdata tillgänglig",
+    "noChartDataDesc": "Börja dela dina länkar för att se klicktrender och aktivitet över tid.",
+    "longURL": "Lång URL",
+    "longURLPlaceholder": "Klistra in din långa URL här",
+    "customBackhalf": "Eget namn (Valfritt)",
+    "customBackhalfPlaceholder": "Ange anpassat namn",
+    "campaign": "Kampanjnamn (Valfritt)",
+    "campaignPlaceholder": "Ange kampanjnamn",
+    "advancedSettings": "Avancerade inställningar",
+    "shortenURL": "Förkorta URL",
+    "stats": {
+      "totalLinks": "Totalt antal länkar",
+      "totalClicks": "Totala klick",
+      "activeLinks": "Aktiva länkar",
+      "clickRate": "Klickfrekvens",
+      "totalCustomDomains": "Anpassade domäner",
+      "active": "Aktiv",
+      "qrScans": "QR-skanningar"
+    },
+    "recentLinks": {
+      "title": "Senaste länkar",
+      "viewAll": "Visa alla länkar",
+      "noLinks": "Inga länkar skapade än",
+      "createFirst": "Skapa din första korta länk",
+      "shortLink": "Kort länk",
+      "originalUrl": "Original-URL",
+      "date": "Datum",
+      "clicks": "Klick",
+      "actions": "Åtgärder"
+    },
+    "quickActions": {
+      "title": "Snabba åtgärder",
+      "createLink": "Skapa ny länk",
+      "viewAnalytics": "Visa analys",
+      "generateQR": "Generera QR-kod",
+      "manageSubscription": "Hantera prenumeration"
+    },
+    "analytics": {
+      "title": "Analysöversikt",
+      "lastSevenDays": "Sista 7 dagarna",
+      "clicksByDate": "Klickar efter datum",
+      "topLinks": "Topp Prestandalänkar",
+      "clickActivity": "Klicka på Aktivitet",
+      "overviewDescription": "Översikt över din länkprestanda över tid."
+    },
+    "timeFilters": {
+      "last24Hours": "Sista 24 timmarna",
+      "last7Days": "Sista 7 dagarna",
+      "last30Days": "De senaste 30 dagarna",
+      "last90Days": "Senaste 90 dagarna",
+      "7days": "7 dagar",
+      "30days": "30 dagar",
+      "90days": "90 dagar"
+    },
+    "mon": "Mon",
+    "tue": "Tis",
+    "wed": "Gift",
+    "thu": "Thu",
+    "fri": "Fre",
+    "sat": "Lör",
+    "sun": "Sol",
+    "uniqueVisitors": "Unika besökare",
+    "changeFromLastWeek": "{{change}} jämfört med förra veckan",
+    "fromLastPeriod": "+ från förra perioden",
+    "clicks": "{{count}} klickar",
+    "created": "Skapade {{time}}",
+    "viewAll": "Visa alla",
+    "upgradeTitle": "Uppgradering till professionell",
+    "upgradeDescription": "Lås upp avancerad analys, anpassade domäner och prioriterat stöd för att växa ditt företag snabbare.",
+    "upgradeToPro": "Uppgradera till Pro",
+    "dialogs": {
+      "deleteLink": {
+        "title": "Radera länk",
+        "message": "Är du säker på att du vill radera {{url}}? Denna åtgärd kan inte göras ogjort.",
+        "cancel": "Avbryt",
+        "delete": "Radera"
+      }
+    }
+  },
+  "createLink": {
+    "title": "Skapa kort länk",
+    "subtitle": "Konvertera din långa URL till en kort, delbar länk",
+    "customCode": "Anpassad kod",
+    "form": {
+      "originalUrl": "Original-URL",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "Anpassad alias (valfritt)",
+      "customAliasPlaceholder": "min-anpassade-länk",
+      "title": "Länktitel (Valfritt)",
+      "titlePlaceholder": "Min fantastiska länk",
+      "description": "Beskrivning (Valfritt)",
+      "descriptionPlaceholder": "Kort beskrivning av din länk",
+      "tags": "Taggar (Valfritt)",
+      "tagsPlaceholder": "Marknadsföring, kampanj, produkt",
+      "domain": "Domän",
+      "selectDomain": "Välj domän",
+      "expirationDate": "Utgångsdatum (Valfritt)",
+      "password": "Lösenordsskydd (valfritt)",
+      "passwordPlaceholder": "Ange lösenord",
+      "createButton": "Skapa kort länk",
+      "creating": "Skapade...",
+      "advancedOptions": "Avancerade alternativ",
+      "utmParameters": "UTM-parametrar",
+      "urlHint": "Ange den långa URL du vill förkorta",
+      "aliasHint": "Lämna tomt för automatiskt genererad kod"
+    },
+    "success": {
+      "title": "Länk skapad framgångsrikt!",
+      "created": "Kort länk skapad framgångsrikt!",
+      "yourLink": "Din korta länk:",
+      "copyLink": "Kopiera länk",
+      "viewAnalytics": "Visa analys",
+      "createAnother": "Skapa en annan länk"
+    },
+    "errors": {
+      "invalidUrl": "Vänligen ange en giltig URL (måste börja med http:// eller https://)",
+      "urlRequired": "Original-URL krävs",
+      "urlTooLong": "URL är för lång (max 2000 tecken)",
+      "aliasExists": "Detta alias är redan taget",
+      "aliasReserved": "Detta alias är reserverat för systemanvändning. Vänligen välj ett annat alias.",
+      "aliasInvalidFormat": "Alias kan endast innehålla bokstäver, siffror, bindestreck och understreck",
+      "aliasInvalidLength": "Alias måste vara mellan 3 och 50 tecken",
+      "aliasInvalidStart": "Alias måste börja med en bokstav eller siffra",
+      "titleTooLong": "Titeln är för lång (max 100 tecken)",
+      "titleInvalidChars": "Titeln innehåller ogiltiga tecken",
+      "fixErrors": "Vänligen rätta felen nedan innan du skickar in",
+      "general": "Misslyckades med att skapa länk. Försök igen, tack."
+    }
+  },
+  "myLinks": {
+    "title": "Mina länkar",
+    "subtitle": "Hantera alla dina förkortade URL:er",
+    "searchPlaceholder": "Sök efter titel, URL eller kortkod...",
+    "searchLinks": "Söklänkar...",
+    "editLink": "Redigeringslänk",
+    "viewModes": {
+      "simple": "Enkelt",
+      "detailed": "Detaljerat"
+    },
+    "filters": {
+      "all": "Alla länkar",
+      "active": "Aktiv",
+      "expired": "Utgången",
+      "sortBy": "Sortera efter",
+      "newest": "Nyaste Första",
+      "oldest": "Äldsta Första",
+      "mostClicks": "Flest klick",
+      "leastClicks": "Minst klick"
+    },
+    "table": {
+      "title": "Titel",
+      "shortUrl": "Kort URL",
+      "shortLink": "Kort länk",
+      "originalUrl": "Original-URL",
+      "clicks": "Klick",
+      "created": "Skapad",
+      "status": "Status",
+      "actions": "Åtgärder"
+    },
+    "actions": {
+      "copy": "Kopiera",
+      "copyLink": "Kopiera länk",
+      "edit": "Redigering",
+      "qrCode": "QR-kod",
+      "analytics": "Analys",
+      "delete": "Radera"
+    },
+    "emptyState": {
+      "noLinks": "Inga länkar hittades.",
+      "selectLink": "Välj en länk för att se detaljer",
+      "loading": "Laddar..."
+    },
+    "performance": {
+      "title": "Övergripande prestation",
+      "viewFullReport": "Visa hela rapporten",
+      "totalClicks": "Totala klick",
+      "allClicks": "Alla klick",
+      "ctr": "CTR",
+      "lastClick": "Sista klicket"
+    },
+    "linkPreview": {
+      "title": "Länkförhandsvisning",
+      "notAvailable": "Förhandsvisning ej tillgänglig"
+    },
+    "optimize": {
+      "title": "Optimera",
+      "utmBuilder": "UTM Builder",
+      "utmDescription": "UTM-parametrar hjälper till att följa kampanjens resultat",
+      "trafficRouting": "Trafikdirigering",
+      "trafficDescription": "Konfigurera trafikroutingregler",
+      "deepLinks": "Djupa länkar",
+      "deepLinksDescription": "Konfigurera djuplänkning för mobilappar",
+      "retargeting": "Ommålning av skript",
+      "retargetingDescription": "Lägg till retargeting-pixlar och skript"
+    },
+    "dialogs": {
+      "createLink": {
+        "title": "Skapa länk",
+        "description": "Skapa din första korta länk för att komma igång",
+        "domain": "Domän",
+        "customAlias": "Anpassad alias (valfritt)",
+        "generateQR": "Generera QR-kod",
+        "creating": "Skapade...",
+        "createButton": "Skapa länk"
+      }
+    },
+    "confirmDelete": "Är du säker på att du vill ta bort den här länken?",
+    "deleteSuccess": "Länken raderad framgångsrikt",
+    "deleteError": "Misslyckades med att ta bort länken",
+    "noLinks": "Inga länkar hittades",
+    "createFirstLink": "Skapa din första korta länk för att komma igång"
+  },
+  "analytics": {
+    "title": "Analys",
+    "subtitle": "Följ och analysera din länkprestanda",
+    "overview": {
+      "title": "Översikt",
+      "totalClicks": "Totala klick",
+      "uniqueClicks": "Unika klick",
+      "clickRate": "Klickfrekvens",
+      "qrScans": "Skannade QR-koder",
+      "qrScansAlt": "QR-skanningar",
+      "avgClicksPerDay": "Genomsnitt klick/dag",
+      "avgClicksPerDayAlt": "Genomsnitt klick/dag"
+    },
+    "charts": {
+      "clicksOverTime": "Klickar över tid",
+      "clickPerformance": "Klicka på Prestanda",
+      "topCountries": "Toppländer",
+      "topReferrers": "Toppremitterare",
+      "devices": "Enheter",
+      "topDevices": "Toppenheter",
+      "browsers": "Webbläsare",
+      "operatingSystems": "Operativsystem",
+      "topCities": "Toppstäder"
+    },
+    "devices": {
+      "mobile": "Mobil",
+      "desktop": "Skrivbord",
+      "tablet": "Tablet"
+    },
+    "filters": {
+      "dateRange": "Datumintervall",
+      "last24Hours": "Sista 24 timmarna",
+      "last7Days": "Sista 7 dagarna",
+      "last30Days": "Senaste 30 dagarna",
+      "last90Days": "Senaste 90 dagarna",
+      "last1Year": "Senaste året",
+      "custom": "Specialanpassat sortiment",
+      "applyFilters": "Applicera filter"
+    },
+    "export": {
+      "title": "Exportdata",
+      "export": "Export",
+      "csv": "Exportera som CSV",
+      "pdf": "Exportera som PDF",
+      "json": "Export som JSON"
+    },
+    "tables": {
+      "country": "Land",
+      "clicks": "Klick",
+      "browser": "Webbläsare",
+      "source": "Källa",
+      "referrers": "Hänvisare",
+      "noData": "Inga data"
+    },
+    "noData": {
+      "title": "Ingen klickaktivitetsdata tillgänglig",
+      "chartDescription": "Börja dela dina länkar för att se klicktrender och aktivitet över tid.",
+      "countries": "Inga geografiska data",
+      "countriesDescription": "Landsdata visas när dina länkar klickas på.",
+      "devices": "Ingen enhetsdata",
+      "devicesDescription": "Enhetens upplösning visas efter att klick har registrerats.",
+      "browsers": "Ingen webbläsardata",
+      "browsersDescription": "Webbläsarstatistik visas efter att dina länkar klickats på.",
+      "os": "Ingen operativsystemsdata",
+      "osDescription": "OS-distributionen kommer att synas efter att klick har spårats.",
+      "cities": "Ingen stadsdata",
+      "citiesDescription": "Stadsnivåanalys kommer att finnas tillgänglig när klick har registrerats.",
+      "referrers": "Ingen referensdata",
+      "referrersDescription": "Trafikkällor kommer att spåras när besökare klickar på dina länkar."
+    },
+    "loading": "Laddar...",
+    "error": "Misslyckades med att hämta analysdata"
+  },
+  "qrCodes": {
+    "title": "QR-kodhantering",
+    "subtitle": "Generera, anpassa och hantera QR-koder för dina länkar",
+    "viewModes": {
+      "grid": "Rutnät",
+      "list": "Lista"
+    },
+    "stats": {
+      "totalQRCodes": "Totalt antal QR-koder",
+      "totalScans": "Totala skanningar",
+      "uniqueScans": "Unika skanningar",
+      "activeQRCodes": "Aktiva QR-koder",
+      "active": "Aktiv",
+      "downloadsToday": "Nedladdningar idag",
+      "scans": "Skanningar",
+      "downloads": "Nedladdningar"
+    },
+    "generate": {
+      "title": "Generera QR-kod",
+      "generateNew": "Generera nytt",
+      "selectLink": "Välj länk för QR-kod",
+      "selectLinkPlaceholder": "Välj en länk...",
+      "generatingFor": "Generering av QR-kod för:",
+      "customize": "Anpassa inställningar",
+      "customizeQRCode": "Anpassa QR-koden",
+      "description": "Skapa och anpassa din QR-kod med avancerade alternativ.",
+      "size": "Storlek (pixlar)",
+      "sizePx": "Storlek (px)",
+      "format": "Format",
+      "errorCorrection": "Felkorrigeringsnivå",
+      "foregroundColor": "Förgrundsfärg",
+      "backgroundColor": "Bakgrundsfärg",
+      "includeMargin": "Inkludera marginal runt QR-koden",
+      "generateButton": "Generera QR-kod",
+      "bulkGenerate": "Bulk Generera",
+      "previewPlaceholder": "Förhandsvisningen kommer att visas här"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "Lågt (7%)",
+      "medium": "Medel (15 %)",
+      "quartile": "Kvartil (25 %)",
+      "high": "Högt (30%)"
+    },
+    "actions": {
+      "download": "Ladda ner",
+      "downloadPNG": "Ladda ner PNG",
+      "downloadSVG": "Ladda ner SVG",
+      "customize": "Anpassa",
+      "delete": "Radera",
+      "preview": "Förhandsvisning",
+      "share": "Dela"
+    },
+    "search": {
+      "placeholder": "Sök QR-koder efter titel, URL eller kortkod..."
+    },
+    "selection": {
+      "selected": "Utvalda"
+    },
+    "emptyState": {
+      "title": "Inga QR-koder hittades",
+      "noQRCodes": "Inga QR-koder än",
+      "tryAdjusting": "Försök justera din sökning",
+      "createFirst": "Generera din första QR-kod för att komma igång",
+      "createFirstAlt": "Skapa din första QR-kod för att komma igång"
+    },
+    "dialogs": {
+      "details": {
+        "title": "QR-koddetaljer",
+        "description": "Visa och hantera din QR-kod",
+        "linkTitle": "Titel",
+        "shortUrl": "Kort URL",
+        "originalUrl": "Original-URL",
+        "totalScans": "Totala skanningar",
+        "downloads": "Nedladdningar"
+      }
+    },
+    "messages": {
+      "failedToLoad": "Misslyckades med att ladda länkar",
+      "generated": "QR-kod genererad!"
+    },
+    "noQRCodes": "Inga QR-koder än",
+    "createFirst": "Generera din första QR-kod för att komma igång",
+    "generateSuccess": "QR-kod genererad framgångsrikt!",
+    "generateFailed": "Misslyckades med att generera QR-kod",
+    "downloadSuccess": "QR-kod nedladdad framgångsrikt!",
+    "downloadFailed": "Misslyckades med att ladda ner QR-koden",
+    "bulkGenerateSuccess": "Lyckades generera {{count}} QR-kod(er)!",
+    "bulkGenerateFailed": "Misslyckades med att generera QR-koder",
+    "updateSuccess": "QR-kodanpassning uppdaterades framgångsrikt!",
+    "updateFailed": "Misslyckades med att uppdatera QR-kodanpassning"
+  },
+  "contentFilter": {
+    "title": "Innehållsfilter och säkerhet",
+    "subtitle": "Skydda dina länkar med avancerade innehållsfiltrerings- och säkerhetsregler",
+    "stats": {
+      "totalFiltered": "Total filtrerad",
+      "maliciousBlocked": "Illvillig blockerad",
+      "phishingBlocked": "Nätfiske blockerat",
+      "spamBlocked": "Spam blockerad"
+    },
+    "tabs": {
+      "settings": "Miljöer",
+      "blocked": "Blockerad",
+      "whitelist": "Vitlista",
+      "logs": "Loggar"
+    },
+    "settings": {
+      "title": "Filterinställningar",
+      "enableContentFilter": "Aktivera innehållsfiltrering",
+      "enableDescription": "Filtrera automatiskt skadliga och olämpliga URL:er",
+      "blockMaliciousUrls": "Blockera skadliga URL:er",
+      "blockMaliciousDescription": "Blockera kända spridningssajter för skadlig kod och virus",
+      "blockPhishing": "Blockera nätfiskesajter",
+      "blockPhishingDescription": "Skydda mot nätfiske och bedrägerier på webbplatser",
+      "blockAdultContent": "Blockera vuxeninnehåll",
+      "blockAdultDescription": "Filtrera vuxen- och NSFW-innehåll",
+      "blockSpam": "Blockera spam-URL:er",
+      "blockSpamDescription": "Upptäck och blockera spaminnehåll automatiskt",
+      "customKeywordFiltering": "Anpassad nyckelordsfiltrering",
+      "customKeywordDescription": "Blockera URL:er som innehåller specifika nyckelord",
+      "pdplCompliance": "PDPL-efterlevnadsläge",
+      "pdplDescription": "Säkerställa efterlevnad av Saudiarabiens lag om skydd av personuppgifter.",
+      "saveSettings": "Spara inställningar",
+      "saving": "Rädda..."
+    },
+    "blocked": {
+      "domains": "Blockerade domäner",
+      "keywords": "Blockerade nyckelord",
+      "addDomain": "Lägg till",
+      "addKeyword": "Lägg till",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "Nyckelord",
+      "noDomains": "Inga blockerade domäner än",
+      "noKeywords": "Inga blockerade nyckelord än",
+      "remove": "Ta bort",
+      "confirmRemove": "Ta bort {{domain}} från blockeringslistan?",
+      "confirmRemoveKeyword": "Ta bort \"{{keyword}}\" från blockerade nyckelord?"
+    },
+    "whitelist": {
+      "title": "Tillåtna domäner (vitlista)",
+      "description": "Domäner i vitlistan kommer att kringgå alla innehållsfilter",
+      "addDomain": "Lägg till",
+      "domainPlaceholder": "example.com",
+      "noDomains": "Inga vitlistade domäner än",
+      "remove": "Ta bort",
+      "confirmRemove": "Ta bort {{domain}} från tillåten lista?"
+    },
+    "logs": {
+      "title": "Loggar för filteraktivitet",
+      "refresh": "Uppdatera",
+      "noActivity": "Ingen filteraktivitet",
+      "noUrls": "Inga URL:er har filtrerats än",
+      "defaultMessage": "URL blockerades av innehållsfilter",
+      "noData": "Ingen tillgänglig data"
+    }
+  },
+  "customDomains": {
+    "title": "Anpassade domäner",
+    "subtitle": "Lägg till och hantera dina egna domäner för korta länkar med varumärken",
+    "wizard": {
+      "step": "Steg {{current}} av {{total}}"
+    },
+    "stats": {
+      "totalDomains": "Totala domäner",
+      "activeDomains": "Aktiva domäner",
+      "totalUrls": "Totala URL:er",
+      "totalClicks": "Totala klick"
+    },
+    "addDomain": {
+      "title": "Lägg till anpassad domän",
+      "domainName": "Domännamn",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "Deldomän (Valfritt)",
+      "subdomainPlaceholder": "Kort",
+      "addButton": "Lägg till domän",
+      "adding": "Lägger till..."
+    },
+    "table": {
+      "domain": "Domän",
+      "status": "Status",
+      "urls": "URL:er",
+      "clicks": "Klick",
+      "created": "Skapad",
+      "actions": "Åtgärder"
+    },
+    "status": {
+      "pending": "Väntar",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "verified": "Verifierat",
+      "failed": "Misslyckades"
+    },
+    "actions": {
+      "verify": "Verifiera",
+      "setDefault": "Sätt standard",
+      "configure": "Konfigurera",
+      "delete": "Radera"
+    },
+    "verification": {
+      "title": "Domänverifiering",
+      "instructions": "Lägg till följande DNS-post för att verifiera din domän:",
+      "recordType": "Registertyp",
+      "name": "Namn",
+      "value": "Värde",
+      "verifyButton": "Verifiera domän"
+    },
+    "dnsModal": {
+      "title": "Domänverifiering",
+      "instruction": "Lägg till följande DNS-post för att verifiera din domän:",
+      "configTitle": "DNS-konfiguration krävs:",
+      "type": "Typ",
+      "name": "Namn",
+      "value": "Värde",
+      "checkDns": "Kontrollera DNS-konfigurationen",
+      "checking": "Kollar DNS...",
+      "success": "DNS-post verifierad framgångsrikt!",
+      "failed": "DNS-post hittades inte. Vänligen kontrollera din konfiguration.",
+      "copy": "Kopiera",
+      "copied": "Kopierat"
+    },
+    "noDomains": "Inga egna domäner har lagts till än",
+    "addFirst": "Lägg till din första anpassade domän för att komma igång",
+    "domainAdded": "Domänen tillagd framgångsrikt!",
+    "verificationSuccess": "Domänen verifierad framgångsrikt!",
+    "verificationFailed": "Domänverifieringen misslyckades",
+    "deleteSuccess": "Domänen raderad framgångsrikt",
+    "errors": {
+      "domainRequired": "Domännamn krävs",
+      "domainInvalid": "Ange ett giltigt domännamn (t.ex. example.com)",
+      "domainExists": "Denna domän är redan registrerad",
+      "subdomainInvalid": "Deldomänen kan endast innehålla bokstäver, siffror och bindestreck",
+      "invalidFormat": "Ogiltigt domänformat"
+    }
+  },
+  "subscription": {
+    "title": "Prenumeration och fakturering",
+    "subtitle": "Hantera din prenumerationsplan och faktureringsinformation",
+    "pageTitle": "Prenumeration och fakturering",
+    "pageSubtitle": "Hantera din prenumerationsplan och faktureringsinformation",
+    "professionalPlan": "Yrkesplan",
+    "activeStatus": "Aktiv",
+    "perMonth": "/månad",
+    "professionalFeaturesSummary": "Avancerade funktioner för växande företag och marknadsföringsteam",
+    "nextBilling": "Nästa placering:",
+    "linksCreated": "Länkar skapade",
+    "customDomains": "Anpassade domäner",
+    "totalClicks": "Totala klick",
+    "of": "av",
+    "thisMonth": "Den här månaden",
+    "feature50kLinks": "50 000 länkar per månad",
+    "featureCustomDomains10": "10 anpassade domäner",
+    "featureUtmTracking": "UTM-spårning och analys",
+    "featureBulkActions": "Bulklänksåtgärder",
+    "featureAdvancedAnalytics": "Avancerad analysdashboard",
+    "featureQrGeneration": "QR-kodgenerering",
+    "featurePrioritySupport": "Prioriterat stöd",
+    "availablePlans": "Tillgängliga planer",
+    "starterPlan": "Startplan",
+    "feature5kLinks": "5 000 länkar per månad",
+    "featureBasicAnalytics": "Grundläggande analys",
+    "featureQrCodes": "QR-kodgenerering",
+    "downgradeButton": "Nedgradering till startspelare",
+    "currentBadge": "NUVARANDE",
+    "currentPlanButton": "Nuvarande plan",
+    "enterprisePlan": "Företagsplan",
+    "featureUnlimitedLinks": "Obegränsade länkar",
+    "featureUnlimitedDomains": "Obegränsade anpassade domäner",
+    "upgradeButton": "Uppgradering till Enterprise",
+    "billingInformation": "Faktureringsinformation",
+    "paymentMethod": "Betalningsmetod",
+    "expires": "Löper ut",
+    "updatePaymentMethod": "Uppdatera betalningsmetoden",
+    "billingAddress": "Faktureringsadress",
+    "sampleCustomerName": "Ahmed Al-Rashid",
+    "sampleStreetAddress": "123 Kung Fahd-vägen",
+    "sampleCityCountry": "Riyadh, Saudiarabien 12345",
+    "updateBillingAddress": "Uppdatera faktureringsadress",
+    "cancelSubscriptionTitle": "Avbryt prenumerationen",
+    "cancelSubscriptionDesc": "Avsluta din prenumeration och gå ner till gratisplanen. Du behåller tillgång till alla Professional-funktioner tills din nuvarande faktureringsperiod är slut.",
+    "whatYouWillLose": "Vad du kommer att förlora:",
+    "loseAdvancedAnalytics": "Avancerad analysdashboard",
+    "loseCustomDomains": "Anpassade domäner (10)",
+    "losePrioritySupport": "Prioriterat stöd",
+    "loseHigherLimits": "Högre länkgränser (50 000/månad)",
+    "pauseFor3Months": "Paus i 3 månader",
+    "cancelSubscriptionButton": "Avbryt prenumerationen",
+    "currentPlan": {
+      "title": "Nuvarande plan",
+      "free": "Gratis plan",
+      "pro": "Pro-plan",
+      "enterprise": "Företagsplan",
+      "status": "Status",
+      "active": "Aktiv",
+      "renews": "Förnyelse på",
+      "expires": "Löper ut"
+    },
+    "plans": {
+      "title": "Tillgängliga planer",
+      "free": {
+        "name": "Gratis",
+        "price": "0",
+        "features": [
+          "100 URL:er per månad",
+          "Grundläggande analys",
+          "Standardkortkoder",
+          "Stöd från samhället"
+        ]
+      },
+      "pro": {
+        "name": "Fördel",
+        "price": "9.99",
+        "features": [
+          "Obegränsade URL:er",
+          "Avancerad analys",
+          "Anpassade domäner",
+          "QR-koder",
+          "Prioriterat stöd",
+          "Inga annonser"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Sedvänja",
+        "features": [
+          "Allt i Pro",
+          "Dedikerat stöd",
+          "SLA-garanti",
+          "Anpassade integrationer",
+          "Lagledning",
+          "White-label-alternativ"
+        ]
+      }
+    },
+    "actions": {
+      "upgrade": "Uppgradering",
+      "downgrade": "Nedgradering",
+      "cancel": "Avbryt prenumerationen",
+      "contactSales": "Kontakta försäljning"
+    },
+    "billing": {
+      "title": "Faktureringshistorik",
+      "date": "Datum",
+      "amount": "Belopp",
+      "status": "Status",
+      "invoice": "Faktura",
+      "download": "Ladda ner"
+    },
+    "tabs": {
+      "overview": "Översikt",
+      "paymentMethods": "Betalningsmetoder",
+      "invoices": "Fakturor",
+      "usage": "Användning"
+    },
+    "status": {
+      "active": "Aktiv",
+      "trial": "Rättegång",
+      "pastDue": "Förfallen",
+      "cancelled": "Nedlagd",
+      "paused": "Pausad"
+    },
+    "loadingBillingInfo": "Laddar faktureringsinformation...",
+    "failedToLoadBillingInfo": "Misslyckades med att ladda faktureringsinformation",
+    "confirmPauseSubscription": "Är du säker på att du vill pausa din prenumeration?",
+    "subscriptionPausedSuccess": "Prenumerationen pausades framgångsrikt",
+    "failedToPauseSubscription": "Misslyckades med att pausa prenumerationen",
+    "subscriptionResumedSuccess": "Prenumerationen återupptogs framgångsrikt",
+    "failedToResumeSubscription": "Misslyckades med att återuppta prenumerationen",
+    "confirmCancelSubscription": "Är du säker på att du vill avboka? Du kommer att förlora premiumfunktioner i slutet av din faktureringsperiod.",
+    "subscriptionWillCancelAtPeriodEnd": "Prenumerationen kommer att avslutas vid slutet av faktureringsperioden",
+    "failedToCancelSubscription": "Misslyckades med att avbryta prenumerationen",
+    "invalidCouponCode": "Ogiltig kupongkod",
+    "couponAppliedSuccess": "Kupongen ansöktes framgångsrikt!",
+    "failedToApplyCoupon": "Misslyckades med att ansöka om kupong",
+    "confirmRemovePaymentMethod": "Är du säker på att du vill ta bort denna betalningsmetod?",
+    "paymentMethodRemoved": "Betalningsmetod borttagen",
+    "failedToRemovePaymentMethod": "Misslyckades med att ta bort betalningsmetoden",
+    "defaultPaymentMethodUpdated": "Standardbetalningsmetod uppdaterad",
+    "failedToUpdateDefaultPaymentMethod": "Misslyckades med att uppdatera standardbetalningsmetoden",
+    "failedToDownloadInvoice": "Misslyckades med att ladda ner fakturan",
+    "trialPeriodActive": "Aktiv provperiod",
+    "trialEndsOn": "Din rättegång slutar",
+    "discountApplied": "Rabattering tillämpad",
+    "off": "fel",
+    "billingCycle": "Faktureringscykel",
+    "monthly": "Månadstidning",
+    "resumeSubscription": "Återuppta prenumeration",
+    "pauseSubscription": "Pausa prenumeration",
+    "changePlan": "Förändringsplan",
+    "upcomingInvoice": "Kommande faktura",
+    "amountDue": "Belopp som ska betalas",
+    "dueDate": "Beräknat datum",
+    "lineItems": "Linjeposter",
+    "applyDiscountCode": "Använd rabattkod",
+    "enterCouponCode": "Ange kupongkoden",
+    "validate": "Validera",
+    "apply": "Ansök",
+    "addPaymentMethod": "Lägg till betalningsmetod",
+    "noPaymentMethodsYet": "Inga betalningsmetoder tillagda än",
+    "default": "Standard",
+    "setAsDefault": "Ställt in som standard",
+    "noInvoicesYet": "Inga fakturor än",
+    "currentUsage": "Nuvarande användning",
+    "urlsThisMonth": "URL:er denna månad",
+    "totalUrlsCreated": "Totalt antal skapade URL:er",
+    "apiCallsThisMonth": "API-anrop denna månad",
+    "overageCharges": "Överskottsavgifter",
+    "addedToNextInvoice": "Lagt till på nästa faktura",
+    "included": "Inkluderat"
+  },
+  "profile": {
+    "title": "Profilinställningar",
+    "subtitle": "Hantera din kontoinformation och dina inställningar",
+    "accountOverview": "Kontoöversikt",
+    "currentPlan": "Nuvarande plan",
+    "regionalSettings": "Regionala miljöer",
+    "tabs": {
+      "general": "Allmänt",
+      "security": "Säkerhet",
+      "preferences": "Preferenser",
+      "apiKeys": "API-nycklar"
+    },
+    "general": {
+      "personalInfo": "Personlig information",
+      "firstName": "Förnamn",
+      "lastName": "Efternamn",
+      "email": "E-postadress",
+      "phone": "Telefonnummer",
+      "company": "Företaget",
+      "website": "Webbplats",
+      "jobTitle": "Roll",
+      "updateButton": "Uppdatera profilen",
+      "updating": "Uppdaterar...",
+      "saveChanges": "Sparändringar"
+    },
+    "security": {
+      "changePassword": "Byt lösenord",
+      "currentPassword": "Nuvarande lösenord",
+      "newPassword": "Nytt lösenord",
+      "confirmPassword": "Bekräfta nytt lösenord",
+      "updatePassword": "Uppdatera lösenord",
+      "twoFactor": "Tvåfaktorsautentisering",
+      "enable2FA": "Aktivera 2FA",
+      "disable2FA": "Inaktivera 2FA",
+      "sessions": "Aktiva sessioner",
+      "revokeAll": "Upphäv alla sessioner",
+      "errorCurrentPasswordRequired": "Aktuellt lösenord krävs",
+      "errorNewPasswordRequired": "Nytt lösenord krävs",
+      "errorConfirmPasswordRequired": "Vänligen bekräfta ditt nya lösenord",
+      "errorPasswordLength": "Lösenordet måste vara minst 8 tecken",
+      "errorPasswordMismatch": "Lösenord stämmer inte överens"
+    },
+    "preferences": {
+      "language": "Språk",
+      "timezone": "Tidszon",
+      "dateFormat": "Datumformat",
+      "emailNotifications": "E-postnotiser",
+      "emailNotificationsDesc": "Ta emot e-postnotiser för viktiga uppdateringar",
+      "marketingEmails": "Marknadsföringsmejl",
+      "marketingEmailsDesc": "Få uppdateringar om nya funktioner och kampanjer",
+      "weeklyReports": "Veckovisa rapporter",
+      "weeklyReportsDesc": "Få veckovisa analysrapporter skickade till din e-post",
+      "productUpdates": "Produktuppdateringar",
+      "securityAlerts": "Säkerhetsvarningar",
+      "savePreferences": "Spara inställningar"
+    },
+    "notifications": {
+      "title": "Notiser"
+    },
+    "apiKeys": {
+      "viewDocs": "Visa API-dokumentation",
+      "title": "API-nycklar",
+      "description": "Hantera dina API-nycklar för programmatisk åtkomst",
+      "createNew": "Skapa ny nyckel",
+      "keyName": "Nyckelnamn",
+      "key": "Nyckel",
+      "created": "Skapad",
+      "lastUsed": "Senast använd",
+      "revoke": "Upphäv",
+      "regenerating": "Återhämtar...",
+      "regenerateButton": "Regenerera API-nyckeln",
+      "confirmRegenerate": "Är du säker på att du vill återskapa din API-nyckel? Den gamla nyckeln fungerar inte längre."
+    },
+    "messages": {
+      "profileUpdated": "Profil uppdaterad framgångsrikt",
+      "passwordsDoNotMatch": "Lösenord stämmer inte överens",
+      "failedToUpdate": "Misslyckades med att uppdatera användaren",
+      "passwordUpdated": "Lösenordet uppdaterades framgångsrikt",
+      "failedToUpdatePassword": "Misslyckades med att uppdatera lösenordet",
+      "preferencesUpdated": "Inställningar uppdaterade framgångsrikt",
+      "failedToUpdatePreferences": "Misslyckades med att uppdatera inställningar"
+    }
+  },
+  "userManagement": {
+    "title": "Användarhantering",
+    "subtitle": "Hantera användarroller och behörigheter",
+    "loading": "Laddar användare...",
+    "searchPlaceholder": "Sök efter namn eller e-post...",
+    "filterByRole": "Filtrera efter roll:",
+    "noUsersFound": "Inga användare hittades.",
+    "noUsersWithRole": "Inga användare hittades med roll: {{role}}.",
+    "stats": {
+      "totalUsers": "Totalt antal användare",
+      "activeUsers": "Aktiva användare",
+      "inactiveUsers": "Inaktiva användare",
+      "newUsers": "Nytt (30 dagar)"
+    },
+    "roles": {
+      "all": "Alla",
+      "superAdmin": "Superadministratör",
+      "admin": "Administration",
+      "editor": "Redaktör",
+      "viewer": "Viewer",
+      "user": "Användare"
+    },
+    "userCard": {
+      "status": "Status:",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "joined": "Medlemmar:",
+      "lastLogin": "Senaste inloggning:",
+      "location": "Plats:",
+      "changeRole": "Byt roll:"
+    },
+    "viewMode": {
+      "grid": "Rutnät",
+      "table": "Tabell"
+    },
+    "table": {
+      "name": "Namn",
+      "email": "E-post",
+      "phone": "Telefon",
+      "role": "Roll",
+      "status": "Status",
+      "plan": "Plan",
+      "joined": "Anslöt",
+      "location": "Läge",
+      "lastLogin": "Senaste inloggning",
+      "actions": "Åtgärder"
+    },
+    "actions": {
+      "view": "Vy",
+      "viewDetails": "Visa detaljer",
+      "activate": "Aktivera",
+      "deactivate": "Avaktivera",
+      "activateUser": "Aktivera användaren",
+      "deactivateUser": "Avaktivera användaren",
+      "delete": "Radera",
+      "deleteUser": "Ta bort användaren",
+      "makeAdmin": "Gör admin",
+      "removeAdmin": "Ta bort admin"
+    },
+    "modal": {
+      "title": "Användaruppgifter",
+      "description": "Omfattande information om denna användare.",
+      "urls": "URL:er",
+      "urlsCreated": "Skapade URL:er",
+      "domains": "Domäner",
+      "clicks": "Klick",
+      "totalClicks": "Totala klick",
+      "contactInfo": "Kontaktinformation",
+      "email": "E-post",
+      "phone": "Telefon",
+      "location": "Registreringsplats",
+      "locationFields": {
+        "country": "Land",
+        "city": "Stad",
+        "region": "Region",
+        "ipAddress": "IP-adress",
+        "timezone": "Tidszon",
+        "countryCode": "Landskod",
+        "coordinates": "Koordinater"
+      },
+      "notAvailable": "Ej tillgängligt",
+      "accountActivity": "Kontoaktivitet",
+      "accountCreated": "Konto skapat",
+      "joined": "Anslöt",
+      "lastLogin": "Senaste inloggning",
+      "lastUpdated": "Senast uppdaterad",
+      "never": "Aldrig",
+      "subscription": "Prenumeration",
+      "subscriptionStatus": "Status",
+      "inactive": "INAKTIV",
+      "periodEnd": "Slut på perioden",
+      "freePlan": "GRATIS",
+      "close": "Stäng"
+    },
+    "messages": {
+      "failedToLoad": "Misslyckades med att ladda användare"
+    }
+  },
+  "footer": {
+    "description": "Det enklaste sättet att förkorta och spåra dina URL:er",
+    "product": "Produkt",
+    "features": "Funktioner",
+    "pricing": "Prissättning",
+    "documentation": "Dokumentation",
+    "api": "API",
+    "integrations": "Integrationer",
+    "company": "Företaget",
+    "about": "Om oss",
+    "blog": "Blogg",
+    "careers": "Karriärer",
+    "contact": "Kontakt",
+    "support": "Stöd",
+    "help": "Hjälpcenter",
+    "faq": "FAQ",
+    "legal": "Juridiskt",
+    "terms": "Användarvillkor",
+    "privacy": "Integritetspolicy",
+    "pdplCompliance": "PDPL-efterlevnad",
+    "security": "Säkerhet",
+    "copyright": "© 2025 URL-förkortare. Alla rättigheter förbehållna."
+  },
+  "notifications": {
+    "success": "Framgång",
+    "error": "Fel",
+    "warning": "Varning",
+    "info": "Info",
+    "linkCreated": "Link skapade framgångsrikt!",
+    "linkUpdated": "Länken uppdaterades framgångsrikt!",
+    "linkDeleted": "Länken raderad framgångsrikt!",
+    "settingsSaved": "Inställningar sparade framgångsrikt!",
+    "profileUpdated": "Profilen uppdaterades framgångsrikt!",
+    "passwordChanged": "Lösenordet ändrades framgångsrikt!",
+    "domainAdded": "Domänen tillagd framgångsrikt!",
+    "domainVerified": "Domänen verifierad framgångsrikt!",
+    "domainDeleted": "Domän borttagen",
+    "subscriptionUpdated": "Prenumerationen uppdaterades framgångsrikt!",
+    "draftSaved": "Draften räddad!",
+    "copied": "Kopierat!"
+  },
+  "errors": {
+    "generic": "Något gick fel. Försök igen, tack.",
+    "networkError": "Nätverksfel. Vänligen kontrollera din anslutning.",
+    "unauthorized": "Obehörig. Vänligen logga in igen.",
+    "notFound": "Resurs ej hittad.",
+    "serverError": "Serverfel. Försök igen senare.",
+    "validationError": "Vänligen kontrollera dina indata och försök igen.",
+    "enterDomain": "Vänligen ange en domän",
+    "enterKeyword": "Vänligen ange ett nyckelord",
+    "failedToAddDomain": "Misslyckades med att lägga till blockerad domän: {{error}}",
+    "failedToRemoveDomain": "Misslyckades med att ta bort blockerad domän: {{error}}",
+    "failedToAddKeyword": "Misslyckades med att lägga till blockerat nyckelord: {{error}}",
+    "failedToRemoveKeyword": "Misslyckades med att ta bort blockerat nyckelord: {{error}}",
+    "failedToAddAllowedDomain": "Misslyckades med att lägga till tillåten domän: {{error}}",
+    "failedToRemoveAllowedDomain": "Misslyckades med att ta bort tillåten domän: {{error}}",
+    "failedToRegenerateApiKey": "Misslyckades med att återskapa API-nyckeln: {{error}}",
+    "failedToLoadLinks": "Misslyckades med att ladda länkar. Försök igen, tack.",
+    "failedToLoadDomains": "Misslyckades med att ladda tillgängliga domäner. Vänligen uppdatera sidan.",
+    "failedToCopyLink": "Misslyckades med att kopiera länken till urklippet. Försök igen, tack.",
+    "failedToGenerateQR": "Misslyckades med att generera QR-koden för denna länk.",
+    "failedToLoadStats": "Misslyckades med att ladda statistiken. Vänligen uppdatera sidan.",
+    "failedToVerifyDomain": "Misslyckades med att verifiera domänen. Vänligen kontrollera dina DNS-inställningar och försök igen.",
+    "failedToCopyText": "Misslyckades med att kopiera till urklippstavlan. Var vänlig kopiera manuellt.",
+    "noLinksSelected": "Vänligen välj minst en länk för bulkdrift.",
+    "confirmBulkGenerate": "Är du säker på att du vill generera QR-koder för {{count}} valda länken(a)?",
+    "domainVerificationError": "Domänverifieringen misslyckades. Vänligen kontrollera dina DNS-register.",
+    "domainAddError": "Misslyckades med att lägga till domän. Vänligen kontrollera dina indata och försök igen.",
+    "domainDeleteError": "Misslyckades med att ta bort domänen. Försök igen, tack.",
+    "qrCodeDeleteError": "Misslyckades med att ta bort QR-koden. Försök igen, tack.",
+    "failedToLoadCustomization": "Kunde inte ladda befintlig anpassning. Använder standardinställningar.",
+    "failedToUpdateStatus": "Misslyckades med att uppdatera status",
+    "failedToUpdateRole": "Misslyckades med att uppdatera rollen",
+    "failedToUpdateUserRole": "Misslyckades med att uppdatera användarrollen",
+    "failedToDelete": "Misslyckades med att ta bort",
+    "failedToAddDomainAlt": "Misslyckades med att lägga till domän",
+    "failedToLoadDomainsAlt": "Misslyckades med att ladda domäner"
+  },
+  "sidebar": {
+    "urlManagement": "URL-hantering",
+    "apiDocs": "API-dokumentation",
+    "main": "HUVUDSAKLIG",
+    "dashboard": "Instrumentpanel",
+    "myLinks": "Mina länkar",
+    "analytics": "Analys",
+    "qrCodes": "QR-koder",
+    "settings": "MILJÖER",
+    "customDomains": "Anpassade domäner",
+    "contentFilter": "Innehållsfilter",
+    "admin": "ADMINISTRATION",
+    "userManagement": "Användarhantering",
+    "googleAnalytics": "Google Analytics",
+    "account": "REDOGÖRELSE",
+    "profile": "Profil",
+    "upgradePlan": "Uppgraderingsplan",
+    "freePlan": "Gratis plan",
+    "billing": "Fakturering och betalningar",
+    "upgradeNow": "Uppgradera nu"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "Insikter om webbplatstrafik och användarbeteende",
+    "loading": "Laddar Google Analytics...",
+    "refresh": "Uppdatera",
+    "notConfigured": {
+      "title": "Google Analytics ej konfigurerad",
+      "description": "Vänligen konfigurera Google Analytics-uppgifter i servermiljöns variabler.",
+      "instructions": "Nödvändiga miljövariabler:"
+    },
+    "dateRange": {
+      "7days": "Sista 7 dagarna",
+      "30days": "De senaste 30 dagarna",
+      "90days": "Senaste 90 dagarna"
+    },
+    "realtime": {
+      "live": "LIVE",
+      "activeUsers": "Aktiva användare just nu"
+    },
+    "metrics": {
+      "activeUsers": "Aktiva användare",
+      "newUsers": "Nya användare",
+      "sessions": "Sessioner",
+      "pageViews": "Sidvisningar",
+      "avgDuration": "Genomsnittlig varaktighet",
+      "engagementRate": "Engagemangsgrad",
+      "bounceRate": "Avvisningsfrekvens"
+    },
+    "charts": {
+      "trafficOverTime": "Trafik över tid"
+    },
+    "tables": {
+      "trafficSources": "Trafikkällor",
+      "topPages": "Toppsidor",
+      "devices": "Enheter",
+      "browsers": "Webbläsare",
+      "locations": "Toppplatser",
+      "source": "Källa",
+      "sessions": "Sessioner",
+      "users": "Användare",
+      "page": "Sida",
+      "views": "Åsikter",
+      "country": "Land",
+      "city": "Stad"
+    }
+  },
+  "terms": {
+    "title": "Villkor och villkor",
+    "lastUpdated": "Senast uppdaterad: 13 januari 2025",
+    "preamble": {
+      "title": "Inledning",
+      "content": "Denna inledning och de följande klausulerna är en integrerad del av de allmänna användarvillkoren för detta dokument. Termerna: \"vi\", \"företaget\", \"tjänsten\" eller \"detta kontrakt\" avser Snip Company. \" \"Second Party\" syftar på personen som begärde tjänsten."
+    },
+    "introduction": {
+      "title": "Införandet",
+      "content": "Dessa villkor gäller för alla våra tekniska tjänster och applikationer som tillhandahålls via vår webbplats. Genom att besöka webbplatsen eller använda någon av våra tjänster eller applikationer godkänner du att följa dessa villkor. Om du inte godkänner dessa villkor måste du sluta använda webbplatsen och tjänsterna."
+    },
+    "definitions": {
+      "title": "1. Definitioner och termer",
+      "services": "Tjänster: Avser alla tekniska lösningar och applikationer som företaget tillhandahåller till statliga och privata enheter, inklusive konsulttjänster eller andra tekniska tjänster.",
+      "client": "Kund: Avser vilken statlig eller privat enhet eller individ som använder de tjänster vi tillhandahåller.",
+      "applications": "Applikationer: Avser all programvara eller tekniska system som tillhandahålls av företaget, vilka kan användas online eller laddas ner från webbplatsen.",
+      "website": "Webbplats: Den elektroniska plattformen genom vilken företaget tillhandahåller sina tjänster och produkter.",
+      "document": "Dokument: Avser de allmänna användarvillkoren."
+    },
+    "acceptance": {
+      "title": "2. Acceptans av villkor",
+      "content": "Genom att besöka webbplatsen och använda våra tjänster godkänner du villkoren i detta dokument och att följa alla regler och lagar. Om du inte godkänner några av villkoren måste du sluta använda webbplatsen och tjänsterna."
+    },
+    "access": {
+      "title": "3. Tillgång till tjänster",
+      "content": "För att få våra tjänster kan du behöva registrera dig via webbplatsen och lämna korrekt och fullständig information. Kunden ansvarar för att denna information är korrekt och för att uppdatera den regelbundet."
+    },
+    "usage": {
+      "title": "4. Användning av tjänster",
+      "item1": "Våra tjänster tillhandahålls endast för personligt eller institutionellt bruk.",
+      "item2": "Kunden måste använda tjänsterna inom en rättslig ram och i enlighet med auktoriserade användningar.",
+      "item3": "Det är förbjudet att använda tjänsterna för olagliga ändamål eller aktiviteter som kan leda till kränkning av andras rättigheter eller skada webbplatsen eller företaget.",
+      "item4": "Det är förbjudet att vidaresälja, distribuera eller utnyttja tjänsterna för obehöriga ändamål utan föregående skriftligt samtycke från Företaget."
+    },
+    "commencement": {
+      "title": "5. Inledande av tjänsteavtal",
+      "content": "Serviceavtalet börjar från och med serviceaktiveringsdatumet för kunden."
+    },
+    "intellectualProperty": {
+      "title": "6. Immateriella rättigheter",
+      "item1": "Webbplatsen innehåller material skyddat av immateriella rättigheter, inklusive texter, programvara, bilder, grafik, namn, logotyper, färger, applikationer, programvara och ljudfiler (\"Innehåll\"). De skyddas av upphovsrätt, varumärkesrättigheter och tillämpliga lagar i Kungariket Saudiarabien.",
+      "item2": "Alla immateriella rättigheter relaterade till applikationer, mjukvara och design är exklusiv egendom tillhörande Snip Company eller auktoriserade tjänsteleverantörer.",
+      "item3": "Kunden får inte kopiera, distribuera eller ändra något av detta material utan föregående skriftligt tillstånd från företaget."
+    },
+    "pricing": {
+      "title": "7. Prissättning och betalning",
+      "pricingDesc": "Prissättning: Priserna bestäms baserat på avtal och avtal som ingåtts mellan oss och kunden. Priser visas inte offentligt på webbplatsen.",
+      "paymentDesc": "Betalning: Klienten måste betala de överenskomna beloppen i enlighet med kontraktet eller föregående skriftligt avtal."
+    },
+    "obligations": {
+      "title": "8. Skyldigheter och ansvar",
+      "ourObligations": "Våra skyldigheter:",
+      "ourObligationsDesc": "Vi är engagerade i att tillhandahålla tekniska tjänster i enlighet med de standarder och kontrakt som avtalats med kunden, och implementera kraven korrekt och professionellt.",
+      "clientResponsibility": "Kundansvar:",
+      "item1": "Att upprätthålla konfidentialitet för konto och lösenord och inte dela dem med tredje part.",
+      "item2": "Ekonomiska och juridiska skyldigheter som följer av tjänstanvändning.",
+      "item3": "Noggrannhet i tillhandahållna data och engagemang för att uppdatera dem vid behov.",
+      "item4": "Att tillhandahålla statliga licenser om tjänsten kräver det, och att förnya dem i tid för att säkerställa fortsatt serviceleverans.",
+      "item5": "Kunden håller med om att underlåtenhet att förnya licenser kan leda till avbrott i tjänsten."
+    },
+    "dataProtection": {
+      "title": "9. Integritet och dataskydd",
+      "item1": "Vi är engagerade i att skydda all personlig data vi samlar in från kunden i enlighet med integritetspolicyn.",
+      "item2": "Data samlas in och används i enlighet med lokala och internationella lagar.",
+      "item3": "Data används för att förbättra tjänster, kommunicera med kunder och analysera användning.",
+      "item4": "Vi använder lämpliga säkerhetsåtgärder för att skydda data från obehörig åtkomst.",
+      "item5": "Vi kommer inte att sälja eller hyra ut kunddata, och vi kommer inte att dela dem utan deras uttryckliga samtycke eller enligt lag."
+    },
+    "modifications": {
+      "title": "10. Ändringar i tjänster och villkor",
+      "item1": "Vi förbehåller oss rätten att när som helst ändra eller uppdatera villkoren eller lägga till eller ta bort tjänster.",
+      "item2": "Kunder kommer att informeras om eventuella väsentliga förändringar."
+    },
+    "support": {
+      "title": "11. Stöd och underhåll",
+      "item1": "Vi tillhandahåller teknisk support via officiella supportkanaler.",
+      "item2": "Vissa tjänster kan kräva periodiskt underhåll, och företaget har rätt att utföra det när som helst."
+    },
+    "limitations": {
+      "title": "12. Begränsningar och ersättning",
+      "item1": "Vi ansvarar inte för några direkta eller indirekta skador som uppstår vid användning av webbplatsen eller tjänsterna.",
+      "item2": "Kunden går med på att kompensera företaget för eventuella förluster eller krav som uppstår till följd av deras olagliga användning av tjänsterna."
+    },
+    "termination": {
+      "title": "13. Uppsägning och avbokning",
+      "item1": "Kunden kan avsluta tjänsten i enlighet med villkoren som anges i avtalet.",
+      "item2": "Företaget förbehåller sig rätten att avsluta tjänsten vid brott mot några villkor."
+    },
+    "forceMajeure": {
+      "title": "14. Force majeure",
+      "content": "Vi ansvarar inte för någon försening eller störning som uppstår till följd av omständigheter utanför företagets kontroll, såsom naturkatastrofer, myndighetsbeslut, cyberattacker och annat."
+    },
+    "laws": {
+      "title": "15. Tillämpliga lagar och tvistlösning",
+      "item1": "Dessa villkor är underkastade lagarna i Kungariket Saudiarabien.",
+      "item2": "Tvister löses genom den behöriga domstolen i Riyadh.",
+      "item3": "Om någon klausul bedöms vara ogiltig, kvarstår de andra klausulerna."
+    },
+    "delivery": {
+      "title": "16. Leverans och frakt",
+      "item1": "När det gäller fysiska produkter eller licenser levereras de enligt avtalet med kunden.",
+      "item2": "Licenser kan tillhandahållas via e-post eller via kundens konto."
+    },
+    "communication": {
+      "title": "17. Kundkommunikation",
+      "intro": "Du kan kontakta oss via:",
+      "email": "E-post: support@nawah.sa",
+      "phone": "Telefon: 01151083470"
+    },
+    "externalLinks": {
+      "title": "18. Externa länkar",
+      "content": "Webbplatsen kan innehålla länkar till externa webbplatser som ligger utanför vår kontroll, och vi ansvarar inte för deras innehåll."
+    },
+    "refund": {
+      "title": "19. Avboknings- och återbetalningspolicy",
+      "item1": "Kunden har rätt att begära återbetalning inom (20 dagar) innan tjänsten används eller aktiveras.",
+      "item2": "Återbetalningsbegäran måste lämnas in skriftligen tillsammans med stödjande dokument.",
+      "item3": "Återbetalningar behandlas inom (14 dagar) efter godkännande.",
+      "item4": "Företaget har rätt att ta ut administrativa avgifter.",
+      "item5": "Inga återbetalningar görs efter att tjänsten har använts eller aktiverats."
+    },
+    "notices": {
+      "title": "20. Meddelanden och kommunikationer",
+      "item1": "Genom att registrera sig och använda webbplatsen samtycker kunden till att få notiser via e-post eller webbplatsnotiser.",
+      "item2": "Kunden ansvarar för att uppdatera sina uppgifter för att säkerställa mottagande av meddelanden."
+    },
+    "specialTerms": {
+      "title": "Särskilda termer",
+      "content": "Kunden är skyldig att tillhandahålla korrekt information för kommunikation, tekniskt stöd och hjälp med att tillhandahålla tjänsten."
+    }
+  },
+  "privacy": {
+    "title": "Integritetspolicy",
+    "lastUpdated": "Senast uppdaterad: 13 januari 2025",
+    "intro": {
+      "title": "Klausul 1: Introduktion",
+      "content": "Snip respekterar din integritet och är engagerade i att erbjuda utmärkt service till alla våra kunder. Denna integritetspolicy har utarbetats i enlighet med lagen om personskydd och dess regler i Kungariket Saudiarabien för att hjälpa dig att förstå arten av de data vi samlar in från dig och hur dessa data kommer att hanteras av Snip. Utifrån Snips engagemang för integritet och sekretess kring användardata är vi dedikerade till att upprätthålla säkerheten och sekretessen kring denna information och använda den för att leverera den förväntade servicenivån i enlighet med tillämpliga villkor i Kungariket Saudiarabien. Genom att använda Snip-webbplatsen samtycker användaren till denna integritetspolicy."
+    },
+    "dataCollection": {
+      "title": "Klausul 2: Data som ska samlas in och syftet med insamlingen",
+      "item1": "Data krävs vid registrering för våra tjänster (såsom namn, e-postadress, fysisk adress, telefonnummer, födelsedatum, nationalitet och kön).",
+      "item2": "Data som krävs för att använda våra tjänster, webbplatser eller mobilapplikationer (såsom cookies och användardata).",
+      "item3": "Data som utbyts under kommunikationen med dig (såsom kundsupportförfrågningar och feedback)."
+    },
+    "purpose": {
+      "title": "Klausul 3: Syftet med insamling av personuppgifter",
+      "intro": "För att erbjuda högsta servicenivå och produkter samlar vi in och använder dina personuppgifter för följande ändamål:",
+      "item1": "Det gör det möjligt för oss att utveckla, förbättra och/eller marknadsföra produkter och tjänster.",
+      "item2": "Att underlätta och stödja våra verksamheter och system för att säkerställa kontinuitet och kvalitet i våra tjänster.",
+      "item3": "Att förstå kundernas behov, bedöma din behörighet för produkter och tjänster samt rekommendera relevanta produkter och tjänster.",
+      "item4": "Att informera dig om nya produkter och tjänster.",
+      "item5": "Att svara på och följa upp förfrågningar, förslag eller klagomål som användaren lämnat in."
+    },
+    "methods": {
+      "title": "Klausul 4: Metoder för datainsamling",
+      "item1": "Data tillhandahålls direkt av användaren genom registrering på webbplatsen.",
+      "item2": "Data som samlas in via cookies under webbplatsbesök."
+    },
+    "storage": {
+      "title": "Klausul 5: Lagring och förstörelse av personuppgifter",
+      "content": "Personuppgifter lagras inom Kungariket Saudiarabien på servrar som skyddas av avancerad teknik i enlighet med National Cybersecurity Authoritys policyer och kontroller samt internationella standarder för att förhindra obehörig åtkomst och minska cybersäkerhetsrisker. När datan inte längre behövs och enligt reglerna kommer den att förstöras säkert för att säkerställa att den inte kan nås eller återställas, i enlighet med Snips policyer."
+    },
+    "legalBasis": {
+      "title": "Klausul 6: Rättslig grund för insamling och behandling av personuppgifter",
+      "content": "Personuppgifter samlas in och behandlas baserat på samtycke från den berörda personen. Den registrerade personen kan när som helst dra tillbaka sitt samtycke till att samla in och behandla sina uppgifter, om det inte finns någon annan rättslig grund. För att göra det, vänligen kontakta Snips supportteam via:",
+      "email": "E-post: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "rights": {
+      "title": "Klausul 7: Den registrerade personens rättigheter",
+      "rightToKnow": {
+        "title": "Rätt till information:",
+        "content": "Den registrerade personen har rätt att känna till metoderna för datainsamling, den rättsliga grunden för insamling och bearbetning, hur den behandlas, lagras och förstörs, samt med vem den kommer att delas. Detaljer finns i denna integritetspolicy eller kan erhållas genom att kontakta oss via informationen i klausul 9."
+      },
+      "rightToAccess": {
+        "title": "Rätt att få tillgång till personuppgifter:",
+        "content": "Den som är den aktuella kan begära en kopia av sina personuppgifter via e-postadressen som anges i klausul 9. Informationen kommer att tillhandahållas kostnadsfritt inom 30 arbetsdagar via e-post."
+      },
+      "rightToCorrect": {
+        "title": "Rätten att rätta personuppgifter:",
+        "content": "Den som är den registrerade har rätt att begära korrigering av felaktiga, felaktiga eller ofullständiga personuppgifter via den e-postadress som anges i klausul 9. Begäran kommer att granskas och beslutas inom 30 arbetsdagar, och den registrerade kommer att meddelas via e-post."
+      },
+      "rightToDelete": {
+        "title": "Rätten att förstöra personuppgifter:",
+        "content": "Den registrerade kan begära att deras personuppgifter förstörs om det inte finns juridiska, regulatoriska eller kontraktsmässiga krav på bevarande."
+      },
+      "rightToWithdraw": {
+        "title": "Rätt att dra tillbaka sitt samtycke för behandling av personuppgifter:",
+        "content": "Den registrerade personen kan när som helst dra tillbaka sitt samtycke till behandling av personuppgifter, om det inte finns legitima syften som kräver annat."
+      },
+      "note": "Vissa begäranden (såsom förstörelse eller återkallelse av samtycke) kan vara begränsade om juridiska eller regulatoriska skyldigheter kräver datalagring."
+    },
+    "sharing": {
+      "title": "Klausul 8: Deling/utbyte av personuppgifter",
+      "content": "Personuppgifter kommer inte att lämnas ut till tredje part utan ditt samtycke eller en rättslig grund, enligt lag."
+    },
+    "exercising": {
+      "title": "Klausul 9: Utövande av den registrerades rättigheter",
+      "content": "Den registrerade kan begära åtkomst, korrigering eller förstörelse av sina uppgifter genom att kontakta oss via:",
+      "email": "E-post: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "complaints": {
+      "title": "Klausul 10: Klagomål och förfrågningar",
+      "content": "För eventuella klagomål eller frågor relaterade till integritetspolicyn eller hanteringen av personuppgifter, vänligen kontakta webbplatsens ledning via:",
+      "email": "E-post: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "updates": {
+      "title": "Klausul 11: Uppdateringar av integritetspolicyn",
+      "content": "Integritetspolicyn uppdaterades senast den 13 januari 2025. Snip förbehåller sig rätten att lägga till eller ändra eventuella villkor i integritetspolicyn. Webbplatsens ledning kommer att meddela den aktuella personen om eventuella ändringar, och den registrerades konto kan avslutas om de inte accepterar den uppdaterade integritetspolicyn efter att ha blivit informerad."
+    }
+  },
+  "adminUrlManagement": {
+    "title": "URL-hantering",
+    "subtitle": "Se och hantera alla kundlänkar",
+    "accessDenied": "Tillträde nekas",
+    "noPermission": "Du har inte tillstånd att besöka denna sida.",
+    "viewModes": {
+      "table": "Tabell",
+      "grid": "Rutnät"
+    },
+    "stats": {
+      "totalUrls": "Totala URL:er",
+      "totalClicks": "Totala klick",
+      "newUrls30d": "Nya URL:er (30d)",
+      "totalUsers": "Totalt antal användare"
+    },
+    "filters": {
+      "searchPlaceholder": "Sök efter URL, kortkod, titel eller skapare...",
+      "searchByShortCode": "Sök efter kortkod, URL eller skapare...",
+      "allStatus": "All Status",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "allUsers": "Alla användare"
+    },
+    "table": {
+      "shortCode": "Short Code",
+      "originalUrl": "Original-URL",
+      "creator": "Skapare",
+      "clicks": "Klick",
+      "status": "Status",
+      "created": "Skapad",
+      "actions": "Åtgärder"
+    },
+    "actions": {
+      "view": "Vy",
+      "copy": "Kopiera",
+      "activate": "Aktivera",
+      "deactivate": "Avaktivera",
+      "delete": "Radera"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "loading": "Laddar URL:er...",
+    "loadingUrls": "Laddar...",
+    "noUrls": "Inga URL:er hittades som matchade dina kriterier.",
+    "noUrlsFound": "Inga URL:er hittades.",
+    "pagination": {
+      "previous": "Tidigare",
+      "next": "Nästa",
+      "pageInfo": "Sida {{page}} av {{pages}} ({{total}} totalt)"
+    },
+    "modal": {
+      "title": "URL-detaljer",
+      "description": "Omfattande information om denna förkortade URL.",
+      "linkInfo": "Länkinformation",
+      "shortCode": "Short Code",
+      "originalUrl": "Original-URL",
+      "linkTitle": "Titel",
+      "domain": "Domän",
+      "creatorInfo": "Skaparinformation",
+      "name": "Namn",
+      "email": "E-post",
+      "statistics": "Statistik",
+      "totalClicks": "Totala klick",
+      "uniqueClicks": "Unika klick",
+      "status": "Status",
+      "dates": "Datum",
+      "created": "Skapad",
+      "lastUpdated": "Senast uppdaterad",
+      "expires": "Löper ut",
+      "tags": "Taggar",
+      "activateUrl": "Aktivera URL",
+      "deactivateUrl": "Avaktivera URL",
+      "deleteUrl": "Ta bort URL",
+      "close": "Stäng",
+      "copyUrl": "Kopiera URL"
+    },
+    "messages": {
+      "activateSuccess": "URL aktiverad framgångsrikt",
+      "deactivateSuccess": "URL inaktiverades framgångsrikt",
+      "deleteSuccess": "URL borttagen framgångsrikt",
+      "deleteConfirm": "Är du säker på att du vill ta bort den här URL:en? Denna åtgärd kan inte göras ogjort.",
+      "updateFailed": "Misslyckades med att uppdatera URL:en",
+      "deleteFailed": "Misslyckades med att ta bort URL:en",
+      "failedToLoad": "Misslyckades med att ladda URL:er"
+    }
+  }
+}

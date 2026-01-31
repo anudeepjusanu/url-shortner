@@ -1,0 +1,1872 @@
+{
+  "common": {
+    "ok": "OK",
+    "appName": "URL-forkorter",
+    "brandName": "Snip",
+    "loading": "Indlæser...",
+    "downloading": "Downloader...",
+    "error": "Fejl",
+    "success": "Succes",
+    "save": "Gem",
+    "cancel": "Annuller",
+    "delete": "Slet",
+    "edit": "Redigering",
+    "update": "Opdatering",
+    "close": "Luk",
+    "confirm": "Bekræft",
+    "back": "Tilbage",
+    "next": "Næste",
+    "submit": "Indsend",
+    "search": "Søgning",
+    "filter": "Filter",
+    "reset": "Nulstil",
+    "copy": "Modtaget",
+    "copied": "Kopieret!",
+    "share": "Del",
+    "noLinkSelected": "Vælg venligst et specifikt link for at redigere",
+    "download": "Download",
+    "export": "Eksport",
+    "import": "Import",
+    "refresh": "Opfrisk",
+    "logout": "Log ud",
+    "login": "Log ind",
+    "register": "Registrer",
+    "viewMore": "Se mere",
+    "showLess": "Vis mindre",
+    "deleteConfirmTitle": "Slette link?",
+    "deleteConfirmMessage": "Er du sikker på, at du vil slette dette link?",
+    "deleteDomainTitle": "Slette domænet?",
+    "deleteDomainMessage": "Er du sikker på, at du vil slette dette brugerdefinerede domæne?",
+    "deleteQRTitle": "Slette QR-kode?",
+    "deleteQRMessage": "Er du sikker på, at du vil slette denne QR-kode og link?",
+    "settings": "Indstillinger",
+    "profile": "Profil",
+    "dashboard": "Instrumentbræt",
+    "language": "Sprog",
+    "english": "Engelsk",
+    "arabic": "Arabisk",
+    "hide": "Gem dig",
+    "show": "Show",
+    "creating": "Skaber...",
+    "updating": "Opdaterer...",
+    "generating": "Genererer...",
+    "fieldRequired": "Dette felt er påkrævet",
+    "updated": "Opdateret",
+    "noCustomDomainsConnected": "Ingen brugerdefinerede domæner tilsluttet."
+  },
+  "dates": {
+    "today": "I dag",
+    "yesterday": "I går",
+    "daysAgo": "For {{count}} dage siden",
+    "weeksAgo": "For {{count}} uge siden",
+    "weeksAgo_plural": "For {{count}} uger siden",
+    "ago": "ago"
+  },
+  "header": {
+    "navigation": "NAVIGATION",
+    "home": "Hjem",
+    "features": "Funktioner",
+    "pricing": "Prisfastsættelse",
+    "about": "Om",
+    "contact": "Kontakt",
+    "signIn": "Log på",
+    "signUp": "Tilmeld dig",
+    "getStarted": "Kom i gang",
+    "myLinks": "Mine links",
+    "createLink": "Opret Link",
+    "analytics": "Analyse",
+    "qrCodes": "QR-koder",
+    "customDomains": "Brugerdefinerede domæner",
+    "subscription": "Abonnement",
+    "contentFilter": "Indholdsfilter",
+    "languages": {
+      "english": "Engelsk",
+      "arabic": "Arabisk",
+      "chinese": "Kinesisk",
+      "spanish": "Spansk",
+      "hindi": "Hindi",
+      "french": "Fransk",
+      "portuguese": "Portugisisk",
+      "russian": "Russisk",
+      "dutch": "Nederlandsk",
+      "greek": "Græsk",
+      "german": "Tysk",
+      "italian": "Italiensk",
+      "japanese": "Japansk",
+      "korean": "Koreansk",
+      "polish": "Polsk",
+      "danish": "Dansk",
+      "norwegian": "Norsk",
+      "swedish": "Svensk",
+      "ukrainian": "Ukrainsk"
+    },
+    "theme": {
+      "light": "Lystilstand",
+      "dark": "Mørk tilstand"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Forkort dine URL'er og følg ydeevnen",
+      "titleMain": "Shorten, Brand,",
+      "titleAccent": "Bane",
+      "subtitle": "Dine links, optimeret til Saudi-Arabien",
+      "description": "Hurtig, sikker og compliant URL-forkortelse med avanceret analyse og brandede domæner.",
+      "descriptionAlt": "Gratis linkforkorter med detaljeret analyse, QR-koder og API",
+      "cta": "Kom i gang gratis",
+      "tryDemo": "Se demo",
+      "formTitle": "Prøv nu – Forkort dit første link",
+      "urlPlaceholder": "Indsæt din lange URL her...",
+      "shortenBtn": "Forkortelse af URL",
+      "shortenButton": "Shorten",
+      "complianceNotice": "✓ PDPL-kompatibel • Data gemt i KSA",
+      "yourShortLink": "Dit korte link:",
+      "wantOwnDomain": "Vil du have dit eget domæne?",
+      "createFreeAccount": "Opret gratis konto"
+    },
+    "features": {
+      "title": "Kraftfulde funktioner for moderne marketingfolk",
+      "subtitle": "Alt, hvad du behøver for at administrere, spore og optimere dine links",
+      "sectionTitle": "Alt hvad du behøver for at administrere links",
+      "sectionDescription": "Avancerede linkstyringsværktøjer, der hjælper dig med at spore performance og optimere kampagner",
+      "pills": {
+        "freePlan": "Gratis plan for evigt",
+        "customDomain": "Understøttelse af brugerdefineret domæne",
+        "noCard": "Ingen kreditkort kræves",
+        "richAnalytics": "Rig analyse inkluderede"
+      },
+      "analytics": {
+        "title": "Detaljeret analyse",
+        "titleAlt": "Avanceret analyse",
+        "description": "Følg klik, geografiske data, enheder og mere med omfattende analyser",
+        "descriptionAlt": "Følg klik, konverteringer og brugeradfærd med detaljerede indsigter og realtidsrapportering"
+      },
+      "customDomain": {
+        "title": "Brugerdefinerede domæner",
+        "titleAlt": "Brugerdefinerede domæner",
+        "description": "Brug dine egne brandede domæner til professionelle korte links",
+        "descriptionAlt": "Brug dit eget brandede domæne til at skabe professionelle shortlinks, der opbygger tillid"
+      },
+      "qrCode": {
+        "title": "QR-koder",
+        "description": "Generer og tilpas QR-koder til dine korte links",
+        "descriptionAlt": "Generer dynamiske QR-koder, der kan redigeres når som helst uden at genudskrive"
+      },
+      "security": {
+        "title": "Sikkert og pålideligt",
+        "description": "Enterprise-grade sikkerhed med 99,9% oppetidsgaranti"
+      },
+      "urlShortening": {
+        "title": "URL-forkortelse",
+        "description": "Opret korte, mindeværdige links øjeblikkeligt med vores avancerede algoritme"
+      },
+      "utmBuilder": {
+        "title": "UTM Builder",
+        "description": "Følg kampagnepræstation med indbygget UTM-parametergenerering"
+      },
+      "authintica": {
+        "title": "Authintica-integration",
+        "description": "Sikker autentificering med Saudi-Arabiens betroede identitetsplatform"
+      },
+      "bilingualUI": {
+        "title": "Tosproget UI",
+        "description": "Sømløs arabisk og engelsk grænseflade med RTL-understøttelse"
+      },
+      "teamCollaboration": {
+        "title": "Teamsamarbejde",
+        "description": "Arbejd sammen med dit team, administrer tilladelser og del linkanalyser"
+      },
+      "apiAccess": {
+        "title": "API-adgang",
+        "description": "Integrér i dine applikationer med vores kraftfulde REST API"
+      },
+      "linkManagement": {
+        "title": "Linkstyring",
+        "description": "Organiser, rediger og administrer tusindvis af links med masseoperationer og tags"
+      },
+      "learnMore": "Lær mere"
+    },
+    "whyChoose": {
+      "title": "Hvorfor virksomheder vælger Snip",
+      "subtitle": "Det kloge valg for saudiske marketingfolk og virksomheder"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "Lancering kampagner hurtigere",
+        "description": "Oprette, spore og optimere links på minutter, ikke timer",
+        "setupTime": "Gennemsnitlig opsætningstid",
+        "setupTimeValue": "2 minutter"
+      },
+      "trustCompliance": {
+        "title": "Tillid og overholdelse først",
+        "description": "PDPL-kompatibel med data lokalt hostet i Saudi-Arabien",
+        "dataResidency": "Dataophold",
+        "dataResidencyValue": "100% KSA"
+      },
+      "analytics": {
+        "title": "Handlingsrettet analyse",
+        "description": "Tag datadrevne beslutninger med realtidsindsigt",
+        "trackingAccuracy": "Nøjagtighed i kliksporing",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "Perfekt til saudiske markedsførere",
+      "feature1": "Understøttelse af brugerdefineret .sa-domæne",
+      "feature2": "Arabisk og engelsk grænseflade med RTL-understøttelse",
+      "feature3": "QR-koder til offline-kampagner",
+      "feature4": "Authintica-integration for sikker adgang",
+      "feature5": "Lokal støtte på arabisk og engelsk"
+    },
+    "stats": {
+      "linksCreated": "Links oprettet af saudiske virksomheder",
+      "linksCreatedValue": "50,000+",
+      "linksCreatedAlt": "Oprettede links",
+      "uptime": "Oppetid",
+      "uptimeValue": "98%",
+      "clicksTracked": "Klikkene spores",
+      "clicksTrackedValue": "2,5M+",
+      "support": "Støtte",
+      "supportValue": "24/7",
+      "activeUsers": "Aktive brugere",
+      "activeUsersValue": "10,000+",
+      "yearsOnMarket": "År på markedet",
+      "yearsOnMarketValue": "5+"
+    },
+    "integrations": {
+      "title": "Forbind dig med dine yndlingsværktøjer",
+      "subtitle": "Forbind Snip til dine eksisterende værktøjer med færdige integrationer og API-adgang",
+      "viewAll": "Se alle integrationer",
+      "zapier": "Zapier",
+      "slack": "Slack",
+      "googleAnalytics": "Google Analytics",
+      "metaPixel": "Meta Pixel",
+      "mailchimp": "Mailchimp",
+      "googleAds": "Google Ads",
+      "chrome": "Krom",
+      "wordpress": "WordPress",
+      "ios": "iOS",
+      "make": "Lav",
+      "android": "Android",
+      "segment": "Segment"
+    },
+    "teams": {
+      "title": "Bygget til hvert hold",
+      "subtitle": "Se, hvordan forskellige teams bruger Snip til at nå deres mål",
+      "marketing": {
+        "title": "Marketingteams",
+        "description": "Følg kampagnepræstationer og optimer konverteringer",
+        "feature1": "Kampagnesporing",
+        "feature2": "A/B-testning",
+        "feature3": "ROI-måling",
+        "feature4": "Konverteringsoptimering"
+      },
+      "sales": {
+        "title": "Salgsteams",
+        "description": "Personligt opsøgende arbejde og følg engagementet",
+        "feature1": "Personlige links",
+        "feature2": "Engagementssporing",
+        "feature3": "Førende pointgivende",
+        "feature4": "CRM-integration"
+      },
+      "infrastructure": {
+        "title": "Infrastrukturteams",
+        "description": "Enterprise-grade funktioner til storskala implementering",
+        "feature1": "SSO-autentificering",
+        "feature2": "API-adgang",
+        "feature3": "Systemintegration",
+        "feature4": "Ubegrænsede abonnementer"
+      }
+    },
+    "trust": {
+      "title": "Pålidelig i stor skala",
+      "subtitle": "Marketingteams, udviklere og virksomheder verden over er afhængige af Snip til at spore det, der betyder noget",
+      "socialProof": "Brugt af Fortune 500-virksomheder og startups verden over",
+      "trustpilot": "Trustpilot",
+      "clientConfidentiality": "Klientfortrolighed"
+    },
+    "faq": {
+      "title": "Ofte stillede spørgsmål",
+      "subtitle": "Kan du ikke finde det, du leder efter?",
+      "q1": {
+        "question": "Hvordan kommer jeg i gang med Snip?",
+        "answer": "Det er nemt at komme i gang! Opret blot en gratis konto, og du kan begynde at forkorte links med det samme. Der kræves ikke kreditkort for den gratis plan."
+      },
+      "q2": {
+        "question": "Kan jeg bruge mit eget domæne?",
+        "answer": "Ja! Du kan forbinde dit eget brugerdefinerede domæne for at skabe brandede korte links. Dette hjælper med at opbygge tillid og anerkendelse hos dit publikum."
+      },
+      "q3": {
+        "question": "Hvilke analyser findes der?",
+        "answer": "Vi leverer omfattende analyser, herunder kliksporing, geografiske data, enhedstyper, henvisninger og konverteringssporing. Alle data er tilgængelige i realtid."
+      },
+      "q4": {
+        "question": "Findes der et API tilgængeligt?",
+        "answer": "Ja, vi tilbyder et kraftfuldt REST API, der gør det muligt at integrere Snip i dine applikationer. Du kan oprette, administrere og spore links programmatisk."
+      },
+      "q5": {
+        "question": "Hvor sikre er mine links?",
+        "answer": "Vi tager sikkerhed alvorligt. Alle links leveres via HTTPS, og vi tilbyder adgangskodebeskyttelse, udløbsdatoer og avancerede sikkerhedsfunktioner til dine links."
+      },
+      "q6": {
+        "question": "Hvad er inkluderet i den gratis plan?",
+        "answer": "Den gratis plan inkluderer 1.000 brandede links, grundlæggende analyser, QR-koder og API-adgang. Perfekt til enkeltpersoner og små projekter."
+      }
+    },
+    "banner": {
+      "text": "Gratis plan tilgængelig • Ingen kreditkort kræves"
+    },
+    "navigation": {
+      "integrations": "Integrationer"
+    },
+    "testimonials": {
+      "title": "Betroet af saudiske virksomheder",
+      "subtitle": "Se, hvad vores kunder siger om Snip",
+      "testimonial1": {
+        "text": "Snips PDPL-overholdelse giver os ro i sindet. Analyserne er utroligt detaljerede og hjælper os med at optimere vores kampagner.",
+        "author": "Sarah Al-Rashid",
+        "role": "Marketingdirektør, TechCorp KSA"
+      },
+      "testimonial2": {
+        "text": "Den tosprogede grænseflade er perfekt til vores mangfoldige team. Vi elsker funktionen med brandede domæner!",
+        "author": "Ahmed Mohammed",
+        "role": "Digital Marketing Manager"
+      },
+      "testimonial3": {
+        "text": "Snip har revolutioneret måden, vi sporer vores kampagner på sociale medier. QR-koderne er en game-changer!",
+        "author": "Fatima Al-Zahra",
+        "role": "Direktør for e-handel"
+      },
+      "testimonial4": {
+        "text": "Hurtig, pålidelig og sikker. Alt, hvad vi behøver til vores voksende forretning i Saudi-Arabien.",
+        "author": "Omar Hassan",
+        "role": "Startup-grundlægger"
+      }
+    },
+    "pricing": {
+      "title": "Simpel, gennemsigtig prissætning",
+      "subtitle": "Vælg den plan, der passer til dine behov",
+      "free": {
+        "title": "Gratis",
+        "currency": "$",
+        "amount": "0",
+        "period": "måned",
+        "description": "Perfekt til privat brug og til at komme i gang",
+        "feature1": "100 URL'er om måneden",
+        "feature2": "Grundlæggende analyse",
+        "feature3": "Standardstøtte",
+        "cta": "Kom i gang gratis"
+      },
+      "pro": {
+        "title": "Fordel",
+        "badge": "Mest populær",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "måned",
+        "description": "Bedst for professionelle og små teams",
+        "feature1": "Ubegrænsede URL'er",
+        "feature2": "Avanceret analyse",
+        "feature3": "Brugerdefinerede domæner",
+        "feature4": "Adgangskodebeskyttelse",
+        "feature5": "Prioriteret støtte",
+        "cta": "Start gratis prøveperiode"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "måned",
+        "description": "For store teams og organisationer",
+        "feature1": "Alt i Pro",
+        "feature2": "Ubegrænsede brugerdefinerede domæner",
+        "feature3": "Teamsamarbejde",
+        "feature4": "API-adgang",
+        "feature5": "Dedikeret støtte",
+        "cta": "Kontakt Salg"
+      }
+    },
+    "cta": {
+      "title": "Klar til at komme i gang?",
+      "subtitle": "Bliv en del af tusindvis af brugere, der stoler på vores platform",
+      "button": "Start gratis"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Velkommen tilbage",
+      "subtitle": "Log ind på din konto",
+      "brandSubtitle": "Velkommen tilbage til dit dashboard",
+      "email": "E-mailadresse",
+      "password": "Adgangskode",
+      "rememberMe": "Husk mig",
+      "forgotPassword": "Glemt adgangskode?",
+      "button": "Log på",
+      "signingIn": "Logger ind...",
+      "googleButton": "Log ind med Google",
+      "dividerText": "Eller log ind med e-mail",
+      "noAccount": "Har du ikke en konto?",
+      "signUp": "Tilmeld dig her",
+      "errorInvalidCredentials": "Ugyldig e-mail eller adgangskode",
+      "errorGeneral": "Login mislykkedes. Prøv venligst igen.",
+      "errorEmailRequired": "E-mail er påkrævet",
+      "errorEmailInvalid": "Indtast venligst en gyldig e-mailadresse",
+      "errorPasswordRequired": "Adgangskode kræves",
+      "feature1Title": "Administrer dine links",
+      "feature1Description": "Få adgang til alle dine forkortede URL'er ét sted",
+      "feature2Title": "Banepræstation",
+      "feature2Description": "Se detaljerede analyser og indsigter",
+      "feature3Title": "Sikkert og pålideligt",
+      "feature3Description": "Dine data er beskyttet med virksomhedens sikkerhed"
+    },
+    "forgotPassword": {
+      "title": "Glemt adgangskode?",
+      "subtitle": "Indtast din e-mail for at modtage en verifikationskode",
+      "newPasswordTitle": "Opret ny adgangskode",
+      "newPasswordSubtitle": "Indtast din nye adgangskode nedenfor",
+      "email": "E-mailadresse",
+      "emailPlaceholder": "Indtast din e-mail",
+      "otp": "Verifikationskode",
+      "otpPlaceholder": "Indtast 6-cifret kode",
+      "newPassword": "Ny adgangskode",
+      "newPasswordPlaceholder": "Indtast ny adgangskode",
+      "confirmPassword": "Bekræft adgangskode",
+      "confirmPasswordPlaceholder": "Bekræft ny adgangskode",
+      "sendOtp": "Send verifikationskode",
+      "resetPassword": "Nulstil adgangskode",
+      "sending": "Sender...",
+      "resetting": "Nulstiller...",
+      "backToEmail": "Tilbage til e-mail",
+      "resendOtp": "Gensend kode",
+      "otpSent": "Verifikationskode sendt til {email}",
+      "otpResent": "Verifikationskode genindsendt med succes",
+      "successMessage": "Adgangskodenulstilling med succes!",
+      "errorEmailRequired": "E-mail er påkrævet",
+      "errorEmailInvalid": "Indtast venligst en gyldig e-mailadresse",
+      "errorOtpRequired": "Verifikationskode er påkrævet",
+      "errorOtpInvalid": "Verifikationskoden skal være 6 cifre",
+      "errorPasswordRequired": "Adgangskode kræves",
+      "errorPasswordMinLength": "Adgangskoden skal være mindst 8 tegn",
+      "errorPasswordsNotMatch": "Adgangskoder stemmer ikke overens",
+      "errorSamePassword": "Ny adgangskode skal være forskellig fra den gamle adgangskode",
+      "errorGeneral": "Kunne ikke nulstille adgangskoden. Prøv venligst igen."
+    },
+    "register": {
+      "title": "Opret konto",
+      "subtitle": "Kom i gang med din gratis konto",
+      "brandTitle": "Avanceret URL-forkorter",
+      "brandSubtitle": "Få avancerede analyser og professionelle korte links",
+      "languageToggle": "Sprog-toggle",
+      "googleSignup": "Tilmeld dig hos Google",
+      "divider": "eller tilmeld dig med e-mail",
+      "fullName": "Fulde navn",
+      "fullNamePlaceholder": "Indtast dit fulde navn",
+      "firstName": "Fornavn",
+      "lastName": "Efternavn",
+      "firstNamePlaceholder": "Indtast dit fornavn",
+      "lastNamePlaceholder": "Indtast dit efternavn",
+      "email": "E-mailadresse",
+      "emailPlaceholder": "example@example.com",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "Indtast dit telefonnummer",
+      "password": "Adgangskode",
+      "passwordPlaceholder": "••••••••••",
+      "passwordHint": "Skal være mindst 8 tegn lang.",
+      "confirmPassword": "Bekræft adgangskode",
+      "confirmPasswordPlaceholder": "Indtast din adgangskode igen",
+      "termsAgree": "Jeg accepterer",
+      "terms": "Brugsvilkår",
+      "and": "og",
+      "privacy": "Privatlivspolitik",
+      "pdplConsent": "Jeg accepterer behandlingen af mine persondata i overensstemmelse med Personvernloven",
+      "marketingConsent": "Jeg vil gerne modtage markedsføringsopdateringer og tilbud",
+      "button": "Opret konto",
+      "creating": "Oprettelse af konto...",
+      "haveAccount": "Har du allerede en konto?",
+      "signIn": "Log ind her",
+      "feature1Title": "Hurtig URL-forkortelse",
+      "feature1Description": "Skab korte, delbare links på få sekunder",
+      "feature2Title": "Avanceret analyse",
+      "feature2Description": "Følg din linkpræstation med detaljeret realtidsanalyse",
+      "feature3Title": "Virksomhedssikkerhed",
+      "feature3Description": "Dine data er beskyttet med sikkerhed og privatliv i virksomhedskvalitet",
+      "errorFullNameRequired": "Fuldt navn er påkrævet",
+      "errorFirstNameRequired": "Fornavn er påkrævet",
+      "errorLastNameRequired": "Efternavn er påkrævet",
+      "errorEmailRequired": "E-mailadresse er påkrævet",
+      "errorEmailInvalid": "Indtast venligst en gyldig e-mailadresse",
+      "errorPasswordRequired": "Adgangskode kræves",
+      "errorPasswordLength": "Adgangskoden skal være mindst 8 tegn lang",
+      "errorConfirmPasswordRequired": "Bekræft venligst din adgangskode",
+      "errorPasswordMismatch": "Adgangskoder stemmer ikke overens",
+      "errorTermsRequired": "Du skal acceptere servicevilkårene og privatlivspolitikken",
+      "errorDataConsentRequired": "Du skal acceptere samtykke til databehandling",
+      "errorEmailExists": "E-mail eksisterer allerede",
+      "errorGeneral": "Registreringen mislykkedes. Prøv venligst igen.",
+      "successMessage": "Konto oprettet med succes!"
+    }
+  },
+  "otp": {
+    "title": "Bekræft OTP",
+    "sentMessage": "Vi har sendt en 6-cifret verifikationskode til",
+    "digitLabel": "Siffer{{number}}",
+    "verifyButton": "Verificér og log ind",
+    "verifying": "Bekræfter...",
+    "didntReceive": "Modtog du ikke koden?",
+    "resendButton": "Send OTP igen",
+    "resendIn": "Sendte det ind igen {{seconds}}s",
+    "goBack": "Gå tilbage",
+    "securityTipTitle": "Sikkerhedstip:",
+    "securityTipMessage": "Del aldrig din OTP med nogen. Vi vil aldrig bede om din verifikationskode.",
+    "errorEnterAllDigits": "Indtast venligst alle 6 cifre i verifikationskoden",
+    "errorInvalidCode": "Ugyldig verifikationskode. Tjek venligst og prøv igen.",
+    "errorExpired": "Verifikationskoden er udløbet. Bed venligst om en ny.",
+    "errorTooManyAttempts": "For mange mislykkede forsøg. Bed venligst om en ny kode.",
+    "errorResendFailed": "Undlod at sende bekræftelseskoden igen. Prøv venligst igen.",
+    "errorTooManyRequests": "For mange anmodninger. Vent venligst et øjeblik, før du prøver igen.",
+    "errorNetwork": "Netværksfejl. Tjek venligst din forbindelse og prøv igen."
+  },
+  "dashboard": {
+    "title": "Instrumentbræt",
+    "welcome": "Velkommen tilbage",
+    "welcomeMessage": "Her er, hvad der sker med dine links i dag.",
+    "vsLastPeriod": "vs sidste periode",
+    "changeVsLastPeriod": "{{change}} vs sidste periode",
+    "createShortLink": "Opret kort link",
+    "createShortLinkDesc": "Omdann dine lange URL'er til kraftfulde, sporbare korte links",
+    "getStarted": "Kom i gang",
+    "generateQRCode": "Generer QR-kode",
+    "generateQRCodeDesc": "Opret QR-koder til dine links for at bygge bro mellem digitale og fysiske kampagner",
+    "createQR": "Opret QR",
+    "addCustomDomain": "Tilføj brugerdefineret domæne",
+    "addCustomDomainDesc": "Brug dit eget brandede domæne til professionelle korte links",
+    "setupDomain": "Opsætningsdomæne",
+    "shortenYourURL": "Forkort din URL",
+    "scannedQRCodes": "Scannede QR-koder",
+    "noChartData": "Ingen klikaktivitetsdata tilgængelig",
+    "noChartDataDesc": "Begynd at dele dine links for at se kliktrends og aktivitet over tid.",
+    "longURL": "Lang URL",
+    "longURLPlaceholder": "Indsæt din lange URL her",
+    "customBackhalf": "Brugerdefineret navn (valgfrit)",
+    "customBackhalfPlaceholder": "Indtast brugerdefineret navn",
+    "campaign": "Kampagnenavn (valgfrit)",
+    "campaignPlaceholder": "Indtast kampagnenavn",
+    "advancedSettings": "Avancerede indstillinger",
+    "shortenURL": "Forkortelse af URL",
+    "stats": {
+      "totalLinks": "Samlede links",
+      "totalClicks": "Samlede klik",
+      "activeLinks": "Aktive links",
+      "clickRate": "Klikrate",
+      "totalCustomDomains": "Brugerdefinerede domæner",
+      "active": "Aktiv",
+      "qrScans": "QR-scanninger"
+    },
+    "recentLinks": {
+      "title": "Nylige links",
+      "viewAll": "Se alle links",
+      "noLinks": "Ingen links oprettet endnu",
+      "createFirst": "Opret dit første korte link",
+      "shortLink": "Kort link",
+      "originalUrl": "Original URL",
+      "date": "Dato",
+      "clicks": "Klik",
+      "actions": "Handlinger"
+    },
+    "quickActions": {
+      "title": "Hurtige handlinger",
+      "createLink": "Opret nyt link",
+      "viewAnalytics": "Se analyse",
+      "generateQR": "Generer QR-kode",
+      "manageSubscription": "Administrer abonnement"
+    },
+    "analytics": {
+      "title": "Analyseoversigt",
+      "lastSevenDays": "De sidste 7 dage",
+      "clicksByDate": "Klik efter dato",
+      "topLinks": "Toppræsterende links",
+      "clickActivity": "Klik på Aktivitet",
+      "overviewDescription": "Oversigt over din linkpræstation over tid."
+    },
+    "timeFilters": {
+      "last24Hours": "De sidste 24 timer",
+      "last7Days": "De sidste 7 dage",
+      "last30Days": "De sidste 30 dage",
+      "last90Days": "De sidste 90 dage",
+      "7days": "7 dage",
+      "30days": "30 dage",
+      "90days": "90 dage"
+    },
+    "mon": "Mon",
+    "tue": "Tirsdag",
+    "wed": "Onsdag",
+    "thu": "Thu",
+    "fri": "Fredag",
+    "sat": "Lørdag",
+    "sun": "Sol",
+    "uniqueVisitors": "Unikke besøgende",
+    "changeFromLastWeek": "{{change}} vs sidste uge",
+    "fromLastPeriod": "+ fra sidste periode",
+    "clicks": "{{count}} klikker",
+    "created": "Oprettet {{time}}",
+    "viewAll": "Se alle",
+    "upgradeTitle": "Opgradering til professionel",
+    "upgradeDescription": "Lås op for avanceret analyse, brugerdefinerede domæner og prioriteret support for at vækste din virksomhed hurtigere.",
+    "upgradeToPro": "Opgrader til Pro",
+    "dialogs": {
+      "deleteLink": {
+        "title": "Slet Link",
+        "message": "Er du sikker på, at du vil slette {{url}}? Denne handling kan ikke gøres om.",
+        "cancel": "Annuller",
+        "delete": "Slet"
+      }
+    }
+  },
+  "createLink": {
+    "title": "Opret kort link",
+    "subtitle": "Konverter din lange URL til et kort, delbart link",
+    "customCode": "Brugerdefineret kode",
+    "form": {
+      "originalUrl": "Original URL",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "Brugerdefineret alias (valgfrit)",
+      "customAliasPlaceholder": "min-brugerlede-link",
+      "title": "Linktitel (Valgfrit)",
+      "titlePlaceholder": "Mit fantastiske link",
+      "description": "Beskrivelse (valgfrit)",
+      "descriptionPlaceholder": "Kort beskrivelse af dit link",
+      "tags": "Tags (Valgfri)",
+      "tagsPlaceholder": "Markedsføring, kampagne, produkt",
+      "domain": "Domæne",
+      "selectDomain": "Vælg domæne",
+      "expirationDate": "Udløbsdato (Valgfrit)",
+      "password": "Adgangskodebeskyttelse (valgfrit)",
+      "passwordPlaceholder": "Indtast adgangskode",
+      "createButton": "Opret kort link",
+      "creating": "Skaber...",
+      "advancedOptions": "Avancerede muligheder",
+      "utmParameters": "UTM-parametre",
+      "urlHint": "Indtast den lange URL, du vil forkorte",
+      "aliasHint": "Lad det stå tomt for automatisk genereret kode"
+    },
+    "success": {
+      "title": "Link oprettet med succes!",
+      "created": "Kort link oprettet med succes!",
+      "yourLink": "Dit korte link:",
+      "copyLink": "Kopier Link",
+      "viewAnalytics": "Se analyse",
+      "createAnother": "Opret et andet link"
+    },
+    "errors": {
+      "invalidUrl": "Indtast venligst en gyldig URL (skal starte med http:// eller https://)",
+      "urlRequired": "Original URL er påkrævet",
+      "urlTooLong": "URL er for lang (maksimalt 2000 tegn)",
+      "aliasExists": "Dette alias er allerede taget",
+      "aliasReserved": "Dette alias er forbeholdt systembrug. Vælg venligst et andet alias.",
+      "aliasInvalidFormat": "Alias kan kun indeholde bogstaver, tal, bindestreger og understrøg",
+      "aliasInvalidLength": "Alias skal være mellem 3 og 50 tegn",
+      "aliasInvalidStart": "Alias skal starte med et bogstav eller tal",
+      "titleTooLong": "Titlen er for lang (maksimalt 100 tegn)",
+      "titleInvalidChars": "Titlen indeholder ugyldige tegn",
+      "fixErrors": "Ret venligst fejlene nedenfor, før du indsender",
+      "general": "Mislykkedes med at oprette link. Prøv venligst igen."
+    }
+  },
+  "myLinks": {
+    "title": "Mine links",
+    "subtitle": "Administrer alle dine forkortede URL'er",
+    "searchPlaceholder": "Søg efter titel, URL eller kortkode...",
+    "searchLinks": "Søgelinks...",
+    "editLink": "Rediger Link",
+    "viewModes": {
+      "simple": "Simpelt",
+      "detailed": "Detaljeret"
+    },
+    "filters": {
+      "all": "Alle links",
+      "active": "Aktiv",
+      "expired": "Udløbet",
+      "sortBy": "Sorter efter",
+      "newest": "Nyeste Første",
+      "oldest": "Ældste Første",
+      "mostClicks": "Flest klik",
+      "leastClicks": "Mindste klik"
+    },
+    "table": {
+      "title": "Titel",
+      "shortUrl": "Kort URL",
+      "shortLink": "Kort link",
+      "originalUrl": "Original URL",
+      "clicks": "Klik",
+      "created": "Oprettet",
+      "status": "Status",
+      "actions": "Handlinger"
+    },
+    "actions": {
+      "copy": "Modtaget",
+      "copyLink": "Kopier Link",
+      "edit": "Redigering",
+      "qrCode": "QR-kode",
+      "analytics": "Analyse",
+      "delete": "Slet"
+    },
+    "emptyState": {
+      "noLinks": "Ingen links fundet.",
+      "selectLink": "Vælg et link for at se detaljer",
+      "loading": "Indlæser..."
+    },
+    "performance": {
+      "title": "Samlet præstation",
+      "viewFullReport": "Se hele rapporten",
+      "totalClicks": "Samlede klik",
+      "allClicks": "Alle klik",
+      "ctr": "CTR",
+      "lastClick": "Sidste klik"
+    },
+    "linkPreview": {
+      "title": "Linkforhåndsvisning",
+      "notAvailable": "Forhåndsvisning ikke tilgængelig"
+    },
+    "optimize": {
+      "title": "Optimer",
+      "utmBuilder": "UTM Builder",
+      "utmDescription": "UTM-parametre hjælper med at følge kampagnens præstation",
+      "trafficRouting": "Trafikrute",
+      "trafficDescription": "Konfigurer trafikroutingregler",
+      "deepLinks": "Dybe links",
+      "deepLinksDescription": "Konfigurer dyb linking til mobilapps",
+      "retargeting": "Retargeting-scripts",
+      "retargetingDescription": "Tilføj retargeting-pixels og scripts"
+    },
+    "dialogs": {
+      "createLink": {
+        "title": "Opret Link",
+        "description": "Opret dit første korte link for at komme i gang",
+        "domain": "Domæne",
+        "customAlias": "Brugerdefineret alias (valgfrit)",
+        "generateQR": "Generer QR-kode",
+        "creating": "Skaber...",
+        "createButton": "Opret Link"
+      }
+    },
+    "confirmDelete": "Er du sikker på, at du vil slette dette link?",
+    "deleteSuccess": "Link slettet med succes",
+    "deleteError": "Manglende sletning af linket",
+    "noLinks": "Ingen links fundet",
+    "createFirstLink": "Opret dit første korte link for at komme i gang"
+  },
+  "analytics": {
+    "title": "Analyse",
+    "subtitle": "Spor og analyser din linkpræstation",
+    "overview": {
+      "title": "Oversigt",
+      "totalClicks": "Samlede klik",
+      "uniqueClicks": "Unikke klik",
+      "clickRate": "Klikrate",
+      "qrScans": "Scannede QR-koder",
+      "qrScansAlt": "QR-scanninger",
+      "avgClicksPerDay": "Gennemsnitligt klik/dag",
+      "avgClicksPerDayAlt": "Gennemsnitligt klik/dag"
+    },
+    "charts": {
+      "clicksOverTime": "Klikker over tid",
+      "clickPerformance": "Klik Performance",
+      "topCountries": "Toplande",
+      "topReferrers": "Tophenvisere",
+      "devices": "Enheder",
+      "topDevices": "Topenheder",
+      "browsers": "Browsere",
+      "operatingSystems": "Operativsystemer",
+      "topCities": "Topbyer"
+    },
+    "devices": {
+      "mobile": "Mobil",
+      "desktop": "Skrivebord",
+      "tablet": "Tablet"
+    },
+    "filters": {
+      "dateRange": "Datointerval",
+      "last24Hours": "De sidste 24 timer",
+      "last7Days": "De sidste 7 dage",
+      "last30Days": "De sidste 30 dage",
+      "last90Days": "De sidste 90 dage",
+      "last1Year": "Sidste 1 år",
+      "custom": "Specialdesignet Range",
+      "applyFilters": "Påfør filtre"
+    },
+    "export": {
+      "title": "Eksportdata",
+      "export": "Eksport",
+      "csv": "Eksport som CSV",
+      "pdf": "Eksport som PDF",
+      "json": "Eksport som JSON"
+    },
+    "tables": {
+      "country": "Land",
+      "clicks": "Klik",
+      "browser": "Browser",
+      "source": "Kilde",
+      "referrers": "Henvisninger",
+      "noData": "Ingen data"
+    },
+    "noData": {
+      "title": "Ingen klikaktivitetsdata tilgængelig",
+      "chartDescription": "Begynd at dele dine links for at se kliktrends og aktivitet over tid.",
+      "countries": "Ingen geografiske data",
+      "countriesDescription": "Landedata vil vises, når dine links er klikket på.",
+      "devices": "Ingen enhedsdata",
+      "devicesDescription": "Enhedens nedbrud vil vises, når klik er registreret.",
+      "browsers": "Ingen browserdata",
+      "browsersDescription": "Browserstatistikker vises, efter at dine links er klikket på.",
+      "os": "Ingen operativsystemdata",
+      "osDescription": "OS-distributionen vil være synlig, når klik er sporet.",
+      "cities": "Ingen bydata",
+      "citiesDescription": "Byniveau-analyser vil være tilgængelige, når klik er registreret.",
+      "referrers": "Ingen henvisningsdata",
+      "referrersDescription": "Trafikkilder vil blive sporet, når besøgende klikker på dine links."
+    },
+    "loading": "Indlæser...",
+    "error": "Mislykkedes med at hente analysedata"
+  },
+  "qrCodes": {
+    "title": "QR-kodehåndtering",
+    "subtitle": "Generer, tilpas og administrer QR-koder til dine links",
+    "viewModes": {
+      "grid": "Gitter",
+      "list": "Liste"
+    },
+    "stats": {
+      "totalQRCodes": "Samlede QR-koder",
+      "totalScans": "Samlede scanninger",
+      "uniqueScans": "Unikke scanninger",
+      "activeQRCodes": "Aktive QR-koder",
+      "active": "Aktiv",
+      "downloadsToday": "Downloads i dag",
+      "scans": "Scanninger",
+      "downloads": "Downloads"
+    },
+    "generate": {
+      "title": "Generer QR-kode",
+      "generateNew": "Generer nyt",
+      "selectLink": "Vælg Link til QR-kode",
+      "selectLinkPlaceholder": "Vælg et link...",
+      "generatingFor": "Generering af QR-kode til:",
+      "customize": "Tilpas indstillinger",
+      "customizeQRCode": "Tilpas QR-koden",
+      "description": "Opret og tilpas din QR-kode med avancerede muligheder.",
+      "size": "Størrelse (pixels)",
+      "sizePx": "Størrelse (px)",
+      "format": "Format",
+      "errorCorrection": "Fejlrettelsesniveau",
+      "foregroundColor": "Forgrundsfarve",
+      "backgroundColor": "Baggrundsfarve",
+      "includeMargin": "Inkluder margin omkring QR-koden",
+      "generateButton": "Generer QR-kode",
+      "bulkGenerate": "Bulk Generer",
+      "previewPlaceholder": "Forhåndsvisning vil blive vist her"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "Lavt (7%)",
+      "medium": "Mellem (15%)",
+      "quartile": "Kvartil (25%)",
+      "high": "Højt (30%)"
+    },
+    "actions": {
+      "download": "Download",
+      "downloadPNG": "Download PNG",
+      "downloadSVG": "Download SVG",
+      "customize": "Tilpas",
+      "delete": "Slet",
+      "preview": "Forhåndsvisning",
+      "share": "Del"
+    },
+    "search": {
+      "placeholder": "Søg QR-koder efter titel, URL eller kortkode..."
+    },
+    "selection": {
+      "selected": "Udvalgt"
+    },
+    "emptyState": {
+      "title": "Ingen QR-koder fundet",
+      "noQRCodes": "Ingen QR-koder endnu",
+      "tryAdjusting": "Prøv at justere din søgning",
+      "createFirst": "Generer din første QR-kode for at komme i gang",
+      "createFirstAlt": "Opret din første QR-kode for at komme i gang"
+    },
+    "dialogs": {
+      "details": {
+        "title": "QR-kodedetaljer",
+        "description": "Se og administrer din QR-kode",
+        "linkTitle": "Titel",
+        "shortUrl": "Kort URL",
+        "originalUrl": "Original URL",
+        "totalScans": "Samlede scanninger",
+        "downloads": "Downloads"
+      }
+    },
+    "messages": {
+      "failedToLoad": "Manglende indlæsning af links",
+      "generated": "QR-kode genereret!"
+    },
+    "noQRCodes": "Ingen QR-koder endnu",
+    "createFirst": "Generer din første QR-kode for at komme i gang",
+    "generateSuccess": "QR-kode genereret med succes!",
+    "generateFailed": "Kunne ikke generere QR-koden",
+    "downloadSuccess": "QR-kode downloadet med succes!",
+    "downloadFailed": "Kunne ikke downloade QR-koden",
+    "bulkGenerateSuccess": "Genereret med succes {{count}} QR-koder!",
+    "bulkGenerateFailed": "Mislykkedes med at generere QR-koder",
+    "updateSuccess": "QR-kodetilpasning blev opdateret med succes!",
+    "updateFailed": "Manglende opdatering af QR-kodetilpasning"
+  },
+  "contentFilter": {
+    "title": "Indholdsfilter & Sikkerhed",
+    "subtitle": "Beskyt dine links med avancerede indholdsfiltrerings- og sikkerhedsregler",
+    "stats": {
+      "totalFiltered": "Total filtreret",
+      "maliciousBlocked": "Ondsindet blokeret",
+      "phishingBlocked": "Phishing blokeret",
+      "spamBlocked": "Spam blokeret"
+    },
+    "tabs": {
+      "settings": "Indstillinger",
+      "blocked": "Blokeret",
+      "whitelist": "Hvidliste",
+      "logs": "Logs"
+    },
+    "settings": {
+      "title": "Filterindstillinger",
+      "enableContentFilter": "Aktivér indholdsfiltrering",
+      "enableDescription": "Filtrer automatisk ondsindede og upassende URL'er",
+      "blockMaliciousUrls": "Blokér ondsindede URL'er",
+      "blockMaliciousDescription": "Bloker kendte malware- og virusdistributionssider",
+      "blockPhishing": "Blokér phishing-sider",
+      "blockPhishingDescription": "Beskyt mod phishing og svindelwebsteder",
+      "blockAdultContent": "Bloker voksenindhold",
+      "blockAdultDescription": "Filtrer voksen- og NSFW-indhold",
+      "blockSpam": "Blokér spam-URL'er",
+      "blockSpamDescription": "Opdag og bloker spamindhold automatisk",
+      "customKeywordFiltering": "Brugerdefineret søgeordsfiltrering",
+      "customKeywordDescription": "Blokér URL'er, der indeholder specifikke nøgleord",
+      "pdplCompliance": "PDPL Compliance Mode",
+      "pdplDescription": "Sikre overholdelse af Saudi-Arabiens lov om beskyttelse af persondata",
+      "saveSettings": "Gem indstillinger",
+      "saving": "At redde..."
+    },
+    "blocked": {
+      "domains": "Blokerede domæner",
+      "keywords": "Blokerede nøgleord",
+      "addDomain": "Tilføj",
+      "addKeyword": "Tilføj",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "Nøgleord",
+      "noDomains": "Ingen blokerede domæner endnu",
+      "noKeywords": "Ingen blokerede nøgleord endnu",
+      "remove": "Fjern",
+      "confirmRemove": "Fjern {{domain}} fra blokeringslisten?",
+      "confirmRemoveKeyword": "Fjerne \"{{keyword}}\" fra blokerede søgeord?"
+    },
+    "whitelist": {
+      "title": "Tilladte domæner (Whitelist)",
+      "description": "Domæner i whitelisten vil omgå alle indholdsfiltre",
+      "addDomain": "Tilføj",
+      "domainPlaceholder": "example.com",
+      "noDomains": "Ingen whitelistede domæner endnu",
+      "remove": "Fjern",
+      "confirmRemove": "Fjern {{domain}} fra tilladte liste?"
+    },
+    "logs": {
+      "title": "Filteraktivitetslogfiler",
+      "refresh": "Opfrisk",
+      "noActivity": "Ingen filteraktivitet",
+      "noUrls": "Ingen URL'er er blevet filtreret endnu",
+      "defaultMessage": "URL blev blokeret af indholdsfilter",
+      "noData": "Ingen data tilgængelige"
+    }
+  },
+  "customDomains": {
+    "title": "Brugerdefinerede domæner",
+    "subtitle": "Tilføj og administrer dine brugerdefinerede domæner til brandede korte links",
+    "wizard": {
+      "step": "Trin {{current}} af {{total}}"
+    },
+    "stats": {
+      "totalDomains": "Samlede domæner",
+      "activeDomains": "Aktive domæner",
+      "totalUrls": "Samlede URL'er",
+      "totalClicks": "Samlede klik"
+    },
+    "addDomain": {
+      "title": "Tilføj brugerdefineret domæne",
+      "domainName": "Domænenavn",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "Underdomæne (Valgfrit)",
+      "subdomainPlaceholder": "kort",
+      "addButton": "Tilføj domæne",
+      "adding": "Tilføjer..."
+    },
+    "table": {
+      "domain": "Domæne",
+      "status": "Status",
+      "urls": "URL'er",
+      "clicks": "Klik",
+      "created": "Oprettet",
+      "actions": "Handlinger"
+    },
+    "status": {
+      "pending": "Afventer",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "verified": "Verificeret",
+      "failed": "Mislykkedes"
+    },
+    "actions": {
+      "verify": "Bekræft",
+      "setDefault": "Sæt standard",
+      "configure": "Konfigurér",
+      "delete": "Slet"
+    },
+    "verification": {
+      "title": "Domæneverifikation",
+      "instructions": "Tilføj følgende DNS-post for at verificere dit domæne:",
+      "recordType": "Registreringstype",
+      "name": "Navn",
+      "value": "Værdi",
+      "verifyButton": "Verificér domænet"
+    },
+    "dnsModal": {
+      "title": "Domæneverifikation",
+      "instruction": "Tilføj følgende DNS-post for at verificere dit domæne:",
+      "configTitle": "DNS-konfiguration påkrævet:",
+      "type": "Type",
+      "name": "Navn",
+      "value": "Værdi",
+      "checkDns": "Tjek DNS-konfiguration",
+      "checking": "Tjekker DNS...",
+      "success": "DNS-post bekræftet med succes!",
+      "failed": "DNS-post ikke fundet. Tjek venligst din konfiguration.",
+      "copy": "Modtaget",
+      "copied": "Kopieret"
+    },
+    "noDomains": "Ingen brugerdefinerede domæner tilføjet endnu",
+    "addFirst": "Tilføj dit første brugerdefinerede domæne for at komme i gang",
+    "domainAdded": "Domænet tilføjet med succes!",
+    "verificationSuccess": "Domænet er bekræftet med succes!",
+    "verificationFailed": "Domæneverificering mislykkedes",
+    "deleteSuccess": "Domænet slettet med succes",
+    "errors": {
+      "domainRequired": "Domænenavn er påkrævet",
+      "domainInvalid": "Indtast venligst et gyldigt domænenavn (f.eks. example.com)",
+      "domainExists": "Dette domæne er allerede registreret",
+      "subdomainInvalid": "Subdomain kan kun indeholde bogstaver, tal og bindestreger",
+      "invalidFormat": "Ugyldigt domæneformat"
+    }
+  },
+  "subscription": {
+    "title": "Abonnement og fakturering",
+    "subtitle": "Administrer din abonnementsplan og faktureringsoplysninger",
+    "pageTitle": "Abonnement og fakturering",
+    "pageSubtitle": "Administrer din abonnementsplan og faktureringsoplysninger",
+    "professionalPlan": "Professionel plan",
+    "activeStatus": "Aktiv",
+    "perMonth": "/måned",
+    "professionalFeaturesSummary": "Avancerede funktioner til voksende virksomheder og marketingteams",
+    "nextBilling": "Næste fakturering:",
+    "linksCreated": "Oprettede links",
+    "customDomains": "Brugerdefinerede domæner",
+    "totalClicks": "Samlede klik",
+    "of": "af",
+    "thisMonth": "Denne måned",
+    "feature50kLinks": "50.000 links om måneden",
+    "featureCustomDomains10": "10 brugerdefinerede domæner",
+    "featureUtmTracking": "UTM-sporing og analyse",
+    "featureBulkActions": "Masselink-handlinger",
+    "featureAdvancedAnalytics": "Avanceret analysedashboard",
+    "featureQrGeneration": "QR-kodegenerering",
+    "featurePrioritySupport": "Prioriteret støtte",
+    "availablePlans": "Tilgængelige planer",
+    "starterPlan": "Startplan",
+    "feature5kLinks": "5.000 links om måneden",
+    "featureBasicAnalytics": "Grundlæggende analyse",
+    "featureQrCodes": "QR-kodegenerering",
+    "downgradeButton": "Nedgradering til starter",
+    "currentBadge": "NUVÆRENDE",
+    "currentPlanButton": "Nuværende plan",
+    "enterprisePlan": "Virksomhedsplan",
+    "featureUnlimitedLinks": "Ubegrænsede links",
+    "featureUnlimitedDomains": "Ubegrænsede brugerdefinerede domæner",
+    "upgradeButton": "Opgradering til Enterprise",
+    "billingInformation": "Faktureringsinformation",
+    "paymentMethod": "Betalingsmetode",
+    "expires": "Udløber",
+    "updatePaymentMethod": "Opdater betalingsmetode",
+    "billingAddress": "Faktureringsadresse",
+    "sampleCustomerName": "Ahmed Al-Rashid",
+    "sampleStreetAddress": "123 Kong Fahd Vej",
+    "sampleCityCountry": "Riyadh, Saudi-Arabien 12345",
+    "updateBillingAddress": "Opdater faktureringsadresse",
+    "cancelSubscriptionTitle": "Annuller abonnement",
+    "cancelSubscriptionDesc": "Annuller dit abonnement og nedgrader til den gratis plan. Du beholder adgang til alle Professional-funktioner, indtil din nuværende faktureringsperiode udløber.",
+    "whatYouWillLose": "Hvad du vil miste:",
+    "loseAdvancedAnalytics": "Avanceret analysedashboard",
+    "loseCustomDomains": "Brugerdefinerede domæner (10)",
+    "losePrioritySupport": "Prioriteret støtte",
+    "loseHigherLimits": "Højere linkgrænser (50.000/måned)",
+    "pauseFor3Months": "Pause i 3 måneder",
+    "cancelSubscriptionButton": "Annuller abonnement",
+    "currentPlan": {
+      "title": "Nuværende plan",
+      "free": "Gratis plan",
+      "pro": "Pro-plan",
+      "enterprise": "Virksomhedsplan",
+      "status": "Status",
+      "active": "Aktiv",
+      "renews": "Fornyer på",
+      "expires": "Udløber"
+    },
+    "plans": {
+      "title": "Tilgængelige planer",
+      "free": {
+        "name": "Gratis",
+        "price": "0",
+        "features": [
+          "100 URL'er om måneden",
+          "Grundlæggende analyse",
+          "Standard korte koder",
+          "Støtte fra lokalsamfundet"
+        ]
+      },
+      "pro": {
+        "name": "Fordel",
+        "price": "9.99",
+        "features": [
+          "Ubegrænsede URL'er",
+          "Avanceret analyse",
+          "Brugerdefinerede domæner",
+          "QR-koder",
+          "Prioriteret støtte",
+          "Ingen reklamer"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Skik",
+        "features": [
+          "Alt i Pro",
+          "Dedikeret støtte",
+          "SLA-garanti",
+          "Brugerdefinerede integrationer",
+          "Teamledelse",
+          "White-label mulighed"
+        ]
+      }
+    },
+    "actions": {
+      "upgrade": "Opgradering",
+      "downgrade": "Nedgradering",
+      "cancel": "Annuller abonnement",
+      "contactSales": "Kontakt Salg"
+    },
+    "billing": {
+      "title": "Faktureringshistorik",
+      "date": "Dato",
+      "amount": "Beløb",
+      "status": "Status",
+      "invoice": "Faktura",
+      "download": "Download"
+    },
+    "tabs": {
+      "overview": "Oversigt",
+      "paymentMethods": "Betalingsmetoder",
+      "invoices": "Fakturaer",
+      "usage": "Anvendelse"
+    },
+    "status": {
+      "active": "Aktiv",
+      "trial": "Retssag",
+      "pastDue": "Forsinket",
+      "cancelled": "Aflyst",
+      "paused": "Pause"
+    },
+    "loadingBillingInfo": "Indlæser faktureringsoplysninger...",
+    "failedToLoadBillingInfo": "Kunne ikke indlæse faktureringsoplysninger",
+    "confirmPauseSubscription": "Er du sikker på, at du vil sætte dit abonnement på pause?",
+    "subscriptionPausedSuccess": "Abonnementet blev sat på pause med succes",
+    "failedToPauseSubscription": "Manglende pause af abonnementet",
+    "subscriptionResumedSuccess": "Abonnementet blev genoptaget med succes",
+    "failedToResumeSubscription": "Kunne ikke genoptage abonnementet",
+    "confirmCancelSubscription": "Er du sikker på, at du vil aflyse? Du mister præmiefunktioner ved slutningen af din faktureringsperiode.",
+    "subscriptionWillCancelAtPeriodEnd": "Abonnementet opsiges ved udgangen af faktureringsperioden",
+    "failedToCancelSubscription": "Manglende opsigelse af abonnementet",
+    "invalidCouponCode": "Ugyldig kuponkode",
+    "couponAppliedSuccess": "Kupon ansøgt med succes!",
+    "failedToApplyCoupon": "Undlod at ansøge kuponen",
+    "confirmRemovePaymentMethod": "Er du sikker på, at du vil fjerne denne betalingsmetode?",
+    "paymentMethodRemoved": "Betalingsmetode fjernet",
+    "failedToRemovePaymentMethod": "Undlod at fjerne betalingsmetoden",
+    "defaultPaymentMethodUpdated": "Standard betalingsmetode opdateret",
+    "failedToUpdateDefaultPaymentMethod": "Manglende opdatering af standardbetalingsmetoden",
+    "failedToDownloadInvoice": "Kunne ikke downloade fakturaen",
+    "trialPeriodActive": "Prøveperiode aktiv",
+    "trialEndsOn": "Din retssag slutter med",
+    "discountApplied": "Anvendt rabatte",
+    "off": "Off",
+    "billingCycle": "Faktureringscyklus",
+    "monthly": "Månedligt",
+    "resumeSubscription": "CV Abonnement",
+    "pauseSubscription": "Pause abonnement",
+    "changePlan": "Ændringsplan",
+    "upcomingInvoice": "Kommende faktura",
+    "amountDue": "Skyldigt beløb",
+    "dueDate": "Forfaldsdato",
+    "lineItems": "Linjeposter",
+    "applyDiscountCode": "Anvend rabatkode",
+    "enterCouponCode": "Indtast kuponkode",
+    "validate": "Valider",
+    "apply": "Ansøg",
+    "addPaymentMethod": "Tilføj betalingsmetode",
+    "noPaymentMethodsYet": "Ingen betalingsmetoder er tilføjet endnu",
+    "default": "Default",
+    "setAsDefault": "Sat som standard",
+    "noInvoicesYet": "Ingen fakturaer endnu",
+    "currentUsage": "Nuværende brug",
+    "urlsThisMonth": "URL'er denne måned",
+    "totalUrlsCreated": "Samlede oprettede URL'er",
+    "apiCallsThisMonth": "API-kald denne måned",
+    "overageCharges": "Overforbrugsgebyrer",
+    "addedToNextInvoice": "Tilføjet til næste faktura",
+    "included": "Inkluderet"
+  },
+  "profile": {
+    "title": "Profilindstillinger",
+    "subtitle": "Administrer dine kontooplysninger og præferencer",
+    "accountOverview": "Kontooversigt",
+    "currentPlan": "Nuværende plan",
+    "regionalSettings": "Regionale omgivelser",
+    "tabs": {
+      "general": "Generel",
+      "security": "Sikkerhed",
+      "preferences": "Præferencer",
+      "apiKeys": "API-nøgler"
+    },
+    "general": {
+      "personalInfo": "Personlige oplysninger",
+      "firstName": "Fornavn",
+      "lastName": "Efternavn",
+      "email": "E-mailadresse",
+      "phone": "Telefonnummer",
+      "company": "Selskab",
+      "website": "Hjemmeside",
+      "jobTitle": "Rolle",
+      "updateButton": "Opdater profil",
+      "updating": "Opdaterer...",
+      "saveChanges": "Gemmeændringer"
+    },
+    "security": {
+      "changePassword": "Ændr adgangskode",
+      "currentPassword": "Nuværende adgangskode",
+      "newPassword": "Ny adgangskode",
+      "confirmPassword": "Bekræft ny adgangskode",
+      "updatePassword": "Opdater adgangskode",
+      "twoFactor": "To-faktor-autentificering",
+      "enable2FA": "Aktiver 2FA",
+      "disable2FA": "Deaktiver 2FA",
+      "sessions": "Aktive sessioner",
+      "revokeAll": "Ophæv alle sessioner",
+      "errorCurrentPasswordRequired": "Nuværende adgangskode er påkrævet",
+      "errorNewPasswordRequired": "Ny adgangskode kræves",
+      "errorConfirmPasswordRequired": "Bekræft venligst din nye adgangskode",
+      "errorPasswordLength": "Adgangskoden skal være mindst 8 tegn",
+      "errorPasswordMismatch": "Adgangskoder stemmer ikke overens"
+    },
+    "preferences": {
+      "language": "Sprog",
+      "timezone": "Tidszone",
+      "dateFormat": "Datoformat",
+      "emailNotifications": "E-mailnotifikationer",
+      "emailNotificationsDesc": "Modtag e-mail-notifikationer om vigtige opdateringer",
+      "marketingEmails": "Markedsføringsmails",
+      "marketingEmailsDesc": "Få opdateringer om nye funktioner og kampagner",
+      "weeklyReports": "Ugentlige rapporter",
+      "weeklyReportsDesc": "Få ugentlige analyserapporter sendt til din e-mail",
+      "productUpdates": "Produktopdateringer",
+      "securityAlerts": "Sikkerhedsadvarsler",
+      "savePreferences": "Gem indstillinger"
+    },
+    "notifications": {
+      "title": "Notifikationer"
+    },
+    "apiKeys": {
+      "viewDocs": "Se API-dokumentation",
+      "title": "API-nøgler",
+      "description": "Administrer dine API-nøgler for programmatisk adgang",
+      "createNew": "Opret en ny nøgle",
+      "keyName": "Nøglenavn",
+      "key": "Nøgle",
+      "created": "Oprettet",
+      "lastUsed": "Sidst brugt",
+      "revoke": "Tilbagekald",
+      "regenerating": "Regenererer...",
+      "regenerateButton": "Regenerer API-nøgle",
+      "confirmRegenerate": "Er du sikker på, at du vil gengenerere din API-nøgle? Den gamle nøgle virker ikke længere."
+    },
+    "messages": {
+      "profileUpdated": "Profil opdateret med succes",
+      "passwordsDoNotMatch": "Adgangskoder stemmer ikke overens",
+      "failedToUpdate": "Fejlede i at opdatere brugeren",
+      "passwordUpdated": "Adgangskoden blev opdateret korrekt",
+      "failedToUpdatePassword": "Fejlede i at opdatere adgangskoden",
+      "preferencesUpdated": "Præferencer opdateret korrekt",
+      "failedToUpdatePreferences": "Fejlede i at opdatere præferencer"
+    }
+  },
+  "userManagement": {
+    "title": "Brugerstyring",
+    "subtitle": "Administrer brugerroller og tilladelser",
+    "loading": "Indlæser brugere...",
+    "searchPlaceholder": "Søg efter navn eller e-mail...",
+    "filterByRole": "Filtrer efter rolle:",
+    "noUsersFound": "Ingen brugere fundet.",
+    "noUsersWithRole": "Ingen brugere fundet med rolle: {{role}}.",
+    "stats": {
+      "totalUsers": "Samlede brugere",
+      "activeUsers": "Aktive brugere",
+      "inactiveUsers": "Inaktive brugere",
+      "newUsers": "Ny (30 dage)"
+    },
+    "roles": {
+      "all": "Alle",
+      "superAdmin": "Super Admin",
+      "admin": "Administration",
+      "editor": "Redaktør",
+      "viewer": "Viewer",
+      "user": "Bruger"
+    },
+    "userCard": {
+      "status": "Status:",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "joined": "Tilsluttede:",
+      "lastLogin": "Sidste login:",
+      "location": "Beliggenhed:",
+      "changeRole": "Skift rolle:"
+    },
+    "viewMode": {
+      "grid": "Gitter",
+      "table": "Tabel"
+    },
+    "table": {
+      "name": "Navn",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "role": "Rolle",
+      "status": "Status",
+      "plan": "Plan",
+      "joined": "Tilsluttet",
+      "location": "Beliggenhed",
+      "lastLogin": "Sidste login",
+      "actions": "Handlinger"
+    },
+    "actions": {
+      "view": "Udsigt",
+      "viewDetails": "Se detaljer",
+      "activate": "Aktiver",
+      "deactivate": "Deaktiver",
+      "activateUser": "Aktiver bruger",
+      "deactivateUser": "Deaktiver bruger",
+      "delete": "Slet",
+      "deleteUser": "Slet bruger",
+      "makeAdmin": "Lav Admin",
+      "removeAdmin": "Fjern admin"
+    },
+    "modal": {
+      "title": "Brugeroplysninger",
+      "description": "Omfattende information om denne bruger.",
+      "urls": "URL'er",
+      "urlsCreated": "URL'er oprettet",
+      "domains": "Domæner",
+      "clicks": "Klik",
+      "totalClicks": "Samlede klik",
+      "contactInfo": "Kontaktinfo",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "location": "Registreringssted",
+      "locationFields": {
+        "country": "Land",
+        "city": "By",
+        "region": "Region",
+        "ipAddress": "IP-adresse",
+        "timezone": "Tidszone",
+        "countryCode": "Landkode",
+        "coordinates": "Koordinater"
+      },
+      "notAvailable": "Ikke tilgængeligt",
+      "accountActivity": "Kontoaktivitet",
+      "accountCreated": "Konto oprettet",
+      "joined": "Tilsluttet",
+      "lastLogin": "Sidste login",
+      "lastUpdated": "Sidst opdateret",
+      "never": "Aldrig",
+      "subscription": "Abonnement",
+      "subscriptionStatus": "Status",
+      "inactive": "INAKTIV",
+      "periodEnd": "Periodens afslutning",
+      "freePlan": "GRATIS",
+      "close": "Luk"
+    },
+    "messages": {
+      "failedToLoad": "Brugere kunne ikke indlæses"
+    }
+  },
+  "footer": {
+    "description": "Den nemmeste måde at forkorte og spore dine URL'er på",
+    "product": "Produkt",
+    "features": "Funktioner",
+    "pricing": "Prisfastsættelse",
+    "documentation": "Dokumentation",
+    "api": "API",
+    "integrations": "Integrationer",
+    "company": "Selskab",
+    "about": "Om os",
+    "blog": "Blog",
+    "careers": "Karrierer",
+    "contact": "Kontakt",
+    "support": "Støtte",
+    "help": "Hjælpecenter",
+    "faq": "FAQ",
+    "legal": "Juridisk",
+    "terms": "Brugsvilkår",
+    "privacy": "Privatlivspolitik",
+    "pdplCompliance": "PDPL-overholdelse",
+    "security": "Sikkerhed",
+    "copyright": "© 2025 URL-forkorter. Alle rettigheder forbeholdes."
+  },
+  "notifications": {
+    "success": "Succes",
+    "error": "Fejl",
+    "warning": "Advarsel",
+    "info": "Info",
+    "linkCreated": "Link skabte med succes!",
+    "linkUpdated": "Linket blev opdateret med succes!",
+    "linkDeleted": "Link slettet med succes!",
+    "settingsSaved": "Indstillinger gemt med succes!",
+    "profileUpdated": "Profilen opdateret succesfuldt!",
+    "passwordChanged": "Adgangskoden er ændret med succes!",
+    "domainAdded": "Domænet tilføjet med succes!",
+    "domainVerified": "Domænet er bekræftet med succes!",
+    "domainDeleted": "Domæne slettet",
+    "subscriptionUpdated": "Abonnementet opdateret med succes!",
+    "draftSaved": "Udkast reddet!",
+    "copied": "Kopieret!"
+  },
+  "errors": {
+    "generic": "Noget gik galt. Prøv venligst igen.",
+    "networkError": "Netværksfejl. Tjek venligst din forbindelse.",
+    "unauthorized": "Uautoriseret. Log venligst ind igen.",
+    "notFound": "Ressource ikke fundet.",
+    "serverError": "Serverfejl. Prøv venligst igen senere.",
+    "validationError": "Tjek venligst dine input og prøv igen.",
+    "enterDomain": "Indtast venligst et domæne",
+    "enterKeyword": "Indtast venligst et nøgleord",
+    "failedToAddDomain": "Manglende tilføjelse af blokeret domæne: {{error}}",
+    "failedToRemoveDomain": "Fejlede i at fjerne blokeret domæne: {{error}}",
+    "failedToAddKeyword": "Undladt at tilføje blokeret nøgleord: {{error}}",
+    "failedToRemoveKeyword": "Fejlede i at fjerne blokeret nøgleord: {{error}}",
+    "failedToAddAllowedDomain": "Manglende tilføjelse af tilladt domæne: {{error}}",
+    "failedToRemoveAllowedDomain": "Manglende fjernelse af tilladt domæne: {{error}}",
+    "failedToRegenerateApiKey": "Kunne ikke gengenerere API-nøglen: {{error}}",
+    "failedToLoadLinks": "Ikke indlæst links. Prøv venligst igen.",
+    "failedToLoadDomains": "Kunne ikke indlæse tilgængelige domæner. Opdater venligst siden.",
+    "failedToCopyLink": "Kunne ikke kopiere linket til udklipsholderen. Prøv venligst igen.",
+    "failedToGenerateQR": "Kunne ikke generere QR-koden til dette link.",
+    "failedToLoadStats": "Fejlede i at indlæse statistikker. Opdater venligst siden.",
+    "failedToVerifyDomain": "Mislykkedes i at verificere domænet. Tjek venligst dine DNS-indstillinger og prøv igen.",
+    "failedToCopyText": "Kunne ikke kopiere til udklipsholderen. Venligst kopier manuelt.",
+    "noLinksSelected": "Vælg venligst mindst ét link til masseoperation.",
+    "confirmBulkGenerate": "Er du sikker på, at du vil generere QR-koder til {{count}} valgte link(e)?",
+    "domainVerificationError": "Domæneverifikationen mislykkedes. Tjek venligst dine DNS-poster.",
+    "domainAddError": "Manglende tilføjelse af domæne. Tjek venligst dine input og prøv igen.",
+    "domainDeleteError": "Fejlede i at slette domænet. Prøv venligst igen.",
+    "qrCodeDeleteError": "Fik ikke slettet QR-koden. Prøv venligst igen.",
+    "failedToLoadCustomization": "Kunne ikke indlæse eksisterende tilpasning. Bruger standardindstillinger.",
+    "failedToUpdateStatus": "Fejlede i at opdatere status",
+    "failedToUpdateRole": "Fejlede i at opdatere rollen",
+    "failedToUpdateUserRole": "Fejlede i at opdatere brugerrollen",
+    "failedToDelete": "Slettede ikke",
+    "failedToAddDomainAlt": "Manglende tilføjelse af domæne",
+    "failedToLoadDomainsAlt": "Fejlede i at indlæse domæner"
+  },
+  "sidebar": {
+    "urlManagement": "URL-administration",
+    "apiDocs": "API Docs",
+    "main": "HOVED",
+    "dashboard": "Instrumentbræt",
+    "myLinks": "Mine links",
+    "analytics": "Analyse",
+    "qrCodes": "QR-koder",
+    "settings": "INDSTILLINGER",
+    "customDomains": "Brugerdefinerede domæner",
+    "contentFilter": "Indholdsfilter",
+    "admin": "ADMINISTRATION",
+    "userManagement": "Brugerstyring",
+    "googleAnalytics": "Google Analytics",
+    "account": "BERETNING",
+    "profile": "Profil",
+    "upgradePlan": "Opgraderingsplan",
+    "freePlan": "Gratis plan",
+    "billing": "Fakturering og betalinger",
+    "upgradeNow": "Opgrader nu"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "Indsigt i webtrafik og brugeradfærd",
+    "loading": "Indlæser Google Analytics...",
+    "refresh": "Opfrisk",
+    "notConfigured": {
+      "title": "Google Analytics ikke konfigureret",
+      "description": "Konfigurer venligst Google Analytics-oplysninger i servermiljøets variabler.",
+      "instructions": "Nødvendige miljøvariabler:"
+    },
+    "dateRange": {
+      "7days": "De sidste 7 dage",
+      "30days": "De sidste 30 dage",
+      "90days": "De sidste 90 dage"
+    },
+    "realtime": {
+      "live": "LIVE",
+      "activeUsers": "Aktive brugere lige nu"
+    },
+    "metrics": {
+      "activeUsers": "Aktive brugere",
+      "newUsers": "Nye brugere",
+      "sessions": "Sessioner",
+      "pageViews": "Sidevisninger",
+      "avgDuration": "Gennemsnitlig varighed",
+      "engagementRate": "Engagementsrate",
+      "bounceRate": "Bounce-rate"
+    },
+    "charts": {
+      "trafficOverTime": "Trafik over tid"
+    },
+    "tables": {
+      "trafficSources": "Trafikkilder",
+      "topPages": "Topsider",
+      "devices": "Enheder",
+      "browsers": "Browsere",
+      "locations": "Topplaceringer",
+      "source": "Kilde",
+      "sessions": "Sessioner",
+      "users": "Brugere",
+      "page": "Side",
+      "views": "Synspunkter",
+      "country": "Land",
+      "city": "By"
+    }
+  },
+  "terms": {
+    "title": "Vilkår og betingelser",
+    "lastUpdated": "Sidst opdateret: 13. januar 2025",
+    "preamble": {
+      "title": "Forord",
+      "content": "Denne præambel og de følgende klausuler er en integreret del af de generelle brugsvilkår for dette dokument. Udtrykkene: \"vi,\" \"virksomheden,\" \"tjenesten\" eller \"denne kontrakt\" henviser til Snip Company. \" \"Den anden part\" henviser til den person, der anmodede om tjenesten."
+    },
+    "introduction": {
+      "title": "Indførelsen",
+      "content": "Disse vilkår og betingelser gælder for alle vores tekniske tjenester og applikationer, der tilbydes via vores hjemmeside. Ved at tilgå hjemmesiden eller bruge nogen af vores tjenester eller applikationer accepterer du at overholde disse vilkår og betingelser. Hvis du ikke accepterer disse vilkår, skal du stoppe med at bruge hjemmesiden og tjenesterne."
+    },
+    "definitions": {
+      "title": "1. Definitioner og begreber",
+      "services": "Tjenester: Henviser til alle tekniske løsninger og applikationer, som virksomheden leverer til offentlige og private enheder, herunder konsulent- eller andre tekniske tjenester.",
+      "client": "Klient: Betyder enhver offentlig eller privat enhed eller enkeltperson, der benytter de tjenester, vi leverer.",
+      "applications": "Anvendelser: Betyder enhver software eller tekniske systemer leveret af selskabet, som kan bruges online eller downloades fra hjemmesiden.",
+      "website": "Hjemmeside: Den elektroniske platform, hvorigennem selskabet leverer sine tjenester og produkter.",
+      "document": "Dokument: Henviser til de generelle vilkår og betingelser for brug."
+    },
+    "acceptance": {
+      "title": "2. Accept af vilkår",
+      "content": "Ved at besøge hjemmesiden og bruge vores tjenester accepterer du vilkårene og betingelserne i dette dokument og overholder alle regler og love. Hvis du ikke accepterer nogen af vilkårene, skal du stoppe med at bruge hjemmesiden og tjenesterne."
+    },
+    "access": {
+      "title": "3. Adgang til tjenester",
+      "content": "For at få adgang til vores tjenester kan du være nødt til at registrere dig via hjemmesiden og give nøjagtige og komplette oplysninger. Kunden er ansvarlig for nøjagtigheden af disse oplysninger og for løbende opdatering."
+    },
+    "usage": {
+      "title": "4. Brug af tjenester",
+      "item1": "Vores tjenester tilbydes kun til personlig eller institutionel brug.",
+      "item2": "Kunden skal benytte tjenesterne inden for en juridisk ramme og i overensstemmelse med autoriserede formål.",
+      "item3": "Det er forbudt at bruge tjenesterne til ulovlige formål eller aktiviteter, der kan føre til krænkelse af andres rettigheder eller skade på hjemmesiden eller virksomheden.",
+      "item4": "Det er forbudt at videresælge, distribuere eller udnytte tjenesterne til uautoriserede formål uden forudgående skriftlig tilladelse fra Selskabet."
+    },
+    "commencement": {
+      "title": "5. Ikrafttrædelse af tjenestekontrakt",
+      "content": "Servicekontrakten begynder fra datoen for serviceaktivering for klienten."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellektuelle ejendomsrettigheder",
+      "item1": "Hjemmesiden indeholder materialer beskyttet af intellektuelle ejendomsrettigheder, herunder tekster, software, billeder, grafik, navne, logoer, farver, applikationer, software og lydfiler (\"Indhold\"). De er beskyttet under ophavsret, varemærkerettigheder og gældende love i Kongeriget Saudi-Arabien.",
+      "item2": "Alle intellektuelle ejendomsrettigheder relateret til applikationer, software og designs er udelukkende ejendom tilhørende Snip Company eller autoriserede tjenesteudbydere.",
+      "item3": "Kunden må ikke kopiere, distribuere eller ændre noget af dette materiale uden forudgående skriftlig tilladelse fra Selskabet."
+    },
+    "pricing": {
+      "title": "7. Prissætning og betaling",
+      "pricingDesc": "Priser: Priserne fastsættes på baggrund af kontrakter og aftaler, der er indgået mellem os og kunden. Priserne vises ikke offentligt på hjemmesiden.",
+      "paymentDesc": "Betaling: Klienten skal betale de aftalte beløb i overensstemmelse med kontrakten eller den forudgående skriftlige aftale."
+    },
+    "obligations": {
+      "title": "8. Forpligtelser og ansvar",
+      "ourObligations": "Vores forpligtelser:",
+      "ourObligationsDesc": "Vi er forpligtet til at levere tekniske tjenester i overensstemmelse med de standarder og kontrakter, der er aftalt med kunden, og implementere kravene nøjagtigt og professionelt.",
+      "clientResponsibility": "Kundeansvar:",
+      "item1": "At opretholde konti og adgangskode og ikke dele dem med tredjepart.",
+      "item2": "Økonomiske og juridiske forpligtelser som følge af brugen af tjenesten.",
+      "item3": "Nøjagtighed af de leverede data og engagement i at opdatere dem, når det er nødvendigt.",
+      "item4": "At udstede offentlige licenser, hvis servicen kræver det, og at forny dem til tiden for at sikre fortsat servicelevering.",
+      "item5": "Kunden er enig i, at manglende fornyelse af licenser kan føre til serviceafbrydelse."
+    },
+    "dataProtection": {
+      "title": "9. Privatliv og databeskyttelse",
+      "item1": "Vi er forpligtet til at beskytte alle personlige data, vi indsamler fra klienten, i overensstemmelse med privatlivspolitikken.",
+      "item2": "Data indsamles og anvendes i overensstemmelse med lokale og internationale love.",
+      "item3": "Data bruges til at forbedre tjenester, kommunikere med kunder og analysere brug.",
+      "item4": "Vi anvender passende sikkerhedsforanstaltninger for at beskytte data mod uautoriseret adgang.",
+      "item5": "Vi vil ikke sælge eller udleje klientdata, og vi vil heller ikke dele dem uden deres udtrykkelige samtykke eller som krævet ved lov."
+    },
+    "modifications": {
+      "title": "10. Ændringer i tjenester og vilkår",
+      "item1": "Vi forbeholder os retten til at ændre eller opdatere vilkårene eller tilføje eller fjerne tjenester når som helst.",
+      "item2": "Kunder vil blive underrettet om eventuelle væsentlige ændringer."
+    },
+    "support": {
+      "title": "11. Støtte og vedligeholdelse",
+      "item1": "Vi yder teknisk support gennem officielle supportkanaler.",
+      "item2": "Nogle tjenester kan kræve periodisk vedligeholdelse, og selskabet har ret til at udføre det når som helst."
+    },
+    "limitations": {
+      "title": "12. Begrænsninger og kompensation",
+      "item1": "Vi er ikke ansvarlige for nogen direkte eller indirekte skader, der følger af brugen af hjemmesiden eller tjenesterne.",
+      "item2": "Kunden accepterer at kompensere selskabet for eventuelle tab eller krav, der opstår som følge af deres ulovlige brug af tjenesterne."
+    },
+    "termination": {
+      "title": "13. Opsigelse og annullering",
+      "item1": "Kunden kan opsige tjenesten i overensstemmelse med de vilkår i kontrakten.",
+      "item2": "Selskabet forbeholder sig retten til at opsige tjenesten ved overtrædelse af vilkår."
+    },
+    "forceMajeure": {
+      "title": "14. Force majeure",
+      "content": "Vi er ikke ansvarlige for nogen forsinkelse eller forstyrrelse, der skyldes omstændigheder uden for selskabets kontrol, såsom naturkatastrofer, regeringsbeslutninger, cyberangreb og andet."
+    },
+    "laws": {
+      "title": "15. Gældende love og tvistbilæggelse",
+      "item1": "Disse vilkår er underlagt lovgivningen i Kongeriget Saudi-Arabien.",
+      "item2": "Tvister løses gennem den kompetente domstol i Riyadh.",
+      "item3": "Hvis en klausul findes at være uhåndhævelig, forbliver de øvrige klausuler gældende."
+    },
+    "delivery": {
+      "title": "16. Levering og forsendelse",
+      "item1": "I tilfælde af fysiske produkter eller licenser leveres de i henhold til aftalen med kunden.",
+      "item2": "Licenser kan gives via e-mail eller via klientens konto."
+    },
+    "communication": {
+      "title": "17. Kundekommunikation",
+      "intro": "Du kan kontakte os via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefon: 01151083470"
+    },
+    "externalLinks": {
+      "title": "18. Eksterne links",
+      "content": "Hjemmesiden kan indeholde links til eksterne hjemmesider, som ligger uden for vores kontrol, og vi er ikke ansvarlige for deres indhold."
+    },
+    "refund": {
+      "title": "19. Afbestillings- og refusionspolitik",
+      "item1": "Kunden har ret til at anmode om refusion inden for (20 dage) før brug eller aktivering af tjenesten.",
+      "item2": "Anmodningen om refusion skal indsendes skriftligt sammen med understøttende dokumenter.",
+      "item3": "Refusioner behandles inden for (14 dage) efter godkendelse.",
+      "item4": "Selskabet har ret til at pålægge administrationsgebyrer.",
+      "item5": "Der gives ingen refusioner efter brug eller aktivering af tjenesten."
+    },
+    "notices": {
+      "title": "20. Meddelelser og kommunikation",
+      "item1": "Ved at registrere sig og bruge hjemmesiden accepterer klienten at modtage notifikationer via e-mail eller hjemmesidenotifikationer.",
+      "item2": "Kunden er ansvarlig for at opdatere sine data for at sikre modtagelse af meddelelser."
+    },
+    "specialTerms": {
+      "title": "Særlige vilkår",
+      "content": "Kunden er forpligtet til at give korrekte oplysninger til kommunikation, teknisk support og assistance til at levere tjenesten."
+    }
+  },
+  "privacy": {
+    "title": "Privatlivspolitik",
+    "lastUpdated": "Sidst opdateret: 13. januar 2025",
+    "intro": {
+      "title": "Klausul 1: Introduktion",
+      "content": "Snip respekterer dit privatliv og er forpligtet til at levere fremragende service til alle vores kunder. Denne privatlivserklæring er udarbejdet i overensstemmelse med persondatabeskyttelsesloven og dens regler i Kongeriget Saudi-Arabien for at hjælpe dig med at forstå arten af de data, vi indsamler fra dig, og hvordan disse data vil blive håndteret af Snip. Ud fra Snips engagement i privatliv og fortrolighed af brugerdata er vi dedikerede til at opretholde sikkerheden og fortroligheden af disse oplysninger og bruge dem til at levere det forventede serviceniveau i overensstemmelse med de gældende vilkår og betingelser i Kongeriget Saudi-Arabien. Ved at bruge Snip-hjemmesiden samtykker brugeren til denne privatlivspolitik."
+    },
+    "dataCollection": {
+      "title": "Klausul 2: Data der skal indsamles og formål med indsamlingen",
+      "item1": "Data kræves ved registrering til vores tjenester (såsom navn, e-mailadresse, fysisk adresse, telefonnummer, fødselsdato, nationalitet og køn).",
+      "item2": "Data kræves for at bruge vores tjenester, hjemmesider eller mobilapplikationer (såsom cookies og brugsdata).",
+      "item3": "Data udveksles under kommunikationen med dig (såsom kundesupportforespørgsler og feedback)."
+    },
+    "purpose": {
+      "title": "Klausul 3: Formål med indsamling af persondata",
+      "intro": "For at levere det højeste serviceniveau og produkter indsamler og bruger vi dine personlige data til følgende formål:",
+      "item1": "Det gør det muligt for os at udvikle, forbedre og/eller markedsføre produkter og tjenester.",
+      "item2": "Faciliterer og understøtter vores drift og systemer for at sikre kontinuitet og kvalitet af vores tjenester.",
+      "item3": "Forstå kundernes behov, vurdere din berettigelse til produkter og tjenester samt anbefale relevante produkter og tjenester.",
+      "item4": "At informere dig om nye produkter og tjenester.",
+      "item5": "At svare på og følge op på henvendelser, forslag eller klager indsendt af brugeren."
+    },
+    "methods": {
+      "title": "Klausul 4: Metoder til dataindsamling",
+      "item1": "Data leveret direkte af brugeren gennem registrering på hjemmesiden.",
+      "item2": "Data indsamlet via cookies under besøg på hjemmesiden."
+    },
+    "storage": {
+      "title": "Klausul 5: Opbevaring og destruktion af persondata",
+      "content": "Persondata opbevares i Kongeriget Saudi-Arabien på servere, der er beskyttet af avancerede teknologier i overensstemmelse med National Cybersecurity Authoritys politikker og kontroller samt internationale standarder for at forhindre uautoriseret adgang og mindske cybersikkerhedsrisici. Når dataene ikke længere er nødvendige og i henhold til reglerne vil de blive destrueret sikkert for at sikre, at de ikke kan tilgås eller gendannes, i overensstemmelse med Snips politikker."
+    },
+    "legalBasis": {
+      "title": "Klausul 6: Juridisk grundlag for indsamling og behandling af persondata",
+      "content": "Persondata indsamles og behandles på baggrund af samtykke fra den pågældende person. Den oplyste kan til enhver tid trække sit samtykke til at indsamle og behandle sine data tilbage, medmindre der er et andet juridisk grundlag. For at gøre dette, kontakt venligst Snips supportteam via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "rights": {
+      "title": "Klausul 7: Oplysninger om den pågældende persons rettigheder",
+      "rightToKnow": {
+        "title": "Retten til information:",
+        "content": "Den oplyste har ret til at kende metoderne for dataindsamling, det juridiske grundlag for indsamling og behandling af dem, hvordan de behandles, opbevares og destrueres, og med hvem de deles. Oplysninger gives i denne privatlivspolitik eller kan opnås ved at kontakte os via oplysningerne i klausul 9."
+      },
+      "rightToAccess": {
+        "title": "Ret til adgang til persondata:",
+        "content": "Den oplyste kan anmode om en kopi af deres personoplysninger via den e-mail, der er angivet i klausul 9. Oplysningerne vil blive leveret gratis inden for 30 arbejdsdage via e-mail."
+      },
+      "rightToCorrect": {
+        "title": "Retten til at rette personoplysninger:",
+        "content": "Den oplyste person har ret til at anmode om rettelse af unøjagtige, ukorrekte eller ufuldstændige personoplysninger via den e-mail, der er angivet i klausul 9. Anmodninger vil blive gennemgået og truffet afgørelse inden for 30 arbejdsdage, og den pågældende vil blive underrettet via e-mail."
+      },
+      "rightToDelete": {
+        "title": "Retten til at destruere persondata:",
+        "content": "Den oplyste kan anmode om destruktion af deres persondata, medmindre der er juridiske, regulatoriske eller kontraktmæssige krav til opbevaring."
+      },
+      "rightToWithdraw": {
+        "title": "Ret til at trække samtykke tilbage til behandling af persondata:",
+        "content": "Den oplyste kan til enhver tid trække sit samtykke til behandling af persondata tilbage, medmindre der er legitime formål, der kræver andet."
+      },
+      "note": "Nogle anmodninger (såsom destruktion eller tilbagetrækning af samtykke) kan være begrænsede, hvis juridiske eller regulatoriske forpligtelser kræver dataopbevaring."
+    },
+    "sharing": {
+      "title": "Klausul 8: Deling/udveksling af persondata",
+      "content": "Persondata vil ikke blive videregivet til tredjepart uden dit samtykke eller et juridisk grundlag, som gældende i henhold til loven."
+    },
+    "exercising": {
+      "title": "Klausul 9: Udøvelse af den oplystes rettigheder",
+      "content": "Den pågældende kan anmode om adgang, rettelse eller destruktion af deres data ved at kontakte os via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "complaints": {
+      "title": "Klausul 10: Klager og forespørgsler",
+      "content": "For klager eller forespørgsler vedrørende privatlivspolitikken eller håndteringen af persondata, kontakt venligst hjemmesidens administration via:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefon: +966539100295"
+    },
+    "updates": {
+      "title": "Klausul 11: Opdateringer af privatlivspolitikken",
+      "content": "Privatlivspolitikken blev sidst opdateret den 13. januar 2025. Snip forbeholder sig retten til at tilføje eller ændre eventuelle vilkår i privatlivspolitikken. Webstedsadministrationen vil underrette den oplyste om eventuelle ændringer, og den registrerede persons konto kan blive opsagt, hvis de ikke accepterer den opdaterede privatlivspolitik efter at være blevet underrettet."
+    }
+  },
+  "adminUrlManagement": {
+    "title": "URL-administration",
+    "subtitle": "Se og administrer alle kundelinks",
+    "accessDenied": "Adgang nægtet",
+    "noPermission": "Du har ikke tilladelse til at se denne side.",
+    "viewModes": {
+      "table": "Tabel",
+      "grid": "Gitter"
+    },
+    "stats": {
+      "totalUrls": "Samlede URL'er",
+      "totalClicks": "Samlede klik",
+      "newUrls30d": "Nye URL'er (30d)",
+      "totalUsers": "Samlede brugere"
+    },
+    "filters": {
+      "searchPlaceholder": "Søg efter URL, kortkode, titel eller skaber...",
+      "searchByShortCode": "Søg efter kortkode, URL eller skaber...",
+      "allStatus": "Alle status",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "allUsers": "Alle brugere"
+    },
+    "table": {
+      "shortCode": "Short Code",
+      "originalUrl": "Original URL",
+      "creator": "Skaber",
+      "clicks": "Klik",
+      "status": "Status",
+      "created": "Oprettet",
+      "actions": "Handlinger"
+    },
+    "actions": {
+      "view": "Udsigt",
+      "copy": "Modtaget",
+      "activate": "Aktiver",
+      "deactivate": "Deaktiver",
+      "delete": "Slet"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "loading": "Indlæser URL'er...",
+    "loadingUrls": "Indlæser...",
+    "noUrls": "Ingen URL'er fundet, der matcher dine kriterier.",
+    "noUrlsFound": "Ingen URL'er fundet.",
+    "pagination": {
+      "previous": "Tidligere",
+      "next": "Næste",
+      "pageInfo": "Side {{page}} af {{pages}} ({{total}} i alt)"
+    },
+    "modal": {
+      "title": "URL-detaljer",
+      "description": "Omfattende information om denne forkortede URL.",
+      "linkInfo": "Linkinformation",
+      "shortCode": "Short Code",
+      "originalUrl": "Original URL",
+      "linkTitle": "Titel",
+      "domain": "Domæne",
+      "creatorInfo": "Skaberinfo",
+      "name": "Navn",
+      "email": "E-mail",
+      "statistics": "Statistik",
+      "totalClicks": "Samlede klik",
+      "uniqueClicks": "Unikke klik",
+      "status": "Status",
+      "dates": "Datoer",
+      "created": "Oprettet",
+      "lastUpdated": "Sidst opdateret",
+      "expires": "Udløber",
+      "tags": "Tags",
+      "activateUrl": "Aktiver URL",
+      "deactivateUrl": "Deaktiver URL",
+      "deleteUrl": "Slet URL",
+      "close": "Luk",
+      "copyUrl": "Kopier URL"
+    },
+    "messages": {
+      "activateSuccess": "URL aktiveret med succes",
+      "deactivateSuccess": "URL deaktiveret med succes",
+      "deleteSuccess": "URL slettet med succes",
+      "deleteConfirm": "Er du sikker på, at du vil slette denne URL? Denne handling kan ikke gøres om.",
+      "updateFailed": "Manglende opdatering af URL",
+      "deleteFailed": "Fejlede i at slette URL",
+      "failedToLoad": "Indlæsning af URL'er kunne ikke indlæses"
+    }
+  }
+}

@@ -1,0 +1,1872 @@
+{
+  "common": {
+    "ok": "OK",
+    "appName": "Accorciatore URL",
+    "brandName": "Snip",
+    "loading": "Caricamento...",
+    "downloading": "Sto scaricando...",
+    "error": "Errore",
+    "success": "Successo",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "update": "Aggiornamento",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "back": "Indietro",
+    "next": "Prossimo",
+    "submit": "Invia",
+    "search": "Ricerca",
+    "filter": "Filtro",
+    "reset": "Reset",
+    "copy": "Ricevuto",
+    "copied": "Ricevuto!",
+    "share": "Condividi",
+    "noLinkSelected": "Per favore, seleziona un link specifico da modificare",
+    "download": "Scarica",
+    "export": "Esportazione",
+    "import": "Importazione",
+    "refresh": "Aggiornare",
+    "logout": "Disconnessioni",
+    "login": "Accedi",
+    "register": "Registrati",
+    "viewMore": "Visualizza di più",
+    "showLess": "Mostra meno",
+    "deleteConfirmTitle": "Elimina il link?",
+    "deleteConfirmMessage": "Sei sicuro di voler cancellare questo link?",
+    "deleteDomainTitle": "Eliminare dominio?",
+    "deleteDomainMessage": "Sei sicuro di voler eliminare questo dominio personalizzato?",
+    "deleteQRTitle": "Eliminare il codice QR?",
+    "deleteQRMessage": "Sei sicuro di voler cancellare questo codice QR e il link?",
+    "settings": "Impostazioni",
+    "profile": "Profilo",
+    "dashboard": "Cruscotto",
+    "language": "Lingua",
+    "english": "Inglese",
+    "arabic": "Arabo",
+    "hide": "Nasconditi",
+    "show": "Programma",
+    "creating": "Creare...",
+    "updating": "Aggiornamento...",
+    "generating": "Generando...",
+    "fieldRequired": "Questo campo è richiesto",
+    "updated": "Aggiornato",
+    "noCustomDomainsConnected": "Nessun dominio personalizzato collegato."
+  },
+  "dates": {
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "daysAgo": "{{count}} giorni fa",
+    "weeksAgo": "{{count}} settimana fa",
+    "weeksAgo_plural": "{{count}} settimane fa",
+    "ago": "fa"
+  },
+  "header": {
+    "navigation": "NAVIGAZIONE",
+    "home": "Casa",
+    "features": "Caratteristiche",
+    "pricing": "Prezzi",
+    "about": "Informazioni",
+    "contact": "Contatto",
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "getStarted": "Inizia",
+    "myLinks": "I miei link",
+    "createLink": "Crea link",
+    "analytics": "Analitica",
+    "qrCodes": "Codici QR",
+    "customDomains": "Domini personalizzati",
+    "subscription": "Abbonamento",
+    "contentFilter": "Filtro dei contenuti",
+    "languages": {
+      "english": "Inglese",
+      "arabic": "Arabo",
+      "chinese": "Cinese",
+      "spanish": "Spagnolo",
+      "hindi": "Hindi",
+      "french": "Francese",
+      "portuguese": "Portoghese",
+      "russian": "Russo",
+      "dutch": "Olandese",
+      "greek": "Greco",
+      "german": "Tedesco",
+      "italian": "Italiano",
+      "japanese": "Giapponese",
+      "korean": "Coreano",
+      "polish": "Polacco",
+      "danish": "Danese",
+      "norwegian": "Norvegese",
+      "swedish": "Svedese",
+      "ukrainian": "Ucraino"
+    },
+    "theme": {
+      "light": "Modalità Luce",
+      "dark": "Modalità Oscura"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Accorcia i tuoi URL e monitora le prestazioni",
+      "titleMain": "Shorten, Brand,",
+      "titleAccent": "Pista",
+      "subtitle": "I tuoi link, ottimizzati per l'Arabia Saudita",
+      "description": "Accorciamento rapido, sicuro e conforme degli URL con analisi avanzate e domini brandizzati.",
+      "descriptionAlt": "Accorciatore gratuito di link con analisi dettagliate, codici QR e API",
+      "cta": "Inizia gratis",
+      "tryDemo": "Guarda la demo",
+      "formTitle": "Prova ora - Accorcia il tuo primo link",
+      "urlPlaceholder": "Incolla qui il tuo URL lungo...",
+      "shortenBtn": "Accorcia URL",
+      "shortenButton": "Shorten",
+      "complianceNotice": "✓ Conforme PDPL • Dati memorizzati in KSA",
+      "yourShortLink": "Il tuo breve link:",
+      "wantOwnDomain": "Vuoi un tuo dominio?",
+      "createFreeAccount": "Crea un account gratuito"
+    },
+    "features": {
+      "title": "Funzionalità potenti per i marketer moderni",
+      "subtitle": "Tutto ciò di cui hai bisogno per gestire, tracciare e ottimizzare i tuoi link",
+      "sectionTitle": "Tutto ciò che serve per gestire i collegamenti",
+      "sectionDescription": "Strumenti avanzati di gestione dei link che ti aiutano a monitorare le performance e ottimizzare le campagne",
+      "pills": {
+        "freePlan": "Piano gratuito per sempre",
+        "customDomain": "Supporto a domini personalizzati",
+        "noCard": "Nessuna carta di credito richiesta",
+        "richAnalytics": "Analisi ricche incluse"
+      },
+      "analytics": {
+        "title": "Analisi dettagliate",
+        "titleAlt": "Analisi avanzate",
+        "description": "Traccia clic, dati geografici, dispositivi e altro ancora con analisi complete",
+        "descriptionAlt": "Monitora clic, conversioni e comportamento degli utenti con approfondimenti dettagliati e report in tempo reale"
+      },
+      "customDomain": {
+        "title": "Domini personalizzati",
+        "titleAlt": "Domini personalizzati",
+        "description": "Usa i tuoi domini brandizzati per link brevi professionali",
+        "descriptionAlt": "Usa il tuo dominio di marca per creare link brevi professionali che costruiscono fiducia"
+      },
+      "qrCode": {
+        "title": "Codici QR",
+        "description": "Genera e personalizza i codici QR per i tuoi link brevi",
+        "descriptionAlt": "Genera codici QR dinamici che possono essere modificati in qualsiasi momento senza dover ristampare"
+      },
+      "security": {
+        "title": "Sicuro e affidabile",
+        "description": "Sicurezza di livello enterprise con garanzia di uptime del 99,9%"
+      },
+      "urlShortening": {
+        "title": "Accorciamento degli URL",
+        "description": "Crea link brevi e memorabili istantaneamente con il nostro algoritmo avanzato"
+      },
+      "utmBuilder": {
+        "title": "Costruttore UTM",
+        "description": "Monitorare le prestazioni della campagna con la generazione integrata dei parametri UTM"
+      },
+      "authintica": {
+        "title": "Integrazione di Authintica",
+        "description": "Autenticazione sicura con la piattaforma di identità affidabile dell'Arabia Saudita"
+      },
+      "bilingualUI": {
+        "title": "UI bilingue",
+        "description": "Interfaccia fluida in arabo e inglese con supporto RTL"
+      },
+      "teamCollaboration": {
+        "title": "Collaborazione di squadra",
+        "description": "Collabora con il tuo team, gestisci i permessi e condividi analisi dei link"
+      },
+      "apiAccess": {
+        "title": "Accesso API",
+        "description": "Integra nelle tue applicazioni con la nostra potente API REST"
+      },
+      "linkManagement": {
+        "title": "Gestione dei link",
+        "description": "Organizza, modifica e gestisce migliaia di link con operazioni e tag in blocco"
+      },
+      "learnMore": "Ulteriori informazioni"
+    },
+    "whyChoose": {
+      "title": "Perché le aziende scelgono Snip",
+      "subtitle": "La scelta intelligente per i marketer e le aziende saudite"
+    },
+    "benefits": {
+      "launchFaster": {
+        "title": "Lancia le campagne più velocemente",
+        "description": "Crea, traccia e ottimizza i link in pochi minuti, non in ore",
+        "setupTime": "Tempo medio di setup",
+        "setupTimeValue": "2 minuti"
+      },
+      "trustCompliance": {
+        "title": "Prima fiducia e conformità",
+        "description": "Conformità con il PDPL con i dati ospitati localmente in Arabia Saudita",
+        "dataResidency": "Residenza dei dati",
+        "dataResidencyValue": "100% Arabia Saudita"
+      },
+      "analytics": {
+        "title": "Analisi azionabili",
+        "description": "Prendi decisioni basate sui dati con insight in tempo reale",
+        "trackingAccuracy": "Precisione nel tracciamento dei clic",
+        "trackingAccuracyValue": "99.9%"
+      }
+    },
+    "saudiMarketers": {
+      "title": "Perfetto per i marketer sauditi",
+      "feature1": "Supporto per domini .sa personalizzati",
+      "feature2": "Interfaccia araba e inglese con supporto RTL",
+      "feature3": "Codici QR per campagne offline",
+      "feature4": "Integrazione con Authintica per un accesso sicuro",
+      "feature5": "Supporto locale in arabo e inglese"
+    },
+    "stats": {
+      "linksCreated": "Link creati da imprese saudite",
+      "linksCreatedValue": "50,000+",
+      "linksCreatedAlt": "Link creati",
+      "uptime": "Uptime",
+      "uptimeValue": "98%",
+      "clicksTracked": "Click tracciati",
+      "clicksTrackedValue": "2,5M+",
+      "support": "Supporto",
+      "supportValue": "24/7",
+      "activeUsers": "Utenti attivi",
+      "activeUsersValue": "10,000+",
+      "yearsOnMarket": "Anni sul mercato",
+      "yearsOnMarketValue": "5+"
+    },
+    "integrations": {
+      "title": "Connettiti con i tuoi strumenti preferiti",
+      "subtitle": "Connetti Snip ai tuoi strumenti esistenti con integrazioni pronte e accesso API",
+      "viewAll": "Visualizza tutte le integrazioni",
+      "zapier": "Zapier",
+      "slack": "Slack",
+      "googleAnalytics": "Google Analytics",
+      "metaPixel": "Meta Pixel",
+      "mailchimp": "Mailchimp",
+      "googleAds": "Google Ads",
+      "chrome": "Chrome",
+      "wordpress": "WordPress",
+      "ios": "iOS",
+      "make": "Fai",
+      "android": "Android",
+      "segment": "Segmento"
+    },
+    "teams": {
+      "title": "Costruito per ogni squadra",
+      "subtitle": "Scopri come diverse squadre usano Snip per raggiungere i loro obiettivi",
+      "marketing": {
+        "title": "Team marketing",
+        "description": "Monitorare le prestazioni delle campagne e ottimizzare le conversioni",
+        "feature1": "Monitoraggio della campagna elettorale",
+        "feature2": "Test A/B",
+        "feature3": "Misurazione del ROI",
+        "feature4": "Ottimizzazione della conversione"
+      },
+      "sales": {
+        "title": "Squadre di vendita",
+        "description": "Personalizza la sensibilizzazione e monitora il coinvolgimento",
+        "feature1": "Collegamenti personalizzati",
+        "feature2": "Tracciamento dell'ingaggio",
+        "feature3": "Punteggio principale",
+        "feature4": "Integrazione CRM"
+      },
+      "infrastructure": {
+        "title": "Squadre infrastrutturali",
+        "description": "Funzionalità di livello enterprise per la distribuzione su larga scala",
+        "feature1": "Autenticazione SSO",
+        "feature2": "Accesso API",
+        "feature3": "Integrazione di sistema",
+        "feature4": "Piani illimitati"
+      }
+    },
+    "trust": {
+      "title": "Fidati su larga scala",
+      "subtitle": "I team marketing, gli sviluppatori e le aziende di tutto il mondo si affidano a Snip per monitorare ciò che conta",
+      "socialProof": "Utilizzato da aziende Fortune 500 e startup in tutto il mondo",
+      "trustpilot": "Trustpilot",
+      "clientConfidentiality": "Riservatezza del cliente"
+    },
+    "faq": {
+      "title": "Domande frequenti",
+      "subtitle": "Non trovi quello che cerchi?",
+      "q1": {
+        "question": "Come posso iniziare con Snip?",
+        "answer": "Iniziare è facile! Basta registrarti per un account gratuito e potrai iniziare subito a ridurre i link. Non è richiesta carta di credito per il piano gratuito."
+      },
+      "q2": {
+        "question": "Posso usare il mio dominio?",
+        "answer": "Sì! Puoi collegare il tuo dominio personalizzato per creare link brevi brandizzati. Questo aiuta a costruire fiducia e riconoscimento con il tuo pubblico."
+      },
+      "q3": {
+        "question": "Quali analisi sono disponibili?",
+        "answer": "Forniamo analisi complete tra cui il tracciamento dei clic, dati geografici, tipi di dispositivo, referer e tracciamento delle conversioni. Tutti i dati sono disponibili in tempo reale."
+      },
+      "q4": {
+        "question": "Esiste un'API disponibile?",
+        "answer": "Sì, offriamo una potente API REST che ti permette di integrare Snip nelle tue applicazioni. Puoi creare, gestire e tracciare collegamenti in modo programmativo."
+      },
+      "q5": {
+        "question": "Quanto sono sicuri i miei link?",
+        "answer": "Prendiamo la sicurezza sul serio. Tutti i link sono serviti tramite HTTPS e offriamo protezione per password, date di scadenza e funzionalità avanzate di sicurezza per i tuoi link."
+      },
+      "q6": {
+        "question": "Cosa è incluso nel piano gratuito?",
+        "answer": "Il piano gratuito include 1.000 link brandizzati, analisi di base, codici QR e accesso all'API. Perfetto per singoli e piccoli progetti."
+      }
+    },
+    "banner": {
+      "text": "Piano gratuito disponibile • Nessuna carta di credito richiesta"
+    },
+    "navigation": {
+      "integrations": "Integrazioni"
+    },
+    "testimonials": {
+      "title": "Fidati dalle imprese saudite",
+      "subtitle": "Scopri cosa dicono i nostri clienti su Snip",
+      "testimonial1": {
+        "text": "La conformità PDPL di Snip ci dà tranquillità. Le analisi sono incredibilmente dettagliate e ci aiutano a ottimizzare le nostre campagne.",
+        "author": "Sarah Al-Rashid",
+        "role": "Direttore Marketing, TechCorp KSA"
+      },
+      "testimonial2": {
+        "text": "L'interfaccia bilingue è perfetta per il nostro team eterogeneo. Adoriamo la funzione dei domini a brand!",
+        "author": "Ahmed Mohammed",
+        "role": "Responsabile Marketing Digitale"
+      },
+      "testimonial3": {
+        "text": "Snip ha rivoluzionato il modo in cui monitoriamo le nostre campagne sui social media. I codici QR sono una svolta!",
+        "author": "Fatima Al-Zahra",
+        "role": "Direttore del commercio elettronico"
+      },
+      "testimonial4": {
+        "text": "Veloce, affidabile e sicuro. Tutto ciò di cui abbiamo bisogno per la nostra attività in crescita in Arabia Saudita.",
+        "author": "Omar Hassan",
+        "role": "Fondatore della startup"
+      }
+    },
+    "pricing": {
+      "title": "Prezzi semplici e trasparenti",
+      "subtitle": "Scegli il piano che si adatta alle tue esigenze",
+      "free": {
+        "title": "Gratis",
+        "currency": "$",
+        "amount": "0",
+        "period": "Mese",
+        "description": "Perfetto per uso personale e per iniziare",
+        "feature1": "100 URL al mese",
+        "feature2": "Analisi di base",
+        "feature3": "Supporto standard",
+        "cta": "Inizia gratis"
+      },
+      "pro": {
+        "title": "Pro",
+        "badge": "I più popolari",
+        "currency": "$",
+        "amount": "9.99",
+        "period": "Mese",
+        "description": "Ideale per professionisti e piccoli team",
+        "feature1": "URL illimitati",
+        "feature2": "Analisi avanzate",
+        "feature3": "Domini personalizzati",
+        "feature4": "Protezione tramite password",
+        "feature5": "Supporto prioritario",
+        "cta": "Inizia la prova gratuita"
+      },
+      "enterprise": {
+        "title": "Azienda",
+        "currency": "$",
+        "amount": "29.99",
+        "period": "Mese",
+        "description": "Per grandi team e organizzazioni",
+        "feature1": "Tutto in Pro",
+        "feature2": "Domini personalizzati illimitati",
+        "feature3": "Collaborazione di squadra",
+        "feature4": "Accesso API",
+        "feature5": "Supporto dedicato",
+        "cta": "Contatta le vendite"
+      }
+    },
+    "cta": {
+      "title": "Pronto a iniziare?",
+      "subtitle": "Unisciti a migliaia di utenti che si fidano della nostra piattaforma",
+      "button": "Inizia gratis"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi al tuo account",
+      "brandSubtitle": "Bentornato nella tua dashboard",
+      "email": "Indirizzo email",
+      "password": "Password",
+      "rememberMe": "Ricordati di me",
+      "forgotPassword": "Hai dimenticato la password?",
+      "button": "Accedi",
+      "signingIn": "Firmando...",
+      "googleButton": "Accedi con Google",
+      "dividerText": "Oppure accedi via email",
+      "noAccount": "Non hai un account?",
+      "signUp": "Iscriviti qui",
+      "errorInvalidCredentials": "Email o password non valide",
+      "errorGeneral": "Accesso fallito. Per favore, riprova.",
+      "errorEmailRequired": "L'email è obbligatoria",
+      "errorEmailInvalid": "Si prega di inserire un indirizzo email valido",
+      "errorPasswordRequired": "È richiesta la password",
+      "feature1Title": "Gestisci i tuoi collegamenti",
+      "feature1Description": "Accedi a tutti i tuoi URL accorciati in un unico posto",
+      "feature2Title": "Prestazioni in pista",
+      "feature2Description": "Visualizza analisi dettagliate e approfondimenti",
+      "feature3Title": "Sicuro e affidabile",
+      "feature3Description": "I tuoi dati sono protetti dalla sicurezza aziendale"
+    },
+    "forgotPassword": {
+      "title": "Hai dimenticato la password?",
+      "subtitle": "Inserisci la tua email per ricevere un codice di verifica",
+      "newPasswordTitle": "Crea nuova password",
+      "newPasswordSubtitle": "Inserisci la tua nuova password qui sotto",
+      "email": "Indirizzo email",
+      "emailPlaceholder": "Inserisci la tua email",
+      "otp": "Codice di Verifica",
+      "otpPlaceholder": "Inserisci il codice a 6 cifre",
+      "newPassword": "Nuova password",
+      "newPasswordPlaceholder": "Inserisci nuova password",
+      "confirmPassword": "Conferma Password",
+      "confirmPasswordPlaceholder": "Conferma nuova password",
+      "sendOtp": "Invia il codice di verifica",
+      "resetPassword": "Reset Password",
+      "sending": "Inviando...",
+      "resetting": "Resettando...",
+      "backToEmail": "Torna all'email",
+      "resendOtp": "Codice di riinvio",
+      "otpSent": "Codice di verifica inviato a {email}",
+      "otpResent": "Codice di verifica inviato con successo",
+      "successMessage": "Reset della password con successo!",
+      "errorEmailRequired": "L'email è obbligatoria",
+      "errorEmailInvalid": "Si prega di inserire un indirizzo email valido",
+      "errorOtpRequired": "È richiesto un codice di verifica",
+      "errorOtpInvalid": "Il codice di verifica deve essere di 6 cifre",
+      "errorPasswordRequired": "È richiesta la password",
+      "errorPasswordMinLength": "La password deve essere di almeno 8 caratteri",
+      "errorPasswordsNotMatch": "Le password non corrispondono",
+      "errorSamePassword": "La nuova password deve essere diversa da quella vecchia",
+      "errorGeneral": "Non è riuscito a reimpostare la password. Per favore, riprova."
+    },
+    "register": {
+      "title": "Crea account",
+      "subtitle": "Inizia con il tuo account gratuito",
+      "brandTitle": "Accorciatore avanzato di URL",
+      "brandSubtitle": "Ottieni link brevi per analisi avanzate e professionali",
+      "languageToggle": "Toggle della lingua",
+      "googleSignup": "Iscriviti a Google",
+      "divider": "oppure iscriviti via email",
+      "fullName": "Nome completo",
+      "fullNamePlaceholder": "Inserisci il tuo nome completo",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "firstNamePlaceholder": "Inserisci il tuo nome",
+      "lastNamePlaceholder": "Inserisci il tuo cognome",
+      "email": "Indirizzo email",
+      "emailPlaceholder": "example@example.com",
+      "phone": "Numero di telefono",
+      "phonePlaceholder": "Inserisci il tuo numero di telefono",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••••",
+      "passwordHint": "Deve essere lungo almeno 8 caratteri",
+      "confirmPassword": "Conferma Password",
+      "confirmPasswordPlaceholder": "Inserisci di nuovo la tua password",
+      "termsAgree": "Sono d'accordo con il",
+      "terms": "Termini di servizio",
+      "and": "e",
+      "privacy": "Informativa sulla privacy",
+      "pdplConsent": "Accetto il trattamento dei miei dati personali in conformità con la Legge sulla Protezione dei Dati Personali",
+      "marketingConsent": "Vorrei ricevere aggiornamenti e offerte di marketing",
+      "button": "Crea account",
+      "creating": "Creazione di account...",
+      "haveAccount": "Hai già un account?",
+      "signIn": "Accedi qui",
+      "feature1Title": "Accorciamento rapido degli URL",
+      "feature1Description": "Crea link brevi e condividevoli in pochi secondi",
+      "feature2Title": "Analisi avanzata",
+      "feature2Description": "Monitora le prestazioni del tuo link con analisi dettagliate in tempo reale",
+      "feature3Title": "Sicurezza aziendale",
+      "feature3Description": "I tuoi dati sono protetti con sicurezza e privacy di livello aziendale",
+      "errorFullNameRequired": "È richiesto il nome completo",
+      "errorFirstNameRequired": "È richiesto il nome di battesimo",
+      "errorLastNameRequired": "È richiesto il cognome",
+      "errorEmailRequired": "È richiesto un indirizzo email",
+      "errorEmailInvalid": "Si prega di inserire un indirizzo email valido",
+      "errorPasswordRequired": "È richiesta la password",
+      "errorPasswordLength": "La password deve essere lunga almeno 8 caratteri",
+      "errorConfirmPasswordRequired": "Per favore, conferma la tua password",
+      "errorPasswordMismatch": "Le password non corrispondono",
+      "errorTermsRequired": "Devi accettare i Termini di Servizio e l'Informativa sulla Privacy",
+      "errorDataConsentRequired": "Devi accettare il consenso al trattamento dei dati",
+      "errorEmailExists": "L'email esiste già",
+      "errorGeneral": "Registrazione fallita. Per favore, riprova.",
+      "successMessage": "Account creato con successo!"
+    }
+  },
+  "otp": {
+    "title": "Verifica OTP",
+    "sentMessage": "Abbiamo inviato un codice di verifica a 6 cifre a",
+    "digitLabel": "Digit {{number}}",
+    "verifyButton": "Verifica e Accedi",
+    "verifying": "Verifica...",
+    "didntReceive": "Non hai ricevuto il codice?",
+    "resendButton": "Riinvio OTP",
+    "resendIn": "Riinvia in {{seconds}}s",
+    "goBack": "Indietro",
+    "securityTipTitle": "Consiglio di sicurezza:",
+    "securityTipMessage": "Non condividere mai il tuo OTP con nessuno. Non ti chiederemo mai il codice di verifica.",
+    "errorEnterAllDigits": "Si prega di inserire tutte e 6 le cifre del codice di verifica",
+    "errorInvalidCode": "Codice di verifica non valido. Per favore, controlla e riprova.",
+    "errorExpired": "Il codice di verifica è scaduto. Per favore, richiedetene uno nuovo.",
+    "errorTooManyAttempts": "Troppi tentativi falliti. Per favore, richiedi un nuovo codice.",
+    "errorResendFailed": "Non è riuscito a riinviare il codice di verifica. Per favore, riprova.",
+    "errorTooManyRequests": "Troppe richieste. Attenda un momento prima di riprovare.",
+    "errorNetwork": "Errore di rete. Controlla la tua connessione e riprova."
+  },
+  "dashboard": {
+    "title": "Cruscotto",
+    "welcome": "Bentornato",
+    "welcomeMessage": "Ecco cosa succede oggi con i tuoi link.",
+    "vsLastPeriod": "vs ultimo periodo",
+    "changeVsLastPeriod": "{{change}} vs ultimo ciclo",
+    "createShortLink": "Crea un link breve",
+    "createShortLinkDesc": "Trasforma i tuoi URL lunghi in potenti link brevi e tracciabili",
+    "getStarted": "Inizia",
+    "generateQRCode": "Genera un codice QR",
+    "generateQRCodeDesc": "Crea codici QR per i tuoi link per collegare campagne digitali e fisiche",
+    "createQR": "Crea QR",
+    "addCustomDomain": "Aggiungi dominio personalizzato",
+    "addCustomDomainDesc": "Usa il tuo dominio di marca per link brevi professionali",
+    "setupDomain": "Dominio di Setup",
+    "shortenYourURL": "Accorcia il tuo URL",
+    "scannedQRCodes": "Codici QR scansionati",
+    "noChartData": "Nessun dato di attività di click disponibile",
+    "noChartDataDesc": "Inizia a condividere i tuoi link per vedere le tendenze dei clic e l'attività nel tempo.",
+    "longURL": "URL lungo",
+    "longURLPlaceholder": "Incolla qui il tuo URL lungo",
+    "customBackhalf": "Nome personalizzato (Opzionale)",
+    "customBackhalfPlaceholder": "Inserisci il nome personalizzato",
+    "campaign": "Nome della campagna (Facoltativo)",
+    "campaignPlaceholder": "Inserisci il nome della campagna",
+    "advancedSettings": "Impostazioni avanzate",
+    "shortenURL": "Accorcia URL",
+    "stats": {
+      "totalLinks": "Collegamenti totali",
+      "totalClicks": "Totali Clic",
+      "activeLinks": "Collegamenti attivi",
+      "clickRate": "Tasso di clic",
+      "totalCustomDomains": "Domini personalizzati",
+      "active": "Attivo",
+      "qrScans": "Scansioni QR"
+    },
+    "recentLinks": {
+      "title": "Collegamenti recenti",
+      "viewAll": "Visualizza tutti i link",
+      "noLinks": "Nessun link creato ancora",
+      "createFirst": "Crea il tuo primo link breve",
+      "shortLink": "Breve collegamento",
+      "originalUrl": "URL originale",
+      "date": "Data",
+      "clicks": "Click",
+      "actions": "Azioni"
+    },
+    "quickActions": {
+      "title": "Azioni Rapide",
+      "createLink": "Crea nuovo link",
+      "viewAnalytics": "Visualizza Analytics",
+      "generateQR": "Genera un codice QR",
+      "manageSubscription": "Gestire l'abbonamento"
+    },
+    "analytics": {
+      "title": "Panoramica dell'analisi",
+      "lastSevenDays": "Ultimi 7 giorni",
+      "clicksByDate": "Click per data",
+      "topLinks": "Collegamenti con le migliori performance",
+      "clickActivity": "Attività clicca",
+      "overviewDescription": "Panoramica delle prestazioni dei tuoi link nel tempo."
+    },
+    "timeFilters": {
+      "last24Hours": "Ultime 24 ore",
+      "last7Days": "Ultimi 7 giorni",
+      "last30Days": "Ultimi 30 giorni",
+      "last90Days": "Ultimi 90 giorni",
+      "7days": "7 giorni",
+      "30days": "30 Giorni",
+      "90days": "90 Giorni"
+    },
+    "mon": "Mon",
+    "tue": "Mar",
+    "wed": "Sposato",
+    "thu": "Gio",
+    "fri": "Ven",
+    "sat": "Sabato",
+    "sun": "Sole",
+    "uniqueVisitors": "Visitatori unici",
+    "changeFromLastWeek": "{{change}} vs la scorsa settimana",
+    "fromLastPeriod": "+ dall'ultimo periodo",
+    "clicks": "{{count}} clic",
+    "created": "Creato {{time}}",
+    "viewAll": "Visualizza tutto",
+    "upgradeTitle": "Passaggio a Professional",
+    "upgradeDescription": "Sblocca analisi avanzate, domini personalizzati e supporto prioritario per far crescere la tua azienda più rapidamente.",
+    "upgradeToPro": "Passa al Pro",
+    "dialogs": {
+      "deleteLink": {
+        "title": "Elimina il link",
+        "message": "Sei sicuro di voler cancellare {{url}}? Questa azione non può essere annullata.",
+        "cancel": "Annulla",
+        "delete": "Elimina"
+      }
+    }
+  },
+  "createLink": {
+    "title": "Crea un link breve",
+    "subtitle": "Converti il tuo URL lungo in un link breve e condividibile",
+    "customCode": "Codice Personalizzato",
+    "form": {
+      "originalUrl": "URL originale",
+      "originalUrlPlaceholder": "https://example.com/your-long-url",
+      "customAlias": "Alias personalizzato (opzionale)",
+      "customAliasPlaceholder": "My-custom-link",
+      "title": "Titolo del link (Opzionale)",
+      "titlePlaceholder": "Il mio fantastico link",
+      "description": "Descrizione (Opzionale)",
+      "descriptionPlaceholder": "Breve descrizione del tuo link",
+      "tags": "Tag (Opzionale)",
+      "tagsPlaceholder": "Marketing, campagne, prodotto",
+      "domain": "Dominio",
+      "selectDomain": "Seleziona dominio",
+      "expirationDate": "Data di scadenza (Opzionale)",
+      "password": "Protezione tramite password (opzionale)",
+      "passwordPlaceholder": "Inserisci la password",
+      "createButton": "Crea un link breve",
+      "creating": "Creare...",
+      "advancedOptions": "Opzioni avanzate",
+      "utmParameters": "Parametri UTM",
+      "urlHint": "Inserisci l'URL lungo che vuoi accorciare",
+      "aliasHint": "Lascia vuoto per il codice auto-generato"
+    },
+    "success": {
+      "title": "Link creato con successo!",
+      "created": "Link breve creato con successo!",
+      "yourLink": "Il tuo breve link:",
+      "copyLink": "Copia link",
+      "viewAnalytics": "Visualizza Analytics",
+      "createAnother": "Crea un altro link"
+    },
+    "errors": {
+      "invalidUrl": "Si prega di inserire un URL valido (deve iniziare con http:// o https://)",
+      "urlRequired": "È richiesto l'URL originale",
+      "urlTooLong": "L'URL è troppo lungo (massimo 2000 caratteri)",
+      "aliasExists": "Questo alias è già preso",
+      "aliasReserved": "Questo alias è riservato all'uso di sistema. Per favore, scegli un alias diverso.",
+      "aliasInvalidFormat": "Alias può contenere solo lettere, numeri, trattini e sottolinee",
+      "aliasInvalidLength": "L'alias deve avere tra 3 e 50 caratteri",
+      "aliasInvalidStart": "Alias deve iniziare con una lettera o un numero",
+      "titleTooLong": "Il titolo è troppo lungo (massimo 100 caratteri)",
+      "titleInvalidChars": "Il titolo contiene caratteri non validi",
+      "fixErrors": "Per favore, correggi gli errori qui sotto prima di inviare",
+      "general": "Non è riuscito a creare il collegamento. Per favore, riprova."
+    }
+  },
+  "myLinks": {
+    "title": "I miei link",
+    "subtitle": "Gestisci tutti i tuoi URL accorciati",
+    "searchPlaceholder": "Cerca per titolo, URL o codice breve...",
+    "searchLinks": "Link-in di ricerca...",
+    "editLink": "Modifica link",
+    "viewModes": {
+      "simple": "Semplice",
+      "detailed": "Dettagliato"
+    },
+    "filters": {
+      "all": "Tutti i collegamenti",
+      "active": "Attivo",
+      "expired": "Scaduto",
+      "sortBy": "Ordina per",
+      "newest": "Ultimo Primo",
+      "oldest": "Più Vecchio Primo",
+      "mostClicks": "Maggior numero di clic",
+      "leastClicks": "Meno clic"
+    },
+    "table": {
+      "title": "Titolo",
+      "shortUrl": "URL breve",
+      "shortLink": "Breve collegamento",
+      "originalUrl": "URL originale",
+      "clicks": "Click",
+      "created": "Creazione",
+      "status": "Stato",
+      "actions": "Azioni"
+    },
+    "actions": {
+      "copy": "Ricevuto",
+      "copyLink": "Copia link",
+      "edit": "Modifica",
+      "qrCode": "Codice QR",
+      "analytics": "Analitica",
+      "delete": "Elimina"
+    },
+    "emptyState": {
+      "noLinks": "Nessun link trovato.",
+      "selectLink": "Seleziona un link per visualizzare i dettagli",
+      "loading": "Caricamento..."
+    },
+    "performance": {
+      "title": "Prestazioni complessive",
+      "viewFullReport": "Visualizza il rapporto completo",
+      "totalClicks": "Totali Clic",
+      "allClicks": "Tutti i clic",
+      "ctr": "CTR",
+      "lastClick": "Ultimo Click"
+    },
+    "linkPreview": {
+      "title": "Anteprima del link",
+      "notAvailable": "Anteprima non disponibile"
+    },
+    "optimize": {
+      "title": "Ottimizza",
+      "utmBuilder": "Costruttore UTM",
+      "utmDescription": "I parametri UTM aiutano a monitorare le prestazioni della campagna",
+      "trafficRouting": "Instradamento del traffico",
+      "trafficDescription": "Configurare le regole di instradamento del traffico",
+      "deepLinks": "Collegamenti profondi",
+      "deepLinksDescription": "Configura il deep linking per le app mobili",
+      "retargeting": "Script di retargeting",
+      "retargetingDescription": "Aggiungi pixel e script di retargeting"
+    },
+    "dialogs": {
+      "createLink": {
+        "title": "Crea link",
+        "description": "Crea il tuo primo link breve per iniziare",
+        "domain": "Dominio",
+        "customAlias": "Alias personalizzato (opzionale)",
+        "generateQR": "Genera un codice QR",
+        "creating": "Creare...",
+        "createButton": "Crea link"
+      }
+    },
+    "confirmDelete": "Sei sicuro di voler cancellare questo link?",
+    "deleteSuccess": "Link eliminato con successo",
+    "deleteError": "Fallita cancellazione del link",
+    "noLinks": "Nessun link trovato",
+    "createFirstLink": "Crea il tuo primo link breve per iniziare"
+  },
+  "analytics": {
+    "title": "Analitica",
+    "subtitle": "Monitora e analizza le prestazioni del tuo link",
+    "overview": {
+      "title": "Panoramica",
+      "totalClicks": "Totali Clic",
+      "uniqueClicks": "Click unici",
+      "clickRate": "Tasso di clic",
+      "qrScans": "Codici QR scansionati",
+      "qrScansAlt": "Scansioni QR",
+      "avgClicksPerDay": "Media clic/giorno",
+      "avgClicksPerDayAlt": "Media clic/giorno"
+    },
+    "charts": {
+      "clicksOverTime": "Click nel tempo",
+      "clickPerformance": "Prestazioni Click",
+      "topCountries": "Paesi principali",
+      "topReferrers": "Principali Referenti",
+      "devices": "Dispositivi",
+      "topDevices": "Dispositivi di Punta",
+      "browsers": "Browser",
+      "operatingSystems": "Sistemi operativi",
+      "topCities": "Città principali"
+    },
+    "devices": {
+      "mobile": "Mobile",
+      "desktop": "Desktop",
+      "tablet": "Tavoletta"
+    },
+    "filters": {
+      "dateRange": "Intervallo di date",
+      "last24Hours": "Ultime 24 Ore",
+      "last7Days": "Ultimi 7 giorni",
+      "last30Days": "Ultimi 30 giorni",
+      "last90Days": "Ultimi 90 giorni",
+      "last1Year": "Ultimo anno",
+      "custom": "Gamma personalizzata",
+      "applyFilters": "Applica i filtri"
+    },
+    "export": {
+      "title": "Dati di esportazione",
+      "export": "Esportazione",
+      "csv": "Esportazione come CSV",
+      "pdf": "Esporta come PDF",
+      "json": "Esportazione come JSON"
+    },
+    "tables": {
+      "country": "Paese",
+      "clicks": "Click",
+      "browser": "Browser",
+      "source": "Fonte",
+      "referrers": "Referenti",
+      "noData": "Nessun dato"
+    },
+    "noData": {
+      "title": "Nessun dato di attività di click disponibile",
+      "chartDescription": "Inizia a condividere i tuoi link per vedere le tendenze dei clic e l'attività nel tempo.",
+      "countries": "Nessun Dati Geografico",
+      "countriesDescription": "I dati del paese appariranno una volta cliccati sui tuoi link.",
+      "devices": "Nessun Dati del Dispositivo",
+      "devicesDescription": "Il guasto del dispositivo verrà mostrato dopo che i clic sono stati registrati.",
+      "browsers": "Nessun dato del browser",
+      "browsersDescription": "Le statistiche del browser appariranno dopo che i tuoi link saranno stati cliccati.",
+      "os": "Nessun dato del sistema operativo",
+      "osDescription": "La distribuzione del sistema operativo sarà visibile dopo che i clic saranno stati tracciati.",
+      "cities": "Nessun dato cittadino",
+      "citiesDescription": "Le analisi a livello cittadino saranno disponibili una volta registrati i clic.",
+      "referrers": "Nessun Dati di Referenza",
+      "referrersDescription": "Le fonti di traffico verranno tracciate quando i visitatori cliccheranno sui tuoi link."
+    },
+    "loading": "Caricamento...",
+    "error": "Non sono riusciti a recuperare dati analitici"
+  },
+  "qrCodes": {
+    "title": "Gestione dei codici QR",
+    "subtitle": "Genera, personalizza e gestisce i codici QR per i tuoi link",
+    "viewModes": {
+      "grid": "Griglia",
+      "list": "Elenco"
+    },
+    "stats": {
+      "totalQRCodes": "Codici QR totali",
+      "totalScans": "Scansioni totali",
+      "uniqueScans": "Scansioni uniche",
+      "activeQRCodes": "Codici QR attivi",
+      "active": "Attivo",
+      "downloadsToday": "Download oggi",
+      "scans": "Scansioni",
+      "downloads": "Download"
+    },
+    "generate": {
+      "title": "Genera un codice QR",
+      "generateNew": "Genera nuovi",
+      "selectLink": "Seleziona il link per il codice QR",
+      "selectLinkPlaceholder": "Seleziona un link...",
+      "generatingFor": "Generazione di codice QR per:",
+      "customize": "Personalizza le impostazioni",
+      "customizeQRCode": "Personalizza il codice QR",
+      "description": "Crea e personalizza il tuo codice QR con opzioni avanzate.",
+      "size": "Dimensione (pixel)",
+      "sizePx": "Dimensione (px)",
+      "format": "Formato",
+      "errorCorrection": "Livello di correzione degli errori",
+      "foregroundColor": "Colore in primo piano",
+      "backgroundColor": "Colore di sfondo",
+      "includeMargin": "Includi il margine intorno al codice QR",
+      "generateButton": "Genera un codice QR",
+      "bulkGenerate": "Generazione in massa",
+      "previewPlaceholder": "L'anteprima apparirà qui"
+    },
+    "formats": {
+      "png": "PNG",
+      "svg": "SVG",
+      "pdf": "PDF",
+      "jpg": "JPG"
+    },
+    "errorLevels": {
+      "low": "Basso (7%)",
+      "medium": "Media (15%)",
+      "quartile": "Quartile (25%)",
+      "high": "Alto (30%)"
+    },
+    "actions": {
+      "download": "Scarica",
+      "downloadPNG": "Scarica PNG",
+      "downloadSVG": "Scarica SVG",
+      "customize": "Personalizza",
+      "delete": "Elimina",
+      "preview": "Anteprima",
+      "share": "Condividi"
+    },
+    "search": {
+      "placeholder": "Cerca i codici QR per titolo, URL o codice breve..."
+    },
+    "selection": {
+      "selected": "Selezionato"
+    },
+    "emptyState": {
+      "title": "Nessun codice QR trovato",
+      "noQRCodes": "Nessun codice QR per ora",
+      "tryAdjusting": "Prova a modificare la ricerca",
+      "createFirst": "Genera il tuo primo codice QR per iniziare",
+      "createFirstAlt": "Crea il tuo primo codice QR per iniziare"
+    },
+    "dialogs": {
+      "details": {
+        "title": "Dettagli del codice QR",
+        "description": "Visualizza e gestisci il tuo codice QR",
+        "linkTitle": "Titolo",
+        "shortUrl": "URL breve",
+        "originalUrl": "URL originale",
+        "totalScans": "Scansioni totali",
+        "downloads": "Download"
+      }
+    },
+    "messages": {
+      "failedToLoad": "Non è riuscito a caricare i collegamenti",
+      "generated": "Codice QR generato!"
+    },
+    "noQRCodes": "Nessun codice QR per ora",
+    "createFirst": "Genera il tuo primo codice QR per iniziare",
+    "generateSuccess": "Codice QR generato con successo!",
+    "generateFailed": "Non è riuscito a generare il codice QR",
+    "downloadSuccess": "Codice QR scaricato con successo!",
+    "downloadFailed": "Non è stato scaricato il codice QR",
+    "bulkGenerateSuccess": "Generato con successo {{count}} codici QR!",
+    "bulkGenerateFailed": "Non sono riusciti a generare i codici QR",
+    "updateSuccess": "Personalizzazione del codice QR aggiornata con successo!",
+    "updateFailed": "Mancato aggiornamento della personalizzazione del codice QR"
+  },
+  "contentFilter": {
+    "title": "Filtro dei contenuti e sicurezza",
+    "subtitle": "Proteggi i tuoi link con filtraggio avanzato dei contenuti e regole di sicurezza",
+    "stats": {
+      "totalFiltered": "Totalmente Filtrato",
+      "maliciousBlocked": "Bloccato malevolo",
+      "phishingBlocked": "Phishing bloccato",
+      "spamBlocked": "Bloccato da spam"
+    },
+    "tabs": {
+      "settings": "Impostazioni",
+      "blocked": "Bloccato",
+      "whitelist": "Whitelist",
+      "logs": "Registri"
+    },
+    "settings": {
+      "title": "Impostazioni del filtro",
+      "enableContentFilter": "Abilita il filtraggio dei contenuti",
+      "enableDescription": "Filtra automaticamente URL dannosi e inappropriati",
+      "blockMaliciousUrls": "Blocca URL dannosi",
+      "blockMaliciousDescription": "Blocca i siti noti di distribuzione di malware e virus",
+      "blockPhishing": "Blocca i siti di phishing",
+      "blockPhishingDescription": "Proteggi dai siti web di phishing e truffe",
+      "blockAdultContent": "Blocca contenuti per adulti",
+      "blockAdultDescription": "Filtra contenuti per adulti e NSFW",
+      "blockSpam": "Blocca URL di spam",
+      "blockSpamDescription": "Rilevare e bloccare automaticamente i contenuti spam",
+      "customKeywordFiltering": "Filtraggio personalizzato delle parole chiave",
+      "customKeywordDescription": "Blocca gli URL contenenti parole chiave specifiche",
+      "pdplCompliance": "Modalità di conformità PDPL",
+      "pdplDescription": "Garantire il rispetto della Legge saudita sulla protezione dei dati personali",
+      "saveSettings": "Salva le impostazioni",
+      "saving": "Salvando..."
+    },
+    "blocked": {
+      "domains": "Domini bloccati",
+      "keywords": "Parole chiave bloccate",
+      "addDomain": "Aggiungere",
+      "addKeyword": "Aggiungere",
+      "domainPlaceholder": "example.com",
+      "keywordPlaceholder": "Parola chiave",
+      "noDomains": "Nessun dominio bloccato ancora",
+      "noKeywords": "Nessuna parola chiave bloccata ancora",
+      "remove": "Rimuovere",
+      "confirmRemove": "Rimuovere {{domain}} dalla lista bloccata?",
+      "confirmRemoveKeyword": "Rimuovere \"{{keyword}}\" dalle parole chiave bloccate?"
+    },
+    "whitelist": {
+      "title": "Domini consentiti (whitelist)",
+      "description": "I domini nella whitelist bypasseranno tutti i filtri di contenuto",
+      "addDomain": "Aggiungere",
+      "domainPlaceholder": "example.com",
+      "noDomains": "Nessun dominio ancora inserito nella whitelist",
+      "remove": "Rimuovere",
+      "confirmRemove": "Rimuovere {{domain}} dalla lista dei permessi?"
+    },
+    "logs": {
+      "title": "Registri di attività dei filtri",
+      "refresh": "Aggiornare",
+      "noActivity": "Nessuna attività di filtro",
+      "noUrls": "Nessun URL è stato ancora filtrato",
+      "defaultMessage": "L'URL è stato bloccato dal filtro di contenuto",
+      "noData": "Nessun dato disponibile"
+    }
+  },
+  "customDomains": {
+    "title": "Domini personalizzati",
+    "subtitle": "Aggiungi e gestisci i tuoi domini personalizzati per link brevi brandizzati",
+    "wizard": {
+      "step": "Passo {{current}} di {{total}}"
+    },
+    "stats": {
+      "totalDomains": "Dominio totale",
+      "activeDomains": "Domini attivi",
+      "totalUrls": "URL totali",
+      "totalClicks": "Totali Clic"
+    },
+    "addDomain": {
+      "title": "Aggiungi dominio personalizzato",
+      "domainName": "Nome di dominio",
+      "domainPlaceholder": "yourdomain.com",
+      "subdomain": "Sottodominio (Opzionale)",
+      "subdomainPlaceholder": "Breve",
+      "addButton": "Aggiungi dominio",
+      "adding": "Aggiungendo..."
+    },
+    "table": {
+      "domain": "Dominio",
+      "status": "Stato",
+      "urls": "URL",
+      "clicks": "Click",
+      "created": "Creazione",
+      "actions": "Azioni"
+    },
+    "status": {
+      "pending": "In sospeso",
+      "active": "Attivo",
+      "inactive": "Inattivi",
+      "verified": "Verificato",
+      "failed": "Fallito"
+    },
+    "actions": {
+      "verify": "Verifica",
+      "setDefault": "Imposta predefinito",
+      "configure": "Configura",
+      "delete": "Elimina"
+    },
+    "verification": {
+      "title": "Verifica del dominio",
+      "instructions": "Aggiungi il seguente record DNS per verificare il tuo dominio:",
+      "recordType": "Tipo di record",
+      "name": "Nome",
+      "value": "Valore",
+      "verifyButton": "Verifica Dominio"
+    },
+    "dnsModal": {
+      "title": "Verifica del dominio",
+      "instruction": "Aggiungi il seguente record DNS per verificare il tuo dominio:",
+      "configTitle": "Configurazione DNS richiesta:",
+      "type": "Digitare",
+      "name": "Nome",
+      "value": "Valore",
+      "checkDns": "Controlla la configurazione DNS",
+      "checking": "Controllo DNS...",
+      "success": "Record DNS verificato con successo!",
+      "failed": "Record DNS non trovato. Controlla la tua configurazione.",
+      "copy": "Ricevuto",
+      "copied": "Copiato"
+    },
+    "noDomains": "Nessun dominio personalizzato aggiunto ancora",
+    "addFirst": "Aggiungi il tuo primo dominio personalizzato per iniziare",
+    "domainAdded": "Dominio aggiunto con successo!",
+    "verificationSuccess": "Dominio verificato con successo!",
+    "verificationFailed": "Verifica del dominio fallita",
+    "deleteSuccess": "Dominio eliminato con successo",
+    "errors": {
+      "domainRequired": "È richiesto il nome di dominio",
+      "domainInvalid": "Si prega di inserire un nome di dominio valido (ad esempio, example.com)",
+      "domainExists": "Questo dominio è già registrato",
+      "subdomainInvalid": "Il sottodominio può contenere solo lettere, numeri e trattini",
+      "invalidFormat": "Formato di dominio non valido"
+    }
+  },
+  "subscription": {
+    "title": "Abbonamento e fatturazione",
+    "subtitle": "Gestisci il tuo piano di abbonamento e le informazioni di fatturazione",
+    "pageTitle": "Abbonamento e fatturazione",
+    "pageSubtitle": "Gestisci il tuo piano di abbonamento e le informazioni di fatturazione",
+    "professionalPlan": "Piano Professionale",
+    "activeStatus": "Attivo",
+    "perMonth": "/mese",
+    "professionalFeaturesSummary": "Funzionalità avanzate per aziende in crescita e team di marketing",
+    "nextBilling": "Prossimo cartellone:",
+    "linksCreated": "Link creati",
+    "customDomains": "Domini personalizzati",
+    "totalClicks": "Totali Clic",
+    "of": "di",
+    "thisMonth": "Questo mese",
+    "feature50kLinks": "50.000 link al mese",
+    "featureCustomDomains10": "10 domini personalizzati",
+    "featureUtmTracking": "Monitoraggio e analisi UTM",
+    "featureBulkActions": "Azioni di collegamento in blocco",
+    "featureAdvancedAnalytics": "Dashboard di analisi avanzata",
+    "featureQrGeneration": "Generazione di codici QR",
+    "featurePrioritySupport": "Supporto prioritario",
+    "availablePlans": "Piani disponibili",
+    "starterPlan": "Piano di partenza",
+    "feature5kLinks": "5.000 link al mese",
+    "featureBasicAnalytics": "Analisi di base",
+    "featureQrCodes": "Generazione di codici QR",
+    "downgradeButton": "Retrocessione a Starter",
+    "currentBadge": "ATTUALE",
+    "currentPlanButton": "Piano attuale",
+    "enterprisePlan": "Piano Impresa",
+    "featureUnlimitedLinks": "Collegamenti illimitati",
+    "featureUnlimitedDomains": "Domini personalizzati illimitati",
+    "upgradeButton": "Aggiornamento a Enterprise",
+    "billingInformation": "Informazioni di fatturazione",
+    "paymentMethod": "Metodo di pagamento",
+    "expires": "Scadenza",
+    "updatePaymentMethod": "Aggiornamento del metodo di pagamento",
+    "billingAddress": "Indirizzo di fatturazione",
+    "sampleCustomerName": "Ahmed Al-Rashid",
+    "sampleStreetAddress": "123 King Fahd Road",
+    "sampleCityCountry": "Riyadh, Arabia Saudita 12345",
+    "updateBillingAddress": "Aggiorna l'indirizzo di fatturazione",
+    "cancelSubscriptionTitle": "Annulla l'abbonamento",
+    "cancelSubscriptionDesc": "Annulla l'abbonamento e passa al piano gratuito. Manterrai l'accesso a tutte le funzionalità Professional fino alla fine del periodo di fatturazione attuale.",
+    "whatYouWillLose": "Cosa perderai:",
+    "loseAdvancedAnalytics": "Dashboard di analisi avanzata",
+    "loseCustomDomains": "Domini personalizzati (10)",
+    "losePrioritySupport": "Supporto prioritario",
+    "loseHigherLimits": "Limiti di collegamento più alti (50.000/mese)",
+    "pauseFor3Months": "Pausa di 3 mesi",
+    "cancelSubscriptionButton": "Annulla l'abbonamento",
+    "currentPlan": {
+      "title": "Piano attuale",
+      "free": "Piano Gratuito",
+      "pro": "Piano Pro",
+      "enterprise": "Piano Impresa",
+      "status": "Stato",
+      "active": "Attivo",
+      "renews": "Rinnova",
+      "expires": "Scadenza il"
+    },
+    "plans": {
+      "title": "Piani disponibili",
+      "free": {
+        "name": "Gratis",
+        "price": "0",
+        "features": [
+          "100 URL al mese",
+          "Analisi di base",
+          "Codici brevi standard",
+          "Supporto della comunità"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "9.99",
+        "features": [
+          "URL illimitati",
+          "Analisi avanzate",
+          "Domini personalizzati",
+          "Codici QR",
+          "Supporto prioritario",
+          "Niente pubblicità"
+        ]
+      },
+      "enterprise": {
+        "name": "Azienda",
+        "price": "Consuetudine",
+        "features": [
+          "Tutto in Pro",
+          "Supporto dedicato",
+          "Garanzia SLA",
+          "Integrazioni personalizzate",
+          "Gestione della squadra",
+          "Opzione white-label"
+        ]
+      }
+    },
+    "actions": {
+      "upgrade": "Aggiornamento",
+      "downgrade": "Degrado",
+      "cancel": "Annulla l'abbonamento",
+      "contactSales": "Contatta le vendite"
+    },
+    "billing": {
+      "title": "Storia della fatturazione",
+      "date": "Data",
+      "amount": "Importo",
+      "status": "Stato",
+      "invoice": "Fattura",
+      "download": "Scarica"
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "paymentMethods": "Metodi di pagamento",
+      "invoices": "Fatture",
+      "usage": "Utilizzo"
+    },
+    "status": {
+      "active": "Attivo",
+      "trial": "Processo",
+      "pastDue": "Scaduto",
+      "cancelled": "Annullato",
+      "paused": "Pausa"
+    },
+    "loadingBillingInfo": "Caricamento delle informazioni di fatturazione...",
+    "failedToLoadBillingInfo": "Non è stato caricato le informazioni di fatturazione",
+    "confirmPauseSubscription": "Sei sicuro di voler mettere in pausa il tuo abbonamento?",
+    "subscriptionPausedSuccess": "L'abbonamento è stato interrotto con successo",
+    "failedToPauseSubscription": "Non è stato messo in pausa l'iscrizione",
+    "subscriptionResumedSuccess": "Abbonamento ripreso con successo",
+    "failedToResumeSubscription": "Non è ripreso l'abbonamento",
+    "confirmCancelSubscription": "Sei sicuro di voler cancellare? Perderai funzionalità premium alla fine del periodo di fatturazione.",
+    "subscriptionWillCancelAtPeriodEnd": "L'abbonamento verrà cancellato alla fine del periodo di fatturazione",
+    "failedToCancelSubscription": "Non è stato cancellato l'abbonamento",
+    "invalidCouponCode": "Codice coupon non valido",
+    "couponAppliedSuccess": "Coupon applicato con successo!",
+    "failedToApplyCoupon": "Non è stato applicato il coupon",
+    "confirmRemovePaymentMethod": "Sei sicuro di voler rimuovere questo metodo di pagamento?",
+    "paymentMethodRemoved": "Metodo di pagamento rimosso",
+    "failedToRemovePaymentMethod": "Non è stato eliminato il metodo di pagamento",
+    "defaultPaymentMethodUpdated": "Metodo di pagamento predefinito aggiornato",
+    "failedToUpdateDefaultPaymentMethod": "Non aggiornato il metodo di pagamento predefinito",
+    "failedToDownloadInvoice": "Fallita scarica della fattura",
+    "trialPeriodActive": "Periodo di prova attivo",
+    "trialEndsOn": "Il tuo processo si conclude su",
+    "discountApplied": "Sconto applicato",
+    "off": "fuori posto",
+    "billingCycle": "Ciclo di fatturazione",
+    "monthly": "Mensilio",
+    "resumeSubscription": "Abbonamento al curriculum",
+    "pauseSubscription": "Pausa l'abbonamento",
+    "changePlan": "Piano di cambiamento",
+    "upcomingInvoice": "Prossima fattura",
+    "amountDue": "Importo dovuto",
+    "dueDate": "Data prevista per il parto",
+    "lineItems": "Voci",
+    "applyDiscountCode": "Applica il codice sconto",
+    "enterCouponCode": "Inserisci il codice coupon",
+    "validate": "Valida",
+    "apply": "Candidati",
+    "addPaymentMethod": "Aggiungi metodo di pagamento",
+    "noPaymentMethodsYet": "Nessun metodo di pagamento aggiunto ancora",
+    "default": "Predefinito",
+    "setAsDefault": "Impostato come predefinito",
+    "noInvoicesYet": "Nessuna fattura ancora",
+    "currentUsage": "Uso attuale",
+    "urlsThisMonth": "URL di questo mese",
+    "totalUrlsCreated": "Totale URL creati",
+    "apiCallsThisMonth": "API Call di questo mese",
+    "overageCharges": "Costi di eccesso",
+    "addedToNextInvoice": "Aggiunto alla prossima fattura",
+    "included": "inclusi"
+  },
+  "profile": {
+    "title": "Impostazioni del profilo",
+    "subtitle": "Gestisci le informazioni e le preferenze del tuo account",
+    "accountOverview": "Panoramica dell'account",
+    "currentPlan": "Piano attuale",
+    "regionalSettings": "Contesti regionali",
+    "tabs": {
+      "general": "Generale",
+      "security": "Sicurezza",
+      "preferences": "Preferenze",
+      "apiKeys": "Chiavi API"
+    },
+    "general": {
+      "personalInfo": "Informazioni personali",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Indirizzo email",
+      "phone": "Numero di telefono",
+      "company": "Azienda",
+      "website": "Sito web",
+      "jobTitle": "Ruolo",
+      "updateButton": "Profilo aggiornato",
+      "updating": "Aggiornamento...",
+      "saveChanges": "Modifiche ai salvataggi"
+    },
+    "security": {
+      "changePassword": "Cambia password",
+      "currentPassword": "Password attuale",
+      "newPassword": "Nuova password",
+      "confirmPassword": "Conferma nuova password",
+      "updatePassword": "Aggiorna la password",
+      "twoFactor": "Autenticazione a due fattori",
+      "enable2FA": "Abilita la 2FA",
+      "disable2FA": "Disabilita la 2FA",
+      "sessions": "Sessioni Attive",
+      "revokeAll": "Revoca tutte le sessioni",
+      "errorCurrentPasswordRequired": "È richiesta la password attuale",
+      "errorNewPasswordRequired": "È richiesta una nuova password",
+      "errorConfirmPasswordRequired": "Per favore conferma la tua nuova password",
+      "errorPasswordLength": "La password deve essere di almeno 8 caratteri",
+      "errorPasswordMismatch": "Le password non corrispondono"
+    },
+    "preferences": {
+      "language": "Lingua",
+      "timezone": "Fuso orario",
+      "dateFormat": "Formato della data",
+      "emailNotifications": "Notifiche via email",
+      "emailNotificationsDesc": "Ricevi notifiche via email per aggiornamenti importanti",
+      "marketingEmails": "Email di marketing",
+      "marketingEmailsDesc": "Ricevi aggiornamenti su nuove funzionalità e promozioni",
+      "weeklyReports": "Rapporti settimanali",
+      "weeklyReportsDesc": "Ricevi settimanalmente report di analisi inviati via email",
+      "productUpdates": "Aggiornamenti del prodotto",
+      "securityAlerts": "Allerte di sicurezza",
+      "savePreferences": "Preferenze di salvataggio"
+    },
+    "notifications": {
+      "title": "Notifiche"
+    },
+    "apiKeys": {
+      "viewDocs": "Visualizza la documentazione API",
+      "title": "Chiavi API",
+      "description": "Gestisci le tue chiavi API per l'accesso programmatico",
+      "createNew": "Crea una nuova chiave",
+      "keyName": "Nome chiave",
+      "key": "Chiave",
+      "created": "Creazione",
+      "lastUsed": "Ultimo utilizzo",
+      "revoke": "Revoca",
+      "regenerating": "Rigenerazione...",
+      "regenerateButton": "Rigenera chiave API",
+      "confirmRegenerate": "Sei sicuro di voler rigenerare la tua chiave API? La vecchia chiave non funzionerà più."
+    },
+    "messages": {
+      "profileUpdated": "Profilo aggiornato con successo",
+      "passwordsDoNotMatch": "Le password non corrispondono",
+      "failedToUpdate": "Fallimento nell'aggiornamento utente",
+      "passwordUpdated": "Password aggiornata con successo",
+      "failedToUpdatePassword": "Fallita nell'aggiornamento della password",
+      "preferencesUpdated": "Preferenze aggiornate con successo",
+      "failedToUpdatePreferences": "Non è stato aggiornato le preferenze"
+    }
+  },
+  "userManagement": {
+    "title": "Gestione degli utenti",
+    "subtitle": "Gestire i ruoli e i permessi degli utenti",
+    "loading": "Caricamento utenti...",
+    "searchPlaceholder": "Cerca per nome o email...",
+    "filterByRole": "Filtra per ruolo:",
+    "noUsersFound": "Nessun utente è stato rilevato.",
+    "noUsersWithRole": "Nessun utente trovato con ruolo: {{role}}.",
+    "stats": {
+      "totalUsers": "Totale utenti",
+      "activeUsers": "Utenti attivi",
+      "inactiveUsers": "Utenti inattivi",
+      "newUsers": "Nuovo (30 giorni)"
+    },
+    "roles": {
+      "all": "Tutti",
+      "superAdmin": "Super Admin",
+      "admin": "Amministrazione",
+      "editor": "Editore",
+      "viewer": "Spettatore",
+      "user": "Utente"
+    },
+    "userCard": {
+      "status": "Stato:",
+      "active": "Attivo",
+      "inactive": "Inattivi",
+      "joined": "Arrivati:",
+      "lastLogin": "Ultimo accesso:",
+      "location": "Posizione:",
+      "changeRole": "Cambia ruolo:"
+    },
+    "viewMode": {
+      "grid": "Griglia",
+      "table": "Tavolo"
+    },
+    "table": {
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefono",
+      "role": "Ruolo",
+      "status": "Stato",
+      "plan": "Piano",
+      "joined": "Arruolati",
+      "location": "Posizione",
+      "lastLogin": "Ultimo Accesso",
+      "actions": "Azioni"
+    },
+    "actions": {
+      "view": "Vista",
+      "viewDetails": "Visualizza dettagli",
+      "activate": "Attiva",
+      "deactivate": "Disattivazione",
+      "activateUser": "Attiva l'utente",
+      "deactivateUser": "Disattiva l'utente",
+      "delete": "Elimina",
+      "deleteUser": "Elimina l'utente",
+      "makeAdmin": "Make Admin",
+      "removeAdmin": "Rimuovere Admin"
+    },
+    "modal": {
+      "title": "Dettagli utente",
+      "description": "Informazioni complete su questo utente.",
+      "urls": "URL",
+      "urlsCreated": "URL creati",
+      "domains": "Domini",
+      "clicks": "Click",
+      "totalClicks": "Totali Clic",
+      "contactInfo": "Informazioni di contatto",
+      "email": "E-mail",
+      "phone": "Telefono",
+      "location": "Luogo di registrazione",
+      "locationFields": {
+        "country": "Paese",
+        "city": "Città",
+        "region": "Regione",
+        "ipAddress": "Indirizzo IP",
+        "timezone": "Fuso orario",
+        "countryCode": "Codice paese",
+        "coordinates": "Coordinate"
+      },
+      "notAvailable": "N/A",
+      "accountActivity": "Attività dell'account",
+      "accountCreated": "Account creato",
+      "joined": "Arruolati",
+      "lastLogin": "Ultimo Accesso",
+      "lastUpdated": "Ultimo aggiornamento",
+      "never": "Mai",
+      "subscription": "Abbonamento",
+      "subscriptionStatus": "Stato",
+      "inactive": "INATTIVO",
+      "periodEnd": "Fine del periodo",
+      "freePlan": "GRATIS",
+      "close": "Chiudi"
+    },
+    "messages": {
+      "failedToLoad": "Non è riuscito a caricare gli utenti"
+    }
+  },
+  "footer": {
+    "description": "Il modo più semplice per accorciare e tracciare i tuoi URL",
+    "product": "Prodotto",
+    "features": "Caratteristiche",
+    "pricing": "Prezzi",
+    "documentation": "Documentazione",
+    "api": "API",
+    "integrations": "Integrazioni",
+    "company": "Azienda",
+    "about": "Chi Siamo",
+    "blog": "Blog",
+    "careers": "Carriere",
+    "contact": "Contatto",
+    "support": "Supporto",
+    "help": "Centro di Assistenza",
+    "faq": "Domande frequenti",
+    "legal": "Legale",
+    "terms": "Termini di servizio",
+    "privacy": "Informativa sulla privacy",
+    "pdplCompliance": "Conformità PDPL",
+    "security": "Sicurezza",
+    "copyright": "© Accorciatore URL 2025. Tutti i diritti riservati."
+  },
+  "notifications": {
+    "success": "Successo",
+    "error": "Errore",
+    "warning": "Avviso",
+    "info": "Informazioni",
+    "linkCreated": "Link creato con successo!",
+    "linkUpdated": "Link aggiornato con successo!",
+    "linkDeleted": "Link cancellato con successo!",
+    "settingsSaved": "Impostazioni salvate con successo!",
+    "profileUpdated": "Profilo aggiornato con successo!",
+    "passwordChanged": "Password cambiata con successo!",
+    "domainAdded": "Dominio aggiunto con successo!",
+    "domainVerified": "Dominio verificato con successo!",
+    "domainDeleted": "Dominio eliminato",
+    "subscriptionUpdated": "Abbonamento aggiornato con successo!",
+    "draftSaved": "Draft salvato!",
+    "copied": "Ricevuto!"
+  },
+  "errors": {
+    "generic": "Qualcosa è andato storto. Per favore, riprova.",
+    "networkError": "Errore di rete. Controlla la tua connessione.",
+    "unauthorized": "Non autorizzato. Per favore, accedi di nuovo.",
+    "notFound": "Risorsa non trovata.",
+    "serverError": "Errore del server. Per favore, riprova più tardi.",
+    "validationError": "Per favore, controlla il tuo input e riprova.",
+    "enterDomain": "Si prega di inserire un dominio",
+    "enterKeyword": "Inserisci una parola chiave",
+    "failedToAddDomain": "Mancato inserimento di dominio bloccato: {{error}}",
+    "failedToRemoveDomain": "Non è riuscito a rimuovere il dominio bloccato: {{error}}",
+    "failedToAddKeyword": "Non è stato aggiunto la parola chiave bloccata: {{error}}",
+    "failedToRemoveKeyword": "Fallita rimozione della parola chiave bloccata: {{error}}",
+    "failedToAddAllowedDomain": "Non è stato aggiunto il dominio consentito: {{error}}",
+    "failedToRemoveAllowedDomain": "Non è stato rimosso il dominio consentito: {{error}}",
+    "failedToRegenerateApiKey": "Non è riuscito a rigenerare la chiave API: {{error}}",
+    "failedToLoadLinks": "Non sono riusciti a caricare i collegamenti. Per favore, riprova.",
+    "failedToLoadDomains": "Non sono riusciti a caricare i domini disponibili. Per favore, aggiorna la pagina.",
+    "failedToCopyLink": "Non è riuscito a copiare il link sulla cartellina. Per favore, riprova.",
+    "failedToGenerateQR": "Non sono riuscito a generare il codice QR per questo link.",
+    "failedToLoadStats": "Non sono riusciti a caricare le statistiche. Per favore, aggiorna la pagina.",
+    "failedToVerifyDomain": "Non è riuscito a verificare il dominio. Controlla le impostazioni DNS e riprova.",
+    "failedToCopyText": "Non è riuscito a copiare nella cartellina. Per favore, copia manualmente.",
+    "noLinksSelected": "Si prega di selezionare almeno un link per l'operazione in massa.",
+    "confirmBulkGenerate": "Sei sicuro di voler generare codici QR per {{count}} link selezionato?",
+    "domainVerificationError": "La verifica del dominio è fallita. Per favore, controlla i tuoi record DNS.",
+    "domainAddError": "Non è stato aggiunto il dominio. Per favore, controlla il tuo input e riprova.",
+    "domainDeleteError": "Non è riuscito a cancellare il dominio. Per favore, riprova.",
+    "qrCodeDeleteError": "Non è stato cancellato il codice QR. Per favore, riprova.",
+    "failedToLoadCustomization": "Non è stato possibile caricare la personalizzazione esistente. Usando i valori predefiniti.",
+    "failedToUpdateStatus": "Errore di aggiornamento dello stato",
+    "failedToUpdateRole": "Fallimento nell'aggiornamento del ruolo",
+    "failedToUpdateUserRole": "Fallimento nell'aggiornamento del ruolo utente",
+    "failedToDelete": "Non è stato eliminato",
+    "failedToAddDomainAlt": "Fallita aggiunta di dominio",
+    "failedToLoadDomainsAlt": "Non è riuscito a caricare i domini"
+  },
+  "sidebar": {
+    "urlManagement": "Gestione degli URL",
+    "apiDocs": "API Docs",
+    "main": "PRINCIPALE",
+    "dashboard": "Cruscotto",
+    "myLinks": "I miei link",
+    "analytics": "Analitica",
+    "qrCodes": "Codici QR",
+    "settings": "IMPOSTAZIONI",
+    "customDomains": "Domini personalizzati",
+    "contentFilter": "Filtro dei contenuti",
+    "admin": "ADMIN",
+    "userManagement": "Gestione degli utenti",
+    "googleAnalytics": "Google Analytics",
+    "account": "ACCOUNT",
+    "profile": "Profilo",
+    "upgradePlan": "Piano di aggiornamento",
+    "freePlan": "Piano Gratuito",
+    "billing": "Fatturazione e pagamenti",
+    "upgradeNow": "Aggiorna ora"
+  },
+  "googleAnalytics": {
+    "title": "Google Analytics",
+    "subtitle": "Informazioni sul traffico del sito web e sul comportamento degli utenti",
+    "loading": "Caricamento di Google Analytics...",
+    "refresh": "Aggiornare",
+    "notConfigured": {
+      "title": "Google Analytics non configurato",
+      "description": "Per favore, configura le credenziali Google Analytics nelle variabili dell'ambiente server.",
+      "instructions": "Variabili ambientali obbligatorie:"
+    },
+    "dateRange": {
+      "7days": "Ultimi 7 giorni",
+      "30days": "Ultimi 30 giorni",
+      "90days": "Ultimi 90 giorni"
+    },
+    "realtime": {
+      "live": "VIVERE",
+      "activeUsers": "Utenti attivi in questo momento"
+    },
+    "metrics": {
+      "activeUsers": "Utenti attivi",
+      "newUsers": "Nuovi utenti",
+      "sessions": "Sessioni",
+      "pageViews": "Visualizzazioni di pagina",
+      "avgDuration": "Durata media",
+      "engagementRate": "Tasso di Coinvolgimento",
+      "bounceRate": "Tasso di rimbalzo"
+    },
+    "charts": {
+      "trafficOverTime": "Traffico nel tempo"
+    },
+    "tables": {
+      "trafficSources": "Fonti di traffico",
+      "topPages": "Pagine principali",
+      "devices": "Dispositivi",
+      "browsers": "Browser",
+      "locations": "Principali Sedi",
+      "source": "Fonte",
+      "sessions": "Sessioni",
+      "users": "Utenti",
+      "page": "Pagina",
+      "views": "Visualizzazioni",
+      "country": "Paese",
+      "city": "Città"
+    }
+  },
+  "terms": {
+    "title": "Termini e Condizioni",
+    "lastUpdated": "Ultimo aggiornamento: 13 gennaio 2025",
+    "preamble": {
+      "title": "Preambolo",
+      "content": "Questo preambolo e le clausole che seguono sono parte integrante dei termini e delle condizioni generali di utilizzo di questo documento. I termini: \"noi\", \"la Società\", \"il Servizio\" o \"questo Contratto\" si riferiscono alla Snip Company. La Seconda Parte\" si riferisce alla persona che ha richiesto la notifica."
+    },
+    "introduction": {
+      "title": "Introduzione",
+      "content": "Questi termini e condizioni si applicano a tutti i nostri servizi tecnici e alle applicazioni forniti tramite il nostro sito web. Accedendo al sito web o utilizzando uno qualsiasi dei nostri servizi o applicazioni, accetti di rispettare questi termini e condizioni. Se non accetti questi termini, devi smettere di utilizzare il sito e i servizi."
+    },
+    "definitions": {
+      "title": "1. Definizioni e termini",
+      "services": "Servizi: Si riferisce a tutte le soluzioni tecniche e applicazioni fornite dalla Società a enti governativi e privati, inclusi servizi di consulenza o altri servizi tecnici.",
+      "client": "Cliente: Indica qualsiasi entità, ente governativo o privato o individuo che utilizza i servizi forniti da noi.",
+      "applications": "Applicazioni: Significa qualsiasi software o sistema tecnico fornito dalla Società, che può essere utilizzato online o scaricato dal sito web.",
+      "website": "Sito web: La piattaforma elettronica attraverso cui la Società fornisce i suoi servizi e prodotti.",
+      "document": "Documento: Si riferisce ai termini e alle condizioni generali di utilizzo."
+    },
+    "acceptance": {
+      "title": "2. Accettazione dei Termini",
+      "content": "Accedendo al sito web e utilizzando i nostri servizi, accetti i termini e le condizioni indicati in questo documento e ti conformi a tutte le normative e leggi. Se non accetti nessuno dei termini, devi smettere di utilizzare il sito e i servizi."
+    },
+    "access": {
+      "title": "3. Accesso ai servizi",
+      "content": "Per ottenere i nostri servizi, potrebbe essere necessario registrarsi tramite il sito web e fornire informazioni accurate e complete. Il Cliente è responsabile dell'accuratezza di queste informazioni e del loro aggiornamento periodico."
+    },
+    "usage": {
+      "title": "4. Utilizzo dei servizi",
+      "item1": "I nostri servizi sono forniti esclusivamente per uso personale o istituzionale.",
+      "item2": "Il Cliente deve utilizzare i servizi all'interno di un quadro legale e in conformità con gli usi autorizzati.",
+      "item3": "È vietato utilizzare i servizi per scopi illegali o attività che possano portare a violare i diritti altrui o a danneggiare il sito web o la Società.",
+      "item4": "È vietato rivendere, distribuire o sfruttare i servizi per qualsiasi scopo non autorizzato senza il preventivo consenso scritto della Società."
+    },
+    "commencement": {
+      "title": "5. Inizio del Contratto di Servizio",
+      "content": "Il contratto di servizio inizia dalla data di attivazione del servizio per il Cliente."
+    },
+    "intellectualProperty": {
+      "title": "6. Diritti di proprietà intellettuale",
+      "item1": "Il sito contiene materiali protetti da diritti di proprietà intellettuale, inclusi testi, software, immagini, grafica, nomi, loghi, colori, applicazioni, software e file audio (\"Contenuti\"). Sono protetti dal diritto d'autore, dai diritti sui marchi e dalle leggi applicabili nel Regno dell'Arabia Saudita.",
+      "item2": "Tutti i diritti di proprietà intellettuale relativi ad applicazioni, software e design sono di proprietà esclusiva di Snip Company o dei fornitori di servizi autorizzati.",
+      "item3": "Il Cliente non può copiare, distribuire o modificare nessuno di questi materiali senza un preventivo permesso scritto da parte della Società."
+    },
+    "pricing": {
+      "title": "7. Prezzi e pagamento",
+      "pricingDesc": "Prezzi: I prezzi sono determinati in base a contratti e accordi stipulati tra noi e il Cliente. I prezzi non sono esposti pubblicamente sul sito web.",
+      "paymentDesc": "Pagamento: Il Cliente deve pagare gli importi concordati in conformità con il contratto o un accordo scritto precedente."
+    },
+    "obligations": {
+      "title": "8. Obblighi e responsabilità",
+      "ourObligations": "I nostri obblighi:",
+      "ourObligationsDesc": "Siamo impegnati a fornire servizi tecnici in conformità con gli standard e i contratti concordati con il Cliente, implementando i requisiti in modo accurato e professionale.",
+      "clientResponsibility": "Responsabilità del cliente:",
+      "item1": "Mantenere la riservatezza di account e password e non condividerli con terze parti.",
+      "item2": "Obblighi finanziari e legali derivanti dall'uso dei servizi.",
+      "item3": "Accuratezza dei dati forniti e impegno ad aggiornarli quando necessario.",
+      "item4": "Fornire licenze governative se il servizio lo richiede, e rinnovarle puntualmente per garantire la continuazione della fornitura del servizio.",
+      "item5": "Il Cliente concorda che il mancato rinnovo delle licenze potrebbe comportare l'interruzione del servizio."
+    },
+    "dataProtection": {
+      "title": "9. Privacy e Protezione dei Dati",
+      "item1": "Siamo impegnati a proteggere tutti i dati personali che raccogliamo dal Cliente in conformità con l'Informativa sulla Privacy.",
+      "item2": "I dati vengono raccolti e utilizzati in conformità con le leggi locali e internazionali.",
+      "item3": "I dati vengono utilizzati per migliorare i servizi, comunicare con i clienti e analizzare l'utilizzo.",
+      "item4": "Applichiamo misure di sicurezza appropriate per proteggere i dati da accessi non autorizzati.",
+      "item5": "Non venderemo né affitteremo i dati dei clienti, né li condivideremo, se non con il loro esplicito consenso o come richiesto dalla legge."
+    },
+    "modifications": {
+      "title": "10. Modifiche ai servizi e ai termini",
+      "item1": "Ci riserviamo il diritto di modificare o aggiornare i termini o di aggiungere o rimuovere servizi in qualsiasi momento.",
+      "item2": "I clienti saranno informati di eventuali cambiamenti rilevanti."
+    },
+    "support": {
+      "title": "11. Supporto e manutenzione",
+      "item1": "Forniamo supporto tecnico tramite canali ufficiali di supporto.",
+      "item2": "Alcuni servizi possono richiedere manutenzione periodica e la Società ha il diritto di svolgerla in qualsiasi momento."
+    },
+    "limitations": {
+      "title": "12. Limitazioni e Compensazione",
+      "item1": "Non siamo responsabili per eventuali danni diretti o indiretti derivanti dall'uso del sito web o dei servizi.",
+      "item2": "Il Cliente si impegna a risarcire la Società per eventuali perdite o richieste derivanti dall'uso illegale dei servizi."
+    },
+    "termination": {
+      "title": "13. Risoluzione e cancellazione",
+      "item1": "Il Cliente può terminare il servizio in conformità con i termini specificati nel contratto.",
+      "item2": "La Società si riserva il diritto di terminare il servizio in caso di violazione di qualsiasi termine."
+    },
+    "forceMajeure": {
+      "title": "14. Forza maggiore",
+      "content": "Non siamo responsabili di alcun ritardo o interruzione derivante da circostanze al di fuori del controllo della Società, come disastri naturali, decisioni governative, attacchi informatici e altri."
+    },
+    "laws": {
+      "title": "15. Leggi applicabili e risoluzione delle controversie",
+      "item1": "Questi termini sono soggetti alle leggi del Regno dell'Arabia Saudita.",
+      "item2": "Le controversie vengono risolte tramite il tribunale competente di Riad.",
+      "item3": "Se una clausola risulta non applicabile, le altre clausole rimangono in vigore."
+    },
+    "delivery": {
+      "title": "16. Consegna e spedizione",
+      "item1": "Nel caso di prodotti fisici o licenze, questi vengono consegnati secondo l'accordo con il Cliente.",
+      "item2": "Le licenze possono essere fornite via email o tramite l'account del Cliente."
+    },
+    "communication": {
+      "title": "17. Comunicazione con il cliente",
+      "intro": "Puoi contattarci su:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefono: 01151083470"
+    },
+    "externalLinks": {
+      "title": "18. Collegamenti esterni",
+      "content": "Il sito web può contenere link a siti esterni che sono al di fuori del nostro controllo, e non siamo responsabili del loro contenuto."
+    },
+    "refund": {
+      "title": "19. Politica di cancellazione e rimborsi",
+      "item1": "Il Cliente ha il diritto di richiedere un rimborso entro (20 giorni) prima di utilizzare o attivare il servizio.",
+      "item2": "La richiesta di rimborso deve essere presentata per iscritto con documenti di supporto.",
+      "item3": "I rimborsi vengono elaborati entro (14 giorni) dall'approvazione.",
+      "item4": "La Società ha il diritto di imporre tasse amministrative.",
+      "item5": "Non vengono effettuati rimborsi dopo l'utilizzo o l'attivazione del servizio."
+    },
+    "notices": {
+      "title": "20. Avvisi e Comunicazioni",
+      "item1": "Registrandosi e utilizzando il sito web, il Cliente accetta di ricevere notifiche via email o notifiche dal sito web.",
+      "item2": "Il Cliente è responsabile dell'aggiornamento dei propri dati per garantire la ricezione delle notifiche."
+    },
+    "specialTerms": {
+      "title": "Termini speciali",
+      "content": "Il Cliente è obbligato a fornire informazioni accurate per la comunicazione, il supporto tecnico e l'assistenza nell'erogazione del servizio."
+    }
+  },
+  "privacy": {
+    "title": "Informativa sulla privacy",
+    "lastUpdated": "Ultimo aggiornamento: 13 gennaio 2025",
+    "intro": {
+      "title": "Clausola 1: Introduzione",
+      "content": "Snip rispetta la tua privacy ed è impegnata a fornire un servizio eccellente a tutti i nostri clienti. Questa Avviso sulla Privacy è stato redatto in conformità con la Legge sulla Protezione dei Dati Personali e le relative normative nel Regno dell'Arabia Saudita per aiutarvi a comprendere la natura dei dati che raccogliamo da voi e come questi dati saranno gestiti da Snip. Dall'impegno di Snip per la privacy e la riservatezza dei dati degli utenti, siamo impegnati a mantenere la sicurezza e la riservatezza di queste informazioni e a utilizzarle per offrire il livello di servizio atteso in conformità con i termini e le condizioni applicabili nel Regno dell'Arabia Saudita. Utilizzando il sito web di Snip, l'utente acconsente a questa Informativa sulla Privacy."
+    },
+    "dataCollection": {
+      "title": "Clausola 2: Dati da raccogliere e scopo della raccolta",
+      "item1": "Dati richiesti al momento della registrazione ai nostri servizi (come nome, indirizzo email, indirizzo fisico, numero di telefono, data di nascita, nazionalità e genere).",
+      "item2": "Dati necessari per l'utilizzo dei nostri servizi, siti web o applicazioni mobili (come cookie e dati di utilizzo).",
+      "item3": "Dati scambiati durante la comunicazione con te (come richieste di assistenza clienti e feedback)."
+    },
+    "purpose": {
+      "title": "Clausola 3: Scopo della raccolta di dati personali",
+      "intro": "Per offrire il massimo livello di servizio e prodotti, raccogliamo e utilizziamo i tuoi dati personali per i seguenti scopi:",
+      "item1": "Permettendoci di sviluppare, migliorare e/o commercializzare prodotti e servizi.",
+      "item2": "Facilitare e supportare le nostre operazioni e sistemi per garantire la continuità e la qualità dei nostri servizi.",
+      "item3": "Comprendere le esigenze dei clienti, valutare la tua idoneità a prodotti e servizi e raccomandare prodotti e servizi rilevanti.",
+      "item4": "Ti notifico su nuovi prodotti e servizi.",
+      "item5": "Rispondere e seguire domande, suggerimenti o reclami inviati dall'utente."
+    },
+    "methods": {
+      "title": "Clausola 4: Metodi di raccolta dati",
+      "item1": "Dati forniti direttamente dall'utente tramite registrazione sul sito web.",
+      "item2": "Dati raccolti tramite cookie durante le visite al sito web."
+    },
+    "storage": {
+      "title": "Clausola 5: Conservazione e distruzione dei dati personali",
+      "content": "I dati personali sono archiviati all'interno del Regno dell'Arabia Saudita su server protetti da tecnologie avanzate, in conformità con le politiche e i controlli della National Cybersecurity Authority e con gli standard internazionali per prevenire accessi non autorizzati e mitigare i rischi di cybersecurity. Quando i dati non saranno più necessari e secondo le normative, verranno distrutti in modo sicuro per garantire che non possano essere accessibili o recuperati, in conformità con le politiche di Snip."
+    },
+    "legalBasis": {
+      "title": "Clausola 6: Base giuridica per la raccolta e il trattamento dei dati personali",
+      "content": "I dati personali vengono raccolti e trattati con il consenso del soggetto dei dati. Il soggetto può revocare il consenso a raccogliere e elaborare i propri dati in qualsiasi momento, salvo che non vi sia un'altra base legale. Per farlo, contatta il team di supporto di Snip impuntante:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefono: +966539100295"
+    },
+    "rights": {
+      "title": "Clausola 7: Diritti del soggetto dati",
+      "rightToKnow": {
+        "title": "Diritto all'Informazione:",
+        "content": "Il soggetto ha il diritto di conoscere i metodi di raccolta dei dati, la base legale per la raccolta e il processamento, come vengono processati, memorizzati e distrutti, e con chi saranno condivisi. I dettagli sono forniti in questa Informativa sulla Privacy oppure possono essere ottenuti contattandoci tramite le informazioni contenute nella Clausola 9."
+      },
+      "rightToAccess": {
+        "title": "Diritto di accesso ai dati personali:",
+        "content": "Il soggetto può richiedere una copia dei propri dati personali tramite l'email fornita dalla clausola 9. I dati saranno forniti gratuitamente entro 30 giorni lavorativi via email."
+      },
+      "rightToCorrect": {
+        "title": "Diritto di correggere i dati personali:",
+        "content": "Il soggetto ha il diritto di richiedere la correzione di dati personali inaccurati, errati o incompleti tramite l'email fornita dalla clausola 9. Le richieste saranno esaminate e decise entro 30 giorni lavorativi, e il soggetto in data sarà informato via email."
+      },
+      "rightToDelete": {
+        "title": "Diritto di distruggere i dati personali:",
+        "content": "Il soggetto può richiedere la distruzione dei propri dati personali salvo requisiti legali, normativi o contrattuali per la conservazione."
+      },
+      "rightToWithdraw": {
+        "title": "Diritto di ritirare il consenso per il trattamento dei dati personali:",
+        "content": "Il soggetto può ritirare il consenso al trattamento dei dati personali in qualsiasi momento, salvo scopi legittimi che richiedano diversamente."
+      },
+      "note": "Alcune richieste (come la distruzione o la revoca del consenso) possono essere limitate se obblighi legali o normativi richiedono la conservazione dei dati."
+    },
+    "sharing": {
+      "title": "Clausola 8: Condivisione/Scambio di dati personali",
+      "content": "I dati personali non saranno divulgati a terzi senza il tuo consenso o una base legale, come applicabile dalla legge."
+    },
+    "exercising": {
+      "title": "Clausola 9: Esercizio dei diritti del soggetto interessato",
+      "content": "Il soggetto può richiedere l'accesso, la correzione o la distruzione dei propri dati contattandoci attraverso:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefono: +966539100295"
+    },
+    "complaints": {
+      "title": "Clausola 10: Reclami e Richieste",
+      "content": "Per qualsiasi reclamo o richiesta relativa all'Informativa sulla Privacy o alla gestione dei dati personali, si prega di contattare la gestione del sito web attraverso:",
+      "email": "Email: support@nawah.sa",
+      "phone": "Telefono: +966539100295"
+    },
+    "updates": {
+      "title": "Clausola 11: Aggiornamenti dell'Informativa sulla Privacy",
+      "content": "L'Informativa sulla Privacy è stata aggiornata l'ultima volta il 13 gennaio 2025. Snip si riserva il diritto di aggiungere o modificare qualsiasi termine dell'Informativa sulla Privacy. La gestione del sito notificherà il soggetto di qualsiasi cambiamento e l'account del soggetto potrebbe essere terminato se non accetta l'Informativa sulla Privacy aggiornata dopo la notifica."
+    }
+  },
+  "adminUrlManagement": {
+    "title": "Gestione degli URL",
+    "subtitle": "Visualizza e gestisce tutti i link dei clienti",
+    "accessDenied": "Accesso negato",
+    "noPermission": "Non hai il permesso di visualizzare questa pagina.",
+    "viewModes": {
+      "table": "Tavolo",
+      "grid": "Griglia"
+    },
+    "stats": {
+      "totalUrls": "URL totali",
+      "totalClicks": "Totali Clic",
+      "newUrls30d": "Nuovi URL (30d)",
+      "totalUsers": "Totale utenti"
+    },
+    "filters": {
+      "searchPlaceholder": "Cerca per URL, codice breve, titolo o creatore...",
+      "searchByShortCode": "Cerca per codice breve, URL o creatore...",
+      "allStatus": "Tutti gli Status",
+      "active": "Attivo",
+      "inactive": "Inattivi",
+      "allUsers": "Tutti gli utenti"
+    },
+    "table": {
+      "shortCode": "Codice Breve",
+      "originalUrl": "URL originale",
+      "creator": "Creatore",
+      "clicks": "Click",
+      "status": "Stato",
+      "created": "Creazione",
+      "actions": "Azioni"
+    },
+    "actions": {
+      "view": "Vista",
+      "copy": "Ricevuto",
+      "activate": "Attiva",
+      "deactivate": "Disattivazione",
+      "delete": "Elimina"
+    },
+    "status": {
+      "active": "Attivo",
+      "inactive": "Inattivi"
+    },
+    "loading": "Caricamento URL...",
+    "loadingUrls": "Caricamento...",
+    "noUrls": "Nessun URL trovato corrisponde ai tuoi criteri.",
+    "noUrlsFound": "Nessun URL trovato.",
+    "pagination": {
+      "previous": "Precedente",
+      "next": "Prossimo",
+      "pageInfo": "Pagina {{page}} di {{pages}} ({{total}} totale)"
+    },
+    "modal": {
+      "title": "Dettagli URL",
+      "description": "Informazioni complete su questo URL accorciato.",
+      "linkInfo": "Informazioni sul link",
+      "shortCode": "Codice Breve",
+      "originalUrl": "URL originale",
+      "linkTitle": "Titolo",
+      "domain": "Dominio",
+      "creatorInfo": "Informazioni sul creatore",
+      "name": "Nome",
+      "email": "E-mail",
+      "statistics": "Statistiche",
+      "totalClicks": "Totali Clic",
+      "uniqueClicks": "Click unici",
+      "status": "Stato",
+      "dates": "Date",
+      "created": "Creazione",
+      "lastUpdated": "Ultimo aggiornamento",
+      "expires": "Scadenza",
+      "tags": "Tag",
+      "activateUrl": "Attiva URL",
+      "deactivateUrl": "Disattiva URL",
+      "deleteUrl": "Elimina URL",
+      "close": "Chiudi",
+      "copyUrl": "Copia URL"
+    },
+    "messages": {
+      "activateSuccess": "URL attivato con successo",
+      "deactivateSuccess": "URL disattivato con successo",
+      "deleteSuccess": "URL eliminato con successo",
+      "deleteConfirm": "Sei sicuro di voler cancellare questo URL? Questa azione non può essere annullata.",
+      "updateFailed": "Fallito nell'aggiornamento dell'URL",
+      "deleteFailed": "Fallita cancellazione dell'URL",
+      "failedToLoad": "Non è riuscito a caricare gli URL"
+    }
+  }
+}
