@@ -127,15 +127,17 @@ const CustomDomains = () => {
               <TableRow>
                 <TableHead>{t('customDomains.table.domain')}</TableHead>
                 <TableHead>{t('customDomains.table.status')}</TableHead>
-                <TableHead>{t('customDomains.status.default')}</TableHead>
+                <TableHead>{t('customDomains.table.created')}</TableHead>
+                <TableHead>{t('userManagement.table.email')}</TableHead>
+                {/* <TableHead>{t('customDomains.status.default')}</TableHead> */}
                 <TableHead className="text-right">{t('customDomains.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
               ) : domains.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.noCustomDomainsConnected')}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.noCustomDomainsConnected')}</TableCell></TableRow>
               ) : (
                 domains.map(domain => (
                   <TableRow key={domain.id || domain._id}>
@@ -143,16 +145,22 @@ const CustomDomains = () => {
                       <Globe className="h-4 w-4 text-slate-400" />
                       {domain.fullDomain || domain.domain}
                     </TableCell>
-                    <TableCell>
-                      {domain.verified ? (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">{t('customDomains.status.verified')}</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50">{t('customDomains.verification.unverified')}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
+                      <TableCell>
+                        {domain.verified ? (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">{t('customDomains.status.verified')}</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50">{t('customDomains.verification.unverified')}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {domain.createdAt ? new Date(domain.createdAt).toLocaleDateString() : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {domain.owner?.email || '-'}
+                      </TableCell>
+                    {/* <TableCell>
                       {domain.isDefault && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         {!domain.verified && (

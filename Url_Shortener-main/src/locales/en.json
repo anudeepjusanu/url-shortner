@@ -1060,7 +1060,7 @@
     },
     "verification": {
       "title": "Domain Verification",
-      "instructions": "Add the following DNS record to verify your domain:",
+      "instructions": "To verify domain ownership, please log in to your DNS provider (e.g., GoDaddy, Namecheap, Cloudflare) and add the following CNAME record to your domain's DNS settings. This step is required to activate your custom domain.",
       "recordType": "Record Type",
       "name": "Name",
       "value": "Value",
@@ -1070,7 +1070,7 @@
     },
     "dnsModal": {
       "title": "Domain Verification",
-      "instruction": "Add the following DNS record to verify your domain:",
+      "instruction": "To verify domain ownership, please log in to your DNS provider and add the following CNAME record:",
       "configTitle": "DNS Configuration Required:",
       "type": "Type",
       "name": "Name",
