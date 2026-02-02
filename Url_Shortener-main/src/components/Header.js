@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import HamburgerMenu from './HamburgerMenu';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.webp';
 
 const Header = ({ isLanding = false, onGetStarted }) => {
   const { t } = useTranslation();
@@ -95,6 +95,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
                 src={logo} 
                 alt="Snip Logo" 
                 className="header-logo-img"
+                width="50"
+                height="50"
               />
             </div>
           </div>
@@ -152,11 +154,13 @@ const Header = ({ isLanding = false, onGetStarted }) => {
     <header className="header">
       <div className="header-content">
         <div className="logo-section">
-          <img 
-            src={logo} 
-            alt="Snip Logo" 
-            className="header-logo-img"
-          />
+              <img 
+                src={logo} 
+                alt="Snip Logo" 
+                className="header-logo-img"
+                width="50"
+                height="50"
+              />
         </div>
         
         <div className="header-actions">

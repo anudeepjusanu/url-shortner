@@ -17,6 +17,19 @@ app.use((req, res, next) => {
 // Trust proxy
 app.set('trust proxy', true);
 
+// Enable compression
+const compression = require('compression');
+app.use(compression());
+
+// Add response caching headers
+app.use((req, res, next) => {
+  // Cache API responses for 5 minutes
+  if (req.path.startsWith('/api/')) {
+    res.set('Cache-Control', 'public, max-age=300');
+  }
+  next();
+});
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
