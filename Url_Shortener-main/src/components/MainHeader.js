@@ -184,8 +184,8 @@ const MainHeader = () => {
         // { label: t('sidebar.contentFilter'), path: '/content-filter', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><g clipPath="url(#clip0_775_351)"><path d="M8 0C8.14375 0 8.2875 0.03125 8.41875 0.090625L14.3031 2.5875C14.9906 2.87813 15.5031 3.55625 15.5 4.375C15.4844 7.475 14.2094 13.1469 8.825 15.725C8.30313 15.975 7.69688 15.975 7.175 15.725C1.79063 13.1469 0.515626 7.475 0.500001 4.375C0.496876 3.55625 1.00938 2.87813 1.69688 2.5875L7.58438 0.090625C7.7125 0.03125 7.85625 0 8 0ZM8 2.0875V13.9C12.3125 11.8125 13.4719 7.19062 13.5 4.41875L8 2.0875Z" fill="#6B7280"/></g><defs><clipPath id="clip0_775_351"><path d="M0 0H16V16H0V0Z" fill="white"/></clipPath></defs></svg> }
       ]
     },
-    // Admin section - only show for admin and super_admin users
-    ...(hasRole(['admin', 'super_admin']) ? [{
+    // Admin section - only show for super_admin users
+    ...(hasRole('super_admin') ? [{
       label: t('sidebar.admin') || 'Admin',
       items: [
         { label: t('sidebar.userManagement') || 'User Management', path: '/user-management', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 8C11 9.65685 9.65685 11 8 11C6.34315 11 5 9.65685 5 8C5 6.34315 6.34315 5 8 5C9.65685 5 11 6.34315 11 8Z" fill="#6B7280"/><path d="M2 13C2 12.4477 2.44772 12 3 12H13C13.5523 12 14 12.4477 14 13V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V13Z" fill="#6B7280"/></svg> },

@@ -159,16 +159,16 @@ function App() {
 
             {/* User Management - Admin and Super Admin only */}
             <Route path="/user-management" element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="super_admin">
                 <Layout>
                   <UserManagement />
                 </Layout>
               </ProtectedRoute>
             } />
 
-            {/* Admin URL Management - Admin and Super Admin only */}
+            {/* Admin URL Management - Super Admin only */}
             <Route path="/admin-urls" element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="super_admin">
                 <Layout>
                   <AdminUrlManagement />
                 </Layout>

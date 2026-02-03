@@ -1,13 +1,15 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionContext';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, loading } = useAuth();
+  const { hasRole, loading: permissionsLoading } = usePermissions();
   const location = useLocation();
 
-  // Show loading spinner while checking authentication
-  if (loading) {
+  // Show loading spinner while checking authentication or permissions
+  if (loading || permissionsLoading) {
     return (
       <div className="loading-container">
         <div className="loading-content">
@@ -31,7 +33,13 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If authenticated, render the protected component
+  // If a specific role is required, check if user has that role
+  if (requiredRole && !hasRole(requiredRole)) {
+    // User doesn't have the required role, redirect to dashboard or show forbidden
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // If authenticated and has required role (if specified), render the protected component
   return children;
 };
 

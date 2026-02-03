@@ -3,6 +3,7 @@ const router = express.Router();
 
 const adminController = require('../controllers/adminController');
 const { authenticate, requireAdmin } = require('../middleware/auth');
+const { requireSuperAdmin } = require('../middleware/superAdmin');
 const { bypassLimiter } = require('../middleware/rateLimiter');
 const {
   validateObjectId,
@@ -13,19 +14,22 @@ const {
 
 router.use(sanitizeInput);
 router.use(authenticate);
-router.use(requireAdmin);
 router.use(bypassLimiter);
 
-router.get('/stats', adminController.getSystemStats);
+// Stats endpoint - available to both admin and super_admin
+router.get('/stats', requireAdmin, adminController.getSystemStats);
 
-router.get('/users', validatePagination, adminController.getUsers);
-router.put('/users/:id', validateObjectId, validateAdminUserUpdate, adminController.updateUser);
-router.delete('/users/:id', validateObjectId, adminController.deleteUser);
+// User management - available to both admin and super_admin
+router.get('/users', requireAdmin, validatePagination, adminController.getUsers);
+router.put('/users/:id', requireAdmin, validateObjectId, validateAdminUserUpdate, adminController.updateUser);
+router.delete('/users/:id', requireAdmin, validateObjectId, adminController.deleteUser);
 
-router.get('/urls', validatePagination, adminController.getAllUrls);
-router.put('/urls/:id', validateObjectId, adminController.updateUrl);
-router.delete('/urls/:id', validateObjectId, adminController.deleteUrl);
+// URL management - SUPER ADMIN ONLY
+router.get('/urls', requireSuperAdmin, validatePagination, adminController.getAllUrls);
+router.put('/urls/:id', requireSuperAdmin, validateObjectId, adminController.updateUrl);
+router.delete('/urls/:id', requireSuperAdmin, validateObjectId, adminController.deleteUrl);
 
-router.get('/organizations', validatePagination, adminController.getOrganizations);
+// Organizations - available to both admin and super_admin
+router.get('/organizations', requireAdmin, validatePagination, adminController.getOrganizations);
 
 module.exports = router;

@@ -56,7 +56,7 @@ const Navbar = () => {
   // Admin Items
   const adminItems = [
     { label: t('sidebar.userManagement') || 'User Management', path: '/user-management', icon: Users, role: ['super_admin'] },
-    { label: t('sidebar.urlManagement') || 'URL Management', path: '/admin-urls', icon: LinkIcon, role: ['admin', 'super_admin'] },
+    { label: t('sidebar.urlManagement') || 'URL Management', path: '/admin-urls', icon: LinkIcon, role: [ 'super_admin'] },
     { label: t('sidebar.googleAnalytics') || 'Google Analytics', path: '/google-analytics', icon: BarChart3, role: ['super_admin'] },
   ];
 
@@ -102,7 +102,7 @@ const Navbar = () => {
              </Link>
           ))}
           {/* Admin Dropdown */}
-          {hasRole(['admin', 'super_admin']) && (
+          {hasRole(['super_admin']) && (
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
                  <button className={cn(

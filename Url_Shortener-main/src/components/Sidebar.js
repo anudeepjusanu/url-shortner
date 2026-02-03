@@ -265,8 +265,8 @@ const Sidebar = ({ activeItem }) => {
           </div> */}
         </div>
 
-        {/* Admin Section - Only for admin and super_admin */}
-        {hasRole([ 'super_admin']) && (
+        {/* Admin Section - Only for super_admin */}
+        {hasRole('super_admin') && (
           <div className="nav-section">
             <div className="nav-label">{t('sidebar.admin') || 'Admin'}</div>
             <div
