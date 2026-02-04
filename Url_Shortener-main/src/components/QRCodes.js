@@ -49,6 +49,17 @@ const QRCodes = () => {
   }, []);
 
   useEffect(() => {
+    // Recalculate total scans whenever links change
+    if (links.length > 0) {
+      const calculatedTotalScans = links.reduce((sum, link) => sum + (link.qrScanCount || 0), 0);
+      setStats(prevStats => ({
+        ...prevStats,
+        totalScans: calculatedTotalScans
+      }));
+    }
+  }, [links]);
+
+  useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredLinks(links);
     } else {
@@ -65,10 +76,15 @@ const QRCodes = () => {
     setLoading(true);
     try {
       const response = await urlsAPI.getUrls();
+      console.log('QRCodes - Full API Response:', response);
+      console.log('QRCodes - URLs data:', response.data?.urls);
+      // The API returns { success: true, data: { urls: [...], pagination: {...} } }
       const urls = response.data?.urls || [];
+      console.log('QRCodes - Processed URLs:', urls);
       setLinks(urls);
       setFilteredLinks(urls);
     } catch (err) {
+      console.error('QRCodes - Error loading links:', err);
       setToast({ type: 'error', message: t('qrCodes.messages.failedToLoad') });
     } finally {
       setLoading(false);
@@ -79,12 +95,13 @@ const QRCodes = () => {
     try {
       const response = await qrCodeAPI.getStats();
       if (response?.data) {
-        setStats({
+        setStats(prev => ({
+          ...prev,
           totalQRCodes: response.data.totalQRCodes || 0,
-          totalScans: response.data.totalScans || 0,
+          // totalScans: response.data.totalScans || 0, // Calculated from links
           activeQRCodes: response.data.activeQRCodes || 0,
           downloadsToday: response.data.downloadsToday || 0
-        });
+        }));
       }
     } catch (err) {
       console.error(err);
@@ -113,6 +130,20 @@ const QRCodes = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Update local state to reflect download count immediately
+      setLinks(prevLinks => prevLinks.map(l => {
+        if ((l.id || l._id) === linkId) {
+          return { ...l, qrCodeDownloads: (l.qrCodeDownloads || 0) + 1 };
+        }
+        return l;
+      }));
+      
+      // Update download count in detail modal if open
+      if (selectedQR && (selectedQR.id || selectedQR._id) === linkId) {
+        setSelectedQR(prev => ({ ...prev, qrCodeDownloads: (prev.qrCodeDownloads || 0) + 1 }));
+      }
+
       setToast({ type: 'success', message: t('qrCodes.downloadSuccess') });
     } catch (err) {
       setToast({ type: 'error', message: t('qrCodes.downloadFailed') });
@@ -187,7 +218,7 @@ const QRCodes = () => {
                 <Activity className="h-3 w-3" /> {link.qrScanCount || 0} {t('qrCodes.stats.scans')}
               </span>
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3" /> {link.qrDownloads || 0}
+                <Download className="h-3 w-3" /> {link.qrCodeDownloads || 0}
               </span>
             </div>
             <div className="flex gap-2 w-full">
@@ -259,7 +290,7 @@ const QRCodes = () => {
                     <div className="text-xs text-muted-foreground">{t('qrCodes.stats.scans')}</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-green-600">{link.qrDownloads || 0}</div>
+                    <div className="font-bold text-green-600">{link.qrCodeDownloads || 0}</div>
                     <div className="text-xs text-muted-foreground">{t('qrCodes.stats.downloads')}</div>
                   </div>
                 </div>
@@ -571,7 +602,7 @@ const QRCodes = () => {
                       <div className="text-xs text-muted-foreground">{t('qrCodes.dialogs.details.totalScans')}</div>
                     </div>
                     <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{selectedQR.qrDownloads || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{selectedQR.qrCodeDownloads || 0}</div>
                       <div className="text-xs text-muted-foreground">{t('qrCodes.dialogs.details.downloads')}</div>
                     </div>
                   </div>

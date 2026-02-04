@@ -429,7 +429,7 @@ const Dashboard = () => {
                                   <TableCell>
                                       <div className="flex items-center gap-1">
                                           <Activity className="h-3 w-3 text-muted-foreground" />
-                                          {link.clicks || 0}
+                                          {link.clicks || link.clickCount || 0}
                                       </div>
                                   </TableCell>
                                   <TableCell className="text-right">
