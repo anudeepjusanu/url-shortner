@@ -14,8 +14,10 @@
   },
   "devDependencies": {
     "compression-webpack-plugin": "^11.1.0",
+    "critters-webpack-plugin": "^3.0.2",
     "react-app-rewired": "^2.2.1",
-    "serve": "^14.2.1"
+    "serve": "^14.2.1",
+    "sharp": "^0.34.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -29,7 +31,8 @@
     "lint:fix": "eslint src/**/*.{js,jsx} --fix",
     "serve": "serve -s build -l 3000",
     "docker:build": "docker build -t url-shortener-ui .",
-    "docker:run": "docker run -p 3000:80 url-shortener-ui"
+    "docker:run": "docker run -p 3000:80 url-shortener-ui",
+    "optimize-images": "node scripts/optimize-images.js"
   },
   "eslintConfig": {
     "extends": [

@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import Header from "./Header";
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.webp';
 import "../App.css";
 import "./LandingPage.css";
 
@@ -680,6 +680,9 @@ const LandingPage = () => {
                     src={logo} 
                     alt="Snip Logo" 
                     className="footer-logo-img"
+                    loading="lazy"
+                    width="50"
+                    height="50"
                   />
                 </div>
                 <p className="footer-description">
