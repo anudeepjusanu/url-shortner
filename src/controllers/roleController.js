@@ -1,16 +1,16 @@
-const User = require('../models/User');
+const User = require("../models/User");
 
 /**
  * Get user's own permissions
  */
 const getMyPermissions = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('role permissions');
+    const user = await User.findById(req.user.id).select("role permissions");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
@@ -20,48 +20,48 @@ const getMyPermissions = async (req, res) => {
       permissions: user.permissions || {},
       canAccess: {
         urls: {
-          create: user.hasPermission('urls', 'create'),
-          read: user.hasPermission('urls', 'read'),
-          update: user.hasPermission('urls', 'update'),
-          delete: user.hasPermission('urls', 'delete')
+          create: user.hasPermission("urls", "create"),
+          read: user.hasPermission("urls", "read"),
+          update: user.hasPermission("urls", "update"),
+          delete: user.hasPermission("urls", "delete"),
         },
         domains: {
-          create: user.hasPermission('domains', 'create'),
-          read: user.hasPermission('domains', 'read'),
-          update: user.hasPermission('domains', 'update'),
-          delete: user.hasPermission('domains', 'delete'),
-          verify: user.hasPermission('domains', 'verify')
+          create: user.hasPermission("domains", "create"),
+          read: user.hasPermission("domains", "read"),
+          update: user.hasPermission("domains", "update"),
+          delete: user.hasPermission("domains", "delete"),
+          verify: user.hasPermission("domains", "verify"),
         },
         analytics: {
-          view: user.hasPermission('analytics', 'view'),
-          export: user.hasPermission('analytics', 'export')
+          view: user.hasPermission("analytics", "view"),
+          export: user.hasPermission("analytics", "export"),
         },
         qrCodes: {
-          create: user.hasPermission('qrCodes', 'create'),
-          download: user.hasPermission('qrCodes', 'download'),
-          customize: user.hasPermission('qrCodes', 'customize')
+          create: user.hasPermission("qrCodes", "create"),
+          download: user.hasPermission("qrCodes", "download"),
+          customize: user.hasPermission("qrCodes", "customize"),
         },
         users: {
-          create: user.hasPermission('users', 'create'),
-          read: user.hasPermission('users', 'read'),
-          update: user.hasPermission('users', 'update'),
-          delete: user.hasPermission('users', 'delete')
+          create: user.hasPermission("users", "create"),
+          read: user.hasPermission("users", "read"),
+          update: user.hasPermission("users", "update"),
+          delete: user.hasPermission("users", "delete"),
         },
         settings: {
-          update: user.hasPermission('settings', 'update')
-        }
-      }
+          update: user.hasPermission("settings", "update"),
+        },
+      },
     };
 
     res.json({
       success: true,
-      data: permissions
+      data: permissions,
     });
   } catch (error) {
-    console.error('Get permissions error:', error);
+    console.error("Get permissions error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve permissions'
+      message: "Failed to retrieve permissions",
     });
   }
 };
@@ -74,81 +74,111 @@ const getAllRoles = async (req, res) => {
   try {
     const roles = {
       super_admin: {
-        name: 'Super Admin',
-        description: 'Full system access with all permissions',
+        name: "Super Admin",
+        description: "Full system access with all permissions",
         level: 5,
         permissions: {
           urls: { create: true, read: true, update: true, delete: true },
-          domains: { create: true, read: true, update: true, delete: true, verify: true },
+          domains: {
+            create: true,
+            read: true,
+            update: true,
+            delete: true,
+            verify: true,
+          },
           analytics: { view: true, export: true },
           qrCodes: { create: true, download: true, customize: true },
           users: { create: true, read: true, update: true, delete: true },
-          settings: { update: true }
-        }
+          settings: { update: true },
+        },
       },
       admin: {
-        name: 'Admin',
-        description: 'Full access within organization/account',
+        name: "Admin",
+        description: "Full access within organization/account",
         level: 4,
         permissions: {
           urls: { create: true, read: true, update: true, delete: true },
-          domains: { create: true, read: true, update: true, delete: true, verify: true },
+          domains: {
+            create: true,
+            read: true,
+            update: true,
+            delete: true,
+            verify: true,
+          },
           analytics: { view: true, export: true },
           qrCodes: { create: true, download: true, customize: true },
           users: { create: true, read: true, update: true, delete: true },
-          settings: { update: true }
-        }
+          settings: { update: true },
+        },
       },
       editor: {
-        name: 'Editor',
-        description: 'Can create, edit, and delete URLs, domains, and QR codes',
+        name: "Editor",
+        description: "Can create, edit, and delete URLs, domains, and QR codes",
         level: 3,
         permissions: {
           urls: { create: true, read: true, update: true, delete: true },
-          domains: { create: true, read: true, update: true, delete: true, verify: true },
+          domains: {
+            create: true,
+            read: true,
+            update: true,
+            delete: true,
+            verify: true,
+          },
           analytics: { view: true, export: true },
           qrCodes: { create: true, download: true, customize: true },
           users: { create: false, read: false, update: false, delete: false },
-          settings: { update: true }
-        }
+          settings: { update: true },
+        },
       },
       viewer: {
-        name: 'Viewer',
-        description: 'Read-only access to view URLs and analytics',
+        name: "Viewer",
+        description: "Read-only access to view URLs and analytics",
         level: 2,
         permissions: {
           urls: { create: false, read: true, update: false, delete: false },
-          domains: { create: false, read: true, update: false, delete: false, verify: false },
+          domains: {
+            create: false,
+            read: true,
+            update: false,
+            delete: false,
+            verify: false,
+          },
           analytics: { view: true, export: false },
           qrCodes: { create: false, download: true, customize: false },
           users: { create: false, read: false, update: false, delete: false },
-          settings: { update: false }
-        }
+          settings: { update: false },
+        },
       },
       user: {
-        name: 'User',
-        description: 'Basic user access with standard permissions',
+        name: "User",
+        description: "Basic user access with standard permissions",
         level: 1,
         permissions: {
           urls: { create: true, read: true, update: true, delete: true },
-          domains: { create: false, read: true, update: false, delete: false, verify: false },
+          domains: {
+            create: false,
+            read: true,
+            update: false,
+            delete: false,
+            verify: false,
+          },
           analytics: { view: true, export: false },
           qrCodes: { create: true, download: true, customize: true },
           users: { create: false, read: false, update: false, delete: false },
-          settings: { update: true }
-        }
-      }
+          settings: { update: true },
+        },
+      },
     };
 
     res.json({
       success: true,
-      data: roles
+      data: roles,
     });
   } catch (error) {
-    console.error('Get roles error:', error);
+    console.error("Get roles error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve roles'
+      message: "Failed to retrieve roles",
     });
   }
 };
@@ -164,11 +194,11 @@ const updateUserRole = async (req, res) => {
     const { role } = req.body;
 
     // Validate role
-    const validRoles = ['user', 'viewer', 'editor', 'admin', 'super_admin'];
+    const validRoles = ["user", "viewer", "editor", "admin", "super_admin"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid role'
+        message: "Invalid role",
       });
     }
 
@@ -178,42 +208,49 @@ const updateUserRole = async (req, res) => {
     if (!targetUser) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Permission checks
-    if (req.user.role === 'admin') {
+    if (req.user.role === "admin") {
       // Admin can only update users in their organization
-      if (!req.user.organization || targetUser.organization?.toString() !== req.user.organization.toString()) {
+      if (
+        !req.user.organization ||
+        targetUser.organization?.toString() !== req.user.organization.toString()
+      ) {
         return res.status(403).json({
           success: false,
-          message: 'You can only update roles for users in your organization'
+          message: "You can only update roles for users in your organization",
         });
       }
 
       // Admin cannot assign super_admin role
-      if (role === 'super_admin') {
+      if (role === "super_admin") {
         return res.status(403).json({
           success: false,
-          message: 'Admins cannot assign super_admin role'
+          message: "Admins cannot assign super_admin role",
         });
       }
 
       // Admin cannot modify another admin's role
-      if (targetUser.role === 'admin' || targetUser.role === 'super_admin') {
+      if (targetUser.role === "admin" || targetUser.role === "super_admin") {
         return res.status(403).json({
           success: false,
-          message: 'You cannot modify admin or super_admin roles'
+          message: "You cannot modify admin or super_admin roles",
         });
       }
     }
 
     // Super admin can update anyone except they cannot demote themselves
-    if (req.user.role === 'super_admin' && req.user.id === userId && role !== 'super_admin') {
+    if (
+      req.user.role === "super_admin" &&
+      req.user.id === userId &&
+      role !== "super_admin"
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Super admins cannot demote themselves'
+        message: "Super admins cannot demote themselves",
       });
     }
 
@@ -223,19 +260,19 @@ const updateUserRole = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User role updated successfully',
+      message: "User role updated successfully",
       data: {
         userId: targetUser._id,
         email: targetUser.email,
         role: targetUser.role,
-        permissions: targetUser.permissions
-      }
+        permissions: targetUser.permissions,
+      },
     });
   } catch (error) {
-    console.error('Update role error:', error);
+    console.error("Update role error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user role'
+      message: "Failed to update user role",
     });
   }
 };
@@ -255,25 +292,29 @@ const updateUserPermissions = async (req, res) => {
     if (!targetUser) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Permission checks
-    if (req.user.role === 'admin') {
+    if (req.user.role === "admin") {
       // Admin can only update users in their organization
-      if (!req.user.organization || targetUser.organization?.toString() !== req.user.organization.toString()) {
+      if (
+        !req.user.organization ||
+        targetUser.organization?.toString() !== req.user.organization.toString()
+      ) {
         return res.status(403).json({
           success: false,
-          message: 'You can only update permissions for users in your organization'
+          message:
+            "You can only update permissions for users in your organization",
         });
       }
 
       // Admin cannot modify admin or super_admin permissions
-      if (targetUser.role === 'admin' || targetUser.role === 'super_admin') {
+      if (targetUser.role === "admin" || targetUser.role === "super_admin") {
         return res.status(403).json({
           success: false,
-          message: 'You cannot modify admin or super_admin permissions'
+          message: "You cannot modify admin or super_admin permissions",
         });
       }
     }
@@ -282,26 +323,26 @@ const updateUserPermissions = async (req, res) => {
     if (permissions) {
       targetUser.permissions = {
         ...targetUser.permissions,
-        ...permissions
+        ...permissions,
       };
       await targetUser.save();
     }
 
     res.json({
       success: true,
-      message: 'User permissions updated successfully',
+      message: "User permissions updated successfully",
       data: {
         userId: targetUser._id,
         email: targetUser.email,
         role: targetUser.role,
-        permissions: targetUser.permissions
-      }
+        permissions: targetUser.permissions,
+      },
     });
   } catch (error) {
-    console.error('Update permissions error:', error);
+    console.error("Update permissions error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user permissions'
+      message: "Failed to update user permissions",
     });
   }
 };
@@ -318,7 +359,7 @@ const getUsersWithRoles = async (req, res) => {
 
     // Admin can only see users in their organization (if organization feature is enabled)
     // Super admin can see all users
-    if (req.user.role === 'admin' && req.user.organization) {
+    if (req.user.role === "admin" && req.user.organization) {
       query.organization = req.user.organization;
     }
 
@@ -329,25 +370,51 @@ const getUsersWithRoles = async (req, res) => {
 
     // Search by email or name
     if (search) {
-      query.$or = [
-        { email: { $regex: search, $options: 'i' } },
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } }
-      ];
+      const searchTerm = search.trim();
+
+      // Check if search contains a space (likely searching for full name)
+      if (searchTerm.includes(" ")) {
+        const nameParts = searchTerm.split(/\s+/);
+        const firstNamePattern = nameParts[0];
+        const lastNamePattern = nameParts.slice(1).join(" ");
+
+        query.$or = [
+          { email: { $regex: searchTerm, $options: "i" } },
+          // Match "firstName lastName"
+          {
+            $and: [
+              { firstName: { $regex: firstNamePattern, $options: "i" } },
+              { lastName: { $regex: lastNamePattern, $options: "i" } },
+            ],
+          },
+          // Also try searching in individual fields in case user types in reverse
+          { firstName: { $regex: searchTerm, $options: "i" } },
+          { lastName: { $regex: searchTerm, $options: "i" } },
+        ];
+      } else {
+        // Single word search - check all fields
+        query.$or = [
+          { email: { $regex: searchTerm, $options: "i" } },
+          { firstName: { $regex: searchTerm, $options: "i" } },
+          { lastName: { $regex: searchTerm, $options: "i" } },
+        ];
+      }
     }
 
     const skip = (page - 1) * limit;
     const users = await User.find(query)
-      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone registrationLocation')
+      .select(
+        "email firstName lastName role isActive createdAt lastLogin organization plan phone registrationLocation",
+      )
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .populate('organization', 'name slug');
+      .populate("organization", "name slug");
 
     const total = await User.countDocuments(query);
 
     // Map users to include fallback lastLogin (use createdAt if never logged in)
-    const usersWithLastLogin = users.map(user => {
+    const usersWithLastLogin = users.map((user) => {
       const userObj = user.toObject();
       // If lastLogin is null, use createdAt (registration date)
       if (!userObj.lastLogin) {
@@ -366,15 +433,15 @@ const getUsersWithRoles = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get users with roles error:', error);
+    console.error("Get users with roles error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve users'
+      message: "Failed to retrieve users",
     });
   }
 };
@@ -384,5 +451,5 @@ module.exports = {
   getAllRoles,
   updateUserRole,
   updateUserPermissions,
-  getUsersWithRoles
+  getUsersWithRoles,
 };

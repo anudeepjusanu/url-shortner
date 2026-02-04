@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require("../models/User");
 
 /**
  * User Service - Business logic for user operations
@@ -15,9 +15,9 @@ class UserService {
       role,
       plan,
       isActive,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      organizationId
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      organizationId,
     } = { ...filters, ...options };
 
     const skip = (page - 1) * limit;
@@ -30,11 +30,35 @@ class UserService {
 
     // Search filter
     if (search) {
-      query.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
+      const searchTerm = search.trim();
+
+      // Check if search contains a space (likely searching for full name)
+      if (searchTerm.includes(" ")) {
+        const nameParts = searchTerm.split(/\s+/);
+        const firstNamePattern = nameParts[0];
+        const lastNamePattern = nameParts.slice(1).join(" ");
+
+        query.$or = [
+          { email: { $regex: searchTerm, $options: "i" } },
+          // Match "firstName lastName"
+          {
+            $and: [
+              { firstName: { $regex: firstNamePattern, $options: "i" } },
+              { lastName: { $regex: lastNamePattern, $options: "i" } },
+            ],
+          },
+          // Also try searching in individual fields in case user types in reverse
+          { firstName: { $regex: searchTerm, $options: "i" } },
+          { lastName: { $regex: searchTerm, $options: "i" } },
+        ];
+      } else {
+        // Single word search - check all fields
+        query.$or = [
+          { firstName: { $regex: searchTerm, $options: "i" } },
+          { lastName: { $regex: searchTerm, $options: "i" } },
+          { email: { $regex: searchTerm, $options: "i" } },
+        ];
+      }
     }
 
     // Role filter
@@ -49,23 +73,25 @@ class UserService {
 
     // Active status filter
     if (isActive !== undefined) {
-      query.isActive = isActive === 'true' || isActive === true;
+      query.isActive = isActive === "true" || isActive === true;
     }
 
     // Sort options
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     try {
       const [users, total] = await Promise.all([
         User.find(query)
-          .select('-password -passwordResetToken -emailVerificationToken -apiKeys')
+          .select(
+            "-password -passwordResetToken -emailVerificationToken -apiKeys",
+          )
           .sort(sortOptions)
           .skip(skip)
           .limit(parseInt(limit))
-          .populate('organization', 'name slug')
+          .populate("organization", "name slug")
           .lean(),
-        User.countDocuments(query)
+        User.countDocuments(query),
       ]);
 
       return {
@@ -74,11 +100,11 @@ class UserService {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
+          pages: Math.ceil(total / limit),
+        },
       };
     } catch (error) {
-      console.error('UserService.getAllUsers error:', error);
+      console.error("UserService.getAllUsers error:", error);
       throw error;
     }
   }
@@ -89,13 +115,13 @@ class UserService {
   async getUserById(userId) {
     try {
       const user = await User.findById(userId)
-        .select('-password -passwordResetToken -emailVerificationToken')
-        .populate('organization', 'name slug limits')
+        .select("-password -passwordResetToken -emailVerificationToken")
+        .populate("organization", "name slug limits")
         .lean();
 
       return user;
     } catch (error) {
-      console.error('UserService.getUserById error:', error);
+      console.error("UserService.getUserById error:", error);
       throw error;
     }
   }
@@ -115,32 +141,32 @@ class UserService {
         activeUsers,
         roleDistribution,
         planDistribution,
-        recentSignups
+        recentSignups,
       ] = await Promise.all([
         User.countDocuments(filter),
         User.countDocuments({ ...filter, isActive: true }),
         User.aggregate([
           { $match: filter },
-          { $group: { _id: '$role', count: { $sum: 1 } } }
+          { $group: { _id: "$role", count: { $sum: 1 } } },
         ]),
         User.aggregate([
           { $match: filter },
-          { $group: { _id: '$plan', count: { $sum: 1 } } }
+          { $group: { _id: "$plan", count: { $sum: 1 } } },
         ]),
         User.countDocuments({
           ...filter,
-          createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-        })
+          createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        }),
       ]);
 
       // Format distributions
       const roleStats = {};
-      roleDistribution.forEach(item => {
+      roleDistribution.forEach((item) => {
         roleStats[item._id] = item.count;
       });
 
       const planStats = {};
-      planDistribution.forEach(item => {
+      planDistribution.forEach((item) => {
         planStats[item._id] = item.count;
       });
 
@@ -150,10 +176,10 @@ class UserService {
         inactiveUsers: totalUsers - activeUsers,
         roleDistribution: roleStats,
         planDistribution: planStats,
-        recentSignups
+        recentSignups,
       };
     } catch (error) {
-      console.error('UserService.getUserStats error:', error);
+      console.error("UserService.getUserStats error:", error);
       throw error;
     }
   }
@@ -164,9 +190,9 @@ class UserService {
   async updateUserStatus(userId, updates) {
     try {
       const user = await User.findById(userId);
-      
+
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       if (updates.isActive !== undefined) {
@@ -180,7 +206,7 @@ class UserService {
       await user.save();
       return user;
     } catch (error) {
-      console.error('UserService.updateUserStatus error:', error);
+      console.error("UserService.updateUserStatus error:", error);
       throw error;
     }
   }
@@ -191,15 +217,15 @@ class UserService {
   async deleteUser(userId) {
     try {
       const user = await User.findById(userId);
-      
+
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       await User.findByIdAndDelete(userId);
       return true;
     } catch (error) {
-      console.error('UserService.deleteUser error:', error);
+      console.error("UserService.deleteUser error:", error);
       throw error;
     }
   }
@@ -210,7 +236,7 @@ class UserService {
   async countUsersByRole() {
     try {
       const counts = await User.aggregate([
-        { $group: { _id: '$role', count: { $sum: 1 } } }
+        { $group: { _id: "$role", count: { $sum: 1 } } },
       ]);
 
       const result = {
@@ -218,16 +244,16 @@ class UserService {
         admin: 0,
         editor: 0,
         viewer: 0,
-        user: 0
+        user: 0,
       };
 
-      counts.forEach(item => {
+      counts.forEach((item) => {
         result[item._id] = item.count;
       });
 
       return result;
     } catch (error) {
-      console.error('UserService.countUsersByRole error:', error);
+      console.error("UserService.countUsersByRole error:", error);
       throw error;
     }
   }

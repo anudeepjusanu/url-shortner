@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -113,6 +114,9 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 
+// Serve React static files
+app.use(express.static(path.join(__dirname, '../Url_Shortener-main/build')));
+
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
@@ -132,12 +136,18 @@ app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)
 app.get('/preview/:shortCode', redirectController.getPreview);
 
+// 404 handler - serves React app for non-API routes, JSON for API routes
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found on this server.',
-    path: req.path
-  });
+  // If it's not an API route and it's a GET request, serve the React app
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, '../Url_Shortener-main/build', 'index.html'));
+  } else {
+    res.status(404).json({
+      error: 'Not Found',
+      message: 'The requested resource was not found on this server.',
+      path: req.path
+    });
+  }
 });
 
 app.use((err, req, res, next) => {
