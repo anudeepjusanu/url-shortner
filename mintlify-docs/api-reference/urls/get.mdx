@@ -1,0 +1,73 @@
+---
+title: 'Get URL'
+api: 'GET https://snip.sa/api/urls/{id}'
+description: 'Retrieve details of a specific shortened URL'
+---
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  URL ID
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://snip.sa/api/urls/507f1f77bcf86cd799439011 \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.get(
+  'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+  {
+    headers: {
+      'X-API-Key': 'your_api_key_here'
+    }
+  }
+);
+```
+
+```python Python
+response = requests.get(
+    'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "url": {
+      "_id": "507f1f77bcf86cd799439011",
+      "originalUrl": "https://example.com/page",
+      "shortCode": "abc123",
+      "customCode": "mylink",
+      "title": "My Link",
+      "description": "Link description",
+      "tags": ["marketing"],
+      "clickCount": 150,
+      "isActive": true,
+      "utm": {
+        "source": "newsletter",
+        "medium": "email"
+      },
+      "creator": {
+        "_id": "507f1f77bcf86cd799439012",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+</ResponseExample>

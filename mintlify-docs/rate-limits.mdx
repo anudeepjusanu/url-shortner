@@ -1,0 +1,234 @@
+---
+title: 'Rate Limits'
+description: 'Understanding API rate limits and best practices'
+---
+
+## Rate Limit Tiers
+
+Rate limits vary based on your subscription plan:
+
+<CardGroup cols={3}>
+  <Card title="Free Plan" icon="gift">
+    **100 requests** per 15 minutes
+  </Card>
+  <Card title="Pro Plan" icon="star">
+    **1,000 requests** per 15 minutes
+  </Card>
+  <Card title="Enterprise Plan" icon="building">
+    **5,000 requests** per 15 minutes
+  </Card>
+</CardGroup>
+
+## Rate Limit Headers
+
+Every API response includes rate limit information in the headers:
+
+```bash
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640000000
+```
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed in the time window |
+| `X-RateLimit-Remaining` | Number of requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the rate limit resets |
+
+## Rate Limit Exceeded
+
+When you exceed the rate limit, you'll receive a `429 Too Many Requests` response:
+
+```json
+{
+  "success": false,
+  "message": "Rate limit exceeded. Please try again later.",
+  "retryAfter": 900
+}
+```
+
+The `retryAfter` field indicates how many seconds to wait before making another request.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion icon="clock" title="Monitor Rate Limit Headers">
+    Always check the `X-RateLimit-Remaining` header to track your usage and avoid hitting limits.
+    
+    ```javascript
+    const response = await axios.get('https://snip.sa/api/urls');
+    const remaining = response.headers['x-ratelimit-remaining'];
+    
+    if (remaining < 10) {
+      console.warn('Approaching rate limit!');
+    }
+    ```
+  </Accordion>
+
+  <Accordion icon="arrows-rotate" title="Implement Exponential Backoff">
+    When you receive a 429 response, wait before retrying with exponential backoff:
+    
+    ```javascript
+    async function makeRequestWithRetry(url, maxRetries = 3) {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          return await axios.get(url);
+        } catch (error) {
+          if (error.response?.status === 429) {
+            const waitTime = Math.pow(2, i) * 1000; // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          } else {
+            throw error;
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion icon="database" title="Cache Responses">
+    Cache API responses when appropriate to reduce the number of requests:
+    
+    ```javascript
+    const cache = new Map();
+    
+    async function getCachedUrl(id) {
+      if (cache.has(id)) {
+        return cache.get(id);
+      }
+      
+      const response = await axios.get(`https://snip.sa/api/urls/${id}`);
+      cache.set(id, response.data);
+      return response.data;
+    }
+    ```
+  </Accordion>
+
+  <Accordion icon="layer-group" title="Batch Operations">
+    Use bulk operations when available to reduce request count:
+    
+    ```javascript
+    // Instead of deleting URLs one by one
+    // Use bulk delete
+    await axios.post('https://snip.sa/api/urls/bulk-delete', {
+      ids: ['id1', 'id2', 'id3']
+    });
+    ```
+  </Accordion>
+
+  <Accordion icon="filter" title="Use Pagination Wisely">
+    Request only the data you need with appropriate page sizes:
+    
+    ```javascript
+    // Request smaller pages more frequently
+    const response = await axios.get('https://snip.sa/api/urls', {
+      params: {
+        page: 1,
+        limit: 20  // Don't request max limit if not needed
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Handling Rate Limits
+
+### Example Implementation
+
+<CodeGroup>
+
+```javascript JavaScript
+const axios = require('axios');
+
+class SnipClient {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://snip.sa/api';
+  }
+
+  async request(method, endpoint, data = null) {
+    try {
+      const response = await axios({
+        method,
+        url: `${this.baseUrl}${endpoint}`,
+        data,
+        headers: {
+          'X-API-Key': this.apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Log rate limit info
+      console.log('Rate Limit Remaining:', 
+        response.headers['x-ratelimit-remaining']);
+
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 429) {
+        const retryAfter = error.response.data.retryAfter || 60;
+        console.log(`Rate limited. Waiting ${retryAfter} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        return this.request(method, endpoint, data); // Retry
+      }
+      throw error;
+    }
+  }
+}
+```
+
+```python Python
+import requests
+import time
+
+class SnipClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = 'https://snip.sa/api'
+    
+    def request(self, method, endpoint, data=None):
+        headers = {
+            'X-API-Key': self.api_key,
+            'Content-Type': 'application/json'
+        }
+        
+        try:
+            response = requests.request(
+                method,
+                f'{self.base_url}{endpoint}',
+                json=data,
+                headers=headers
+            )
+            
+            # Log rate limit info
+            remaining = response.headers.get('X-RateLimit-Remaining')
+            print(f'Rate Limit Remaining: {remaining}')
+            
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                retry_after = e.response.json().get('retryAfter', 60)
+                print(f'Rate limited. Waiting {retry_after} seconds...')
+                time.sleep(retry_after)
+                return self.request(method, endpoint, data)  # Retry
+            raise
+```
+
+</CodeGroup>
+
+## Upgrading Your Plan
+
+Need higher rate limits? Upgrade your plan:
+
+<Card title="Upgrade Plan" icon="arrow-up" href="https://snip.sa/pricing">
+  View pricing and upgrade options
+</Card>
+
+## Enterprise Custom Limits
+
+Enterprise customers can request custom rate limits based on their needs. Contact our sales team:
+
+<Card title="Contact Sales" icon="envelope" href="mailto:support@nawah.sa">
+  Discuss custom rate limits for your organization
+</Card>

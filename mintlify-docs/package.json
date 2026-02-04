@@ -1,0 +1,17 @@
+{
+  "name": "snip-api-docs",
+  "version": "1.0.0",
+  "description": "Snip URL Shortener API Documentation",
+  "scripts": {
+    "dev": "mintlify dev",
+    "install-mintlify": "npm install -g mintlify"
+  },
+  "keywords": [
+    "api",
+    "documentation",
+    "url-shortener",
+    "snip"
+  ],
+  "author": "Nawah",
+  "license": "MIT"
+}

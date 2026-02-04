@@ -1,0 +1,102 @@
+---
+title: 'List URLs'
+api: 'GET https://snip.sa/api/urls'
+description: 'Retrieve a paginated list of your shortened URLs'
+---
+
+## Query Parameters
+
+<ParamField query="page" type="number" default="1">
+  Page number (minimum: 1)
+</ParamField>
+
+<ParamField query="limit" type="number" default="20">
+  Results per page (minimum: 1, maximum: 100)
+</ParamField>
+
+<ParamField query="search" type="string">
+  Search in title, URL, or short code
+</ParamField>
+
+<ParamField query="tags" type="string">
+  Filter by tags (comma-separated)
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="createdAt">
+  Sort field: `createdAt`, `clickCount`, or `title`
+</ParamField>
+
+<ParamField query="sortOrder" type="string" default="desc">
+  Sort order: `asc` or `desc`
+</ParamField>
+
+<ParamField query="isActive" type="boolean">
+  Filter by active status
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://snip.sa/api/urls?page=1&limit=20&search=campaign&sortBy=clickCount&sortOrder=desc" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.get('https://snip.sa/api/urls', {
+  params: {
+    page: 1,
+    limit: 20,
+    search: 'campaign',
+    sortBy: 'clickCount',
+    sortOrder: 'desc'
+  },
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+```python Python
+response = requests.get(
+    'https://snip.sa/api/urls',
+    params={
+        'page': 1,
+        'limit': 20,
+        'search': 'campaign',
+        'sortBy': 'clickCount',
+        'sortOrder': 'desc'
+    },
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "urls": [
+      {
+        "_id": "507f1f77bcf86cd799439011",
+        "originalUrl": "https://example.com/page",
+        "shortCode": "abc123",
+        "title": "Campaign Link",
+        "clickCount": 150,
+        "isActive": true,
+        "createdAt": "2024-01-15T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 45,
+      "pages": 3
+    }
+  }
+}
+```
+
+</ResponseExample>

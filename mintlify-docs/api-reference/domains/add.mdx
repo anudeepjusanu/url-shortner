@@ -1,0 +1,73 @@
+---
+title: 'Add Custom Domain'
+api: 'POST https://snip.sa/api/domains'
+description: 'Add a new custom domain'
+---
+
+<Note>
+  Custom domains are available on Pro and Enterprise plans.
+</Note>
+
+## Request Body
+
+<ParamField body="domain" type="string" required>
+  Your domain name (e.g., "yourdomain.com")
+</ParamField>
+
+<ParamField body="subdomain" type="string">
+  Optional subdomain (e.g., "go" for "go.yourdomain.com")
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://snip.sa/api/domains \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "domain": "yourdomain.com",
+    "subdomain": "go"
+  }'
+```
+
+```javascript JavaScript
+const response = await axios.post('https://snip.sa/api/domains', {
+  domain: 'yourdomain.com',
+  subdomain: 'go'
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Domain added successfully",
+  "data": {
+    "domain": {
+      "_id": "507f1f77bcf86cd799439015",
+      "domain": "yourdomain.com",
+      "subdomain": "go",
+      "fullDomain": "go.yourdomain.com",
+      "status": "pending",
+      "verified": false,
+      "dnsRecords": [
+        {
+          "type": "CNAME",
+          "name": "go",
+          "value": "snip.sa"
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

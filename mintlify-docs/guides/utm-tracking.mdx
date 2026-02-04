@@ -1,0 +1,245 @@
+---
+title: 'UTM Tracking Guide'
+description: 'Track marketing campaigns with UTM parameters'
+---
+
+## What are UTM Parameters?
+
+UTM (Urchin Tracking Module) parameters help you track the effectiveness of your marketing campaigns in Google Analytics and other analytics tools.
+
+## UTM Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `utm_source` | Traffic source | google, newsletter, facebook |
+| `utm_medium` | Marketing medium | email, social, cpc |
+| `utm_campaign` | Campaign name | spring_sale, product_launch |
+| `utm_term` | Paid keywords | running+shoes |
+| `utm_content` | Ad variation | banner_a, text_link |
+
+## Creating URLs with UTM Parameters
+
+### Basic Example
+
+```javascript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/product',
+  customCode: 'spring-sale',
+  utm: {
+    source: 'newsletter',
+    medium: 'email',
+    campaign: 'spring_sale_2024'
+  }
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+// Result: https://laghhu.link/spring-sale
+// Redirects to: https://example.com/product?utm_source=newsletter&utm_medium=email&utm_campaign=spring_sale_2024
+```
+
+### Advanced Example with All Parameters
+
+```javascript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/product',
+  title: 'Spring Sale - Email Campaign',
+  utm: {
+    source: 'mailchimp',
+    medium: 'email',
+    campaign: 'spring_sale_2024',
+    term: 'discount_shoes',
+    content: 'header_banner'
+  },
+  tags: ['email', 'spring-2024']
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+## Campaign Tracking Examples
+
+### Email Marketing
+
+```javascript
+{
+  utm: {
+    source: 'mailchimp',
+    medium: 'email',
+    campaign: 'weekly_newsletter_jan_2024',
+    content: 'cta_button'
+  }
+}
+```
+
+### Social Media
+
+```javascript
+{
+  utm: {
+    source: 'facebook',
+    medium: 'social',
+    campaign: 'product_launch',
+    content: 'video_ad'
+  }
+}
+```
+
+### Paid Advertising
+
+```javascript
+{
+  utm: {
+    source: 'google',
+    medium: 'cpc',
+    campaign: 'brand_keywords',
+    term: 'url+shortener',
+    content: 'ad_variant_a'
+  }
+}
+```
+
+### Influencer Marketing
+
+```javascript
+{
+  utm: {
+    source: 'instagram',
+    medium: 'influencer',
+    campaign: 'summer_collab',
+    content: 'influencer_name'
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion icon="text" title="Use Consistent Naming">
+    - Use lowercase for all parameters
+    - Use underscores instead of spaces
+    - Be consistent across campaigns
+    
+    ✅ Good: `spring_sale_2024`
+    ❌ Bad: `Spring Sale 2024`
+  </Accordion>
+
+  <Accordion icon="tag" title="Organize with Tags">
+    Add tags to group related campaigns:
+    
+    ```javascript
+    {
+      utm: { ... },
+      tags: ['email', 'q1-2024', 'product-launch']
+    }
+    ```
+  </Accordion>
+
+  <Accordion icon="chart-line" title="Track Performance">
+    Monitor campaign performance in Google Analytics:
+    - Acquisition → Campaigns → All Campaigns
+    - Check conversion rates by source/medium
+    - Compare campaign effectiveness
+  </Accordion>
+
+  <Accordion icon="book" title="Document Your Strategy">
+    Keep a spreadsheet of your UTM conventions:
+    - Campaign names and dates
+    - Source/medium combinations
+    - Content variations
+  </Accordion>
+</AccordionGroup>
+
+## UTM Builder Helper
+
+Create a reusable UTM builder function:
+
+```javascript
+class SnipUTMBuilder {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://snip.sa/api';
+  }
+
+  async createCampaignUrl(originalUrl, campaign) {
+    const response = await axios.post(`${this.baseUrl}/urls`, {
+      originalUrl,
+      title: campaign.title,
+      customCode: campaign.code,
+      utm: {
+        source: campaign.source,
+        medium: campaign.medium,
+        campaign: campaign.name,
+        term: campaign.term,
+        content: campaign.content
+      },
+      tags: campaign.tags || []
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey
+      }
+    });
+
+    return response.data;
+  }
+}
+
+// Usage
+const builder = new SnipUTMBuilder('your_api_key');
+
+const campaign = await builder.createCampaignUrl(
+  'https://example.com/product',
+  {
+    title: 'Spring Sale Email',
+    code: 'spring-email',
+    source: 'mailchimp',
+    medium: 'email',
+    name: 'spring_sale_2024',
+    content: 'header_cta',
+    tags: ['email', 'spring']
+  }
+);
+```
+
+## Analyzing UTM Data
+
+Track your campaign performance:
+
+```javascript
+// Get analytics for a campaign URL
+const analytics = await axios.get(
+  `https://snip.sa/api/analytics/${urlId}`,
+  {
+    headers: { 'X-API-Key': 'your_api_key_here' }
+  }
+);
+
+console.log('Campaign Performance:');
+console.log('Total Clicks:', analytics.data.data.totalClicks);
+console.log('Top Countries:', analytics.data.data.topCountries);
+console.log('Top Devices:', analytics.data.data.topDevices);
+```
+
+## Common UTM Combinations
+
+| Campaign Type | Source | Medium |
+|---------------|--------|--------|
+| Email Newsletter | mailchimp | email |
+| Facebook Ad | facebook | cpc |
+| Instagram Post | instagram | social |
+| Twitter Post | twitter | social |
+| Google Ads | google | cpc |
+| Blog Post | blog | referral |
+| YouTube Video | youtube | video |
+| Podcast | podcast | audio |
+
+<Tip>
+  Snip automatically appends UTM parameters to your original URL, so you don't need to include them in the `originalUrl` field.
+</Tip>
