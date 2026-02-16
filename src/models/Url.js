@@ -300,8 +300,9 @@ urlSchema.methods.addUTMParameters = function() {
   }
 };
 
-urlSchema.index({ shortCode: 1 }, { unique: true });
-urlSchema.index({ customCode: 1 }, { unique: true, sparse: true });
+// Case-insensitive unique indexes for shortCode and customCode
+urlSchema.index({ shortCode: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+urlSchema.index({ customCode: 1 }, { unique: true, sparse: true, collation: { locale: 'en', strength: 2 } });
 urlSchema.index({ creator: 1 });
 urlSchema.index({ organization: 1 });
 urlSchema.index({ isActive: 1 });
