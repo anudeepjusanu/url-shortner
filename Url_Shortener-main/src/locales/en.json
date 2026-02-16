@@ -488,7 +488,7 @@
       "invalidUrl": "Please enter a valid URL (must start with http:// or https://)",
       "urlRequired": "Original URL is required",
       "urlTooLong": "URL is too long (maximum 2000 characters)",
-      "aliasExists": "This alias is already taken",
+      "aliasExists": "This alias already exists (case-insensitive). Please choose a different alias.",
       "aliasReserved": "This alias is reserved for system use. Please choose a different alias.",
       "aliasInvalidFormat": "Alias can only contain letters, numbers, hyphens, and underscores",
       "aliasInvalidLength": "Alias must be between 3 and 50 characters",

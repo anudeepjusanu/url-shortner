@@ -1,7 +1,7 @@
 const Url = require('../models/Url');
 const analyticsService = require('./analyticsService');
 const securityService = require('./securityService');
-const { cacheGet } = require('../config/redis');
+const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
 
 class RedirectService {

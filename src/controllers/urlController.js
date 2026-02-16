@@ -229,14 +229,18 @@ const createUrl = async (req, res) => {
         });
       }
 
+      // Case-insensitive check for existing aliases
       const existingUrl = await Url.findOne({
-        $or: [{ shortCode: shortCode }, { customCode: shortCode }]
+        $or: [
+          { shortCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } },
+          { customCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } }
+        ]
       });
       
       if (existingUrl) {
         return res.status(400).json({
           success: false,
-          message: 'Custom code already exists'
+          message: 'This alias already exists (case-insensitive). Please choose a different alias.'
         });
       }
     } else {
@@ -613,11 +617,11 @@ const updateUrl = async (req, res) => {
         });
       }
 
-      // Check if the code is already in use (check both shortCode and customCode)
+      // Case-insensitive check if the code is already in use (check both shortCode and customCode)
       const existingUrl = await Url.findOne({
         $or: [
-          { shortCode: normalizedCode },
-          { customCode: normalizedCode }
+          { shortCode: { $regex: new RegExp(`^${normalizedCode}$`, 'i') } },
+          { customCode: { $regex: new RegExp(`^${normalizedCode}$`, 'i') } }
         ],
         _id: { $ne: id }
       });
@@ -625,7 +629,7 @@ const updateUrl = async (req, res) => {
       if (existingUrl) {
         return res.status(400).json({
           success: false,
-          message: 'This custom code is already in use. Please choose a different one.'
+          message: 'This alias already exists (case-insensitive). Please choose a different alias.'
         });
       }
     }
