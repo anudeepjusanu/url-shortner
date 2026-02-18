@@ -155,6 +155,21 @@ function MyLinks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Refetch links when component becomes visible (e.g., after navigating back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchLinks();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-dismiss error messages after 4 seconds
   useEffect(() => {
     if (error) {
