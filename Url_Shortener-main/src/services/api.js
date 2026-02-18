@@ -140,8 +140,14 @@ class ApiClient {
       }
     });
 
+    // Add cache-busting parameter for list endpoints to ensure fresh data
+    const listEndpoints = ['/urls', '/analytics', '/admin/urls'];
+    if (listEndpoints.some(path => endpoint.startsWith(path))) {
+      url.searchParams.append('_t', Date.now().toString());
+    }
+
     return this.request(endpoint + url.search, {
-      method: 'GET',
+      method: 'GET'
     });
   }
 

@@ -23,9 +23,26 @@ app.use(compression());
 
 // Add response caching headers
 app.use((req, res, next) => {
-  // Cache API responses for 5 minutes
-  if (req.path.startsWith('/api/')) {
-    res.set('Cache-Control', 'public, max-age=300');
+  // Only cache GET requests for read-only endpoints
+  // Don't cache POST, PUT, DELETE or list endpoints that need fresh data
+  if (req.path.startsWith('/api/') && req.method === 'GET') {
+    // Don't cache dynamic list endpoints that need fresh data
+    const noCachePaths = ['/api/urls', '/api/analytics', '/api/admin'];
+    const shouldNotCache = noCachePaths.some(path => req.path.startsWith(path));
+    
+    if (shouldNotCache) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+    } else {
+      // Cache static/read-only resources for 5 minutes
+      res.set('Cache-Control', 'public, max-age=300');
+    }
+  } else if (req.path.startsWith('/api/')) {
+    // Never cache POST, PUT, DELETE requests
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
   }
   next();
 });
@@ -69,7 +86,7 @@ app.use(cors({
   origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Cache-Control', 'Pragma']
 }));
 
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));

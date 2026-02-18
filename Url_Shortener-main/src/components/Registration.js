@@ -23,6 +23,7 @@ const Registration = () => {
     receiveUpdates: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [otpData, setOtpData] = useState(null);
@@ -462,7 +463,7 @@ const Registration = () => {
             </div>
 
             {/* Phone Field */}
-            {/* <div className="form-field">
+            <div className="form-field">
               <label htmlFor="phone">{t('auth.register.phone')}</label>
               <div className="phone-input-wrapper">
                 <span className="country-code">+966</span>
@@ -475,7 +476,7 @@ const Registration = () => {
                   onChange={handleInputChange}
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Password Field */}
             <div className="form-field">
@@ -537,16 +538,50 @@ const Registration = () => {
             {/* Confirm Password Field */}
             <div className="form-field">
               <label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                placeholder={t('auth.register.confirmPasswordPlaceholder')}
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className={formErrors.confirmPassword ? 'error' : ''}
-                required
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder={t('auth.register.confirmPasswordPlaceholder')}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className={formErrors.confirmPassword ? 'error' : ''}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  <svg
+                    width="18"
+                    height="16"
+                    viewBox="0 0 18 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
+                  >
+                    <path
+                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                    <circle
+                      cx="9"
+                      cy="8"
+                      r="3"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                  </svg>
+                </button>
+              </div>
               {formErrors.confirmPassword && (
                 <span className="field-error">{formErrors.confirmPassword}</span>
               )}
