@@ -43,8 +43,20 @@ const HamburgerMenu = ({ sidebarItems, headerItems }) => {
   };
 
   const handleNavigation = (path) => {
+    if (!path) {
+      setIsOpen(false);
+      return;
+    }
+
+    // Handle external URLs
+    if (/^https?:\/\//i.test(path)) {
+      window.location.href = path;
+      setIsOpen(false);
+      return;
+    }
+
     // Check if it's a section ID for smooth scrolling
-    if (path && !path.startsWith('/') && !path.startsWith('#')) {
+    if (!path.startsWith('/') && !path.startsWith('#')) {
       scrollToSection(path);
       setIsOpen(false);
     } else if (path.startsWith('#')) {

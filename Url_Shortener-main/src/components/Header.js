@@ -49,7 +49,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
           { label: t('header.features'), path: 'features', icon: null },
           // { label: t('header.pricing'), path: 'pricing', icon: null },
           { label: t('header.about'), path: 'about', icon: null },
-          { label: t('header.contact'), path: 'contact', icon: null }
+          { label: t('header.contact'), path: 'contact', icon: null },
+          { label: t('footer.api'), path: 'https://docs.snip.sa', icon: null }
         ]
       }
     ];
@@ -106,7 +107,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
               <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
               {/* <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button> */}
               <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
-              <button onClick={() => window.location.href = '/api-docs'} className="nav-link">{t('footer.api')}</button>
+              {/* <button onClick={() => window.location.href = '/api-docs'} className="nav-link">{t('footer.api')}</button> */}
+              <button onClick={() => window.location.href = 'https://docs.snip.sa'} className="nav-link">{t('footer.api')}</button>
 
             </nav>
           </div>

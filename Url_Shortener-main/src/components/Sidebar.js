@@ -406,7 +406,7 @@ const Sidebar = ({ activeItem }) => {
             <span>{t('sidebar.profile')}</span>
           </div>
           <a
-            href="/api-docs"
+            href="https://docs.snip.sa"
             target="_blank"
             rel="noopener noreferrer"
             className="nav-item"
