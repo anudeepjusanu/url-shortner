@@ -369,7 +369,8 @@ const TermsAndConditions = () => {
                   <button onClick={() => scrollToSection('pricing')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.pricing')}</button>
                 </li> */}
                 <li>
-                  <a href="/api-docs">{t('footer.api')}</a>
+                          {/* <a href="/api-docs">{t('footer.api')}</a> */}
+                  <a href="https://docs.snip.sa">{t('footer.api')}</a>
                 </li>
                 {/* <li>
                   <button onClick={() => scrollToSection('features')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.integrations')}</button>

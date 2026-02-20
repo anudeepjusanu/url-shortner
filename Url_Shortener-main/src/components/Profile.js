@@ -1146,7 +1146,7 @@ const Profile = () => {
                   {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
                 </button>
                 <a
-                  href="/api-docs"
+                  href="https://docs.snip.sa"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
