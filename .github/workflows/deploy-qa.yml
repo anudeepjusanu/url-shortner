@@ -1,0 +1,90 @@
+name: Deploy to QA
+
+on:
+  push:
+    branches: [ qa ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: npm install
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy-temp/frontend
+          cp -r src deploy-temp/
+          cp -r scripts deploy-temp/
+          cp -r frontend/dist deploy-temp/frontend/
+          cp package*.json deploy-temp/
+          mkdir -p deploy-temp/logs
+          # Copy GA credentials if present
+          if [ -f src/config/ga-credentials.json ]; then
+            mkdir -p deploy-temp/src/config
+            cp src/config/ga-credentials.json deploy-temp/src/config/
+          fi
+          tar -czf deployment-qa.tar.gz -C deploy-temp .
+
+      - name: Copy deployment package to QA VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.QA_VM_HOST }}
+          username: ${{ secrets.QA_VM_USERNAME }}
+          key: ${{ secrets.QA_VM_SSH_KEY }}
+          port: 22
+          source: "deployment-qa.tar.gz"
+          target: "/tmp/"
+
+      - name: Deploy on QA VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.QA_VM_HOST }}
+          username: ${{ secrets.QA_VM_USERNAME }}
+          key: ${{ secrets.QA_VM_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            export NVM_DIR="$HOME/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.nvm/versions/node/v18.20.8/bin:$PATH"
+
+            APP_DIR="$HOME/url-shortener-qa"
+
+            # Stop app gracefully
+            pm2 stop url-shortener-qa || true
+
+            # Extract new deployment (preserves .env and ecosystem.config.js)
+            tar -xzf /tmp/deployment-qa.tar.gz -C "$APP_DIR"
+
+            # Install production dependencies
+            cd "$APP_DIR"
+            npm install --production
+
+            # Restart app
+            pm2 restart url-shortener-qa || pm2 start ecosystem.config.js --env production
+
+            # Save PM2 state
+            pm2 save --force
+
+            # Cleanup
+            rm -f /tmp/deployment-qa.tar.gz
+
+            echo "QA deployment complete. Commit: ${{ github.sha }}"
