@@ -22,17 +22,20 @@ jobs:
         run: npm install
 
       - name: Install frontend dependencies
-        run: cd frontend && npm install
+        run: cd Url_Shortener-main && npm install
 
       - name: Build frontend
-        run: cd frontend && npm run build
+        run: cd Url_Shortener-main && npm run build
+        env:
+          REACT_APP_API_URL: https://qa.snip.sa/api
+          REACT_APP_DEFAULT_DOMAIN: qa.snip.sa
 
       - name: Create deployment package
         run: |
           mkdir -p deploy-temp/frontend
           cp -r src deploy-temp/
           cp -r scripts deploy-temp/
-          cp -r frontend/dist deploy-temp/frontend/
+          cp -r Url_Shortener-main/build deploy-temp/frontend/
           cp package*.json deploy-temp/
           mkdir -p deploy-temp/logs
           # Copy GA credentials if present
@@ -78,8 +81,12 @@ jobs:
             cd "$APP_DIR"
             npm install --production
 
-            # Restart app
+            # Restart backend
             pm2 restart url-shortener-qa || pm2 start ecosystem.config.js --env production
+
+            # Restart frontend serve (CRA builds to build/, not dist/)
+            pm2 delete url-shortener-qa-ui || true
+            pm2 serve frontend/build 3021 --name url-shortener-qa-ui --spa
 
             # Save PM2 state
             pm2 save --force
