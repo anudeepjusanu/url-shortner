@@ -137,6 +137,7 @@ const addDomain = async (req, res) => {
       message: 'Domain added successfully',
       data: {
         domain: populatedDomain,
+        cnameTarget: domainService.cnameTarget,
         setupInstructions: domainService.getSetupInstructions(fullDomain, 'CNAME')
       }
     });

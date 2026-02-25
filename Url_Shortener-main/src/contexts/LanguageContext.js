@@ -8,13 +8,13 @@ const LanguageContext = createContext();
 export const LanguageProvider = ({ children }) => {
   const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(
-    localStorage.getItem('language') || 'en'
+    localStorage.getItem('language') || 'ar'
   );
   const [isRTL, setIsRTL] = useState(currentLanguage === 'ar');
 
   // Initialize language on mount
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'en';
+    const savedLanguage = localStorage.getItem('language') || 'ar';
     if (i18n.language !== savedLanguage) {
       i18n.changeLanguage(savedLanguage);
     }

@@ -2,12 +2,42 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
+import logo from '../assets/logo.png';
 import "./PrivacyPolicy.css";
 
 const PrivacyPolicy = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isRTL = i18n.language === 'ar';
+  
+  const scrollToSection = (sectionId) => {
+    // Check if we're on the landing page
+    const isOnLandingPage = window.location.pathname === '/';
+    const isOnPrivacyPage = window.location.pathname === '/privacy-policy';
+    const isOnTermsPage = window.location.pathname === '/terms-and-conditions';
+
+    // If we're on privacy or terms page and clicking features/about/pricing/contact
+    // navigate to landing page
+    if ((isOnPrivacyPage || isOnTermsPage) && 
+        ['features', 'about', 'pricing', 'contact'].includes(sectionId)) {
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+
+    // Otherwise, scroll to the section on current page
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.offsetTop;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
 
   return (
     <div className={`privacy-page ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -179,63 +209,61 @@ const PrivacyPolicy = () => {
           </div>
         </div>
       </footer> */}
-            <footer id="contact" className="footer">
+      <footer id="contact" className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <div >
-                <div className="brand-logo">
-                  {/* <div className="logo-icon">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="23"
-                      height="18"
-                      viewBox="0 0 23 18"
-                      fill="none"
-                    >
-                      <g clip-path="url(#clip0_775_2784)">
-                        <path
-                          d="M20.3836 9.41141C22.37 7.42509 22.37 4.20829 20.3836 2.22196C18.6258 0.464147 15.8555 0.235631 13.834 1.68055L13.7778 1.71922C13.2715 2.08133 13.1555 2.78446 13.5176 3.28719C13.8797 3.78993 14.5829 3.90946 15.0856 3.54735L15.1418 3.50868C16.2704 2.7036 17.8137 2.83016 18.7911 3.81102C19.8985 4.91844 19.8985 6.71141 18.7911 7.81883L14.8465 11.7704C13.7391 12.8778 11.9461 12.8778 10.8387 11.7704C9.85786 10.7895 9.7313 9.24618 10.5364 8.12118L10.575 8.06493C10.9372 7.55868 10.8176 6.85555 10.3149 6.49696C9.81216 6.13837 9.10552 6.25438 8.74692 6.75712L8.70825 6.81337C7.25981 8.83134 7.48833 11.6016 9.24614 13.3595C11.2325 15.3458 14.4493 15.3458 16.4356 13.3595L20.3836 9.41141ZM2.11646 8.58876C0.130127 10.5751 0.130127 13.7919 2.11646 15.7782C3.87427 17.536 6.64458 17.7645 8.66606 16.3196L8.72231 16.2809C9.22857 15.9188 9.34458 15.2157 8.98247 14.713C8.62036 14.2102 7.91724 14.0907 7.4145 14.4528L7.35825 14.4915C6.22974 15.2966 4.68638 15.17 3.70903 14.1891C2.60161 13.0782 2.60161 11.2852 3.70903 10.1778L7.65356 6.22977C8.76099 5.12235 10.554 5.12235 11.6614 6.22977C12.6422 7.21063 12.7688 8.75399 11.9637 9.88251L11.925 9.93876C11.5629 10.445 11.6825 11.1481 12.1852 11.5067C12.6879 11.8653 13.3946 11.7493 13.7532 11.2466L13.7918 11.1903C15.2403 9.16883 15.0118 6.39852 13.254 4.64071C11.2676 2.65438 8.05083 2.65438 6.0645 4.64071L2.11646 8.58876Z"
-                          fill="white"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_775_2784">
-                          <path d="M0 0H22.5V18H0V0Z" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </div> */}
-                  <span className="brand-name">Snip</span>
+              <div>
+                <div className="brand-logo footer-brand-logo">
+                  <img 
+                    src={logo} 
+                    alt="Snip Logo" 
+                    className="footer-logo-img"
+                  />
                 </div>
                 <p className="footer-description">
                   {t('footer.description')}
                 </p>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <div className="social-links">
-                  <a href="#" className="social-link">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <a href="https://www.facebook.com/snip.saa/" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M13.5 9H16V6h-2.5C11.6 6 10 7.6 10 9.5V12H8v3h2v7h3v-7h2.5l.5-3H13V9.5c0-.3.2-.5.5-.5z"
+                      fill="currentColor"
+                    />
+                  </svg>
+
+                  </a>
+                  <a href="https://x.com/snipsaweb" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path
-                        d="M16 8.05A8.02 8.02 0 008.05 16v-5.61h1.62l.31-2h-1.93V6.75c0-.44.22-.87.91-.87h.87V4.29s-.79-.13-1.54-.13c-1.57 0-2.6.95-2.6 2.68v1.51H3.84v2h1.85V16A8.02 8.02 0 0016 8.05z"
+                        d="M18.9 2H22l-7.1 8.1L23 22h-6.3l-5-6.6L6 22H2.9l7.6-8.7L1 2h6.4l4.6 6L18.9 2z"
                         fill="currentColor"
                       />
                     </svg>
                   </a>
-                  <a href="#" className="social-link">
-                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
-                      <path
-                        d="M14 2.4c-.5.2-1.1.4-1.6.4.6-.4 1-.9 1.2-1.6-.5.3-1.1.5-1.8.7C11.3.9 10.5.5 9.7.5c-1.6 0-2.9 1.3-2.9 2.9 0 .2 0 .4.1.6C4.5 3.8 2.4 2.7.98 1c-.2.4-.3.8-.3 1.3 0 1 .5 1.9 1.3 2.4-.5 0-.9-.2-1.3-.4v.04c0 1.4 1 2.6 2.3 2.8-.2.1-.5.1-.8.1-.2 0-.4 0-.6-.1.4 1.3 1.6 2.2 3 2.2-1.1.9-2.5 1.4-4 1.4-.3 0-.5 0-.8-.04C1.4 11.2 3.1 11.7 5 11.7c6 0 9.3-5 9.3-9.3v-.4c.6-.5 1.2-1.1 1.7-1.8z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </a>
-                  <a href="#" className="social-link">
+                  <a href="https://www.linkedin.com/company/snipweb" className="social-link">
                     <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
                       <path
                         d="M12.8 0H1.2C.5 0 0 .5 0 1.2v13.6c0 .7.5 1.2 1.2 1.2h13.6c.7 0 1.2-.5 1.2-1.2V1.2c0-.7-.5-1.2-1.2-1.2zM4.7 13.6H2.4V6h2.4v7.6zM3.6 5c-.8 0-1.4-.7-1.4-1.4S2.8 2.1 3.6 2.1s1.4.7 1.4 1.4-.6 1.5-1.4 1.5zm8.8 8.6H10V9.9c0-.9 0-2-1.2-2s-1.4.9-1.4 1.9v3.8H5V6h2.3v1c.3-.6 1.1-1.2 2.2-1.2 2.4 0 2.8 1.6 2.8 3.6v4.2z"
                         fill="currentColor"
                       />
                     </svg>
+                  </a>
+                  <a href="https://www.instagram.com/snip.saa/" className="social-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M7 2h10c2.8 0 5 2.2 5 5v10c0 2.8-2.2 5-5 5H7c-2.8 0-5-2.2-5-5V7c0-2.8 2.2-5 5-5zm10 2H7c-1.7 0-3 1.3-3 3v10c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V7c0-1.7-1.3-3-3-3z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"
+                        fill="currentColor"
+                      />
+                      <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" />
+                    </svg>
+
                   </a>
                 </div>
               </div>
@@ -245,21 +273,22 @@ const PrivacyPolicy = () => {
               <h4>{t('footer.product')}</h4>
               <ul>
                 <li>
-                  <a href="#">{t('footer.features')}</a>
+                  <button onClick={() => scrollToSection('features')} style={{background: 'none', border: 'none', padding: 0, color: '#9ca3af', fontSize: "16px", cursor: 'pointer',  textAlign: 'left'}}>{t('footer.features')}</button>
                 </li>
                 {/* <li>
-                  <a href="#">{t('footer.pricing')}</a>
+                  <button onClick={() => scrollToSection('pricing')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.pricing')}</button>
                 </li> */}
-                <li>
-                  <a href="#">{t('footer.api')}</a>
+                  <li>
+                      {/* <a href="/api-docs">{t('footer.api')}</a> */}
+                  <a href="https://docs.snip.sa">{t('footer.api')}</a>
                 </li>
-                <li>
-                  <a href="#">{t('footer.integrations')}</a>
-                </li>
+                {/* <li>
+                  <button onClick={() => scrollToSection('features')} style={{background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', font: 'inherit', textAlign: 'left'}}>{t('footer.integrations')}</button>
+                </li> */}
               </ul>
             </div>
 
-            <div className="footer-section">
+            {/* <div className="footer-section">
               <h4>{t('footer.company')}</h4>
               <ul>
                 <li>
@@ -275,7 +304,7 @@ const PrivacyPolicy = () => {
                   <a href="#">{t('footer.contact')}</a>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             <div className="footer-section">
               <h4>{t('footer.legal')}</h4>
@@ -300,6 +329,12 @@ const PrivacyPolicy = () => {
             <p>
               {t('footer.copyright')}
             </p>
+            <a href="tel:+9660115108347" className="footer-phone">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              +966 0115108347
+            </a>
           </div>
         </div>
       </footer>

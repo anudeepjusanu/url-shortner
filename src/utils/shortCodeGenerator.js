@@ -167,7 +167,7 @@ class ShortCodeGenerator {
     const reservedWords = [
       'api', 'admin', 'www', 'app', 'dashboard', 'login',
       'register', 'auth', 'profile', 'settings', 'help',
-      'about', 'contact', 'terms', 'privacy', 'support',
+      'about', 'contact', 'terms',  'support',
       'analytics', 'stats', 'health', 'ping', 'test'
     ];
     

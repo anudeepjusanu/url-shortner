@@ -80,10 +80,17 @@ const getUser = async (req, res) => {
     // Get user's domain count
     const domainCount = await Domain.countDocuments({ owner: userId });
 
+    // Prepare user object with lastLogin fallback
+    const userObj = user.toObject();
+    // If lastLogin is null, use createdAt (registration date)
+    if (!userObj.lastLogin) {
+      userObj.lastLogin = userObj.createdAt;
+    }
+
     res.json({
       success: true,
       data: {
-        user,
+        user: userObj,
         stats: {
           urlCount,
           domainCount,

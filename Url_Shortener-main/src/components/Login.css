@@ -309,19 +309,28 @@
 }
 
 .forgot-password-link {
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
   color: #3B82F6;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .forgot-password-link:hover {
   color: #2563EB;
   text-decoration: underline;
+  transform: none !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.forgot-password-link:active {
+  transform: none !important;
 }
 
 .sign-in-btn {
@@ -370,19 +379,28 @@
 }
 
 .signup-link {
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
   color: #3B82F6;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   margin-left: 4px;
-  transition: color 0.2s ease;
+  transition: color 0.2s !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .signup-link:hover {
   color: #2563EB;
   text-decoration: underline;
+  transform: none !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.signup-link:active {
+  transform: none !important;
 }
 
 /* Error and Loading Styles - Reuse from Registration.css */
@@ -492,25 +510,73 @@
 
 .password-input-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
+  width: 100%;
+  overflow: visible !important;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  width: calc(100% - 0px) !important;
+  padding-right: 44px !important;
+  box-sizing: border-box;
 }
 
 .password-toggle {
   position: absolute;
-  right: 12px;
-  background: none;
-  border: none;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
   cursor: pointer;
   padding: 4px;
-  display: flex;
+  margin: 0;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: none !important;
+  z-index: 10;
+  overflow: visible !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #9CA3AF !important;
 }
 
-.password-toggle:hover {
-  opacity: 0.7;
+.password-toggle:hover,
+.password-toggle:focus,
+.password-toggle:active {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.password-toggle svg {
+  width: 18px !important;
+  height: 16px !important;
+  min-width: 18px !important;
+  min-height: 16px !important;
+  display: block !important;
+  pointer-events: none;
+  transition: none !important;
+  flex-shrink: 0;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: inherit !important;
+}
+
+.password-toggle svg path,
+.password-toggle svg circle {
+  stroke: #9CA3AF !important;
+  stroke-width: 2 !important;
 }
 
 /* Responsive Design */
@@ -543,13 +609,6 @@
     max-width: 448px;
     padding: 0;
     margin: 0;
-  }
-
-  .login-container .google-btn,
-  .google-btn,
-  .login-container .sign-in-btn,
-  .sign-in-btn {
-    /* width: 100%; */
   }
 
   .login-container .brand-section,
@@ -708,6 +767,10 @@
     padding: 0 12px;
   }
 
+  .password-input-wrapper input {
+    padding-right: 44px !important;
+  }
+
   .login-container .brand-title,
   .brand-title {
     font-size: 28px;
@@ -848,6 +911,10 @@
     height: 40px;
     font-size: 13px;
     padding: 0 10px;
+  }
+
+  .password-input-wrapper input {
+    padding-right: 44px !important;
   }
 
   .login-container .brand-title,

@@ -216,33 +216,25 @@ const QRCodes = () => {
         setDownloadLoading(null);
         return;
       }
-      // Use qrCodeAPI.download for all formats
-      const response = await qrCodeAPI.download(linkId, format);
-      if (response && response.success !== false) {
-        // Determine MIME type for file extension
-        let mimeType = 'image/png';
-        if (format === 'svg') mimeType = 'image/svg+xml';
-        if (format === 'pdf') mimeType = 'application/pdf';
-        if (format === 'jpg' || format === 'jpeg') mimeType = 'image/jpeg';
-        // Convert response to blob
-        const blob = new Blob([response], { type: mimeType });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `qrcode-${linkId}.${format}`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        setToast({
-          type: 'success',
-          message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
-        });
-        loadLinks();
-        loadStats();
-      } else {
-        throw new Error(response.message || 'Download failed');
-      }
+      // Use qrCodeAPI.download for all formats - returns a blob directly
+      const blob = await qrCodeAPI.download(linkId, format);
+      
+      // Create download link from blob
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `qrcode-${linkId}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setToast({
+        type: 'success',
+        message: t('qrCodes.downloadSuccess') || 'QR Code downloaded successfully!'
+      });
+      loadLinks();
+      loadStats();
     } catch (error) {
       console.error('Error downloading QR code:', error);
       setToast({

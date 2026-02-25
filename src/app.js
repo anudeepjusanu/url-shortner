@@ -17,6 +17,36 @@ app.use((req, res, next) => {
 // Trust proxy
 app.set('trust proxy', true);
 
+// Enable compression
+const compression = require('compression');
+app.use(compression());
+
+// Add response caching headers
+app.use((req, res, next) => {
+  // Only cache GET requests for read-only endpoints
+  // Don't cache POST, PUT, DELETE or list endpoints that need fresh data
+  if (req.path.startsWith('/api/') && req.method === 'GET') {
+    // Don't cache dynamic list endpoints that need fresh data
+    const noCachePaths = ['/api/urls', '/api/analytics', '/api/admin'];
+    const shouldNotCache = noCachePaths.some(path => req.path.startsWith(path));
+    
+    if (shouldNotCache) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+    } else {
+      // Cache static/read-only resources for 5 minutes
+      res.set('Cache-Control', 'public, max-age=300');
+    }
+  } else if (req.path.startsWith('/api/')) {
+    // Never cache POST, PUT, DELETE requests
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+  next();
+});
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -52,11 +82,21 @@ app.use(helmet({
   }
 }));
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Cache-Control', 'Pragma']
 }));
 
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -64,18 +104,19 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// TEMPORARILY DISABLED - Rate limiting paused until going live
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: process.env.RATE_LIMIT || 100,
-//   message: {
-//     error: 'Too many requests from this IP, please try again later.'
-//   },
-//   standardHeaders: true,
-//   legacyHeaders: false,
-// });
+// Global rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.RATE_LIMIT || 500,
+  message: {
+    success: false,
+    error: 'Too many requests from this IP, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// app.use(limiter);
+app.use(limiter);
 
 app.use((req, res, next) => {
   res.set({
@@ -114,6 +155,9 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 
+// SEO routes - sitemap.xml and robots.txt
+app.use('/', require('./routes/sitemapRoutes'));
+
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
@@ -127,8 +171,7 @@ app.get('/q/:shortCode', redirectController.redirectFromQRCode);
 // app.get('/q/:shortCode/*', redirectController.redirectFromQRCode); // Handle extra paths
 
 // Handle shortened URL redirects (e.g., /mbtw7f)
-// TEMPORARILY DISABLED - Rate limiting paused until going live
-app.get('/:shortCode', /* redirectLimiter, */ redirectController.redirectToOriginalUrl);
+app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl);
 // app.get('/:shortCode/*', /* redirectLimiter, */ redirectController.redirectToOriginalUrl); // Handle extra paths
 
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)

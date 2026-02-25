@@ -23,6 +23,7 @@ const Registration = () => {
     receiveUpdates: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [otpData, setOtpData] = useState(null);
@@ -462,7 +463,7 @@ const Registration = () => {
             </div>
 
             {/* Phone Field */}
-            {/* <div className="form-field">
+            <div className="form-field">
               <label htmlFor="phone">{t('auth.register.phone')}</label>
               <div className="phone-input-wrapper">
                 <span className="country-code">+966</span>
@@ -475,7 +476,7 @@ const Registration = () => {
                   onChange={handleInputChange}
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Password Field */}
             <div className="form-field">
@@ -495,6 +496,7 @@ const Registration = () => {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <svg
                     width="18"
@@ -502,6 +504,7 @@ const Registration = () => {
                     viewBox="0 0 18 16"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
                   >
                     <path
                       d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
@@ -509,6 +512,7 @@ const Registration = () => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
                     />
                     <circle
                       cx="9"
@@ -516,6 +520,7 @@ const Registration = () => {
                       r="3"
                       stroke="#9CA3AF"
                       strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
                     />
                   </svg>
                 </button>
@@ -533,16 +538,50 @@ const Registration = () => {
             {/* Confirm Password Field */}
             <div className="form-field">
               <label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                placeholder={t('auth.register.confirmPasswordPlaceholder')}
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className={formErrors.confirmPassword ? 'error' : ''}
-                required
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder={t('auth.register.confirmPasswordPlaceholder')}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className={formErrors.confirmPassword ? 'error' : ''}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  <svg
+                    width="18"
+                    height="16"
+                    viewBox="0 0 18 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
+                  >
+                    <path
+                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                    <circle
+                      cx="9"
+                      cy="8"
+                      r="3"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                  </svg>
+                </button>
+              </div>
               {formErrors.confirmPassword && (
                 <span className="field-error">{formErrors.confirmPassword}</span>
               )}
@@ -561,13 +600,11 @@ const Registration = () => {
                 />
                 <label htmlFor="agreeToTerms">
                   {t('auth.register.termsAgree')}{" "}
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="text-link">
+                  <a href="/terms-and-conditions" className="text-link">
                     {t('auth.register.terms')}
                   </a>{" "}
                   {t('auth.register.and')}{" "}
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a href="#" className="text-link">
+                  <a href="/privacy-policy" className="text-link">
                     {t('auth.register.privacy')}
                   </a>
                 </label>

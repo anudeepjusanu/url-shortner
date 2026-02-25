@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Url = require('../models/Url');
 const Organization = require('../models/Organization');
 const { Click } = require('../models/Analytics');
+const { cacheDel } = require('../config/redis');
 
 const getSystemStats = async (req, res) => {
   try {
@@ -113,10 +114,20 @@ const getUsers = async (req, res) => {
       User.countDocuments(filter)
     ]);
     
+    // Map users to include fallback lastLogin (use createdAt if never logged in)
+    const usersWithLastLogin = users.map(user => {
+      const userObj = user.toObject();
+      // If lastLogin is null, use createdAt (registration date)
+      if (!userObj.lastLogin) {
+        userObj.lastLogin = userObj.createdAt;
+      }
+      return userObj;
+    });
+    
     res.json({
       success: true,
       data: {
-        users,
+        users: usersWithLastLogin,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -213,21 +224,72 @@ const getAllUrls = async (req, res) => {
       limit = 20,
       search,
       isActive,
+      creator,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
     
     const skip = (page - 1) * limit;
-    const filter = {};
+    let filter = {};
     
-    if (search) {
+    // Search across URL fields AND creator name/email
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      // Escape special regex characters to prevent regex injection
+      const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Create a version with optional spaces between characters for flexible matching
+      // This allows "JohnDoe" to match "John Doe" and vice versa
+      const flexibleSearch = escapedSearch.split(/\s+/).join('\\s*');
+      // Also create a version without any spaces for matching concatenated names
+      const noSpaceSearch = searchTerm.replace(/\s+/g, '');
+      const escapedNoSpaceSearch = noSpaceSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // First, find users matching the search term (search in full name or email)
+      const matchingUsers = await User.find({
+        $or: [
+          { firstName: { $regex: escapedSearch, $options: 'i' } },
+          { lastName: { $regex: escapedSearch, $options: 'i' } },
+          { email: { $regex: escapedSearch, $options: 'i' } },
+          // Search by combining first and last name with space (for "John Doe" type searches)
+          { $expr: { 
+            $regexMatch: { 
+              input: { $concat: ['$firstName', ' ', '$lastName'] }, 
+              regex: flexibleSearch, 
+              options: 'i' 
+            } 
+          }},
+          // Search by combining first and last name without space (for "JohnDoe" type searches)
+          { $expr: { 
+            $regexMatch: { 
+              input: { $concat: ['$firstName', '$lastName'] }, 
+              regex: escapedNoSpaceSearch, 
+              options: 'i' 
+            } 
+          }}
+        ]
+      }).select('_id');
+      
+      const userIds = matchingUsers.map(u => u._id);
+      
+      // Build filter to search URL fields OR match creator
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { originalUrl: { $regex: search, $options: 'i' } },
-        { shortCode: { $regex: search, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { originalUrl: { $regex: escapedSearch, $options: 'i' } },
+        { shortCode: { $regex: escapedSearch, $options: 'i' } }
       ];
+      
+      // Add creator filter if matching users found
+      if (userIds.length > 0) {
+        filter.$or.push({ creator: { $in: userIds } });
+      }
     }
     
+    // Filter by specific creator ID (from dropdown)
+    if (creator) {
+      filter.creator = creator;
+    }
+    
+    // Filter by status
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
     }
@@ -279,6 +341,14 @@ const updateUrl = async (req, res) => {
       });
     }
     
+    console.log('🔄 Admin updating URL:', {
+      id,
+      shortCode: url.shortCode,
+      customCode: url.customCode,
+      currentIsActive: url.isActive,
+      newIsActive: isActive
+    });
+    
     const updateData = {};
     if (isActive !== undefined) updateData.isActive = isActive;
     if (title !== undefined) updateData.title = title;
@@ -287,6 +357,25 @@ const updateUrl = async (req, res) => {
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
+    
+    // Clear cache for this URL so deactivation takes effect immediately
+    // Use lowercase for case-insensitive consistency
+    const lowerShortCode = url.shortCode.toLowerCase();
+    console.log('🗑️ Clearing cache for:', `url:${lowerShortCode}`);
+    const cacheDelResult1 = await cacheDel(`url:${lowerShortCode}`);
+    console.log('🗑️ Cache delete result for shortCode:', cacheDelResult1);
+    
+    if (url.customCode) {
+      const lowerCustomCode = url.customCode.toLowerCase();
+      console.log('🗑️ Clearing cache for customCode:', `url:${lowerCustomCode}`);
+      const cacheDelResult2 = await cacheDel(`url:${lowerCustomCode}`);
+      console.log('🗑️ Cache delete result for customCode:', cacheDelResult2);
+    }
+    
+    console.log('✅ URL updated successfully:', {
+      shortCode: updatedUrl.shortCode,
+      isActive: updatedUrl.isActive
+    });
     
     res.json({
       success: true,

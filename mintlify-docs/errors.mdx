@@ -1,0 +1,118 @@
+---
+title: 'Error Handling'
+description: 'Understanding API errors and how to handle them'
+---
+
+## Error Response Format
+
+All API errors follow a consistent format:
+
+```json
+{
+  "success": false,
+  "message": "Human-readable error message",
+  "error": "Detailed error information (development only)"
+}
+```
+
+## HTTP Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Success |
+| `201` | Created successfully |
+| `400` | Bad Request - Invalid input |
+| `401` | Unauthorized - Invalid or missing authentication |
+| `403` | Forbidden - Insufficient permissions or usage limit exceeded |
+| `404` | Not Found - Resource doesn't exist |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Internal Server Error |
+
+## Common Errors
+
+<AccordionGroup>
+  <Accordion icon="key" title="401 Unauthorized">
+    **Cause**: Invalid or missing API key
+    
+    ```json
+    {
+      "success": false,
+      "message": "Invalid API key"
+    }
+    ```
+    
+    **Solution**: Check that your API key is correct and included in the `X-API-Key` header
+  </Accordion>
+
+  <Accordion icon="ban" title="403 Forbidden - Usage Limit">
+    **Cause**: Monthly usage limit exceeded
+    
+    ```json
+    {
+      "success": false,
+      "message": "Monthly URL creation limit exceeded",
+      "code": "USAGE_LIMIT_EXCEEDED",
+      "data": {
+        "limit": 100,
+        "current": 100,
+        "action": "createUrl"
+      }
+    }
+    ```
+    
+    **Solution**: Upgrade your plan or wait until next billing cycle
+  </Accordion>
+
+  <Accordion icon="link-slash" title="400 Bad Request - Invalid URL">
+    **Cause**: Invalid URL format
+    
+    ```json
+    {
+      "success": false,
+      "message": "Invalid URL format"
+    }
+    ```
+    
+    **Solution**: Ensure URL includes protocol (http:// or https://)
+  </Accordion>
+
+  <Accordion icon="copy" title="400 Bad Request - Duplicate Code">
+    **Cause**: Custom code already exists
+    
+    ```json
+    {
+      "success": false,
+      "message": "Custom code already exists"
+    }
+    ```
+    
+    **Solution**: Choose a different custom code
+  </Accordion>
+
+  <Accordion icon="magnifying-glass" title="404 Not Found">
+    **Cause**: Resource doesn't exist
+    
+    ```json
+    {
+      "success": false,
+      "message": "URL not found"
+    }
+    ```
+    
+    **Solution**: Verify the resource ID is correct
+  </Accordion>
+
+  <Accordion icon="gauge-high" title="429 Rate Limit Exceeded">
+    **Cause**: Too many requests
+    
+    ```json
+    {
+      "success": false,
+      "message": "Rate limit exceeded. Please try again later.",
+      "retryAfter": 900
+    }
+    ```
+    
+    **Solution**: Wait for the time specified in `retryAfter` (seconds)
+  </Accordion>
+</AccordionGroup>

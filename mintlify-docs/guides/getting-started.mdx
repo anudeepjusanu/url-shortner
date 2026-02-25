@@ -1,0 +1,189 @@
+---
+title: 'Getting Started Guide'
+description: 'Complete guide to getting started with Snip API'
+---
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+<Check>An active Snip account</Check>
+<Check>Your API key (from Profile → API Keys)</Check>
+<Check>Basic knowledge of REST APIs</Check>
+
+## Step 1: Set Up Your Environment
+
+Store your API key securely using environment variables:
+
+<CodeGroup>
+
+```bash .env
+SNIP_API_KEY=your_api_key_here
+SNIP_BASE_URL=https://snip.sa/api
+```
+
+```javascript .env.local
+SNIP_API_KEY=your_api_key_here
+SNIP_BASE_URL=https://snip.sa/api
+```
+
+</CodeGroup>
+
+## Step 2: Install Dependencies
+
+<CodeGroup>
+
+```bash npm
+npm install axios dotenv
+```
+
+```bash yarn
+yarn add axios dotenv
+```
+
+```bash pip
+pip install requests python-dotenv
+```
+
+</CodeGroup>
+
+## Step 3: Create Your First Short URL
+
+<CodeGroup>
+
+```javascript JavaScript
+require('dotenv').config();
+const axios = require('axios');
+
+const API_KEY = process.env.SNIP_API_KEY;
+const BASE_URL = process.env.SNIP_BASE_URL;
+
+async function createShortUrl() {
+  try {
+    const response = await axios.post(`${BASE_URL}/urls`, {
+      originalUrl: 'https://example.com/my-long-url',
+      title: 'My First Short URL',
+      tags: ['test']
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': API_KEY
+      }
+    });
+
+    const { url, domain } = response.data.data;
+    const shortUrl = `${domain.shortUrl}/${url.shortCode}`;
+    
+    console.log('✅ Short URL created:', shortUrl);
+    console.log('📊 URL ID:', url._id);
+    
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error:', error.response?.data || error.message);
+  }
+}
+
+createShortUrl();
+```
+
+```python Python
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv('SNIP_API_KEY')
+BASE_URL = os.getenv('SNIP_BASE_URL')
+
+def create_short_url():
+    try:
+        response = requests.post(
+            f'{BASE_URL}/urls',
+            headers={
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            json={
+                'originalUrl': 'https://example.com/my-long-url',
+                'title': 'My First Short URL',
+                'tags': ['test']
+            }
+        )
+        
+        response.raise_for_status()
+        data = response.json()
+        
+        url = data['data']['url']
+        domain = data['data']['domain']
+        short_url = f"{domain['shortUrl']}/{url['shortCode']}"
+        
+        print(f'✅ Short URL created: {short_url}')
+        print(f'📊 URL ID: {url["_id"]}')
+        
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f'❌ Error: {e}')
+
+if __name__ == '__main__':
+    create_short_url()
+```
+
+</CodeGroup>
+
+## Step 4: Retrieve Your URLs
+
+```javascript
+async function getMyUrls() {
+  const response = await axios.get(`${BASE_URL}/urls`, {
+    params: {
+      page: 1,
+      limit: 20,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    },
+    headers: {
+      'X-API-Key': API_KEY
+    }
+  });
+
+  console.log(`Found ${response.data.data.pagination.total} URLs`);
+  return response.data;
+}
+```
+
+## Step 5: Track Analytics
+
+```javascript
+async function getAnalytics(urlId) {
+  const response = await axios.get(`${BASE_URL}/analytics/${urlId}`, {
+    headers: {
+      'X-API-Key': API_KEY
+    }
+  });
+
+  const { totalClicks, uniqueClicks, topCountries } = response.data.data;
+  console.log(`Total Clicks: ${totalClicks}`);
+  console.log(`Unique Clicks: ${uniqueClicks}`);
+  console.log('Top Country:', topCountries[0]);
+  
+  return response.data;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Custom Domains" icon="globe" href="/guides/custom-domains">
+    Set up your branded domain
+  </Card>
+  <Card title="UTM Tracking" icon="chart-line" href="/guides/utm-tracking">
+    Track campaign performance
+  </Card>
+  <Card title="QR Codes" icon="qrcode" href="/api-reference/qr-codes/generate">
+    Generate QR codes
+  </Card>
+  <Card title="Advanced Features" icon="rocket" href="/guides/password-protection">
+    Explore advanced features
+  </Card>
+</CardGroup>

@@ -302,6 +302,31 @@ const Sidebar = ({ activeItem }) => {
               <span>{t('sidebar.userManagement') || 'User Management'}</span>
             </div>
             <div
+              className={`nav-item ${isActive("/admin-urls") ? "active" : ""}`}
+              onClick={() => handleNavigation("/admin-urls")}
+            >
+              <div className="nav-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <path
+                    d="M14 2H2C1.44772 2 1 2.44772 1 3V13C1 13.5523 1.44772 14 2 14H14C14.5523 14 15 13.5523 15 13V3C15 2.44772 14.5523 2 14 2Z"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                    fill="none"
+                  />
+                  <path d="M4 6H12" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M4 9H10" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M4 12H8" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <span>{t('sidebar.urlManagement') || 'URL Management'}</span>
+            </div>
+            <div
               className={`nav-item ${isActive("/google-analytics") ? "active" : ""}`}
               onClick={() => handleNavigation("/google-analytics")}
             >
@@ -380,6 +405,47 @@ const Sidebar = ({ activeItem }) => {
             </div>
             <span>{t('sidebar.profile')}</span>
           </div>
+          <a
+            href="https://docs.snip.sa"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-item"
+            style={{ textDecoration: 'none' }}
+          >
+            <div className="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M2 1C2 0.447715 2.44772 0 3 0H10.5858C10.851 0 11.1054 0.105357 11.2929 0.292893L14.7071 3.70711C14.8946 3.89464 15 4.149 15 4.41421V15C15 15.5523 14.5523 16 14 16H3C2.44772 16 2 15.5523 2 15V1Z"
+                  fill="#6B7280"
+                />
+                <path
+                  d="M5 7H12"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M5 10H12"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M5 13H9"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <span>{t('sidebar.apiDocs') || 'API Docs'}</span>
+          </a>
           {/* <div
             className={`nav-item ${isActive("/billing") ? "active" : ""}`}
             onClick={() => handleNavigation("/billing")}

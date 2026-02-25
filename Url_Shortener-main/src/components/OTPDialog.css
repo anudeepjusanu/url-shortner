@@ -67,13 +67,22 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .otp-back-btn:hover,
 .otp-close-btn:hover {
   color: #374151;
   background-color: #F3F4F6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.otp-back-btn:active,
+.otp-close-btn:active {
+  transform: none !important;
 }
 
 .otp-header-icon {
@@ -149,6 +158,7 @@
   display: flex;
   gap: 8px;
   justify-content: center;
+  direction: ltr !important;
 }
 
 .otp-input {
@@ -162,6 +172,8 @@
   outline: none;
   transition: all 0.2s;
   background-color: #fff;
+  direction: ltr !important;
+  unicode-bidi: bidi-override;
 }
 
 .otp-input:focus {
@@ -231,18 +243,27 @@
 }
 
 .otp-resend-btn {
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
   color: #2563EB;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
-  transition: color 0.2s;
+  transition: color 0.2s !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .otp-resend-btn:hover:not(:disabled) {
   color: #1D4ED8;
   text-decoration: underline;
+  transform: none !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.otp-resend-btn:active:not(:disabled) {
+  transform: none !important;
 }
 
 .otp-resend-btn:disabled {

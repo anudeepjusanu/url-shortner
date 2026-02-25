@@ -121,10 +121,34 @@ class UrlValidator {
       };
     }
     
+    // Check that hostname has at least one dot (requires a TLD)
+    // Exception: allow localhost in non-production environments
+    if (!hostname.includes('.')) {
+      if (hostname === 'localhost' && process.env.NODE_ENV !== 'production') {
+        // Allow localhost in development
+      } else {
+        return {
+          isValid: false,
+          message: 'Invalid URL: domain must include a valid TLD (e.g., .com, .org, .net)'
+        };
+      }
+    }
+    
+    // Validate domain format - must have valid characters
     if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(hostname)) {
       return {
         isValid: false,
         message: 'Invalid domain name format'
+      };
+    }
+    
+    // Ensure TLD is at least 2 characters (e.g., .co, .io, .com)
+    const parts = hostname.split('.');
+    const tld = parts[parts.length - 1];
+    if (tld && tld.length < 2) {
+      return {
+        isValid: false,
+        message: 'Invalid URL: TLD must be at least 2 characters'
       };
     }
     
@@ -391,30 +415,106 @@ class UrlValidator {
   checkUrlAccessibility(url, timeout = 5000) {
     return new Promise(async (resolve) => {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        // Use axios for more reliable HTTP requests in Node.js
+        const axios = require('axios');
         
-        const response = await fetch(url, {
-          method: 'HEAD',
-          signal: controller.signal,
-          headers: {
-            'User-Agent': 'URL-Shortener-Validator/1.0'
+        // First try HEAD request (faster, less bandwidth)
+        let response;
+        let method = 'HEAD';
+        
+        try {
+          response = await axios.head(url, {
+            timeout: timeout,
+            maxRedirects: 5,
+            validateStatus: () => true, // Don't throw on any status code
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': '*/*',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive'
+            }
+          });
+          
+          // If HEAD returns 405 (Method Not Allowed) or 501 (Not Implemented), try GET instead
+          if (response.status === 405 || response.status === 501) {
+            console.log(`HEAD request returned ${response.status} for ${url}, trying GET...`);
+            method = 'GET';
+            response = await axios.get(url, {
+              timeout: timeout,
+              maxRedirects: 5,
+              validateStatus: () => true,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive'
+              },
+              // Only fetch headers and minimal body
+              maxContentLength: 2048, // Limit to 2KB
+              responseType: 'stream' // Stream to avoid loading entire response
+            });
+            
+            // Destroy the stream immediately to stop downloading
+            if (response.data && response.data.destroy) {
+              response.data.destroy();
+            }
           }
-        });
+        } catch (headError) {
+          // If HEAD fails, try GET
+          console.log(`${method} request failed for ${url} with ${headError.code || headError.message}, trying GET...`);
+          
+          try {
+            method = 'GET';
+            response = await axios.get(url, {
+              timeout: timeout,
+              maxRedirects: 5,
+              validateStatus: () => true,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive'
+              },
+              maxContentLength: 2048,
+              responseType: 'stream'
+            });
+            
+            // Destroy the stream immediately
+            if (response.data && response.data.destroy) {
+              response.data.destroy();
+            }
+          } catch (getError) {
+            // Both HEAD and GET failed, throw the GET error
+            throw getError;
+          }
+        }
         
-        clearTimeout(timeoutId);
+        console.log(`URL check for ${url}: ${method} returned ${response.status}`);
         
         resolve({
-          accessible: response.ok,
+          accessible: response.status >= 200 && response.status < 400,
           status: response.status,
           statusText: response.statusText,
-          redirected: response.redirected,
-          finalUrl: response.url
+          redirected: response.request?.res?.responseUrl !== url,
+          finalUrl: response.request?.res?.responseUrl || url,
+          method: method
         });
       } catch (error) {
+        // Extract meaningful error message
+        let errorMessage = error.message || 'Unknown error';
+        
+        // Handle axios-specific error codes
+        if (error.code) {
+          errorMessage = error.code;
+        }
+        
+        console.log(`URL accessibility check failed for ${url}: ${errorMessage}`);
+        
         resolve({
           accessible: false,
-          error: error.message
+          error: errorMessage,
+          code: error.code,
+          status: error.response?.status
         });
       }
     });

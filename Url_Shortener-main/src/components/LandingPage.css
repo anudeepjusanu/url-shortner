@@ -9,7 +9,7 @@
 
 /* Hero Section */
 .hero-section {
-  background-image: url('../assets/landingPageHeroBackgroundImage.png');
+  background-image: url('../assets/landingPageHeroBackgroundImage.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -861,6 +861,26 @@ background: linear-gradient(135deg, #A855F7 0%, #EC4899 70.71%);}
   color: #9ca3af;
   margin: 0;
   font-size: 16px;
+}
+
+.footer-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 14px;
+  margin-top: 12px;
+  transition: color 0.2s ease;
+  direction: ltr;
+}
+
+.footer-phone:hover {
+  color: #fff;
+}
+
+.footer-phone svg {
+  flex-shrink: 0;
 }
 
 /* Header Logo Responsive Styles */

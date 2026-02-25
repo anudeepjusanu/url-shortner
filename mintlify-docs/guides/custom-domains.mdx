@@ -1,0 +1,158 @@
+---
+title: 'Custom Domains Guide'
+description: 'Set up and use custom domains for branded short URLs'
+---
+
+<Note>
+  Custom domains are available on Pro and Enterprise plans.
+</Note>
+
+## Why Use Custom Domains?
+
+- **Brand Recognition**: Use your own domain (e.g., go.yourbrand.com)
+- **Trust**: Users trust links from your domain
+- **Consistency**: Match your brand identity
+- **Professional**: Look more professional in marketing materials
+
+## Step 1: Add Your Domain
+
+First, add your domain through the API:
+
+```javascript
+const response = await axios.post('https://snip.sa/api/domains', {
+  domain: 'yourdomain.com',
+  subdomain: 'go'  // Optional: creates go.yourdomain.com
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+const dnsRecords = response.data.data.domain.dnsRecords;
+console.log('Add these DNS records:', dnsRecords);
+```
+
+## Step 2: Configure DNS
+
+Add the provided DNS records to your domain registrar:
+
+<Steps>
+  <Step title="Login to Your Domain Registrar">
+    Access your domain's DNS settings (GoDaddy, Namecheap, Cloudflare, etc.)
+  </Step>
+  
+  <Step title="Add CNAME Record">
+    Create a new CNAME record:
+    - **Type**: CNAME
+    - **Name**: go (or your subdomain)
+    - **Value**: snip.sa
+    - **TTL**: 3600 (or default)
+  </Step>
+  
+  <Step title="Save Changes">
+    Save the DNS record and wait for propagation (can take up to 48 hours)
+  </Step>
+</Steps>
+
+### Example DNS Configuration
+
+| Type | Name | Value | TTL |
+|------|------|-------|-----|
+| CNAME | go | snip.sa | 3600 |
+
+## Step 3: Verify Your Domain
+
+After DNS propagation, verify your domain:
+
+```javascript
+const response = await axios.post(
+  'https://snip.sa/api/domains/507f1f77bcf86cd799439015/verify',
+  {},
+  {
+    headers: {
+      'X-API-Key': 'your_api_key_here'
+    }
+  }
+);
+
+if (response.data.data.domain.verified) {
+  console.log('✅ Domain verified successfully!');
+}
+```
+
+<Tip>
+  DNS propagation typically takes 15-30 minutes but can take up to 48 hours.
+</Tip>
+
+## Step 4: Use Your Custom Domain
+
+Once verified, create URLs with your custom domain:
+
+```javascript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/product',
+  domainId: '507f1f77bcf86cd799439015',  // Your domain ID
+  customCode: 'spring-sale'
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+// Result: https://go.yourdomain.com/spring-sale
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Domain verification fails">
+    - Check DNS records are correct
+    - Wait longer for DNS propagation
+    - Clear your DNS cache: `ipconfig /flushdns` (Windows) or `sudo dscacheutil -flushcache` (Mac)
+    - Use [DNS Checker](https://dnschecker.org) to verify propagation
+  </Accordion>
+
+  <Accordion title="SSL certificate issues">
+    SSL certificates are automatically provisioned. If you see SSL errors:
+    - Wait 24 hours after verification
+    - Contact support if issues persist
+  </Accordion>
+
+  <Accordion title="CNAME conflicts">
+    If you have existing records on the subdomain:
+    - Choose a different subdomain
+    - Remove conflicting records
+    - Use root domain (requires A record instead)
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Check>Use a subdomain (go, link, s) instead of root domain</Check>
+<Check>Keep subdomain short and memorable</Check>
+<Check>Test domain after verification</Check>
+<Check>Update marketing materials with new domain</Check>
+
+## Managing Multiple Domains
+
+You can add multiple custom domains:
+
+```javascript
+// Add multiple domains
+await addDomain('go.brand1.com');
+await addDomain('link.brand2.com');
+await addDomain('s.brand3.com');
+
+// List all domains
+const domains = await axios.get('https://snip.sa/api/domains', {
+  headers: { 'X-API-Key': 'your_api_key_here' }
+});
+```
+
+## Need Help?
+
+<Card title="Contact Support" icon="envelope" href="mailto:support@nawah.sa">
+  Our team can help with custom domain setup
+</Card>

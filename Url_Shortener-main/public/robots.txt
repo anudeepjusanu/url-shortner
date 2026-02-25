@@ -1,0 +1,19 @@
+# robots.txt for snip.sa - URL Shortener
+# Generated: January 22, 2026
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /site.webmanifest
+
+# Sitemap location
+Sitemap: https://snip.sa/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

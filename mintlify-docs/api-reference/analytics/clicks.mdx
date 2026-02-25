@@ -1,0 +1,79 @@
+---
+title: 'Click Analytics'
+api: 'GET https://snip.sa/api/analytics/{urlId}/clicks'
+description: 'Get detailed click data for a URL'
+---
+
+## Path Parameters
+
+<ParamField path="urlId" type="string" required>
+  URL ID
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="page" type="number" default="1">
+  Page number
+</ParamField>
+
+<ParamField query="limit" type="number" default="50">
+  Results per page (max: 100)
+</ParamField>
+
+<ParamField query="startDate" type="string">
+  Filter clicks from this date
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  Filter clicks until this date
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://snip.sa/api/analytics/507f1f77bcf86cd799439011/clicks?page=1&limit=50" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.get(
+  'https://snip.sa/api/analytics/507f1f77bcf86cd799439011/clicks',
+  {
+    params: { page: 1, limit: 50 },
+    headers: { 'X-API-Key': 'your_api_key_here' }
+  }
+);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "clicks": [
+      {
+        "_id": "click123",
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "country": "US",
+        "city": "New York",
+        "device": "mobile",
+        "browser": "Chrome",
+        "os": "iOS",
+        "referrer": "google.com",
+        "ipAddress": "192.168.1.1"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 1250,
+      "pages": 25
+    }
+  }
+}
+```
+
+</ResponseExample>

@@ -338,7 +338,7 @@ const getUsersWithRoles = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const users = await User.find(query)
-      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone')
+      .select('email firstName lastName role isActive createdAt lastLogin organization plan phone registrationLocation')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -346,12 +346,22 @@ const getUsersWithRoles = async (req, res) => {
 
     const total = await User.countDocuments(query);
 
+    // Map users to include fallback lastLogin (use createdAt if never logged in)
+    const usersWithLastLogin = users.map(user => {
+      const userObj = user.toObject();
+      // If lastLogin is null, use createdAt (registration date)
+      if (!userObj.lastLogin) {
+        userObj.lastLogin = userObj.createdAt;
+      }
+      return userObj;
+    });
+
     console.log(`Found ${total} users matching query:`, query);
 
     res.json({
       success: true,
       data: {
-        users,
+        users: usersWithLastLogin,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),

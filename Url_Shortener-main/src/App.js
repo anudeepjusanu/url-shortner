@@ -1,30 +1,49 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { PermissionProvider } from './contexts/PermissionContext';
-import './App.css';
-import './rtl.css';
 import LandingPage from './components/LandingPage';
 import Registration from './components/Registration';
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import CustomDomains from './components/CustomDomains';
-import CreateShortLink from './components/CreateShortLink';
-import Analytics from './components/Analytics';
-import MyLinks from './components/MyLinks';
-import UTMBuilder from './components/UtmBuilder';
-import QRCodes from './components/QRCodes';
-import ContentFilter from './components/ContentFilter';
-import Subscription from './components/SubscriptionPage';
-import Profile from './components/Profile';
-import BillingManagement from './components/BillingManagement';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsAndConditions from './components/TermsAndConditions';
-import UserManagement from './components/UserManagement';
-import GoogleAnalyticsDashboard from './components/GoogleAnalyticsDashboard';
+import './App.css';
+import './rtl.css';
+
+// Lazy load all other components for better performance
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const CustomDomains = lazy(() => import('./components/CustomDomains'));
+const CreateShortLink = lazy(() => import('./components/CreateShortLink'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const MyLinks = lazy(() => import('./components/MyLinks'));
+const UTMBuilder = lazy(() => import('./components/UtmBuilder'));
+const QRCodes = lazy(() => import('./components/QRCodes'));
+const ContentFilter = lazy(() => import('./components/ContentFilter'));
+const Subscription = lazy(() => import('./components/SubscriptionPage'));
+const Profile = lazy(() => import('./components/Profile'));
+const BillingManagement = lazy(() => import('./components/BillingManagement'));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+const TermsAndConditions = lazy(() => import('./components/TermsAndConditions'));
+const UserManagement = lazy(() => import('./components/UserManagement'));
+const AdminUrlManagement = lazy(() => import('./components/AdminUrlManagement'));
+const GoogleAnalyticsDashboard = lazy(() => import('./components/GoogleAnalyticsDashboard'));
+const ApiDocumentation = lazy(() => import('./components/ApiDocumentation'));
+const NotFound = lazy(() => import('./components/NotFound'));
+
+// Loading component
+const LoadingFallback = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    fontSize: '18px',
+    color: '#2563eb'
+  }}>
+    <div>Loading...</div>
+  </div>
+);
 // Import placeholder components for now - we'll create them later
 // const QRCodes = () => <div>QR Codes Page</div>;
 // const UTMBuilder = () => <div>UTM Builder Page</div>;
@@ -38,13 +57,15 @@ function App() {
         <LanguageProvider>
           <Router>
             <div className="App">
-              <Routes>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
             {/* Landing page route */}
             <Route path="/" element={<LandingPage />} />
 
             {/* Public pages */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/api-docs" element={<ApiDocumentation />} />
 
             {/* Authentication routes */}
             <Route path="/register" element={<Registration />} />
@@ -161,6 +182,15 @@ function App() {
               </ProtectedRoute>
             } />
 
+            {/* Admin URL Management - Admin and Super Admin only */}
+            <Route path="/admin-urls" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminUrlManagement />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
             {/* Google Analytics - Super Admin only */}
             <Route path="/google-analytics" element={
               <ProtectedRoute>
@@ -170,11 +200,12 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Redirect any unknown routes to landing */}
-            <Route path="*" element={<Navigate to="/" />} />
+            {/* 404 Not Found - catch all routes */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
-      </Router>
+              </Suspense>
+            </div>
+          </Router>
         </LanguageProvider>
       </PermissionProvider>
     </AuthProvider>

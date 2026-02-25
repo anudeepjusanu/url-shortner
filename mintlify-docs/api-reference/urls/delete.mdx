@@ -1,0 +1,53 @@
+---
+title: 'Delete URL'
+api: 'DELETE https://snip.sa/api/urls/{id}'
+description: 'Delete a shortened URL permanently'
+---
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  URL ID
+</ParamField>
+
+<Warning>
+  This action is permanent and cannot be undone. The short code will become available for reuse.
+</Warning>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://snip.sa/api/urls/507f1f77bcf86cd799439011 \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await axios.delete(
+  'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+  {
+    headers: {
+      'X-API-Key': 'your_api_key_here'
+    }
+  }
+);
+```
+
+```python Python
+response = requests.delete(
+    'https://snip.sa/api/urls/507f1f77bcf86cd799439011',
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "URL deleted successfully"
+}
+```
+
+</ResponseExample>

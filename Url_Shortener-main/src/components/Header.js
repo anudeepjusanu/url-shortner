@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import HamburgerMenu from './HamburgerMenu';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.webp';
 
 const Header = ({ isLanding = false, onGetStarted }) => {
   const { t } = useTranslation();
@@ -49,7 +49,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
           { label: t('header.features'), path: 'features', icon: null },
           // { label: t('header.pricing'), path: 'pricing', icon: null },
           { label: t('header.about'), path: 'about', icon: null },
-          { label: t('header.contact'), path: 'contact', icon: null }
+          { label: t('header.contact'), path: 'contact', icon: null },
+          { label: t('footer.api'), path: 'https://docs.snip.sa', icon: null }
         ]
       }
     ];
@@ -95,6 +96,8 @@ const Header = ({ isLanding = false, onGetStarted }) => {
                 src={logo} 
                 alt="Snip Logo" 
                 className="header-logo-img"
+                width="50"
+                height="50"
               />
             </div>
           </div>
@@ -104,6 +107,9 @@ const Header = ({ isLanding = false, onGetStarted }) => {
               <button onClick={() => scrollToSection('about')} className="nav-link">{t('header.about')}</button>
               {/* <button onClick={() => scrollToSection('pricing')} className="nav-link">{t('header.pricing')}</button> */}
               <button onClick={() => scrollToSection('contact')} className="nav-link">{t('header.contact')}</button>
+              {/* <button onClick={() => window.location.href = '/api-docs'} className="nav-link">{t('footer.api')}</button> */}
+              <button onClick={() => window.location.href = 'https://docs.snip.sa'} className="nav-link">{t('footer.api')}</button>
+
             </nav>
           </div>
           <div className="create-link-header-right">
@@ -150,11 +156,13 @@ const Header = ({ isLanding = false, onGetStarted }) => {
     <header className="header">
       <div className="header-content">
         <div className="logo-section">
-          <img 
-            src={logo} 
-            alt="Snip Logo" 
-            className="header-logo-img"
-          />
+              <img 
+                src={logo} 
+                alt="Snip Logo" 
+                className="header-logo-img"
+                width="50"
+                height="50"
+              />
         </div>
         
         <div className="header-actions">

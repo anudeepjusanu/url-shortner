@@ -777,6 +777,13 @@ function UserManagement() {
                             fontWeight: '600',
                             color: '#374151',
                             whiteSpace: 'nowrap'
+                          }}>{t('userManagement.table.location') || 'Location'}</th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: isRTL ? 'right' : 'left',
+                            fontWeight: '600',
+                            color: '#374151',
+                            whiteSpace: 'nowrap'
                           }}>{t('userManagement.table.lastLogin') || 'Last Login'}</th>
                           <th style={{
                             padding: '16px',
@@ -884,6 +891,24 @@ function UserManagement() {
                                 whiteSpace: 'nowrap'
                               }}>
                                 {new Date(user.createdAt).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ 
+                                color: '#6B7280',
+                                fontSize: '13px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {user.registrationLocation ? (
+                                  <span title={`${user.registrationLocation.city || ''}, ${user.registrationLocation.region || ''}, ${user.registrationLocation.country || ''}`}>
+                                    {user.registrationLocation.countryCode && (
+                                      <span style={{ marginRight: '4px' }}>
+                                        {String.fromCodePoint(...[...user.registrationLocation.countryCode.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0)))}
+                                      </span>
+                                    )}
+                                    {user.registrationLocation.city || user.registrationLocation.country || '-'}
+                                  </span>
+                                ) : '-'}
                               </div>
                             </td>
                             <td style={{ textAlign: 'center' }}>
@@ -1074,6 +1099,25 @@ function UserManagement() {
                               </span>
                             </div>
                           )}
+                          <div className="meta-item" style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span className="meta-label" style={{ fontSize: '13px', color: '#6B7280', textAlign: isRTL ? 'right' : 'left' }}>{t('userManagement.userCard.location') || 'Location:'}</span>
+                            <span className="meta-value" style={{ fontSize: '13px', color: '#374151', textAlign: isRTL ? 'left' : 'right', direction: 'ltr' }}>
+                                {user.registrationLocation ? (
+                                  <span title={`${user.registrationLocation.city || ''}, ${user.registrationLocation.region || ''}, ${user.registrationLocation.country || ''}`}>
+                                    {user.registrationLocation.countryCode && (
+                                      <span style={{ marginRight: '4px' }}>
+                                        {String.fromCodePoint(...[...user.registrationLocation.countryCode.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0)))}
+                                      </span>
+                                    )}
+                                    {user.registrationLocation.city || user.registrationLocation.country || '-'}
+                                  </span>
+                                ) : '-'}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="user-actions" style={{ marginBottom: '16px' }}>
@@ -1366,6 +1410,28 @@ function UserManagement() {
                             <div className="detail-text" style={{ flex: 1 }}>
                               <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.phone')}</span>
                               <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>{selectedUser.user.phone || t('userManagement.modal.notAvailable')}</span>
+                            </div>
+                          </div>
+                          <div className="detail-item" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="detail-icon" style={{ fontSize: '16px', flexShrink: 0 }}>📍</span>
+                            <div className="detail-text" style={{ flex: 1 }}>
+                              <span className="detail-label" style={{ display: 'block', fontSize: '12px', color: '#6B7280' }}>{t('userManagement.modal.location') || 'Registration Location'}</span>
+                              <span className="detail-value" style={{ fontSize: '14px', color: '#111827', direction: 'ltr', display: 'block', textAlign: isRTL ? 'right' : 'left' }}>
+                                {selectedUser.user.registrationLocation ? (
+                                  <>
+                                    {selectedUser.user.registrationLocation.countryCode && (
+                                      <span style={{ marginRight: '6px' }}>
+                                        {String.fromCodePoint(...[...selectedUser.user.registrationLocation.countryCode.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0)))}
+                                      </span>
+                                    )}
+                                    {[
+                                      selectedUser.user.registrationLocation.city,
+                                      selectedUser.user.registrationLocation.region,
+                                      selectedUser.user.registrationLocation.country
+                                    ].filter(Boolean).join(', ') || t('userManagement.modal.notAvailable')}
+                                  </>
+                                ) : t('userManagement.modal.notAvailable')}
+                              </span>
                             </div>
                           </div>
                         </div>

@@ -24,8 +24,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: #f9fafb;
-  /* padding-left: 16px;
-  padding-right: 16px; */
 }
 
 /* RTL Support - Sidebar on right */
@@ -39,46 +37,32 @@
 .analytics-content {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 24px;
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
 }
 
-/* Responsive */
+/* Responsive - Tablet and below (sidebar hidden) */
 @media (max-width: 1023px) {
   .analytics-main {
     margin-left: 0;
     margin-right: 0;
     width: 100%;
-    padding-left: 12px;
-    padding-right: 12px;
   }
 
   [dir="rtl"] .analytics-main {
     margin-left: 0;
     margin-right: 0;
-    padding-left: 12px;
-    padding-right: 12px;
   }
 
   .analytics-content {
-    padding: 20px 12px;
+    padding: 20px 16px;
   }
 }
 
 @media (max-width: 768px) {
-  /* .analytics-main {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  [dir="rtl"] .analytics-main {
-    padding-left: 8px;
-    padding-right: 8px;
-  } */
-
   .analytics-content {
-    padding: 16px 8px;
+    padding: 16px 12px;
   }
 }

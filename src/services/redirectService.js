@@ -1,7 +1,7 @@
 const Url = require('../models/Url');
 const analyticsService = require('./analyticsService');
 const securityService = require('./securityService');
-const { cacheGet } = require('../config/redis');
+const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
 
 class RedirectService {
@@ -134,9 +134,14 @@ class RedirectService {
       // Normalize domain to ASCII (Punycode) for consistent database lookup
       const { domainToASCII } = require('../utils/punycode');
       const normalizedDomain = requestDomain ? domainToASCII(requestDomain.toLowerCase()) : null;
+      
+      // Normalize shortCode for case-insensitive lookup (but preserve original for logging)
+      const originalShortCode = shortCode;
+      const lowerShortCode = shortCode.toLowerCase();
 
       console.log('🔍 Looking up URL:', {
-        shortCode,
+        shortCode: originalShortCode,
+        lowerShortCode,
         shortCodeType: typeof shortCode,
         shortCodeLength: shortCode?.length,
         requestDomain,
@@ -144,23 +149,55 @@ class RedirectService {
         isMainDomain: this.isMainDomain(normalizedDomain)
       });
 
-      let url = await cacheGet(`url:${shortCode}`);
+      // Try cache with lowercase key first
+      let url = await cacheGet(`url:${lowerShortCode}`);
+      
+      // Also try original case for backward compatibility
+      if (!url) {
+        url = await cacheGet(`url:${originalShortCode}`);
+      }
 
       if (url) {
-        console.log('💾 Cache HIT:', { shortCode, cacheKey: `url:${shortCode}` });
+        console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive });
+        
+        // IMPORTANT: Always verify isActive status from database for cached URLs
+        // This ensures deactivated URLs don't redirect even if cached
+        const freshStatus = await Url.findOne({ 
+          $or: [
+            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
+            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
+          ]
+        }).select('isActive').lean();
+        
+        if (freshStatus && freshStatus.isActive !== url.isActive) {
+          console.log('⚠️ Cache stale! DB isActive:', freshStatus.isActive, 'Cache isActive:', url.isActive);
+          url.isActive = freshStatus.isActive;
+          
+          // If URL is now inactive, clear the cache
+          if (!freshStatus.isActive) {
+            console.log('🗑️ Clearing stale cache for deactivated URL');
+            const { cacheDel } = require('../config/redis');
+            await cacheDel(`url:${lowerShortCode}`);
+            await cacheDel(`url:${originalShortCode}`);
+          }
+        }
       } else {
         console.log('💾 Cache MISS - querying database');
 
+        // Use case-insensitive regex for shortCode and customCode lookup
         const query = {
-          $or: [{ shortCode }, { customCode: shortCode }]
+          $or: [
+            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
+            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
+          ]
         };
 
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
           query.domain = normalizedDomain;
-          console.log('🌐 Custom domain query:', JSON.stringify(query, null, 2));
+          console.log('🌐 Custom domain query (case-insensitive):', JSON.stringify(query, null, 2));
         } else {
-          console.log('🌐 Main domain query:', JSON.stringify(query, null, 2));
+          console.log('🌐 Main domain query (case-insensitive):', JSON.stringify(query, null, 2));
         }
 
         url = await Url.findOne(query)
@@ -183,8 +220,9 @@ class RedirectService {
 
         if (url && url.isActive) {
           try {
-            await cacheSet(`url:${shortCode}`, url, config.CACHE_TTL.URL_CACHE);
-            console.log('💾 Cached URL:', { shortCode, ttl: config.CACHE_TTL.URL_CACHE });
+            // Cache with lowercase key for consistent case-insensitive lookups
+            await cacheSet(`url:${lowerShortCode}`, url, config.CACHE_TTL.URL_CACHE);
+            console.log('💾 Cached URL:', { shortCode: lowerShortCode, ttl: config.CACHE_TTL.URL_CACHE });
           } catch (cacheError) {
             console.warn('⚠️  Cache set failed:', cacheError.message);
             // Continue anyway, just without caching
@@ -212,7 +250,10 @@ class RedirectService {
       'shortener.laghhu.link',
       '20.193.155.139',
       'localhost:3015',
-      'localhost'
+      'localhost',
+      'snip.sa',
+      'www.snip.sa',
+      'shortener.snip.sa'
     ].filter(Boolean);
 
     console.log('isMainDomain check:', { domain, mainDomains, isMain: mainDomains.includes(domain) });
@@ -222,11 +263,20 @@ class RedirectService {
   async validateRedirect(url, requestData) {
     const { ipAddress, userAgent, password, country, deviceType } = requestData;
     
+    console.log('🔍 validateRedirect check:', {
+      urlId: url._id,
+      shortCode: url.shortCode,
+      isActive: url.isActive,
+      hasPassword: !!url.password,
+      expiresAt: url.expiresAt
+    });
+    
     if (!url) {
       return { allowed: false, reason: 'URL not found' };
     }
     
     if (!url.isActive) {
+      console.log('❌ URL is deactivated, blocking redirect');
       return { allowed: false, reason: 'URL is deactivated' };
     }
     
@@ -475,33 +525,113 @@ class RedirectService {
 
       // Properly encode the short code for international characters (Arabic, Chinese, etc.)
       const encodedShortCode = encodeURIComponent(shortCode);
-      const shortUrl = `${config.BASE_URL}/${encodedShortCode}`;
+      const shortUrl = `${config.BASE_URL}/${encodedShortCode}?qr=1`;
 
       console.log('🔗 Generating QR Code:', {
         shortCode,
         encodedShortCode,
         shortUrl,
+        format,
         hasInternationalChars: /[^\x00-\x7F]/.test(shortCode)
       });
 
-      // Build QR code URL with customization parameters
-      const qrParams = new URLSearchParams({
-        size: `${size}x${size}`,
-        data: shortUrl,
-        format: format,
-        color: fgColor,
-        bgcolor: bgColor,
-        ecc: errorCorrection,
-        margin: margin.toString()
-      });
+      // Generate QR code locally using the qrcode library
+      const QRCode = require('qrcode');
+      const sharp = require('sharp');
 
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?${qrParams.toString()}`;
+      const qrOptions = {
+        errorCorrectionLevel: errorCorrection,
+        margin: margin,
+        width: parseInt(size),
+        color: {
+          dark: `#${fgColor}`,
+          light: `#${bgColor}`
+        }
+      };
+
+      let qrCodeData;
+      let mimeType;
+
+      if (format === 'svg') {
+        // Generate SVG
+        qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
+        mimeType = 'image/svg+xml';
+        // Return SVG as data URL
+        qrCodeData = `data:${mimeType};base64,${Buffer.from(qrCodeData).toString('base64')}`;
+      } else if (format === 'pdf') {
+        // Generate PDF with QR code
+        const PDFDocument = require('pdfkit');
+        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
+        
+        // Create PDF
+        const pdfBuffer = await new Promise((resolve, reject) => {
+          try {
+            const doc = new PDFDocument({
+              size: [parseInt(size) + 100, parseInt(size) + 100],
+              margins: { top: 50, bottom: 50, left: 50, right: 50 }
+            });
+
+            const chunks = [];
+            doc.on('data', chunk => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+
+            // Add title
+            doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: 'center' });
+            doc.moveDown();
+
+            // Add QR code image
+            doc.image(pngBuffer, {
+              fit: [parseInt(size), parseInt(size)],
+              align: 'center',
+              valign: 'center'
+            });
+
+            doc.end();
+          } catch (error) {
+            reject(error);
+          }
+        });
+        
+        mimeType = 'application/pdf';
+        qrCodeData = `data:${mimeType};base64,${pdfBuffer.toString('base64')}`;
+      } else {
+        // Generate PNG buffer first
+        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
+
+        // Convert to requested format using sharp
+        let finalBuffer;
+        switch (format.toLowerCase()) {
+          case 'jpeg':
+          case 'jpg':
+            finalBuffer = await sharp(pngBuffer).jpeg({ quality: 92 }).toBuffer();
+            mimeType = 'image/jpeg';
+            break;
+          case 'gif':
+            finalBuffer = await sharp(pngBuffer).gif().toBuffer();
+            mimeType = 'image/gif';
+            break;
+          case 'webp':
+            finalBuffer = await sharp(pngBuffer).webp({ quality: 92 }).toBuffer();
+            mimeType = 'image/webp';
+            break;
+          case 'png':
+          default:
+            finalBuffer = pngBuffer;
+            mimeType = 'image/png';
+            break;
+        }
+
+        // Return as data URL
+        qrCodeData = `data:${mimeType};base64,${finalBuffer.toString('base64')}`;
+      }
 
       return {
         url: shortUrl,
-        qrCodeUrl,
+        qrCodeUrl: qrCodeData,
         shortCode,
         originalUrl: url.originalUrl,
+        format,
         customization: {
           size,
           format,

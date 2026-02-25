@@ -6,6 +6,7 @@ const { cacheSet, cacheDel, cacheGet } = require('../config/redis');
 const emailService = require('../services/emailService');
 const { UsageTracker } = require('../middleware/usageTracker');
 const otpService = require('../services/otpService');
+const { getLocationFromIP, getClientIP } = require('../services/geoLocationService');
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
@@ -142,6 +143,16 @@ const register = async (req, res) => {
       await cacheDel(otpKey);
       await cacheDel(dataKey);
 
+      // Get user's location from IP
+      const clientIP = getClientIP(req);
+      let registrationLocation = null;
+      try {
+        registrationLocation = await getLocationFromIP(clientIP);
+        console.log('User registration location:', registrationLocation);
+      } catch (locError) {
+        console.error('Failed to get location:', locError.message);
+      }
+
       console.log('Creating user with email:', registrationData.email);
       const user = new User({
         email: registrationData.email,
@@ -150,7 +161,8 @@ const register = async (req, res) => {
         lastName: registrationData.lastName,
         phone: registrationData.phone,
         isEmailVerified: true, // Mark email as verified since OTP is verified
-        role: 'admin'
+        role: 'admin',
+        registrationLocation: registrationLocation
       });
 
       await user.save();
@@ -854,7 +866,7 @@ const getPreferences = async (req, res) => {
       emailNotifications: user.preferences?.emailNotifications?.usageAlerts !== false,
       marketingEmails: user.preferences?.emailNotifications?.newsletter || false,
       weeklyReports: user.preferences?.emailNotifications?.paymentReminders !== false,
-      language: user.preferences?.language || 'en',
+      language: user.preferences?.language || 'ar',
       timezone: user.preferences?.timezone || 'Asia/Riyadh',
       theme: user.preferences?.theme || 'light'
     });
@@ -918,7 +930,7 @@ const updatePreferences = async (req, res) => {
       emailNotifications: user.preferences.emailNotifications?.usageAlerts !== false,
       marketingEmails: user.preferences.emailNotifications?.newsletter || false,
       weeklyReports: user.preferences.emailNotifications?.paymentReminders !== false,
-      language: user.preferences.language || 'en',
+      language: user.preferences.language || 'ar',
       timezone: user.preferences.timezone || 'Asia/Riyadh',
       theme: user.preferences.theme || 'light'
     });

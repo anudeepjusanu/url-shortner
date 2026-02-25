@@ -1,0 +1,396 @@
+{
+  "info": {
+    "name": "URL Shortener API",
+    "description": "Complete API collection for URL Shortener service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "value",
+        "value": "{{API_KEY}}",
+        "type": "string"
+      },
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "https://your-domain.com/api",
+      "type": "string"
+    },
+    {
+      "key": "API_KEY",
+      "value": "your_api_key_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "URLs",
+      "item": [
+        {
+          "name": "Create URL (Basic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originalUrl\": \"https://example.com/my-long-url\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/urls",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"]
+            },
+            "description": "Create a basic shortened URL with auto-generated short code"
+          },
+          "response": []
+        },
+        {
+          "name": "Create URL (Custom Code)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originalUrl\": \"https://example.com/my-long-url\",\n  \"customCode\": \"mylink\",\n  \"title\": \"My Custom Link\",\n  \"description\": \"This is a custom shortened link\",\n  \"tags\": [\"marketing\", \"campaign\"]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/urls",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"]
+            },
+            "description": "Create a shortened URL with custom code and metadata"
+          },
+          "response": []
+        },
+        {
+          "name": "Create URL (Advanced)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originalUrl\": \"https://example.com/product\",\n  \"customCode\": \"spring-sale\",\n  \"title\": \"Spring Sale 2024\",\n  \"description\": \"Limited time spring sale offer\",\n  \"tags\": [\"marketing\", \"sale\", \"2024\"],\n  \"expiresAt\": \"2024-12-31T23:59:59Z\",\n  \"password\": \"secret123\",\n  \"domainId\": \"base\",\n  \"utm\": {\n    \"source\": \"newsletter\",\n    \"medium\": \"email\",\n    \"campaign\": \"spring_sale_2024\"\n  },\n  \"restrictions\": {\n    \"maxClicks\": 1000,\n    \"allowedCountries\": [\"US\", \"CA\", \"GB\"],\n    \"allowedDevices\": [\"desktop\", \"mobile\"]\n  },\n  \"redirectType\": 302\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/urls",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"]
+            },
+            "description": "Create a shortened URL with all advanced features"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All URLs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls?page=1&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get paginated list of all URLs"
+          },
+          "response": []
+        },
+        {
+          "name": "Get URLs (Search)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls?search=campaign&page=1&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "campaign"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search URLs by keyword"
+          },
+          "response": []
+        },
+        {
+          "name": "Get URLs (Filter by Tags)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls?tags=marketing,social&page=1&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"],
+              "query": [
+                {
+                  "key": "tags",
+                  "value": "marketing,social"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Filter URLs by tags"
+          },
+          "response": []
+        },
+        {
+          "name": "Get URLs (Sort by Clicks)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls?sortBy=clickCount&sortOrder=desc&page=1&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "clickCount"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get URLs sorted by click count"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "507f1f77bcf86cd799439011",
+                  "description": "URL ID"
+                }
+              ]
+            },
+            "description": "Get details of a specific URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Update URL",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"description\": \"Updated description\",\n  \"tags\": [\"updated\", \"tags\"],\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/urls/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "507f1f77bcf86cd799439011",
+                  "description": "URL ID"
+                }
+              ]
+            },
+            "description": "Update URL properties"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete URL",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "507f1f77bcf86cd799439011",
+                  "description": "URL ID"
+                }
+              ]
+            },
+            "description": "Delete a URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Delete URLs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"507f1f77bcf86cd799439011\",\n    \"507f1f77bcf86cd799439012\",\n    \"507f1f77bcf86cd799439013\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/urls/bulk-delete",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", "bulk-delete"]
+            },
+            "description": "Delete multiple URLs at once"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Get URL Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls/stats",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", "stats"]
+            },
+            "description": "Get aggregated statistics for all URLs"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Domains",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/urls/domains/available",
+              "host": ["{{BASE_URL}}"],
+              "path": ["urls", "domains", "available"]
+            },
+            "description": "Get list of available domains for URL shortening"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}",
+                "description": "JWT token from login"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/api-key",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "api-key"]
+            },
+            "description": "Get your current API key (requires JWT authentication)"
+          },
+          "response": []
+        },
+        {
+          "name": "Regenerate API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}",
+                "description": "JWT token from login"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/regenerate-api-key",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "regenerate-api-key"]
+            },
+            "description": "Generate a new API key (requires JWT authentication)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

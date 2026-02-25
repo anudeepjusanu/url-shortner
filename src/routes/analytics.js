@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const analyticsController = require('../controllers/analyticsController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authenticateAny } = require('../middleware/auth');
 const { checkFeatureAccess } = require('../middleware/roleCheck');
 const { apiLimiter } = require('../middleware/rateLimiter');
 const {
@@ -13,9 +13,8 @@ const {
 } = require('../middleware/validation');
 
 router.use(sanitizeInput);
-router.use(authenticate);
-// TEMPORARILY DISABLED - Rate limiting paused until going live
-// router.use(apiLimiter);
+router.use(authenticateAny);  // Accept both Bearer token and API key
+router.use(apiLimiter);
 
 router.get('/dashboard', 
   validateAnalyticsQuery, 

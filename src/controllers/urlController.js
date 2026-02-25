@@ -1,11 +1,59 @@
 const Url = require('../models/Url');
 const User = require('../models/User');
 const Domain = require('../models/Domain');
-const { generateShortCode } = require('../utils/shortCodeGenerator');
-const { validateUrl } = require('../utils/urlValidator');
+const { generateShortCode, validateShortCode } = require('../utils/shortCodeGenerator');
+const { validateUrl, checkUrlAccessibility } = require('../utils/urlValidator');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
+
+// Reserved aliases that cannot be used for shortened URLs
+const RESERVED_ALIASES = [
+  // Frontend routes
+  'admin', 'dashboard', 'analytics', 'profile', 'settings',
+  'login', 'register', 'logout', 'signup', 'signin',
+  'my-links', 'mylinks', 'links', 'urls',
+  'create-short-link', 'create-link', 'create',
+  'qr-codes', 'qr', 'qrcode', 'qrcodes',
+  'utm-builder', 'utm', 'builder',
+  'custom-domains', 'domains', 'domain',
+  'subscription', 'billing', 'payment', 'pricing',
+  'team-members', 'team', 'members', 'users',
+  'content-filter', 'filter', 'content',
+  'url-management', 'management', 'admin-urls',
+
+  // Backend/API routes
+  'api', 'auth', 'v1', 'v2', 'v3',
+  'graphql', 'webhook', 'webhooks',
+  'oauth', 'callback', 'redirect',
+
+  // Common system pages
+  'about', 'contact', 'help', 'support',
+    'legal', 
+  'terms-and-conditions', 'privacy-policy',
+  'docs', 'documentation', 'guide', 'tutorial',
+  'api-docs', 'api-documentation',
+  'blog', 'news', 'updates', 'changelog',
+  'status', 'health', 'ping', 'test',
+
+  // Security/Admin
+  'root', 'administrator', 'superuser', 'moderator',
+  'system', 'config', 'configuration', 'setup',
+  'install', 'upgrade', 'migrate', 'backup',
+
+  // Common reserved words
+  'www', 'ftp', 'mail', 'smtp', 'pop3',
+  'assets', 'static', 'public', 'cdn',
+  'download', 'upload', 'file', 'files',
+  'img', 'image', 'images', 'css', 'js',
+  'favicon', 'robots', 'sitemap', 'feed', 'rss'
+];
+
+// Helper function to check if alias is reserved
+const isReservedAlias = (alias) => {
+  if (!alias) return false;
+  return RESERVED_ALIASES.includes(alias.toLowerCase().trim());
+};
 
 // Helper function to normalize short codes (preserve case for international characters)
 const normalizeShortCode = (code) => {
@@ -27,7 +75,8 @@ const createUrl = async (req, res) => {
       utm,
       restrictions,
       redirectType,
-      domainId
+      domainId,
+      generateQRCode = false // Option to auto-generate QR code
     } = req.body;
 
     // Check usage limits before creating URL
@@ -51,6 +100,67 @@ const createUrl = async (req, res) => {
         success: false,
         message: urlValidation.message
       });
+    }
+
+    // Check if the URL actually exists and is accessible
+    const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+    console.log('Accessibility check result:', accessibilityCheck);
+    
+    if (!accessibilityCheck.accessible) {
+      // Check for specific error types
+      const errorMsg = accessibilityCheck.error || '';
+      const status = accessibilityCheck.status;
+      
+      // DNS failures - domain doesn't exist (these are critical)
+      if (errorMsg.includes('ENOTFOUND') || 
+          errorMsg.includes('getaddrinfo') ||
+          errorMsg.includes('EAI_AGAIN')) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
+        });
+      }
+      
+      // Connection refused - server not running (critical)
+      if (errorMsg.includes('ECONNREFUSED')) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
+        });
+      }
+      
+      // HTTP 4xx/5xx errors - but be lenient with some codes
+      if (status && status >= 400) {
+        // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
+        if (status === 401 || status === 403 || status === 405) {
+          console.log(`URL returned ${status}, but allowing it as the server exists`);
+        } else if (status === 404) {
+          return res.status(400).json({
+            success: false,
+            message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
+          });
+        } else if (status >= 500) {
+          // Server errors - allow with warning as the URL might work later
+          console.log(`URL returned server error ${status}, but allowing it`);
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+          });
+        }
+      }
+      
+      // Timeout, abort, or bad response - could be slow server or firewall, allow with warning
+      if (errorMsg.includes('abort') || 
+          errorMsg.includes('timeout') || 
+          errorMsg.includes('ETIMEDOUT') ||
+          errorMsg.includes('ERR_BAD_RESPONSE') ||
+          errorMsg.includes('ECONNRESET')) {
+        console.log(`URL accessibility check had issues (${errorMsg}) for: ${urlValidation.cleanUrl}, but allowing it`);
+      } else if (errorMsg) {
+        // Other errors - log but allow (be lenient)
+        console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
+      }
     }
 
     // Handle custom domain
@@ -102,14 +212,35 @@ const createUrl = async (req, res) => {
     let shortCode = customCode ? normalizeShortCode(customCode) : null;
     
     if (shortCode) {
+      // Check if the custom code is a reserved alias
+      if (isReservedAlias(shortCode)) {
+        return res.status(400).json({
+          success: false,
+          message: 'This alias is reserved for system use. Please choose a different alias.'
+        });
+      }
+
+      // Validate the short code format
+      const validation = validateShortCode(shortCode);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.reason
+        });
+      }
+
+      // Case-insensitive check for existing aliases
       const existingUrl = await Url.findOne({
-        $or: [{ shortCode: shortCode }, { customCode: shortCode }]
+        $or: [
+          { shortCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } },
+          { customCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } }
+        ]
       });
       
       if (existingUrl) {
         return res.status(400).json({
           success: false,
-          message: 'Custom code already exists'
+          message: 'This alias already exists (case-insensitive). Please choose a different alias.'
         });
       }
     } else {
@@ -155,7 +286,58 @@ const createUrl = async (req, res) => {
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
 
-    await cacheSet(`url:${shortCode}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
+    await cacheSet(`url:${shortCode.toLowerCase()}`, populatedUrl, config.CACHE_TTL.URL_CACHE);
+
+    // Auto-generate QR code if requested
+    let qrCodeData = null;
+    if (generateQRCode) {
+      try {
+        const QRCode = require('qrcode');
+        const { domainToASCII } = require('../utils/punycode');
+        
+        // Build the short URL with QR tracking parameter
+        const urlDomain = populatedUrl.domain || process.env.SHORT_DOMAIN || process.env.BASE_DOMAIN || 'laghhu.link';
+        const asciiDomain = domainToASCII(urlDomain);
+        const protocol = asciiDomain.includes('localhost') ? 'http://' : 'https://';
+        const urlCode = populatedUrl.customCode || populatedUrl.shortCode;
+        const shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
+        
+        // Generate QR code
+        const qrOptions = {
+          errorCorrectionLevel: 'M',
+          type: 'image/png',
+          quality: 0.92,
+          margin: 4,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          width: 300
+        };
+        
+        const qrBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
+        qrCodeData = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+        
+        // Update URL with QR code info
+        populatedUrl.qrCodeGenerated = true;
+        populatedUrl.qrCodeGeneratedAt = new Date();
+        populatedUrl.qrCode = qrCodeData;
+        populatedUrl.qrCodeSettings = {
+          size: 300,
+          format: 'png',
+          errorCorrection: 'M',
+          foregroundColor: '#000000',
+          backgroundColor: '#FFFFFF',
+          includeMargin: true
+        };
+        await populatedUrl.save();
+        
+        console.log('✅ QR code auto-generated for URL:', shortCode);
+      } catch (qrError) {
+        console.error('⚠️ Failed to auto-generate QR code:', qrError.message);
+        // Continue without QR code - don't fail the URL creation
+      }
+    }
 
     // Prepare domain info for response
     const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
@@ -183,7 +365,8 @@ const createUrl = async (req, res) => {
       message: 'URL created successfully',
       data: {
         url: populatedUrl,
-        domain: domainInfo
+        domain: domainInfo,
+        ...(qrCodeData && { qrCode: qrCodeData })
       }
     });
   } catch (error) {
@@ -312,6 +495,7 @@ const updateUrl = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      originalUrl,
       title,
       description,
       tags,
@@ -340,24 +524,121 @@ const updateUrl = async (req, res) => {
         message: 'Access denied'
       });
     }
+
+    // Validate and check accessibility of new originalUrl if provided
+    if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
+      const urlValidation = validateUrl(originalUrl);
+      if (!urlValidation.isValid) {
+        return res.status(400).json({
+          success: false,
+          message: urlValidation.message
+        });
+      }
+
+      // Check if the URL actually exists and is accessible
+      const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
+      console.log('Update URL accessibility check result:', accessibilityCheck);
+      
+      if (!accessibilityCheck.accessible) {
+        const errorMsg = accessibilityCheck.error || '';
+        const status = accessibilityCheck.status;
+        
+        // DNS failures - domain doesn't exist (critical)
+        if (errorMsg.includes('ENOTFOUND') || 
+            errorMsg.includes('getaddrinfo') ||
+            errorMsg.includes('EAI_AGAIN')) {
+          return res.status(400).json({
+            success: false,
+            message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
+          });
+        }
+        
+        // Connection refused - server not running (critical)
+        if (errorMsg.includes('ECONNREFUSED')) {
+          return res.status(400).json({
+            success: false,
+            message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
+          });
+        }
+        
+        // HTTP 4xx/5xx errors - but be lenient with some codes
+        if (status && status >= 400) {
+          // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
+          if (status === 401 || status === 403 || status === 405) {
+            console.log(`URL returned ${status}, but allowing it as the server exists`);
+          } else if (status === 404) {
+            return res.status(400).json({
+              success: false,
+              message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
+            });
+          } else if (status >= 500) {
+            // Server errors - allow with warning as the URL might work later
+            console.log(`URL returned server error ${status}, but allowing it`);
+          } else {
+            return res.status(400).json({
+              success: false,
+              message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
+            });
+          }
+        }
+        
+        // Timeout, abort, or bad response - allow with warning
+        if (errorMsg.includes('abort') || 
+            errorMsg.includes('timeout') || 
+            errorMsg.includes('ETIMEDOUT') ||
+            errorMsg.includes('ERR_BAD_RESPONSE') ||
+            errorMsg.includes('ECONNRESET')) {
+          console.log(`URL accessibility check had issues (${errorMsg}), but allowing it`);
+        } else if (errorMsg) {
+          // Other errors - log but allow (be lenient)
+          console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
+        }
+      }
+    }
     
     // Check if custom code is being updated and if it's already taken
-    if (customCode !== undefined && customCode !== url.customCode) {
+    if (customCode !== undefined && customCode !== url.shortCode && customCode !== url.customCode) {
       const normalizedCode = normalizeShortCode(customCode);
+
+      // Check if the custom code is a reserved alias
+      if (isReservedAlias(normalizedCode)) {
+        return res.status(400).json({
+          success: false,
+          message: 'This alias is reserved for system use. Please choose a different alias.'
+        });
+      }
+
+      // Validate the short code format
+      const validation = validateShortCode(normalizedCode);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.reason
+        });
+      }
+
+      // Case-insensitive check if the code is already in use (check both shortCode and customCode)
       const existingUrl = await Url.findOne({
-        customCode: normalizedCode,
+        $or: [
+          { shortCode: { $regex: new RegExp(`^${normalizedCode}$`, 'i') } },
+          { customCode: { $regex: new RegExp(`^${normalizedCode}$`, 'i') } }
+        ],
         _id: { $ne: id }
       });
 
       if (existingUrl) {
         return res.status(400).json({
           success: false,
-          message: 'This custom code is already in use. Please choose a different one.'
+          message: 'This alias already exists (case-insensitive). Please choose a different alias.'
         });
       }
     }
 
     const updateData = {};
+    if (originalUrl !== undefined) {
+      const urlValidation = validateUrl(originalUrl);
+      updateData.originalUrl = urlValidation.cleanUrl;
+    }
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (tags !== undefined) updateData.tags = tags.map(tag => tag.toLowerCase().trim());
@@ -367,24 +648,54 @@ const updateUrl = async (req, res) => {
     if (utm !== undefined) updateData.utm = utm;
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
-    if (customCode !== undefined) updateData.customCode = normalizeShortCode(customCode);
+    
+    // When updating customCode, also update shortCode to match
+    if (customCode !== undefined) {
+      const normalizedCode = normalizeShortCode(customCode);
+      updateData.customCode = normalizedCode;
+      updateData.shortCode = normalizedCode; // Update shortCode as well
+    }
+    
+    // Store old shortCode before updating for cache clearing
+    const oldShortCode = url.shortCode;
+    const oldCustomCode = url.customCode;
     
     const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
       .populate('creator', 'firstName lastName email')
       .populate('organization', 'name slug');
 
-    // Clear cache for short code
-    await cacheDel(`url:${url.shortCode}`);
-
-    // If custom code was changed, clear old custom code cache
-    if (customCode !== undefined && url.customCode && customCode !== url.customCode) {
-      await cacheDel(`url:${url.customCode}`);
+    // Clear cache for old short codes
+    await cacheDel(`url:${oldShortCode.toLowerCase()}`);
+    if (oldCustomCode) {
+      await cacheDel(`url:${oldCustomCode.toLowerCase()}`);
     }
 
-    // Set new cache
-    await cacheSet(`url:${url.shortCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
-    if (updatedUrl.customCode) {
-      await cacheSet(`url:${updatedUrl.customCode}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+    // If custom code was changed, clear the old cache
+    if (customCode !== undefined && customCode !== oldShortCode) {
+      await cacheDel(`url:${oldShortCode.toLowerCase()}`);
+    }
+
+    // Clear analytics cache for this URL (all periods and groupBy combinations)
+    const analyticsPeriods = ['7d', '30d', '90d', '1y', 'all'];
+    const analyticsGroupBy = ['hour', 'day', 'week', 'month'];
+    for (const period of analyticsPeriods) {
+      for (const groupBy of analyticsGroupBy) {
+        await cacheDel(`analytics:${id}:${period}:${groupBy}`);
+      }
+    }
+
+    // Cache the updated URL with new shortCode
+    if (updatedUrl.isActive) {
+      await cacheSet(`url:${updatedUrl.shortCode.toLowerCase()}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+      if (updatedUrl.customCode) {
+        await cacheSet(`url:${updatedUrl.customCode.toLowerCase()}`, updatedUrl, config.CACHE_TTL.URL_CACHE);
+      }
+    } else {
+      // Also clear custom code cache if URL is deactivated
+      if (updatedUrl.customCode) {
+        await cacheDel(`url:${updatedUrl.customCode.toLowerCase()}`);
+      }
+      await cacheDel(`url:${updatedUrl.shortCode.toLowerCase()}`);
     }
     
     res.json({
@@ -423,7 +734,10 @@ const deleteUrl = async (req, res) => {
     }
     
     await Url.findByIdAndDelete(id);
-    await cacheDel(`url:${url.shortCode}`);
+    await cacheDel(`url:${url.shortCode.toLowerCase()}`);
+    if (url.customCode) {
+      await cacheDel(`url:${url.customCode.toLowerCase()}`);
+    }
     
     res.json({
       success: true,
@@ -465,11 +779,15 @@ const bulkDelete = async (req, res) => {
     }
     
     const shortCodes = urls.map(url => url.shortCode);
+    const customCodes = urls.filter(url => url.customCode).map(url => url.customCode);
     
     await Url.deleteMany({ _id: { $in: ids } });
     
     for (const shortCode of shortCodes) {
-      await cacheDel(`url:${shortCode}`);
+      await cacheDel(`url:${shortCode.toLowerCase()}`);
+    }
+    for (const customCode of customCodes) {
+      await cacheDel(`url:${customCode.toLowerCase()}`);
     }
     
     res.json({

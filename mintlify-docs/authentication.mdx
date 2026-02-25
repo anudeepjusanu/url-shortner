@@ -1,0 +1,226 @@
+---
+title: 'Authentication'
+description: 'Learn how to authenticate your API requests'
+---
+
+## Authentication Methods
+
+Snip API supports two authentication methods:
+
+<CardGroup cols={2}>
+  <Card title="API Key" icon="key">
+    Recommended for server-to-server API access
+  </Card>
+  <Card title="Bearer Token (JWT)" icon="shield">
+    Used for web application authentication
+  </Card>
+</CardGroup>
+
+## API Key Authentication
+
+The recommended method for API access. Include your API key in the request header:
+
+```bash
+X-API-Key: your_api_key_here
+```
+
+### Getting Your API Key
+
+<Steps>
+  <Step title="Login">
+    Log in to your account at [snip.sa](https://snip.sa)
+  </Step>
+  <Step title="Navigate to Profile">
+    Go to **Profile** → **API Keys** section
+  </Step>
+  <Step title="Generate Key">
+    Click **"Regenerate API Key"** to generate a new key
+  </Step>
+  <Step title="Store Securely">
+    Copy and securely store your API key
+  </Step>
+</Steps>
+
+### Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://snip.sa/api/urls \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const axios = require('axios');
+
+const response = await axios.get('https://snip.sa/api/urls', {
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://snip.sa/api/urls',
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+```
+
+</CodeGroup>
+
+## Bearer Token Authentication
+
+Used for web applications. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer your_jwt_token_here
+```
+
+### Getting a JWT Token
+
+Authenticate with your credentials to receive a JWT token:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://snip.sa/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+```
+
+```javascript JavaScript
+const response = await axios.post('https://snip.sa/api/auth/login', {
+  email: 'user@example.com',
+  password: 'your_password'
+});
+
+const token = response.data.token;
+```
+
+</CodeGroup>
+
+### Using the JWT Token
+
+```bash
+curl -X GET https://snip.sa/api/urls \
+  -H "Authorization: Bearer your_jwt_token_here"
+```
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion icon="lock" title="Keep Keys Secure">
+    - Never commit API keys to version control
+    - Use environment variables to store keys
+    - Rotate keys regularly
+    - Never share keys publicly
+  </Accordion>
+  
+  <Accordion icon="server" title="Server-Side Only">
+    - Never expose API keys in client-side code
+    - Use server-side proxies for client applications
+    - Implement proper CORS policies
+  </Accordion>
+  
+  <Accordion icon="refresh" title="Key Rotation">
+    - Regenerate keys if compromised
+    - Update all applications using the old key
+    - Previous keys are immediately invalidated
+  </Accordion>
+  
+  <Accordion icon="shield-check" title="Monitor Usage">
+    - Track API usage in your dashboard
+    - Set up alerts for unusual activity
+    - Review access logs regularly
+  </Accordion>
+</AccordionGroup>
+
+## Managing API Keys
+
+### Regenerate API Key
+
+<Warning>
+  Regenerating your API key will immediately invalidate the previous key. Update all applications using the old key.
+</Warning>
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://snip.sa/api/auth/regenerate-api-key \
+  -H "Authorization: Bearer your_jwt_token_here"
+```
+
+```javascript JavaScript
+const response = await axios.post(
+  'https://snip.sa/api/auth/regenerate-api-key',
+  {},
+  {
+    headers: {
+      'Authorization': 'Bearer your_jwt_token_here'
+    }
+  }
+);
+
+const newApiKey = response.data.apiKey;
+```
+
+</CodeGroup>
+
+### Get Current API Key
+
+```bash
+curl -X GET https://snip.sa/api/auth/api-key \
+  -H "Authorization: Bearer your_jwt_token_here"
+```
+
+## Authentication Errors
+
+| Status Code | Error | Description |
+|-------------|-------|-------------|
+| 401 | Unauthorized | Invalid or missing API key/token |
+| 403 | Forbidden | Valid credentials but insufficient permissions |
+
+### Example Error Response
+
+```json
+{
+  "success": false,
+  "message": "Invalid API key"
+}
+```
+
+## Environment Variables
+
+Store your credentials securely using environment variables:
+
+<CodeGroup>
+
+```bash .env
+SNIP_API_KEY=your_api_key_here
+SNIP_BASE_URL=https://snip.sa/api
+```
+
+```javascript JavaScript
+require('dotenv').config();
+
+const apiKey = process.env.SNIP_API_KEY;
+const baseUrl = process.env.SNIP_BASE_URL;
+```
+
+```python Python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_key = os.getenv('SNIP_API_KEY')
+base_url = os.getenv('SNIP_BASE_URL')
+```
+
+</CodeGroup>

@@ -1,0 +1,74 @@
+---
+title: 'Customize QR Code'
+description: 'Learn how to customize QR code appearance'
+---
+
+## Customization Options
+
+QR codes can be customized with various options to match your brand:
+
+### Size
+
+Choose a size between 100 and 2000 pixels:
+
+```json
+{
+  "size": 500
+}
+```
+
+### Format
+
+Available formats:
+- `png` - Best for web and print (default)
+- `svg` - Scalable vector format
+- `jpeg` - Compressed format
+
+```json
+{
+  "format": "svg"
+}
+```
+
+### Error Correction
+
+Higher levels allow more damage tolerance:
+- `L` - Low (7% recovery)
+- `M` - Medium (15% recovery) - default
+- `Q` - Quartile (25% recovery)
+- `H` - High (30% recovery)
+
+```json
+{
+  "errorCorrectionLevel": "H"
+}
+```
+
+### Colors
+
+Customize foreground and background colors:
+
+```json
+{
+  "foregroundColor": "#10B981",
+  "backgroundColor": "#FFFFFF"
+}
+```
+
+## Example: Branded QR Code
+
+```javascript
+const response = await axios.post('https://snip.sa/api/qr-codes', {
+  urlId: '507f1f77bcf86cd799439011',
+  size: 800,
+  format: 'png',
+  errorCorrectionLevel: 'H',
+  foregroundColor: '#10B981',
+  backgroundColor: '#F3F4F6'
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```

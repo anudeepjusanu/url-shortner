@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const domainController = require('../controllers/domainController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authenticateAny } = require('../middleware/auth');
 const { validateDomain } = require('../middleware/validation');
 
-// Apply authentication to all domain routes
-router.use(authenticate);
+// Apply authentication to all domain routes - accepts both Bearer token and API key
+router.use(authenticateAny);
 
 // Domain CRUD operations
 router.post('/', validateDomain, domainController.addDomain);

@@ -1,0 +1,157 @@
+---
+title: 'Create URL'
+api: 'POST https://snip.sa/api/urls'
+description: 'Create a new shortened URL with optional customization'
+---
+
+## Request Body
+
+<ParamField body="originalUrl" type="string" required>
+  The long URL to shorten (must be valid HTTP/HTTPS URL)
+</ParamField>
+
+<ParamField body="customCode" type="string">
+  Custom short code (alphanumeric, case-sensitive, 3-50 characters)
+</ParamField>
+
+<ParamField body="title" type="string">
+  Title for the shortened URL (max 200 characters)
+</ParamField>
+
+<ParamField body="description" type="string">
+  Description of the link (max 500 characters)
+</ParamField>
+
+<ParamField body="tags" type="array">
+  Array of tags for organization
+</ParamField>
+
+<ParamField body="expiresAt" type="string">
+  ISO 8601 date when the link expires
+</ParamField>
+
+<ParamField body="password" type="string">
+  Password protection for the link
+</ParamField>
+
+<ParamField body="domainId" type="string">
+  Domain ID to use ("base" for default domain)
+</ParamField>
+
+<ParamField body="utm" type="object">
+  UTM parameters for tracking
+  <Expandable title="properties">
+    <ParamField body="source" type="string">
+      Campaign source (e.g., "newsletter")
+    </ParamField>
+    <ParamField body="medium" type="string">
+      Campaign medium (e.g., "email")
+    </ParamField>
+    <ParamField body="campaign" type="string">
+      Campaign name
+    </ParamField>
+    <ParamField body="term" type="string">
+      Campaign term
+    </ParamField>
+    <ParamField body="content" type="string">
+      Campaign content
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="restrictions" type="object">
+  Access restrictions
+  <Expandable title="properties">
+    <ParamField body="maxClicks" type="number">
+      Maximum number of clicks allowed
+    </ParamField>
+    <ParamField body="allowedCountries" type="array">
+      Array of allowed country codes (e.g., ["US", "CA"])
+    </ParamField>
+    <ParamField body="blockedCountries" type="array">
+      Array of blocked country codes
+    </ParamField>
+    <ParamField body="allowedDevices" type="array">
+      Array of allowed devices: ["desktop", "mobile", "tablet"]
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="redirectType" type="number" default="302">
+  HTTP redirect type (301 or 302)
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://snip.sa/api/urls \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "originalUrl": "https://example.com/very-long-url",
+    "customCode": "mylink",
+    "title": "My Custom Link",
+    "tags": ["marketing", "campaign"]
+  }'
+```
+
+```javascript JavaScript
+const response = await axios.post('https://snip.sa/api/urls', {
+  originalUrl: 'https://example.com/very-long-url',
+  customCode: 'mylink',
+  title: 'My Custom Link',
+  tags: ['marketing', 'campaign']
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+```
+
+```python Python
+response = requests.post(
+    'https://snip.sa/api/urls',
+    headers={
+        'Content-Type': 'application/json',
+        'X-API-Key': 'your_api_key_here'
+    },
+    json={
+        'originalUrl': 'https://example.com/very-long-url',
+        'customCode': 'mylink',
+        'title': 'My Custom Link',
+        'tags': ['marketing', 'campaign']
+    }
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "URL created successfully",
+  "data": {
+    "url": {
+      "_id": "507f1f77bcf86cd799439011",
+      "originalUrl": "https://example.com/very-long-url",
+      "shortCode": "abc123",
+      "customCode": "mylink",
+      "title": "My Custom Link",
+      "tags": ["marketing", "campaign"],
+      "clickCount": 0,
+      "isActive": true,
+      "createdAt": "2024-01-15T10:30:00.000Z"
+    },
+    "domain": {
+      "id": "base",
+      "fullDomain": "laghhu.link",
+      "shortUrl": "https://laghhu.link"
+    }
+  }
+}
+```
+
+</ResponseExample>

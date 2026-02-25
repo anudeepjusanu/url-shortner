@@ -140,8 +140,14 @@ class ApiClient {
       }
     });
 
+    // Add cache-busting parameter for list endpoints to ensure fresh data
+    const listEndpoints = ['/urls', '/analytics', '/admin/urls'];
+    if (listEndpoints.some(path => endpoint.startsWith(path))) {
+      url.searchParams.append('_t', Date.now().toString());
+    }
+
     return this.request(endpoint + url.search, {
-      method: 'GET',
+      method: 'GET'
     });
   }
 
@@ -391,7 +397,26 @@ export const analyticsAPI = {
 // QR Code API methods
 export const qrCodeAPI = {
   generate: (urlId, options) => apiClient.post(`/qr-codes/generate/${urlId}`, options),
-  download: (urlId, format) => apiClient.get(`/qr-codes/download/${urlId}`, { format }),
+  download: async (urlId, format) => {
+    // Use fetch directly for binary downloads to handle blob responses properly
+    const token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
+    const url = `${apiClient.baseURL}/qr-codes/download/${urlId}?format=${format}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Download failed: ${response.status}`);
+    }
+    
+    // Return the blob directly for binary data
+    return await response.blob();
+  },
   getStats: () => apiClient.get('/qr-codes/stats'),
   bulkGenerate: (urlIds, options) => apiClient.post('/qr-codes/bulk-generate', { urlIds, options }),
   getUrlQRCode: (urlId) => apiClient.get(`/qr-codes/${urlId}`),
@@ -432,6 +457,27 @@ export const userManagementAPI = {
 
   // Get user statistics
   getUserStats: () => apiClient.get('/users/stats')
+};
+
+// Admin API methods (admin/super_admin only)
+export const adminAPI = {
+  // Get all URLs with filters
+  getAllUrls: (params) => apiClient.get('/admin/urls', params),
+
+  // Get URLs by specific user
+  getUserUrls: (userId, params) => apiClient.get(`/admin/urls`, { ...params, creator: userId }),
+
+  // Update URL (activate/deactivate)
+  updateUrl: (urlId, data) => apiClient.put(`/admin/urls/${urlId}`, data),
+
+  // Delete URL
+  deleteUrl: (urlId) => apiClient.delete(`/admin/urls/${urlId}`),
+
+  // Get system stats
+  getSystemStats: () => apiClient.get('/admin/stats'),
+
+  // Get all users
+  getAllUsers: (params) => apiClient.get('/admin/users', params)
 };
 
 // Google Analytics API methods (super_admin only)

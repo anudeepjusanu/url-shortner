@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const urlController = require('../controllers/urlController');
-const { authenticate, apiKeyAuth } = require('../middleware/auth');
+const { authenticate, apiKeyAuth, authenticateAny } = require('../middleware/auth');
 const { urlCreationLimiter, apiLimiter } = require('../middleware/rateLimiter');
 const { checkResourceLimits, checkFeatureAccess } = require('../middleware/roleCheck');
 const {
@@ -16,52 +16,66 @@ const {
 
 router.use(sanitizeInput);
 
+// Create URL - accepts both Bearer token and API key
 router.post('/',
-  authenticate,
-  // TEMPORARILY DISABLED - Rate limiting paused until going live
-  // urlCreationLimiter,
+  authenticateAny,
+  urlCreationLimiter,
   checkResourceLimits('urls'),
   validateUrlCreation,
   urlController.createUrl
 );
 
+// Get all URLs - accepts both Bearer token and API key
 router.get('/', 
-  authenticate, 
+  authenticateAny,
+  apiLimiter,
   validatePagination, 
   urlController.getUrls
 );
 
+// Get URL stats - accepts both Bearer token and API key
 router.get('/stats',
-  authenticate,
+  authenticateAny,
+  apiLimiter,
   urlController.getUrlStats
 );
 
+// Get available domains - accepts both Bearer token and API key
 router.get('/domains/available',
-  authenticate,
+  authenticateAny,
+  apiLimiter,
   urlController.getAvailableDomains
 );
 
+// Get single URL - accepts both Bearer token and API key
 router.get('/:id', 
-  authenticate, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   urlController.getUrl
 );
 
+// Update URL - accepts both Bearer token and API key
 router.put('/:id', 
-  authenticate, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   validateUrlUpdate, 
   urlController.updateUrl
 );
 
+// Delete URL - accepts both Bearer token and API key
 router.delete('/:id', 
-  authenticate, 
+  authenticateAny,
+  apiLimiter,
   validateObjectId, 
   urlController.deleteUrl
 );
 
+// Bulk delete - accepts both Bearer token and API key
 router.post('/bulk-delete', 
-  authenticate, 
+  authenticateAny,
+  apiLimiter,
   checkFeatureAccess('bulk_operations'),
   validateBulkDelete, 
   urlController.bulkDelete

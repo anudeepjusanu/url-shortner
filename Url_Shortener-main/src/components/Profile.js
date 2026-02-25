@@ -55,6 +55,14 @@ const Profile = () => {
   });
   const [preferencesLoading, setPreferencesLoading] = useState(false);
 
+  // Modal State for success/error messages
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    type: 'success', // 'success' or 'error'
+    title: '',
+    message: ''
+  });
+
   // Account Stats
   const [accountStats, setAccountStats] = useState({
     totalLinks: 0,
@@ -145,7 +153,7 @@ const Profile = () => {
           emailNotifications: response.emailNotifications !== false,
           marketingEmails: response.marketingEmails || false,
           weeklyReports: response.weeklyReports !== false,
-          language: response.language || "en",
+          language: response.language || "ar",
           timezone: response.timezone || "Asia/Riyadh"
         });
       }
@@ -273,7 +281,12 @@ const Profile = () => {
         setShowApiKey(true);
       }
     } catch (error) {
-      alert("Failed to regenerate API key: " + error.message);
+      setModalConfig({
+        type: 'error',
+        title: t('errors.error') || 'Error',
+        message: "Failed to regenerate API key: " + error.message
+      });
+      setShowModal(true);
     } finally {
       setApiKeyLoading(false);
     }
@@ -282,7 +295,12 @@ const Profile = () => {
   // Handle Copy API Key
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
-    alert(t('common.copied'));
+    setModalConfig({
+      type: 'success',
+      title: t('notifications.success') || 'Success',
+      message: t('common.copied') || 'Copied to clipboard!'
+    });
+    setShowModal(true);
   };
 
   // Handle Preferences Update
@@ -292,9 +310,19 @@ const Profile = () => {
 
     try {
       await api.put("/auth/preferences", preferences);
-      alert(t('notifications.settingsSaved'));
+      setModalConfig({
+        type: 'success',
+        title: t('notifications.success') || 'Success',
+        message: t('notifications.settingsSaved') || 'Settings saved successfully!'
+      });
+      setShowModal(true);
     } catch (error) {
-      alert(t('errors.generic') + ": " + error.message);
+      setModalConfig({
+        type: 'error',
+        title: t('errors.error') || 'Error',
+        message: t('errors.generic') + ": " + error.message
+      });
+      setShowModal(true);
     } finally {
       setPreferencesLoading(false);
     }
@@ -762,23 +790,38 @@ const Profile = () => {
                           fontSize: '14px'
                         }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          color: '#6B7280',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {showPasswords.current ? '👁️' : '👁️‍🗨️'}
-                      </button>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                  aria-label={showPasswords.current ? "Hide password" : "Show password"}
+                >
+                  <svg
+                    width="18"
+                    height="16"
+                    viewBox="0 0 18 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
+                  >
+                    <path
+                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                    <circle
+                      cx="9"
+                      cy="8"
+                      r="3"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      style={{ stroke: '#9CA3AF' }}
+                    />
+                  </svg>
+                </button>
                     </div>
                     {passwordFieldErrors.currentPassword && (
                       <div style={{
@@ -835,20 +878,45 @@ const Profile = () => {
                         />
                         <button
                           type="button"
+                          className="password-toggle"
                           onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
                           style={{
                             position: 'absolute',
                             right: '12px',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            background: 'none',
+                            background: 'transparent',
                             border: 'none',
-                            color: '#6B7280',
                             cursor: 'pointer',
-                            fontSize: '14px'
+                            // padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
-                          {showPasswords.new ? '👁️' : '👁️‍🗨️'}
+                          <svg
+                            width="18"
+                            height="16"
+                            viewBox="0 0 18 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ display: 'block' }}
+                          >
+                            <path
+                              d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <circle
+                              cx="9"
+                              cy="8"
+                              r="3"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+                          </svg>
                         </button>
                       </div>
                       {passwordFieldErrors.newPassword && (
@@ -899,20 +967,45 @@ const Profile = () => {
                         />
                         <button
                           type="button"
+                          className="password-toggle"
                           onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
                           style={{
                             position: 'absolute',
                             right: '12px',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            background: 'none',
+                            background: 'transparent',
                             border: 'none',
-                            color: '#6B7280',
                             cursor: 'pointer',
-                            fontSize: '14px'
+                            // padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
-                          {showPasswords.confirm ? '👁️' : '👁️‍🗨️'}
+                          <svg
+                            width="18"
+                            height="16"
+                            viewBox="0 0 18 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ display: 'block' }}
+                          >
+                            <path
+                              d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <circle
+                              cx="9"
+                              cy="8"
+                              r="3"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+                          </svg>
                         </button>
                       </div>
                       {passwordFieldErrors.confirmPassword && (
@@ -1052,6 +1145,26 @@ const Profile = () => {
                 >
                   {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
                 </button>
+                <a
+                  href="https://docs.snip.sa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    border: '1px solid #3B82F6',
+                    background: '#fff',
+                    color: '#3B82F6',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  📖 {t('profile.apiKeys.viewDocs') || 'View API Docs'}
+                </a>
               </div>
             </section>
 
@@ -1234,6 +1347,132 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Professional Modal Dialog */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            animation: 'modalSlideIn 0.2s ease-out'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '16px'
+            }}>
+              {modalConfig.type === 'success' ? (
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#DEF7EC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E9F6E" strokeWidth="2">
+                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              ) : (
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FDE8E8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C81E1E" strokeWidth="2">
+                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#111827'
+                }}>
+                  {modalConfig.title}
+                </h3>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <p style={{
+              margin: '0 0 24px 0',
+              fontSize: '14px',
+              color: '#6B7280',
+              lineHeight: '1.5'
+            }}>
+              {modalConfig.message}
+            </p>
+
+            {/* Modal Footer */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px'
+            }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: modalConfig.type === 'success' ? '#0E9F6E' : '#3B82F6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                {t('common.ok') || 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
