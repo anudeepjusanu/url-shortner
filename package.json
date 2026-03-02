@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@amplitude/analytics-node": "^1.5.39",
     "@google-analytics/data": "^5.2.1",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",

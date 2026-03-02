@@ -586,8 +586,19 @@ function MyLinks() {
 
       let fieldErrorSet = false; // Track if we set a field-specific error
 
+      // Check for unsafe URL (Google Safe Browsing flagged)
+      if (errorLower.includes('flagged') || 
+          errorLower.includes('safe browsing') ||
+          errorLower.includes('unsafe') ||
+          errorLower.includes('malware') ||
+          errorLower.includes('phishing') ||
+          err.response?.data?.code === 'UNSAFE_URL') {
+        console.log('Setting URL error for unsafe content:', errorMessage);
+        setUrlError(errorMessage);
+        fieldErrorSet = true;
+      }
       // Check if error is about URL (including validation and non-existing URL errors)
-      if (errorLower.includes('url') || 
+      else if (errorLower.includes('url') || 
           errorLower.includes('domain') ||
           errorLower.includes('tld') ||
           errorLower.includes('invalid url') ||

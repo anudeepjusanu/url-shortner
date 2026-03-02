@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const amplitudeMiddleware = require('./middleware/amplitudeMiddleware');
 require('dotenv').config();
 
 const app = express();
@@ -117,6 +118,9 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+// Amplitude Analytics - Track API requests (optional)
+app.use(amplitudeMiddleware);
 
 app.use((req, res, next) => {
   res.set({

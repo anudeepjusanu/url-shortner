@@ -5,12 +5,14 @@ import Sidebar from './Sidebar';
 import MainHeader from './MainHeader';
 import { urlsAPI, analyticsAPI, authAPI } from '../services/api';
 import { getCurrentDomain, getShortUrl as getDomainShortUrl, isSystemDomain } from '../utils/domainUtils';
+import { useAmplitude } from '../hooks/useAmplitude';
 import './Dashboard.css';
 import './DashboardLayout.css';
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { trackDashboardViewed, trackFilterApplied } = useAmplitude();
   const [longUrl, setLongUrl] = useState('');
   const [customBackhalf, setCustomBackhalf] = useState('');
   const [campaign, setCampaign] = useState('');
@@ -32,6 +34,11 @@ const Dashboard = () => {
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, linkId: null, linkUrl: '' });
   const [editDialog, setEditDialog] = useState({ isOpen: false, link: null });
   const [copySuccess, setCopySuccess] = useState(null);
+
+  // Track dashboard view on mount
+  useEffect(() => {
+    trackDashboardViewed();
+  }, [trackDashboardViewed]);
 
   useEffect(() => {
     fetchDashboardData();
