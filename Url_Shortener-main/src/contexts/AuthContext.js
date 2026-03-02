@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import amplitudeService from '../services/amplitude';
 
 // Initial state
 const initialState = {
@@ -130,7 +131,18 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.getProfile();
       if (response.success && response.data) {
-        dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
+        const user = response.data.user;
+        dispatch({ type: actionTypes.SET_USER, payload: user });
+        
+        // Set user in Amplitude
+        if (user._id || user.id) {
+          amplitudeService.setUser(user._id || user.id, {
+            email: user.email,
+            role: user.role,
+            subscription_plan: user.subscriptionPlan || 'free',
+            language_preference: user.language || 'en',
+          });
+        }
       } else {
         // Invalid token, clear it
         localStorage.removeItem('authToken');
@@ -173,16 +185,29 @@ export const AuthProvider = ({ children }) => {
 
       // Login successful
       if (response.success && response.data) {
-        dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
-        return { success: true, user: response.data.user };
+        const user = response.data.user;
+        dispatch({ type: actionTypes.SET_USER, payload: user });
+        
+        // Track login event
+        amplitudeService.trackLogin(user._id || user.id, otp ? 'email_otp' : 'email');
+        
+        return { success: true, user };
       } else {
         const errorMessage = response.message || 'Login failed';
         dispatch({ type: actionTypes.SET_ERROR, payload: errorMessage });
+        
+        // Track login error
+        amplitudeService.trackError('login_failed', errorMessage);
+        
         return { success: false, error: errorMessage };
       }
     } catch (error) {
       const errorMessage = error.message || 'Login failed';
       dispatch({ type: actionTypes.SET_ERROR, payload: errorMessage });
+      
+      // Track login error
+      amplitudeService.trackError('login_error', errorMessage);
+      
       return { success: false, error: errorMessage };
     }
   };
@@ -207,16 +232,34 @@ export const AuthProvider = ({ children }) => {
 
       // Registration successful
       if (response.success && response.data) {
-        dispatch({ type: actionTypes.SET_USER, payload: response.data.user });
-        return { success: true, user: response.data.user };
+        const user = response.data.user;
+        dispatch({ type: actionTypes.SET_USER, payload: user });
+        
+        // Track registration completion
+        amplitudeService.trackRegistrationCompleted(user._id || user.id, {
+          email: user.email,
+          role: user.role,
+          registration_method: 'email',
+          subscription_plan: user.subscriptionPlan || 'free',
+        });
+        
+        return { success: true, user };
       } else {
         const errorMessage = response.message || 'Registration failed';
         dispatch({ type: actionTypes.SET_ERROR, payload: errorMessage });
+        
+        // Track registration error
+        amplitudeService.trackError('registration_failed', errorMessage);
+        
         return { success: false, error: errorMessage };
       }
     } catch (error) {
       const errorMessage = error.message || 'Registration failed';
       dispatch({ type: actionTypes.SET_ERROR, payload: errorMessage });
+      
+      // Track registration error
+      amplitudeService.trackError('registration_error', errorMessage);
+      
       return { success: false, error: errorMessage };
     }
   };
@@ -227,8 +270,14 @@ export const AuthProvider = ({ children }) => {
 
     try {
       await authAPI.logout();
+      
+      // Track logout event
+      amplitudeService.trackLogout();
     } catch (error) {
       console.error('Logout error:', error);
+      
+      // Still clear user from Amplitude even if API call fails
+      amplitudeService.trackLogout();
     } finally {
       dispatch({ type: actionTypes.LOGOUT });
     }

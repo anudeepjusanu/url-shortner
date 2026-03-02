@@ -174,6 +174,9 @@ class UrlValidator {
     const search = parsedUrl.search.toLowerCase();
     const hash = parsedUrl.hash.toLowerCase();
     
+    // Only check for protocol-based attacks and dangerous file types
+    // Removed keyword-based checks (malware, phishing, virus) as these are now
+    // handled by Google Safe Browsing API for more accurate detection
     const suspiciousPatterns = [
       /javascript:/,
       /data:/,
@@ -182,10 +185,7 @@ class UrlValidator {
       /\.exe(\?|$)/,
       /\.scr(\?|$)/,
       /\.bat(\?|$)/,
-      /\.cmd(\?|$)/,
-      /malware/,
-      /phishing/,
-      /virus/
+      /\.cmd(\?|$)/
     ];
     
     const fullUrl = parsedUrl.href.toLowerCase();

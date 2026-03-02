@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { PermissionProvider } from './contexts/PermissionContext';
@@ -8,6 +8,7 @@ import Registration from './components/Registration';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import amplitudeService from './services/amplitude';
 import './App.css';
 import './rtl.css';
 
@@ -50,12 +51,30 @@ const LoadingFallback = () => (
 const CreateLink = () => <div>Create Link Page</div>;
 const TeamMembers = () => <div>Team Members Page</div>;
 
+// Component to track page views
+function PageViewTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pageName = location.pathname.split('/').filter(Boolean).join(' > ') || 'home';
+    amplitudeService.trackPageView(pageName, location.pathname);
+  }, [location]);
+
+  return null;
+}
+
 function App() {
+  // Initialize Amplitude on app load
+  useEffect(() => {
+    amplitudeService.initialize();
+  }, []);
+
   return (
     <AuthProvider>
       <PermissionProvider>
         <LanguageProvider>
           <Router>
+            <PageViewTracker />
             <div className="App">
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
