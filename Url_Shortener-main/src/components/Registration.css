@@ -334,7 +334,7 @@ color: #FFF;
   display: flex;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   background: white;
   transition: all 0.2s ease;
 }
@@ -342,6 +342,167 @@ color: #FFF;
 .phone-input-wrapper:focus-within {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Country Code Dropdown */
+.country-code-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.country-code-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 100%;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  border-right: 1px solid #d1d5db;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.country-code-trigger:hover {
+  background: #f9fafb;
+}
+
+.country-flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.country-dial {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.dropdown-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.country-code-dropdown[aria-expanded="true"] .dropdown-chevron,
+.country-code-trigger[aria-expanded="true"] .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.country-code-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1000;
+  width: 300px;
+  max-height: 320px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.country-search-wrapper {
+  padding: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.country-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.country-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.country-code-options {
+  overflow-y: auto;
+  max-height: 260px;
+  padding: 4px;
+}
+
+.country-code-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.country-code-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.country-code-options::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.country-code-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #374151;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.country-code-option:hover {
+  background: #f3f4f6;
+}
+
+.country-code-option.selected {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.option-flag {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.option-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-dial {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.country-no-results {
+  padding: 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
 }
 
 .country-code {
@@ -366,6 +527,7 @@ color: #FFF;
   padding: 0 14px;
   height: 44px;
   outline: none;
+  min-width: 0;
 }
 
 .phone-input-wrapper input:focus {
@@ -959,6 +1121,17 @@ color: #FFF;
   flex-direction: row-reverse;
 }
 
+[dir="rtl"] .country-code-trigger {
+  border-right: none;
+  border-left: 1px solid #d1d5db;
+  direction: ltr;
+}
+
+[dir="rtl"] .country-code-list {
+  left: auto;
+  right: 0;
+}
+
 [dir="rtl"] .country-code {
   border-right: none;
   border-left: 1px solid #d1d5db;
@@ -1073,6 +1246,13 @@ color: #FFF;
   border-bottom: none !important;
   border-left: none !important;
   border-right: 1px solid #d1d5db !important;
+}
+
+[dir="ltr"] .country-code-trigger,
+.country-code-trigger:not([dir="rtl"]) {
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
 }
 
 /* Error Styles */

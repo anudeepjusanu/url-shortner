@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { countryCodesAPI } from "../services/api";
+import defaultCountryCodes from "../data/countryCodes";
 import OTPDialog from "./OTPDialog";
 import logo from '../assets/logo.png';
 import "./Registration.css";
@@ -27,6 +29,63 @@ const Registration = () => {
   const [formErrors, setFormErrors] = useState({});
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [otpData, setOtpData] = useState(null);
+  const [countryCodes, setCountryCodes] = useState(defaultCountryCodes);
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+966');
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // Try to fetch updated country codes from backend (optional enhancement)
+  useEffect(() => {
+    const fetchCountryCodes = async () => {
+      try {
+        const response = await countryCodesAPI.getAll();
+        if (response && response.data && response.data.length > 0) {
+          setCountryCodes(response.data);
+        }
+      } catch (err) {
+        // Silently use embedded defaults – dropdown already works
+        console.log('Using embedded country codes (API unavailable)');
+      }
+    };
+    fetchCountryCodes();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setCountryDropdownOpen(false);
+        setCountrySearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (countryDropdownOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [countryDropdownOpen]);
+
+  const formatPhoneForApi = (value) => {
+    const digitsOnly = (value || '').replace(/\D/g, '');
+    // Strip the selected dial code digits from the beginning if user accidentally included them
+    const dialDigits = selectedCountryCode.replace('+', '');
+    const localNumber = digitsOnly.startsWith(dialDigits) ? digitsOnly.slice(dialDigits.length) : digitsOnly;
+    return `${selectedCountryCode}${localNumber}`;
+  };
+
+  const selectedCountry = countryCodes.find(c => c.dialCode === selectedCountryCode);
+
+  const filteredCountryCodes = countryCodes.filter(c => {
+    if (!countrySearch) return true;
+    const q = countrySearch.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.dialCode.includes(q) || c.code.toLowerCase().includes(q);
+  });
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -72,6 +131,15 @@ const Registration = () => {
     } else if (formData.password.length < 8) {
       errors.password = t('auth.register.errorPasswordLength');
       if (!firstErrorField) firstErrorField = 'password';
+    }
+
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (!phoneDigits) {
+      errors.phone = t('auth.register.errorPhoneRequired') || 'Phone number is required';
+      if (!firstErrorField) firstErrorField = 'phone';
+    } else if (phoneDigits.length < 7 || phoneDigits.length > 12) {
+      errors.phone = t('auth.register.errorPhoneInvalid') || 'Please enter a valid phone number';
+      if (!firstErrorField) firstErrorField = 'phone';
     }
 
     if (!formData.confirmPassword) {
@@ -132,7 +200,7 @@ const Registration = () => {
         lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
+        phone: formatPhoneForApi(formData.phone),
       };
 
       // Call registration API
@@ -166,7 +234,7 @@ const Registration = () => {
         lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
+        phone: formatPhoneForApi(formData.phone),
         otp: otp
       };
 
@@ -201,7 +269,7 @@ const Registration = () => {
         lastName,
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        phone: formData.phone.trim() ? `+966${formData.phone.replace(/\s/g, '')}` : undefined,
+        phone: formatPhoneForApi(formData.phone),
       };
 
       // Call registration API again to resend OTP
@@ -466,7 +534,59 @@ const Registration = () => {
             <div className="form-field">
               <label htmlFor="phone">{t('auth.register.phone')}</label>
               <div className="phone-input-wrapper">
-                <span className="country-code">+966</span>
+                <div className="country-code-dropdown" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    className="country-code-trigger"
+                    onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                    aria-haspopup="listbox"
+                    aria-expanded={countryDropdownOpen}
+                  >
+                    <span className="country-flag">{selectedCountry?.flag || '🌐'}</span>
+                    <span className="country-dial">{selectedCountryCode}</span>
+                    <svg className="dropdown-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 1L5 5L9 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                  {countryDropdownOpen && (
+                    <div className="country-code-list" role="listbox">
+                      <div className="country-search-wrapper">
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          className="country-search-input"
+                          placeholder={t('auth.register.searchCountry') || 'Search country...'}
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="country-code-options">
+                        {filteredCountryCodes.map((country) => (
+                          <button
+                            key={country.code}
+                            type="button"
+                            className={`country-code-option ${country.dialCode === selectedCountryCode ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedCountryCode(country.dialCode);
+                              setCountryDropdownOpen(false);
+                              setCountrySearch('');
+                            }}
+                            role="option"
+                            aria-selected={country.dialCode === selectedCountryCode}
+                          >
+                            <span className="option-flag">{country.flag}</span>
+                            <span className="option-name">{country.name}</span>
+                            <span className="option-dial">{country.dialCode}</span>
+                          </button>
+                        ))}
+                        {filteredCountryCodes.length === 0 && (
+                          <div className="country-no-results">{t('auth.register.noCountryFound') || 'No country found'}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <input
                   type="tel"
                   id="phone"
@@ -474,8 +594,13 @@ const Registration = () => {
                   placeholder={t('auth.register.phonePlaceholder')}
                   value={formData.phone}
                   onChange={handleInputChange}
+                  className={formErrors.phone ? 'error' : ''}
+                  required
                 />
               </div>
+              {formErrors.phone && (
+                <span className="field-error">{formErrors.phone}</span>
+              )}
             </div>
 
             {/* Password Field */}
@@ -697,7 +822,7 @@ const Registration = () => {
         onClose={() => setShowOTPDialog(false)}
         onVerify={handleVerifyOTP}
         onResend={handleResendOTP}
-        email={otpData?.email || formData.email}
+        email={otpData?.phone || otpData?.email || formatPhoneForApi(formData.phone)}
         loading={loading}
       />
     </div>

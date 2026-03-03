@@ -22,6 +22,11 @@ const validateRegistration = [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please enter a valid email'),
+  body('phone')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .matches(/^\+?[1-9]\d{1,14}$/)
+    .withMessage('Please enter a valid phone number in E.164 format'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
