@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { countryCodesAPI } from "../services/api";
-import defaultCountryCodes from "../data/countryCodes";
+import defaultCountryCodes from "../countryCodesdata/countryCodes";
 import OTPDialog from "./OTPDialog";
 import logo from '../assets/logo.png';
 import "./Registration.css";
