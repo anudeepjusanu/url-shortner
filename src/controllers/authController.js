@@ -8,11 +8,30 @@ const { UsageTracker } = require('../middleware/usageTracker');
 const otpService = require('../services/otpService');
 const { getLocationFromIP, getClientIP } = require('../services/geoLocationService');
 
-const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/;
+const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
 const generateOtpCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const normalizePhone = (phone) => (phone ? String(phone).replace(/\s+/g, '') : undefined);
+const normalizePhone = (phone) => {
+  if (!phone) return undefined;
+  
+  let normalized = String(phone).trim();
+  
+  // Remove all whitespace
+  normalized = normalized.replace(/\s+/g, '');
+  
+  // If phone starts with 0, remove it (common in many countries)
+  if (normalized.startsWith('0')) {
+    normalized = normalized.slice(1);
+  }
+  
+  // If phone doesn't start with +, add default country code for Saudi Arabia
+  if (!normalized.startsWith('+')) {
+    normalized = '+966' + normalized;
+  }
+  
+  return normalized;
+};
 
 const maskPhone = (phone) => {
   if (!phone || phone.length < 7) return phone;
@@ -36,17 +55,10 @@ const sendRegistrationOTP = async (req, res) => {
     const { email, phone } = req.body;
     const normalizedPhone = normalizePhone(phone);
 
-    if (!email || !normalizedPhone) {
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: 'Email and phone number are required'
-      });
-    }
-
-    if (!PHONE_REGEX.test(normalizedPhone)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid phone number in E.164 format'
+        message: 'Email is required'
       });
     }
 
@@ -66,15 +78,23 @@ const sendRegistrationOTP = async (req, res) => {
     const otpKey = `registration_otp:${email}`;
     await cacheSet(otpKey, otp, 5 * 60); // 5 minutes TTL
 
-    // Send OTP via SMS (with email fallback handled by Authentica)
-    await otpService.sendOtp({ email, phone: normalizedPhone, otp, method: 'sms' });
+    // Determine method based on available contact info
+    const method = normalizedPhone ? 'sms' : 'email';
+    const targetPhone = normalizedPhone || undefined;
+
+    // Send OTP via SMS or email (Authentica handles fallback)
+    await otpService.sendOtp({ email, phone: targetPhone, otp, method });
+
+    const message = normalizedPhone 
+      ? 'OTP sent to your phone number. Please verify to complete registration.'
+      : 'OTP sent to your email. Please verify to complete registration.';
 
     return res.status(200).json({
       success: true,
-      message: 'OTP sent to your phone number. Please verify to complete registration.',
+      message,
       data: {
         email,
-        phone: maskPhone(normalizedPhone),
+        phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
         otpSent: true
       }
     });
@@ -94,17 +114,10 @@ const register = async (req, res) => {
     const { email, password, firstName, lastName, phone, otp } = req.body;
     const normalizedPhone = normalizePhone(phone);
 
-    if (!normalizedPhone) {
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: 'Phone number is required'
-      });
-    }
-
-    if (!PHONE_REGEX.test(normalizedPhone)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid phone number in E.164 format'
+        message: 'Email is required'
       });
     }
     
@@ -130,16 +143,24 @@ const register = async (req, res) => {
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
         await cacheSet(dataKey, JSON.stringify({ email, password, firstName, lastName, phone: normalizedPhone }), 5 * 60);
 
-        // Send OTP via SMS (with email fallback handled by Authentica)
-        await otpService.sendOtp({ email, phone: normalizedPhone, otp: generatedOtp, method: 'sms' });
+        // Determine method based on available contact info
+        const method = normalizedPhone ? 'sms' : 'email';
+        const targetPhone = normalizedPhone || undefined;
+
+        // Send OTP via SMS or email (Authentica handles fallback)
+        await otpService.sendOtp({ email, phone: targetPhone, otp: generatedOtp, method });
+
+        const message = normalizedPhone 
+          ? 'OTP sent to your phone number. Please verify to complete registration.'
+          : 'OTP sent to your email. Please verify to complete registration.';
 
         return res.status(202).json({
           success: true,
-          message: 'OTP sent to your phone number. Please verify to complete registration.',
+          message,
           data: {
             otpSent: true,
             email,
-            phone: maskPhone(normalizedPhone)
+            phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined
           }
         });
       } catch (err) {
@@ -512,7 +533,7 @@ const updateProfile = async (req, res) => {
     
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) user.phone = normalizePhone(phone);
     if (preferences) {
       user.preferences = { ...user.preferences, ...preferences };
     }

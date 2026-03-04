@@ -18,7 +18,8 @@
     "critters-webpack-plugin": "^3.0.2",
     "react-app-rewired": "^2.2.1",
     "serve": "^14.2.1",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "tailwindcss-animate": "^1.0.7"
   },
   "scripts": {
     "start": "react-scripts start",

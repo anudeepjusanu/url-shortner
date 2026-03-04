@@ -23,10 +23,20 @@ const validateRegistration = [
     .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('phone')
-    .notEmpty()
-    .withMessage('Phone number is required')
-    .matches(/^\+?[1-9]\d{1,14}$/)
-    .withMessage('Please enter a valid phone number in E.164 format'),
+    .optional()
+    .custom((value) => {
+      if (!value) return true;
+      const normalized = String(value).trim().replace(/\s+/g, '');
+      // Allow empty
+      if (normalized === '') return true;
+      // Allow +countrycode or just digits
+      if (normalized.startsWith('+')) {
+        return /^\+\d{7,15}$/.test(normalized);
+      }
+      // Allow digits only (will be normalized later with +966 default)
+      return /^\d{7,15}$/.test(normalized);
+    })
+    .withMessage('Please enter a valid phone number (e.g., +9665XXXXXXXX or 05XXXXXXXX)'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
