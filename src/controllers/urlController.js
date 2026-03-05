@@ -6,6 +6,7 @@ const { validateUrl, checkUrlAccessibility } = require('../utils/urlValidator');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
+const safeBrowsingService = require('../services/safeBrowsingService');
 
 // Reserved aliases that cannot be used for shortened URLs
 const RESERVED_ALIASES = [
@@ -99,6 +100,18 @@ const createUrl = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: urlValidation.message
+      });
+    }
+
+    // Check URL safety with Google Safe Browsing API
+    const safetyCheck = await safeBrowsingService.checkUrl(urlValidation.cleanUrl);
+    if (!safetyCheck.isSafe) {
+      console.log('🚨 Blocked unsafe URL creation attempt:', urlValidation.cleanUrl);
+      return res.status(400).json({
+        success: false,
+        message: safetyCheck.message || 'The link provided has been flagged by Google Safe Browsing as unsafe. Please use a different link.',
+        code: 'UNSAFE_URL',
+        threats: safetyCheck.threats
       });
     }
 
@@ -532,6 +545,18 @@ const updateUrl = async (req, res) => {
         return res.status(400).json({
           success: false,
           message: urlValidation.message
+        });
+      }
+
+      // Check URL safety with Google Safe Browsing API
+      const safetyCheck = await safeBrowsingService.checkUrl(urlValidation.cleanUrl);
+      if (!safetyCheck.isSafe) {
+        console.log('🚨 Blocked unsafe URL update attempt:', urlValidation.cleanUrl);
+        return res.status(400).json({
+          success: false,
+          message: safetyCheck.message || 'The link provided has been flagged by Google Safe Browsing as unsafe. Please use a different link.',
+          code: 'UNSAFE_URL',
+          threats: safetyCheck.threats
         });
       }
 

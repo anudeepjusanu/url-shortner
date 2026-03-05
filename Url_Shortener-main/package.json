@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.35.4",
     "i18next": "^25.6.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "react": "^18.2.0",
@@ -17,7 +18,8 @@
     "critters-webpack-plugin": "^3.0.2",
     "react-app-rewired": "^2.2.1",
     "serve": "^14.2.1",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "tailwindcss-animate": "^1.0.7"
   },
   "scripts": {
     "start": "react-scripts start",

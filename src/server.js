@@ -1,7 +1,11 @@
 const app = require('./app');
 const connectDB = require('./config/database');
 const ScheduledTasks = require('./services/scheduledTasks');
+const amplitudeService = require('./services/amplitudeService');
 require('dotenv').config();
+
+// Initialize Amplitude Analytics
+amplitudeService.initialize();
 
 // Connect to database
 connectDB();

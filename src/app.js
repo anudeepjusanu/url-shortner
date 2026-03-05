@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const amplitudeMiddleware = require('./middleware/amplitudeMiddleware');
 require('dotenv').config();
 
 const app = express();
@@ -82,8 +83,18 @@ app.use(helmet({
   }
 }));
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Cache-Control', 'Pragma']
@@ -107,6 +118,9 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+// Amplitude Analytics - Track API requests (optional)
+app.use(amplitudeMiddleware);
 
 app.use((req, res, next) => {
   res.set({
@@ -134,6 +148,7 @@ app.post('/test-register', async (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/country-codes', require('./routes/countryCodes'));
 app.use('/api/urls', require('./routes/urls'));
 app.use('/api/domains', require('./routes/domains'));
 app.use('/api/analytics', require('./routes/analytics'));

@@ -427,11 +427,22 @@ const CreateShortLink = () => {
           console.log(`Setting error for field "${field}":`, message);
           
           if (field === 'originalUrl') {
-            setUrlError(message); // Use the detailed message from errors array
+            // Check if this is a Safe Browsing error and use appropriate message
+            const messageLower = message.toLowerCase();
+            if (messageLower.includes('flagged') || 
+                messageLower.includes('safe browsing') ||
+                messageLower.includes('unsafe') ||
+                messageLower.includes('malware') ||
+                messageLower.includes('phishing')) {
+              // Use the Safe Browsing specific message
+              setUrlError(message);
+            } else {
+              setUrlError(message);
+            }
           } else if (field === 'customCode') {
-            setCustomCodeError(message); // Use the detailed message from errors array
+            setCustomCodeError(message);
           } else if (field === 'title') {
-            setTitleError(message); // Use the detailed message from errors array
+            setTitleError(message);
           }
         });
         return; // Don't show toast for validation errors
@@ -454,8 +465,19 @@ const CreateShortLink = () => {
 
       let fieldErrorSet = false; // Track if we set a field-specific error
 
+      // Check for unsafe URL (Google Safe Browsing flagged)
+      if (errorLower.includes('flagged') || 
+          errorLower.includes('safe browsing') ||
+          errorLower.includes('unsafe') ||
+          errorLower.includes('malware') ||
+          errorLower.includes('phishing') ||
+          err.response?.data?.code === 'UNSAFE_URL') {
+        console.log('Setting URL error for unsafe content:', errorMessage);
+        setUrlError(errorMessage);
+        fieldErrorSet = true;
+      }
       // Check if error is about URL (including validation and non-existing URL errors)
-      if (errorLower.includes('url') || 
+      else if (errorLower.includes('url') || 
           errorLower.includes('domain') ||
           errorLower.includes('tld') ||
           errorLower.includes('invalid url') ||

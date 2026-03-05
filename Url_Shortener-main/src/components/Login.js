@@ -553,7 +553,7 @@ const Login = () => {
         onClose={() => setShowOTPDialog(false)}
         onVerify={handleVerifyOTP}
         onResend={handleResendOTP}
-        email={otpData?.email || formData.email}
+        email={otpData?.phone || otpData?.email || formData.email}
         loading={loading}
       />
 

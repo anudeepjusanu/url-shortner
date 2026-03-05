@@ -8,6 +8,36 @@ const { UsageTracker } = require('../middleware/usageTracker');
 const otpService = require('../services/otpService');
 const { getLocationFromIP, getClientIP } = require('../services/geoLocationService');
 
+const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
+
+const generateOtpCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+const normalizePhone = (phone) => {
+  if (!phone) return undefined;
+  
+  let normalized = String(phone).trim();
+  
+  // Remove all whitespace
+  normalized = normalized.replace(/\s+/g, '');
+  
+  // If phone starts with 0, remove it (common in many countries)
+  if (normalized.startsWith('0')) {
+    normalized = normalized.slice(1);
+  }
+  
+  // If phone doesn't start with +, add default country code for Saudi Arabia
+  if (!normalized.startsWith('+')) {
+    normalized = '+966' + normalized;
+  }
+  
+  return normalized;
+};
+
+const maskPhone = (phone) => {
+  if (!phone || phone.length < 7) return phone;
+  return `${phone.slice(0, 4)}****${phone.slice(-3)}`;
+};
+
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRE
@@ -22,7 +52,8 @@ const generateTokens = (userId) => {
 
 const sendRegistrationOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, phone } = req.body;
+    const normalizedPhone = normalizePhone(phone);
 
     if (!email) {
       return res.status(400).json({
@@ -41,20 +72,29 @@ const sendRegistrationOTP = async (req, res) => {
     }
 
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtpCode();
 
     // Store OTP in cache with email as key for 5 minutes
     const otpKey = `registration_otp:${email}`;
     await cacheSet(otpKey, otp, 5 * 60); // 5 minutes TTL
 
-    // Send OTP via email
-    await otpService.sendOtp({ email, otp, method: 'email' });
+    // Determine method based on available contact info
+    const method = normalizedPhone ? 'sms' : 'email';
+    const targetPhone = normalizedPhone || undefined;
+
+    // Send OTP via SMS or email (Authentica handles fallback)
+    await otpService.sendOtp({ email, phone: targetPhone, otp, method });
+
+    const message = normalizedPhone 
+      ? 'OTP sent to your phone number. Please verify to complete registration.'
+      : 'OTP sent to your email. Please verify to complete registration.';
 
     return res.status(200).json({
       success: true,
-      message: 'OTP sent to your email. Please verify to complete registration.',
+      message,
       data: {
         email,
+        phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
         otpSent: true
       }
     });
@@ -72,6 +112,14 @@ const register = async (req, res) => {
   console.log('Registration request body:', req.body);
   try {
     const { email, password, firstName, lastName, phone, otp } = req.body;
+    const normalizedPhone = normalizePhone(phone);
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
     
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -86,24 +134,33 @@ const register = async (req, res) => {
     if (!otp) {
       try {
         // Generate 6-digit OTP
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const generatedOtp = generateOtpCode();
 
         // Store both OTP and registration data in cache for 5 minutes
         const otpKey = `registration_otp:${email}`;
         const dataKey = `registration_data:${email}`;
         
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
-        await cacheSet(dataKey, JSON.stringify({ email, password, firstName, lastName, phone }), 5 * 60);
+        await cacheSet(dataKey, JSON.stringify({ email, password, firstName, lastName, phone: normalizedPhone }), 5 * 60);
 
-        // Send OTP via email
-        await otpService.sendOtp({ email, otp: generatedOtp, method: 'email' });
+        // Determine method based on available contact info
+        const method = normalizedPhone ? 'sms' : 'email';
+        const targetPhone = normalizedPhone || undefined;
+
+        // Send OTP via SMS or email (Authentica handles fallback)
+        await otpService.sendOtp({ email, phone: targetPhone, otp: generatedOtp, method });
+
+        const message = normalizedPhone 
+          ? 'OTP sent to your phone number. Please verify to complete registration.'
+          : 'OTP sent to your email. Please verify to complete registration.';
 
         return res.status(202).json({
           success: true,
-          message: 'OTP sent to your email. Please verify to complete registration.',
+          message,
           data: {
             otpSent: true,
-            email
+            email,
+            phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined
           }
         });
       } catch (err) {
@@ -240,13 +297,11 @@ const login = async (req, res) => {
       });
     }
 
-    // OTP logic
-    const otpService = require('../services/otpService');
     // If OTP not provided, send OTP and ask for verification
     if (!otp) {
       try {
-        // Use user's phone or email - phone is preferred
-        const phone = user.phone || req.body.phone;
+        // Use only persisted user phone for existing users
+        const phone = normalizePhone(user.phone);
         const emailAddr = user.email;
 
         if (!phone && !emailAddr) {
@@ -257,7 +312,7 @@ const login = async (req, res) => {
         }
 
         // Generate random 6-digit OTP
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const generatedOtp = generateOtpCode();
 
         // Store OTP in cache for 5 minutes
         const otpKey = `otp:${user._id}`;
@@ -267,15 +322,16 @@ const login = async (req, res) => {
         const method = phone ? 'sms' : 'email';
 
         // Send OTP via Authentica
-        await otpService.sendOtp({ email: emailAddr, otp: generatedOtp, method });
+        await otpService.sendOtp({ email: emailAddr, phone, otp: generatedOtp, method });
 
         return res.status(202).json({
           success: true,
-          message: 'OTP sent. Please verify.',
+          message: phone ? 'OTP sent to your phone number. Please verify.' : 'OTP sent to your email. Please verify.',
           data: {
             otpSent: true,
-            phone: phone ? phone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2') : undefined, // Mask phone
-            email: emailAddr
+            method,
+            phone: phone ? maskPhone(phone) : undefined,
+            email: phone ? undefined : emailAddr
           }
         });
       } catch (err) {
@@ -477,7 +533,7 @@ const updateProfile = async (req, res) => {
     
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) user.phone = normalizePhone(phone);
     if (preferences) {
       user.preferences = { ...user.preferences, ...preferences };
     }
