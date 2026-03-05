@@ -18,7 +18,7 @@ const Profile = () => {
     email: "",
     phone: "",
     company: "",
-    jobTitle: ""
+    jobTitle: "",
   });
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [personalLoading, setPersonalLoading] = useState(false);
@@ -29,12 +29,12 @@ const Profile = () => {
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
-    confirm: false
+    confirm: false,
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
@@ -51,16 +51,16 @@ const Profile = () => {
     marketingEmails: false,
     weeklyReports: true,
     language: "en",
-    timezone: "Asia/Riyadh"
+    timezone: "Asia/Riyadh",
   });
   const [preferencesLoading, setPreferencesLoading] = useState(false);
 
   // Modal State for success/error messages
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({
-    type: 'success', // 'success' or 'error'
-    title: '',
-    message: ''
+    type: "success", // 'success' or 'error'
+    title: "",
+    message: "",
   });
 
   // Account Stats
@@ -69,7 +69,7 @@ const Profile = () => {
     totalClicks: 0,
     customDomains: 0,
     accountAge: "",
-    plan: "Professional"
+    plan: "Professional",
   });
 
   // Load user data on mount
@@ -90,7 +90,7 @@ const Profile = () => {
           email: response.email || "",
           phone: response.phone || "",
           company: response.company || "",
-          jobTitle: response.jobTitle || ""
+          jobTitle: response.jobTitle || "",
         });
       }
     } catch (error) {
@@ -101,11 +101,12 @@ const Profile = () => {
   const loadAccountStats = async () => {
     try {
       // Fetch stats from multiple sources for accuracy
-      const [statsResponse, analyticsResponse, domainsResponse] = await Promise.all([
-        api.get("/urls/stats").catch(() => null),
-        analyticsAPI.getOverview({ period: '30d' }).catch(() => null),
-        domainsAPI.getDomains().catch(() => null)
-      ]);
+      const [statsResponse, analyticsResponse, domainsResponse] =
+        await Promise.all([
+          api.get("/urls/stats").catch(() => null),
+          analyticsAPI.getOverview({ period: "30d" }).catch(() => null),
+          domainsAPI.getDomains().catch(() => null),
+        ]);
 
       // Get totalLinks and plan from stats endpoint
       const totalLinks = statsResponse?.totalLinks || 0;
@@ -114,20 +115,29 @@ const Profile = () => {
 
       // Get totalClicks from analytics dashboard (more accurate)
       const analyticsData = analyticsResponse?.data || analyticsResponse;
-      const totalClicks = analyticsData?.overview?.totalClicks || statsResponse?.totalClicks || 0;
+      const totalClicks =
+        analyticsData?.overview?.totalClicks || statsResponse?.totalClicks || 0;
 
       // Get custom domains count
-      const domains = domainsResponse?.data?.domains || domainsResponse?.domains || domainsResponse || [];
-      const customDomainsCount = analyticsData?.overview?.totalCustomDomains || 
-                                 (Array.isArray(domains) ? domains.filter(d => d.isActive !== false).length : 0) ||
-                                 statsResponse?.customDomains || 0;
+      const domains =
+        domainsResponse?.data?.domains ||
+        domainsResponse?.domains ||
+        domainsResponse ||
+        [];
+      const customDomainsCount =
+        analyticsData?.overview?.totalCustomDomains ||
+        (Array.isArray(domains)
+          ? domains.filter((d) => d.isActive !== false).length
+          : 0) ||
+        statsResponse?.customDomains ||
+        0;
 
       setAccountStats({
         totalLinks,
         totalClicks,
         customDomains: customDomainsCount,
         accountAge,
-        plan
+        plan,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -154,7 +164,7 @@ const Profile = () => {
           marketingEmails: response.marketingEmails || false,
           weeklyReports: response.weeklyReports !== false,
           language: response.language || "ar",
-          timezone: response.timezone || "Asia/Riyadh"
+          timezone: response.timezone || "Asia/Riyadh",
         });
       }
     } catch (error) {
@@ -172,13 +182,13 @@ const Profile = () => {
     try {
       const response = await api.put("/auth/profile", personalInfo);
       if (response) {
-        setPersonalSuccess(t('notifications.profileUpdated'));
+        setPersonalSuccess(t("notifications.profileUpdated"));
         setIsEditingPersonal(false);
         if (updateUser) updateUser(response);
         setTimeout(() => setPersonalSuccess(""), 3000);
       }
     } catch (error) {
-      setPersonalError(error.message || t('errors.generic'));
+      setPersonalError(error.message || t("errors.generic"));
     } finally {
       setPersonalLoading(false);
     }
@@ -186,9 +196,9 @@ const Profile = () => {
 
   // Password field errors
   const [passwordFieldErrors, setPasswordFieldErrors] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Handle Password Change
@@ -197,43 +207,52 @@ const Profile = () => {
     setPasswordLoading(true);
     setPasswordError("");
     setPasswordSuccess("");
-    
+
     // Reset field errors
     const fieldErrors = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     };
     let hasError = false;
     let firstErrorField = null;
 
     // Validate current password
     if (!passwordData.currentPassword) {
-      fieldErrors.currentPassword = t('profile.security.errorCurrentPasswordRequired') || 'Current password is required';
+      fieldErrors.currentPassword =
+        t("profile.security.errorCurrentPasswordRequired") ||
+        "Current password is required";
       hasError = true;
-      if (!firstErrorField) firstErrorField = 'currentPassword';
+      if (!firstErrorField) firstErrorField = "currentPassword";
     }
 
     // Validate new password
     if (!passwordData.newPassword) {
-      fieldErrors.newPassword = t('profile.security.errorNewPasswordRequired') || 'New password is required';
+      fieldErrors.newPassword =
+        t("profile.security.errorNewPasswordRequired") ||
+        "New password is required";
       hasError = true;
-      if (!firstErrorField) firstErrorField = 'newPassword';
+      if (!firstErrorField) firstErrorField = "newPassword";
     } else if (passwordData.newPassword.length < 8) {
-      fieldErrors.newPassword = t('profile.security.errorPasswordLength') || 'Password must be at least 8 characters';
+      fieldErrors.newPassword =
+        t("profile.security.errorPasswordLength") ||
+        "Password must be at least 8 characters";
       hasError = true;
-      if (!firstErrorField) firstErrorField = 'newPassword';
+      if (!firstErrorField) firstErrorField = "newPassword";
     }
 
     // Validate confirm password
     if (!passwordData.confirmPassword) {
-      fieldErrors.confirmPassword = t('profile.security.errorConfirmPasswordRequired') || 'Please confirm your new password';
+      fieldErrors.confirmPassword =
+        t("profile.security.errorConfirmPasswordRequired") ||
+        "Please confirm your new password";
       hasError = true;
-      if (!firstErrorField) firstErrorField = 'confirmPassword';
+      if (!firstErrorField) firstErrorField = "confirmPassword";
     } else if (passwordData.newPassword !== passwordData.confirmPassword) {
-      fieldErrors.confirmPassword = t('profile.security.errorPasswordMismatch') || 'Passwords do not match';
+      fieldErrors.confirmPassword =
+        t("profile.security.errorPasswordMismatch") || "Passwords do not match";
       hasError = true;
-      if (!firstErrorField) firstErrorField = 'confirmPassword';
+      if (!firstErrorField) firstErrorField = "confirmPassword";
     }
 
     setPasswordFieldErrors(fieldErrors);
@@ -245,7 +264,7 @@ const Profile = () => {
         const element = document.getElementById(firstErrorField);
         if (element) {
           element.focus();
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
       return;
@@ -254,14 +273,22 @@ const Profile = () => {
     try {
       await api.post("/auth/change-password", {
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
+        newPassword: passwordData.newPassword,
       });
-      setPasswordSuccess(t('notifications.passwordChanged'));
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setPasswordFieldErrors({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordSuccess(t("notifications.passwordChanged"));
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordFieldErrors({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setTimeout(() => setPasswordSuccess(""), 3000);
     } catch (error) {
-      setPasswordError(error.message || t('errors.generic'));
+      setPasswordError(error.message || t("errors.generic"));
     } finally {
       setPasswordLoading(false);
     }
@@ -269,7 +296,7 @@ const Profile = () => {
 
   // Handle API Key Regeneration
   const handleRegenerateApiKey = async () => {
-    if (!window.confirm(t('profile.apiKeys.confirmRegenerate'))) {
+    if (!window.confirm(t("profile.apiKeys.confirmRegenerate"))) {
       return;
     }
 
@@ -282,9 +309,9 @@ const Profile = () => {
       }
     } catch (error) {
       setModalConfig({
-        type: 'error',
-        title: t('errors.error') || 'Error',
-        message: "Failed to regenerate API key: " + error.message
+        type: "error",
+        title: t("errors.error") || "Error",
+        message: "Failed to regenerate API key: " + error.message,
       });
       setShowModal(true);
     } finally {
@@ -296,9 +323,9 @@ const Profile = () => {
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
     setModalConfig({
-      type: 'success',
-      title: t('notifications.success') || 'Success',
-      message: t('common.copied') || 'Copied to clipboard!'
+      type: "success",
+      title: t("notifications.success") || "Success",
+      message: t("common.copied") || "Copied to clipboard!",
     });
     setShowModal(true);
   };
@@ -311,16 +338,17 @@ const Profile = () => {
     try {
       await api.put("/auth/preferences", preferences);
       setModalConfig({
-        type: 'success',
-        title: t('notifications.success') || 'Success',
-        message: t('notifications.settingsSaved') || 'Settings saved successfully!'
+        type: "success",
+        title: t("notifications.success") || "Success",
+        message:
+          t("notifications.settingsSaved") || "Settings saved successfully!",
       });
       setShowModal(true);
     } catch (error) {
       setModalConfig({
-        type: 'error',
-        title: t('errors.error') || 'Error',
-        message: t('errors.generic') + ": " + error.message
+        type: "error",
+        title: t("errors.error") || "Error",
+        message: t("errors.generic") + ": " + error.message,
       });
       setShowModal(true);
     } finally {
@@ -336,281 +364,383 @@ const Profile = () => {
         <div className="analytics-main">
           <div className="analytics-content">
             {/* Page Header */}
-            <div className="page-header" style={{
-              marginBottom: '24px'
-            }}>
-              <h1 style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: '#111827',
-                marginBottom: '4px',
-                margin: '0 0 4px 0'
-              }}>{t('profile.title')}</h1>
-              <p style={{
-                color: '#6B7280',
-                fontSize: '14px',
-                margin: 0
-              }}>{t('profile.subtitle')}</p>
+            <div
+              className="page-header"
+              style={{
+                marginBottom: "24px",
+              }}
+            >
+              <h1
+                style={{
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  color: "#111827",
+                  marginBottom: "4px",
+                  margin: "0 0 4px 0",
+                }}
+              >
+                {t("profile.title")}
+              </h1>
+              <p
+                style={{
+                  color: "#6B7280",
+                  fontSize: "14px",
+                  margin: 0,
+                }}
+              >
+                {t("profile.subtitle")}
+              </p>
             </div>
 
             {/* Account Statistics */}
-            <section style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('profile.accountOverview')}</h2>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px'
-              }}>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#3B82F6',
-                    marginBottom: '8px'
-                  }}>{accountStats.totalLinks}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('dashboard.stats.totalLinks')}</div>
+            <section style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: "16px",
+                  margin: "0 0 16px 0",
+                }}
+              >
+                {t("profile.accountOverview")}
+              </h2>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "700",
+                      color: "#3B82F6",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {accountStats.totalLinks}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "#6B7280",
+                    }}
+                  >
+                    {t("dashboard.stats.totalLinks")}
+                  </div>
                 </div>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#10B981',
-                    marginBottom: '8px'
-                  }}>{accountStats.totalClicks.toLocaleString()}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('dashboard.stats.totalClicks')}</div>
+                <div
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "700",
+                      color: "#10B981",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {accountStats.totalClicks.toLocaleString()}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "#6B7280",
+                    }}
+                  >
+                    {t("dashboard.stats.totalClicks")}
+                  </div>
                 </div>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#7C3AED',
-                    marginBottom: '8px'
-                  }}>{accountStats.customDomains}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('header.customDomains')}</div>
+                <div
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "700",
+                      color: "#7C3AED",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {accountStats.customDomains}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "#6B7280",
+                    }}
+                  >
+                    {t("header.customDomains")}
+                  </div>
                 </div>
-                <div style={{
-                  background: '#fff',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    color: '#F59E0B',
-                    marginBottom: '8px'
-                  }}>{accountStats.plan}</div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6B7280'
-                  }}>{t('profile.currentPlan')}</div>
+                <div
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "700",
+                      color: "#F59E0B",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {accountStats.plan}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "#6B7280",
+                    }}
+                  >
+                    {t("profile.currentPlan")}
+                  </div>
                 </div>
               </div>
             </section>
 
             {/* Personal Information */}
-            <section style={{ marginBottom: '24px' }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px'
-              }}>
-                <h2 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  margin: 0
-                }}>{t('profile.general.personalInfo')}</h2>
+            <section style={{ marginBottom: "24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    color: "#111827",
+                    margin: 0,
+                  }}
+                >
+                  {t("profile.general.personalInfo")}
+                </h2>
                 {!isEditingPersonal && (
                   <button
                     onClick={() => setIsEditingPersonal(true)}
                     style={{
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: '1px solid #E5E7EB',
-                      background: '#fff',
-                      color: '#374151',
-                      cursor: 'pointer'
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      border: "1px solid #E5E7EB",
+                      background: "#fff",
+                      color: "#374151",
+                      cursor: "pointer",
                     }}
                   >
-                    {t('common.edit')} {t('common.profile')}
+                    {t("common.edit")} {t("common.profile")}
                   </button>
                 )}
               </div>
 
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px'
-              }}>
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "12px",
+                  padding: "24px 28px",
+                }}
+              >
                 {personalSuccess && (
-                  <div style={{
-                    background: '#D1FAE5',
-                    border: '1px solid #10B981',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    marginBottom: '20px',
-                    color: '#065F46',
-                    fontSize: '14px'
-                  }}>
+                  <div
+                    style={{
+                      background: "#D1FAE5",
+                      border: "1px solid #10B981",
+                      borderRadius: "8px",
+                      padding: "12px 16px",
+                      marginBottom: "20px",
+                      color: "#065F46",
+                      fontSize: "14px",
+                    }}
+                  >
                     {personalSuccess}
                   </div>
                 )}
                 {personalError && (
-                  <div style={{
-                    background: '#FEE2E2',
-                    border: '1px solid #DC2626',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    marginBottom: '20px',
-                    color: '#991B1B',
-                    fontSize: '14px'
-                  }}>
+                  <div
+                    style={{
+                      background: "#FEE2E2",
+                      border: "1px solid #DC2626",
+                      borderRadius: "8px",
+                      padding: "12px 16px",
+                      marginBottom: "20px",
+                      color: "#991B1B",
+                      fontSize: "14px",
+                    }}
+                  >
                     {personalError}
                   </div>
                 )}
 
                 <form onSubmit={handlePersonalInfoSubmit}>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '20px',
-                    marginBottom: '20px'
-                  }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "20px",
+                      marginBottom: "20px",
+                    }}
+                  >
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.general.firstName')}</label>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.general.firstName")}
+                      </label>
                       <input
                         type="text"
                         value={personalInfo.firstName}
-                        onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            firstName: e.target.value,
+                          })
+                        }
                         disabled={!isEditingPersonal}
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          background: isEditingPersonal ? '#fff' : '#F9FAFB',
-                          cursor: isEditingPersonal ? 'text' : 'not-allowed'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          background: isEditingPersonal ? "#fff" : "#F9FAFB",
+                          cursor: isEditingPersonal ? "text" : "not-allowed",
                         }}
                       />
                     </div>
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.general.lastName')}</label>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.general.lastName")}
+                      </label>
                       <input
                         type="text"
                         value={personalInfo.lastName}
-                        onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            lastName: e.target.value,
+                          })
+                        }
                         disabled={!isEditingPersonal}
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          background: isEditingPersonal ? '#fff' : '#F9FAFB',
-                          cursor: isEditingPersonal ? 'text' : 'not-allowed'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          background: isEditingPersonal ? "#fff" : "#F9FAFB",
+                          cursor: isEditingPersonal ? "text" : "not-allowed",
                         }}
                       />
                     </div>
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.general.email')}</label>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.general.email")}
+                      </label>
                       <input
                         type="email"
                         value={personalInfo.email}
                         disabled
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          background: '#F9FAFB',
-                          cursor: 'not-allowed'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          background: "#F9FAFB",
+                          cursor: "not-allowed",
                         }}
                       />
                     </div>
-                    {/* <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.general.phone')}</label>
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.general.phone")}
+                      </label>
                       <input
                         type="tel"
                         value={personalInfo.phone}
-                        onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            phone: e.target.value,
+                          })
+                        }
                         disabled={!isEditingPersonal}
                         placeholder="+966 XXX XXX XXX"
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          background: isEditingPersonal ? '#fff' : '#F9FAFB',
-                          cursor: isEditingPersonal ? 'text' : 'not-allowed'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          background: isEditingPersonal ? "#fff" : "#F9FAFB",
+                          cursor: isEditingPersonal ? "text" : "not-allowed",
                         }}
                       />
-                    </div> */}
+                    </div>
                     {/* <div>
                       <label style={{
                         display: 'block',
@@ -636,38 +766,44 @@ const Profile = () => {
                       />
                     </div> */}
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.general.jobTitle')}</label>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.general.jobTitle")}
+                      </label>
                       <input
                         type="text"
                         value={personalInfo.jobTitle}
                         readOnly
                         disabled
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          background: '#F9FAFB',
-                          cursor: 'not-allowed',
-                          color: '#6B7280'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          background: "#F9FAFB",
+                          cursor: "not-allowed",
+                          color: "#6B7280",
                         }}
                       />
                     </div>
                   </div>
 
                   {isEditingPersonal && (
-                    <div style={{
-                      display: 'flex',
-                      gap: '12px',
-                      justifyContent: 'flex-end'
-                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        justifyContent: "flex-end",
+                      }}
+                    >
                       <button
                         type="button"
                         onClick={() => {
@@ -675,33 +811,35 @@ const Profile = () => {
                           loadUserProfile();
                         }}
                         style={{
-                          padding: '10px 20px',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          border: '1px solid #E5E7EB',
-                          background: '#fff',
-                          color: '#374151',
-                          cursor: 'pointer'
+                          padding: "10px 20px",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          border: "1px solid #E5E7EB",
+                          background: "#fff",
+                          color: "#374151",
+                          cursor: "pointer",
                         }}
                       >
-                        {t('common.cancel')}
+                        {t("common.cancel")}
                       </button>
                       <button
                         type="submit"
                         disabled={personalLoading}
                         style={{
-                          padding: '10px 20px',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          border: 'none',
-                          background: personalLoading ? '#93C5FD' : '#3B82F6',
-                          color: '#fff',
-                          cursor: personalLoading ? 'not-allowed' : 'pointer'
+                          padding: "10px 20px",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          border: "none",
+                          background: personalLoading ? "#93C5FD" : "#3B82F6",
+                          color: "#fff",
+                          cursor: personalLoading ? "not-allowed" : "pointer",
                         }}
                       >
-                        {personalLoading ? t('profile.general.updating') : `${t('common.save')} Changes`}
+                        {personalLoading
+                          ? t("profile.general.updating")
+                          : `${t("common.save")} Changes`}
                       </button>
                     </div>
                   )}
@@ -710,188 +848,259 @@ const Profile = () => {
             </section>
 
             {/* Account Security */}
-            <section style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('profile.tabs.security')}</h2>
+            <section style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: "16px",
+                  margin: "0 0 16px 0",
+                }}
+              >
+                {t("profile.tabs.security")}
+              </h2>
 
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px'
-              }}>
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "12px",
+                  padding: "24px 28px",
+                }}
+              >
                 {passwordSuccess && (
-                  <div style={{
-                    background: '#D1FAE5',
-                    border: '1px solid #10B981',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    marginBottom: '20px',
-                    color: '#065F46',
-                    fontSize: '14px'
-                  }}>
+                  <div
+                    style={{
+                      background: "#D1FAE5",
+                      border: "1px solid #10B981",
+                      borderRadius: "8px",
+                      padding: "12px 16px",
+                      marginBottom: "20px",
+                      color: "#065F46",
+                      fontSize: "14px",
+                    }}
+                  >
                     {passwordSuccess}
                   </div>
                 )}
                 {passwordError && (
-                  <div style={{
-                    background: '#FEE2E2',
-                    border: '1px solid #DC2626',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    marginBottom: '20px',
-                    color: '#991B1B',
-                    fontSize: '14px'
-                  }}>
+                  <div
+                    style={{
+                      background: "#FEE2E2",
+                      border: "1px solid #DC2626",
+                      borderRadius: "8px",
+                      padding: "12px 16px",
+                      marginBottom: "20px",
+                      color: "#991B1B",
+                      fontSize: "14px",
+                    }}
+                  >
                     {passwordError}
                   </div>
                 )}
 
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '16px'
-                }}>{t('profile.security.changePassword')}</h3>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {t("profile.security.changePassword")}
+                </h3>
 
                 <form onSubmit={handlePasswordSubmit}>
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>{t('profile.security.currentPassword')} *</label>
-                    <div style={{ position: 'relative' }}>
+                  <div style={{ marginBottom: "20px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#374151",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {t("profile.security.currentPassword")} *
+                    </label>
+                    <div style={{ position: "relative" }}>
                       <input
                         id="currentPassword"
                         type={showPasswords.current ? "text" : "password"}
                         value={passwordData.currentPassword}
                         onChange={(e) => {
-                          setPasswordData({...passwordData, currentPassword: e.target.value});
+                          setPasswordData({
+                            ...passwordData,
+                            currentPassword: e.target.value,
+                          });
                           // Clear field error when user starts typing
                           if (passwordFieldErrors.currentPassword) {
-                            setPasswordFieldErrors({...passwordFieldErrors, currentPassword: ''});
+                            setPasswordFieldErrors({
+                              ...passwordFieldErrors,
+                              currentPassword: "",
+                            });
                           }
                           // Clear general error when user starts typing
-                          if (passwordError) setPasswordError('');
+                          if (passwordError) setPasswordError("");
                         }}
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: passwordFieldErrors.currentPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: passwordFieldErrors.currentPassword
+                            ? "1px solid #DC2626"
+                            : "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
                         }}
                       />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                  aria-label={showPasswords.current ? "Hide password" : "Show password"}
-                >
-                  <svg
-                    width="18"
-                    height="16"
-                    viewBox="0 0 18 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{ display: 'block', minWidth: '18px', minHeight: '16px' }}
-                  >
-                    <path
-                      d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
-                      stroke="#9CA3AF"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ stroke: '#9CA3AF' }}
-                    />
-                    <circle
-                      cx="9"
-                      cy="8"
-                      r="3"
-                      stroke="#9CA3AF"
-                      strokeWidth="2"
-                      style={{ stroke: '#9CA3AF' }}
-                    />
-                  </svg>
-                </button>
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() =>
+                          setShowPasswords({
+                            ...showPasswords,
+                            current: !showPasswords.current,
+                          })
+                        }
+                        aria-label={
+                          showPasswords.current
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                      >
+                        <svg
+                          width="18"
+                          height="16"
+                          viewBox="0 0 18 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{
+                            display: "block",
+                            minWidth: "18px",
+                            minHeight: "16px",
+                          }}
+                        >
+                          <path
+                            d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
+                            stroke="#9CA3AF"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ stroke: "#9CA3AF" }}
+                          />
+                          <circle
+                            cx="9"
+                            cy="8"
+                            r="3"
+                            stroke="#9CA3AF"
+                            strokeWidth="2"
+                            style={{ stroke: "#9CA3AF" }}
+                          />
+                        </svg>
+                      </button>
                     </div>
                     {passwordFieldErrors.currentPassword && (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        marginTop: '6px',
-                        color: '#DC2626',
-                        fontSize: '13px'
-                      }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          marginTop: "6px",
+                          color: "#DC2626",
+                          fontSize: "13px",
+                        }}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                         <span>{passwordFieldErrors.currentPassword}</span>
                       </div>
                     )}
                   </div>
 
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '20px',
-                    marginBottom: '20px'
-                  }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "20px",
+                      marginBottom: "20px",
+                    }}
+                  >
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.security.newPassword')} *</label>
-                      <div style={{ position: 'relative' }}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.security.newPassword")} *
+                      </label>
+                      <div style={{ position: "relative" }}>
                         <input
                           id="newPassword"
                           type={showPasswords.new ? "text" : "password"}
                           value={passwordData.newPassword}
                           onChange={(e) => {
-                            setPasswordData({...passwordData, newPassword: e.target.value});
+                            setPasswordData({
+                              ...passwordData,
+                              newPassword: e.target.value,
+                            });
                             // Clear field error when user starts typing
                             if (passwordFieldErrors.newPassword) {
-                              setPasswordFieldErrors({...passwordFieldErrors, newPassword: ''});
+                              setPasswordFieldErrors({
+                                ...passwordFieldErrors,
+                                newPassword: "",
+                              });
                             }
                             // Clear general error when user starts typing
-                            if (passwordError) setPasswordError('');
+                            if (passwordError) setPasswordError("");
                           }}
                           style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            border: passwordFieldErrors.newPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
-                            borderRadius: '8px',
-                            fontSize: '14px'
+                            width: "100%",
+                            padding: "10px 14px",
+                            border: passwordFieldErrors.newPassword
+                              ? "1px solid #DC2626"
+                              : "1px solid #D1D5DB",
+                            borderRadius: "8px",
+                            fontSize: "14px",
                           }}
                         />
                         <button
                           type="button"
                           className="password-toggle"
-                          onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                          onClick={() =>
+                            setShowPasswords({
+                              ...showPasswords,
+                              new: !showPasswords.new,
+                            })
+                          }
                           style={{
-                            position: 'absolute',
-                            right: '12px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
+                            position: "absolute",
+                            right: "12px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
                             // padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
                           <svg
@@ -900,7 +1109,7 @@ const Profile = () => {
                             viewBox="0 0 18 16"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            style={{ display: 'block' }}
+                            style={{ display: "block" }}
                           >
                             <path
                               d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
@@ -920,67 +1129,97 @@ const Profile = () => {
                         </button>
                       </div>
                       {passwordFieldErrors.newPassword && (
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          marginTop: '6px',
-                          color: '#DC2626',
-                          fontSize: '13px'
-                        }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            marginTop: "6px",
+                            color: "#DC2626",
+                            fontSize: "13px",
+                          }}
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                           <span>{passwordFieldErrors.newPassword}</span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.security.confirmPassword')} *</label>
-                      <div style={{ position: 'relative' }}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.security.confirmPassword")} *
+                      </label>
+                      <div style={{ position: "relative" }}>
                         <input
                           id="confirmPassword"
                           type={showPasswords.confirm ? "text" : "password"}
                           value={passwordData.confirmPassword}
                           onChange={(e) => {
-                            setPasswordData({...passwordData, confirmPassword: e.target.value});
+                            setPasswordData({
+                              ...passwordData,
+                              confirmPassword: e.target.value,
+                            });
                             // Clear field error when user starts typing
                             if (passwordFieldErrors.confirmPassword) {
-                              setPasswordFieldErrors({...passwordFieldErrors, confirmPassword: ''});
+                              setPasswordFieldErrors({
+                                ...passwordFieldErrors,
+                                confirmPassword: "",
+                              });
                             }
                             // Clear general error when user starts typing
-                            if (passwordError) setPasswordError('');
+                            if (passwordError) setPasswordError("");
                           }}
                           style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            border: passwordFieldErrors.confirmPassword ? '1px solid #DC2626' : '1px solid #D1D5DB',
-                            borderRadius: '8px',
-                            fontSize: '14px'
+                            width: "100%",
+                            padding: "10px 14px",
+                            border: passwordFieldErrors.confirmPassword
+                              ? "1px solid #DC2626"
+                              : "1px solid #D1D5DB",
+                            borderRadius: "8px",
+                            fontSize: "14px",
                           }}
                         />
                         <button
                           type="button"
                           className="password-toggle"
-                          onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                          onClick={() =>
+                            setShowPasswords({
+                              ...showPasswords,
+                              confirm: !showPasswords.confirm,
+                            })
+                          }
                           style={{
-                            position: 'absolute',
-                            right: '12px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
+                            position: "absolute",
+                            right: "12px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
                             // padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
                           <svg
@@ -989,7 +1228,7 @@ const Profile = () => {
                             viewBox="0 0 18 16"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            style={{ display: 'block' }}
+                            style={{ display: "block" }}
                           >
                             <path
                               d="M1 8s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"
@@ -1009,16 +1248,29 @@ const Profile = () => {
                         </button>
                       </div>
                       {passwordFieldErrors.confirmPassword && (
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          marginTop: '6px',
-                          color: '#DC2626',
-                          fontSize: '13px'
-                        }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            marginTop: "6px",
+                            color: "#DC2626",
+                            fontSize: "13px",
+                          }}
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                           <span>{passwordFieldErrors.confirmPassword}</span>
                         </div>
@@ -1026,25 +1278,29 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end'
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
                     <button
                       type="submit"
                       disabled={passwordLoading}
                       style={{
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: 'none',
-                        background: passwordLoading ? '#93C5FD' : '#3B82F6',
-                        color: '#fff',
-                        cursor: passwordLoading ? 'not-allowed' : 'pointer'
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        border: "none",
+                        background: passwordLoading ? "#93C5FD" : "#3B82F6",
+                        color: "#fff",
+                        cursor: passwordLoading ? "not-allowed" : "pointer",
                       }}
                     >
-                      {passwordLoading ? t('profile.general.updating') : t('profile.security.updatePassword')}
+                      {passwordLoading
+                        ? t("profile.general.updating")
+                        : t("profile.security.updatePassword")}
                     </button>
                   </div>
                 </form>
@@ -1052,80 +1308,90 @@ const Profile = () => {
             </section>
 
             {/* API Key Management */}
-            <section style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('profile.apiKeys.title')}</h2>
+            <section style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: "16px",
+                  margin: "0 0 16px 0",
+                }}
+              >
+                {t("profile.apiKeys.title")}
+              </h2>
 
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px'
-              }}>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#6B7280',
-                  marginBottom: '16px',
-                  lineHeight: '1.6'
-                }}>
-                  {t('profile.apiKeys.description')}
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "12px",
+                  padding: "24px 28px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "#6B7280",
+                    marginBottom: "16px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {t("profile.apiKeys.description")}
                 </p>
 
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  alignItems: 'center',
-                  marginBottom: '16px'
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "center",
+                    marginBottom: "16px",
+                  }}
+                >
                   <input
                     type={showApiKey ? "text" : "password"}
                     value={apiKey || "No API key generated"}
                     readOnly
                     style={{
                       flex: 1,
-                      padding: '10px 14px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontFamily: 'monospace',
-                      background: '#F9FAFB'
+                      padding: "10px 14px",
+                      border: "1px solid #D1D5DB",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontFamily: "monospace",
+                      background: "#F9FAFB",
                     }}
                   />
                   <button
                     onClick={() => setShowApiKey(!showApiKey)}
                     style={{
-                      padding: '10px 16px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: '1px solid #E5E7EB',
-                      background: '#fff',
-                      color: '#374151',
-                      cursor: 'pointer'
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      border: "1px solid #E5E7EB",
+                      background: "#fff",
+                      color: "#374151",
+                      cursor: "pointer",
                     }}
                   >
-                    {showApiKey ? t('common.hide') : t('common.show')}
+                    {showApiKey ? t("common.hide") : t("common.show")}
                   </button>
                   <button
                     onClick={handleCopyApiKey}
                     disabled={!apiKey}
                     style={{
-                      padding: '10px 16px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: '1px solid #E5E7EB',
-                      background: '#fff',
-                      color: '#374151',
-                      cursor: apiKey ? 'pointer' : 'not-allowed'
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      border: "1px solid #E5E7EB",
+                      background: "#fff",
+                      color: "#374151",
+                      cursor: apiKey ? "pointer" : "not-allowed",
                     }}
                   >
-                    {t('common.copy')}
+                    {t("common.copy")}
                   </button>
                 </div>
 
@@ -1133,83 +1399,108 @@ const Profile = () => {
                   onClick={handleRegenerateApiKey}
                   disabled={apiKeyLoading}
                   style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    background: apiKeyLoading ? '#FBBF24' : '#F59E0B',
-                    color: '#fff',
-                    cursor: apiKeyLoading ? 'not-allowed' : 'pointer'
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    border: "none",
+                    background: apiKeyLoading ? "#FBBF24" : "#F59E0B",
+                    color: "#fff",
+                    cursor: apiKeyLoading ? "not-allowed" : "pointer",
                   }}
                 >
-                  {apiKeyLoading ? t('profile.apiKeys.regenerating') : t('profile.apiKeys.regenerateButton')}
+                  {apiKeyLoading
+                    ? t("profile.apiKeys.regenerating")
+                    : t("profile.apiKeys.regenerateButton")}
                 </button>
                 <a
                   href="https://docs.snip.sa"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: '1px solid #3B82F6',
-                    background: '#fff',
-                    color: '#3B82F6',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    border: "1px solid #3B82F6",
+                    background: "#fff",
+                    color: "#3B82F6",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                 >
-                  📖 {t('profile.apiKeys.viewDocs') || 'View API Docs'}
+                  📖 {t("profile.apiKeys.viewDocs") || "View API Docs"}
                 </a>
               </div>
             </section>
 
             {/* Preferences */}
-            <section style={{ marginBottom: '24px' }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '16px',
-                margin: '0 0 16px 0'
-              }}>{t('profile.tabs.preferences')}</h2>
+            <section style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: "16px",
+                  margin: "0 0 16px 0",
+                }}
+              >
+                {t("profile.tabs.preferences")}
+              </h2>
 
-              <div style={{
-                background: '#fff',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                padding: '24px 28px'
-              }}>
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "12px",
+                  padding: "24px 28px",
+                }}
+              >
                 <form onSubmit={handlePreferencesSubmit}>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '16px'
-                  }}>{t('profile.notifications.title')}</h3>
+                  <h3
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      color: "#111827",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {t("profile.notifications.title")}
+                  </h3>
 
-                  <div style={{ marginBottom: '20px' }}>
+                  <div style={{ marginBottom: "20px" }}>
                     <label className="profile-checkbox-label">
                       <input
                         type="checkbox"
                         checked={preferences.emailNotifications}
-                        onChange={(e) => setPreferences({...preferences, emailNotifications: e.target.checked})}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            emailNotifications: e.target.checked,
+                          })
+                        }
                         className="profile-checkbox"
                       />
                       <div className="profile-checkbox-content">
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#111827'
-                        }}>{t('profile.preferences.emailNotifications')}</div>
-                        <div style={{
-                          fontSize: '13px',
-                          color: '#6B7280'
-                        }}>{t('profile.preferences.emailNotificationsDesc')}</div>
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#111827",
+                          }}
+                        >
+                          {t("profile.preferences.emailNotifications")}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            color: "#6B7280",
+                          }}
+                        >
+                          {t("profile.preferences.emailNotificationsDesc")}
+                        </div>
                       </div>
                     </label>
 
@@ -1217,19 +1508,32 @@ const Profile = () => {
                       <input
                         type="checkbox"
                         checked={preferences.marketingEmails}
-                        onChange={(e) => setPreferences({...preferences, marketingEmails: e.target.checked})}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            marketingEmails: e.target.checked,
+                          })
+                        }
                         className="profile-checkbox"
                       />
                       <div className="profile-checkbox-content">
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#111827'
-                        }}>{t('profile.preferences.marketingEmails')}</div>
-                        <div style={{
-                          fontSize: '13px',
-                          color: '#6B7280'
-                        }}>{t('profile.preferences.marketingEmailsDesc')}</div>
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#111827",
+                          }}
+                        >
+                          {t("profile.preferences.marketingEmails")}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            color: "#6B7280",
+                          }}
+                        >
+                          {t("profile.preferences.marketingEmailsDesc")}
+                        </div>
                       </div>
                     </label>
 
@@ -1237,224 +1541,308 @@ const Profile = () => {
                       <input
                         type="checkbox"
                         checked={preferences.weeklyReports}
-                        onChange={(e) => setPreferences({...preferences, weeklyReports: e.target.checked})}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            weeklyReports: e.target.checked,
+                          })
+                        }
                         className="profile-checkbox"
                       />
                       <div className="profile-checkbox-content">
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#111827'
-                        }}>{t('profile.preferences.weeklyReports')}</div>
-                        <div style={{
-                          fontSize: '13px',
-                          color: '#6B7280'
-                        }}>{t('profile.preferences.weeklyReportsDesc')}</div>
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#111827",
+                          }}
+                        >
+                          {t("profile.preferences.weeklyReports")}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            color: "#6B7280",
+                          }}
+                        >
+                          {t("profile.preferences.weeklyReportsDesc")}
+                        </div>
                       </div>
                     </label>
                   </div>
 
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    marginBottom: '16px'
-                  }}>{t('profile.regionalSettings')}</h3>
+                  <h3
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      color: "#111827",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {t("profile.regionalSettings")}
+                  </h3>
 
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '20px',
-                    marginBottom: '20px'
-                  }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "20px",
+                      marginBottom: "20px",
+                    }}
+                  >
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.preferences.language')}</label>
-                      <select
-                        value={preferences.language}
-                        onChange={(e) => setPreferences({...preferences, language: e.target.value})}
+                      <label
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          cursor: 'pointer'
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
                         }}
                       >
-                        <option value="en">{t('common.english')}</option>
-                        <option value="ar">{t('common.arabic')}</option>
+                        {t("profile.preferences.language")}
+                      </label>
+                      <select
+                        value={preferences.language}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            language: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="en">{t("common.english")}</option>
+                        <option value="ar">{t("common.arabic")}</option>
                       </select>
                     </div>
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '8px'
-                      }}>{t('profile.preferences.timezone')}</label>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {t("profile.preferences.timezone")}
+                      </label>
                       <select
                         value={preferences.timezone}
-                        onChange={(e) => setPreferences({...preferences, timezone: e.target.value})}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            timezone: e.target.value,
+                          })
+                        }
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #D1D5DB',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          cursor: 'pointer'
+                          width: "100%",
+                          padding: "10px 14px",
+                          border: "1px solid #D1D5DB",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          cursor: "pointer",
                         }}
                       >
                         <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
                         <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
-                        <option value="Europe/London">Europe/London (GMT)</option>
-                        <option value="America/New_York">America/New York (GMT-5)</option>
+                        <option value="Europe/London">
+                          Europe/London (GMT)
+                        </option>
+                        <option value="America/New_York">
+                          America/New York (GMT-5)
+                        </option>
                       </select>
                     </div>
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end'
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
                     <button
                       type="submit"
                       disabled={preferencesLoading}
                       style={{
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        border: 'none',
-                        background: preferencesLoading ? '#93C5FD' : '#3B82F6',
-                        color: '#fff',
-                        cursor: preferencesLoading ? 'not-allowed' : 'pointer'
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        border: "none",
+                        background: preferencesLoading ? "#93C5FD" : "#3B82F6",
+                        color: "#fff",
+                        cursor: preferencesLoading ? "not-allowed" : "pointer",
                       }}
                     >
-                      {preferencesLoading ? t('profile.general.updating') : `${t('common.save')} ${t('profile.tabs.preferences')}`}
+                      {preferencesLoading
+                        ? t("profile.general.updating")
+                        : `${t("common.save")} ${t("profile.tabs.preferences")}`}
                     </button>
                   </div>
                 </form>
               </div>
             </section>
-
           </div>
         </div>
       </div>
 
       {/* Professional Modal Dialog */}
       {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '24px',
-            maxWidth: '400px',
-            width: '100%',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            animation: 'modalSlideIn 0.2s ease-out'
-          }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "24px",
+              maxWidth: "400px",
+              width: "100%",
+              boxShadow:
+                "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              animation: "modalSlideIn 0.2s ease-out",
+            }}
+          >
             {/* Modal Header */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginBottom: '16px'
-            }}>
-              {modalConfig.type === 'success' ? (
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  backgroundColor: '#DEF7EC',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E9F6E" strokeWidth="2">
-                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "16px",
+              }}
+            >
+              {modalConfig.type === "success" ? (
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    backgroundColor: "#DEF7EC",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0E9F6E"
+                    strokeWidth="2"
+                  >
+                    <path
+                      d="M20 6L9 17l-5-5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
               ) : (
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  backgroundColor: '#FDE8E8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C81E1E" strokeWidth="2">
-                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    backgroundColor: "#FDE8E8",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C81E1E"
+                    strokeWidth="2"
+                  >
+                    <path
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
               )}
               <div style={{ flex: 1 }}>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#111827'
-                }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    color: "#111827",
+                  }}
+                >
                   {modalConfig.title}
                 </h3>
               </div>
             </div>
 
             {/* Modal Body */}
-            <p style={{
-              margin: '0 0 24px 0',
-              fontSize: '14px',
-              color: '#6B7280',
-              lineHeight: '1.5'
-            }}>
+            <p
+              style={{
+                margin: "0 0 24px 0",
+                fontSize: "14px",
+                color: "#6B7280",
+                lineHeight: "1.5",
+              }}
+            >
               {modalConfig.message}
             </p>
 
             {/* Modal Footer */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '12px'
-            }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+              }}
+            >
               <button
                 onClick={() => setShowModal(false)}
                 style={{
-                  padding: '10px 20px',
-                  backgroundColor: modalConfig.type === 'success' ? '#0E9F6E' : '#3B82F6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  padding: "10px 20px",
+                  backgroundColor:
+                    modalConfig.type === "success" ? "#0E9F6E" : "#3B82F6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
                 }}
-                onMouseOver={(e) => e.target.style.opacity = '0.9'}
-                onMouseOut={(e) => e.target.style.opacity = '1'}
+                onMouseOver={(e) => (e.target.style.opacity = "0.9")}
+                onMouseOut={(e) => (e.target.style.opacity = "1")}
               >
-                {t('common.ok') || 'OK'}
+                {t("common.ok") || "OK"}
               </button>
             </div>
           </div>

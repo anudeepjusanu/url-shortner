@@ -148,6 +148,7 @@ app.post('/test-register', async (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/country-codes', require('./routes/countryCodes'));
 app.use('/api/urls', require('./routes/urls'));
 app.use('/api/domains', require('./routes/domains'));
 app.use('/api/analytics', require('./routes/analytics'));

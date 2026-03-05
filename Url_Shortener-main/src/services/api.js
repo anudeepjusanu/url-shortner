@@ -27,6 +27,9 @@ const endpoints = {
   analytics: {
     overview: '/analytics/dashboard',
     urls: '/analytics'
+  },
+  countryCodes: {
+    list: '/country-codes'
   }
 };
 
@@ -392,6 +395,11 @@ export const analyticsAPI = {
   getUrlAnalytics: (id, params) => apiClient.get(`/analytics/${id}`, params),
   getDashboard: (params) => apiClient.get('/analytics/dashboard', params),
   exportAnalytics: (id, params) => apiClient.get(`/analytics/${id}/export`, params)
+};
+
+// Country Codes API methods
+export const countryCodesAPI = {
+  getAll: () => apiClient.get(endpoints.countryCodes.list)
 };
 
 // QR Code API methods

@@ -86,6 +86,17 @@
   direction: ltr;
 }
 
+[dir="rtl"] .country-code-trigger {
+  border-right: none;
+  border-left: 1px solid #d1d5db;
+  direction: ltr;
+}
+
+[dir="rtl"] .country-code-list {
+  left: auto;
+  right: 0;
+}
+
 [dir="rtl"] .phone-input-wrapper input {
   text-align: right;
   padding: 0 14px 0 0;
