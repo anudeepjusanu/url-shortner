@@ -9,6 +9,19 @@ import OTPDialog from "./OTPDialog";
 import logo from '../assets/logo.png';
 import "./Registration.css";
 
+const parseBooleanEnv = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on';
+};
+
+const SHOW_ALL_COUNTRY_CODES = parseBooleanEnv(process.env.REACT_APP_SHOW_ALL_COUNTRY_CODES || 'false');
+
+const getVisibleCountryCodes = (codes = []) => {
+  if (SHOW_ALL_COUNTRY_CODES) return codes;
+  const saudiOnly = codes.filter((country) => country.dialCode === '+966' || country.code === 'SA');
+  return saudiOnly.length > 0 ? saudiOnly : codes;
+};
+
 const Registration = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -29,7 +42,7 @@ const Registration = () => {
   const [formErrors, setFormErrors] = useState({});
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [otpData, setOtpData] = useState(null);
-  const [countryCodes, setCountryCodes] = useState(defaultCountryCodes);
+  const [countryCodes, setCountryCodes] = useState(getVisibleCountryCodes(defaultCountryCodes));
   const [selectedCountryCode, setSelectedCountryCode] = useState('+966');
   const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
@@ -38,11 +51,16 @@ const Registration = () => {
 
   // Try to fetch updated country codes from backend (optional enhancement)
   useEffect(() => {
+    if (SHOW_ALL_COUNTRY_CODES) {
+      setCountryCodes(defaultCountryCodes);
+      return;
+    }
+
     const fetchCountryCodes = async () => {
       try {
         const response = await countryCodesAPI.getAll();
         if (response && response.data && response.data.length > 0) {
-          setCountryCodes(response.data);
+          setCountryCodes(getVisibleCountryCodes(response.data));
         }
       } catch (err) {
         // Silently use embedded defaults – dropdown already works
@@ -601,6 +619,11 @@ const Registration = () => {
               {formErrors.phone && (
                 <span className="field-error">{formErrors.phone}</span>
               )}
+              <div className="phone-support-note" lang={currentLanguage === 'ar' ? 'ar' : 'en'} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
+                {currentLanguage === 'ar'
+                  ? 'للتواصل الآخر support@snip.sa'
+                  : 'Other contact support@snip.sa'}
+              </div>
             </div>
 
             {/* Password Field */}
