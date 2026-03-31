@@ -5,6 +5,7 @@
 
 // Map of known domains and their display names
 const DOMAIN_MAP = {
+  'qa.snip.sa': 'qa.snip.sa',
   'snip.sa': 'snip.sa',
   'www.snip.sa': 'snip.sa',
   'laghu.link': 'laghu.link',
