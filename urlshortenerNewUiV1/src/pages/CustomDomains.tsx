@@ -11,6 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useDomains, useDeleteDomain, useVerifyDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,6 +42,9 @@ const CustomDomains = () => {
   const [showVerified, setShowVerified] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; domain: string }>({
+    open: false, id: "", domain: "",
+  });
 
   const { data: domainsData, isLoading, isError } = useDomains();
   const deleteDomain = useDeleteDomain();
@@ -45,21 +58,19 @@ const CustomDomains = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const handleDelete = async (id: string, domain: string) => {
-    if (confirm(t(`Are you sure you want to delete ${domain}?`, `هل أنت متأكد من حذف ${domain}؟`))) {
-      try {
-        await deleteDomain.mutateAsync(id);
-        toast({
-          title: t("Success", "نجح"),
-          description: t("Domain deleted successfully", "تم حذف الدومين بنجاح"),
-        });
-      } catch (error: any) {
-        toast({
-          title: t("Error", "خطأ"),
-          description: error.message || t("Failed to delete domain", "فشل حذف الدومين"),
-          variant: "destructive",
-        });
-      }
+  const handleDelete = async () => {
+    try {
+      await deleteDomain.mutateAsync(deleteDialog.id);
+      setDeleteDialog({ open: false, id: "", domain: "" });
+      toast({
+        title: t("Domain deleted", "تم حذف الدومين"),
+      });
+    } catch (error: any) {
+      toast({
+        title: t("Error", "خطأ"),
+        description: error.message || t("Failed to delete domain", "فشل حذف الدومين"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -104,18 +115,35 @@ const CustomDomains = () => {
     });
   };
 
-  // const handleCopy = (text: string, id: string) => {
-  //   navigator.clipboard.writeText(text);
-  //   setCopied(id);
-  //   setTimeout(() => setCopied(null), 2000);
-  // };
-
-  // const getDnsRecords = (domain: string) => [
-  //   { type: "CNAME", name: domain, value: "proxy.lovable.app", description: t("Domain pointer", "توجيه الدومين") },
-  // ];
-
   return (
     <DashboardLayout>
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog((d) => ({ ...d, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("Delete Domain", "حذف الدومين")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                `Are you sure you want to delete "${deleteDialog.domain}"? This action cannot be undone.`,
+                `هل أنت متأكد من حذف "${deleteDialog.domain}"؟ لا يمكن التراجع عن هذا الإجراء.`
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("Delete", "حذف")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h1 className="text-lg sm:text-2xl font-display font-bold text-foreground">
           {t("Custom Domains", "الدومينات المخصصة")}
@@ -201,7 +229,7 @@ const CustomDomains = () => {
                     variant="outline" 
                     size="sm" 
                     className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-8"
-                    onClick={() => handleDelete(d._id, d.domain)}
+                    onClick={() => setDeleteDialog({ open: true, id: d._id, domain: d.domain })}
                     disabled={deleteDomain.isPending}
                   >
                     <Trash2 className="w-3 h-3 me-1" />

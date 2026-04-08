@@ -1,44 +1,109 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Copy, BarChart3, Trash2, Link2, ExternalLink, Search, Check, QrCode, Loader2 } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Copy, BarChart3, Trash2, Link2, ExternalLink,
+  Search, Check, QrCode, Loader2,
+} from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useUrls, useDeleteUrl } from "@/hooks/useApi";
+import { myLinksService } from "@/services/jwtService";
+import { useToast } from "@/hooks/use-toast";
 
 const MyLinks = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">("latest");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const { data: urlsResponse, isLoading, isError } = useUrls();
-  const deleteUrl = useDeleteUrl();
+  const [urls, setUrls] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const urls: any[] = urlsResponse?.data?.urls ?? [];
+  // Delete confirmation dialog
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: string | null;
+    shortUrl: string;
+  }>({ open: false, id: null, shortUrl: "" });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleCopy = (shortUrl: string) => {
-    navigator.clipboard.writeText(`https://${shortUrl}`);
-    setCopiedId(shortUrl);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
+  const fetchUrls = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const res = await myLinksService.getAll({ limit: 500 });
+      setUrls(res?.data?.urls ?? []);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const handleDelete = (id: string) => {
-    deleteUrl.mutate(id);
-  };
+  useEffect(() => {
+    fetchUrls();
+  }, [fetchUrls]);
+
+  // Refetch when tab becomes visible again
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden) fetchUrls();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [fetchUrls]);
 
   const getShortUrl = (url: any) => {
     const domain = url.domain || "";
     const code = url.customCode || url.shortCode || "";
     return domain ? `${domain}/${code}` : code;
+  };
+
+  const handleCopy = (url: any) => {
+    const shortUrl = getShortUrl(url);
+    const protocol = shortUrl.startsWith("http") ? "" : "https://";
+    navigator.clipboard.writeText(`${protocol}${shortUrl}`);
+    setCopiedId(shortUrl);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const openDeleteDialog = (url: any) => {
+    setDeleteDialog({ open: true, id: url._id, shortUrl: getShortUrl(url) });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.id) return;
+    setDeletingId(deleteDialog.id);
+    setDeleteDialog((d) => ({ ...d, open: false }));
+    try {
+      await myLinksService.delete(deleteDialog.id);
+      setUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
+      toast({ title: t("Link deleted", "تم حذف الرابط") });
+    } catch (err: any) {
+      toast({
+        title: t("Delete failed", "فشل الحذف"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const filtered = urls
@@ -80,6 +145,33 @@ const MyLinks = () => {
 
   return (
     <DashboardLayout>
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog((d) => ({ ...d, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("Delete Link", "حذف الرابط")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                `Are you sure you want to delete "${deleteDialog.shortUrl}"? This action cannot be undone.`,
+                `هل أنت متأكد من حذف "${deleteDialog.shortUrl}"؟ لا يمكن التراجع عن هذا الإجراء.`
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("Delete", "حذف")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t("My Links", "روابطي")}
@@ -168,7 +260,7 @@ const MyLinks = () => {
                       <p className="text-xs text-primary font-body flex items-center gap-1 mt-1">
                         <ExternalLink size={10} /> {shortUrl}
                         <button
-                          onClick={() => handleCopy(shortUrl)}
+                          onClick={() => handleCopy(url)}
                           className="ml-1 text-muted-foreground hover:text-primary transition-colors"
                         >
                           {copiedId === shortUrl ? <Check size={12} /> : <Copy size={12} />}
@@ -217,10 +309,14 @@ const MyLinks = () => {
                         variant="outline"
                         size="sm"
                         className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(url._id)}
-                        disabled={deleteUrl.isPending}
+                        onClick={() => openDeleteDialog(url)}
+                        disabled={deletingId === url._id}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        {deletingId === url._id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
                       </Button>
                     </div>
                   </div>

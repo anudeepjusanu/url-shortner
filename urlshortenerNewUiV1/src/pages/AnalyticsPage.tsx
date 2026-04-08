@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useUrlAnalytics, useAnalyticsDashboard } from "@/hooks/useApi";
-import { analyticsAPI } from "@/services/api";
+import { analyticsService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Constants ───
@@ -552,8 +552,13 @@ const AnalyticsPage = () => {
     if (!linkId) return;
     setExporting(true);
     try {
-      const blob = await analyticsAPI.exportAnalytics(linkId, { ...apiParams, format: "csv" });
-      const url = URL.createObjectURL(new Blob([blob], { type: "text/csv" }));
+      const exportParams: Record<string, string> = {};
+      if ("period" in apiParams && apiParams.period) exportParams.period = apiParams.period;
+      if ("startDate" in apiParams && apiParams.startDate) exportParams.startDate = apiParams.startDate;
+      if ("endDate" in apiParams && apiParams.endDate) exportParams.endDate = apiParams.endDate;
+
+      const blob = await analyticsService.exportCSV(linkId, exportParams);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `analytics-${linkId}.csv`;

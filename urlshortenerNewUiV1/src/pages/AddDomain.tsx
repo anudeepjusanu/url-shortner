@@ -9,7 +9,7 @@ import { ArrowLeft, Globe, CheckCircle, Copy, Check, AlertCircle, Loader2 } from
 import { useAddDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 
-type Step = "enter" | "verify" | "done";
+type Step = "enter" | "dns" | "done";
 
 const AddDomain = () => {
   const { t } = useLanguage();
@@ -18,10 +18,16 @@ const AddDomain = () => {
   const [step, setStep] = useState<Step>("enter");
   const [domain, setDomain] = useState("");
   const [subdomain, setSubdomain] = useState("");
+  const [domainError, setDomainError] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cnameTarget, setCnameTarget] = useState("snip.sa");
 
   const addDomain = useAddDomain();
+
+  const fullDomain = subdomain.trim()
+    ? `${subdomain.trim()}.${domain.trim()}`
+    : domain.trim();
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -29,20 +35,44 @@ const AddDomain = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const handleSubmitDomain = async () => {
-    const fullDomain = subdomain.trim() ? `${subdomain.trim()}.${domain.trim()}` : domain.trim();
-    
+  const validateDomain = (d: string) => {
+    if (!d.trim()) return t("Domain is required", "الدومين مطلوب");
+    const re = /^([a-zA-Z0-9\u0600-\u06FF-]+\.)+[a-zA-Z\u0600-\u06FF]{2,}$/;
+    if (!re.test(d.trim())) return t("Invalid domain format", "صيغة الدومين غير صحيحة");
+    return "";
+  };
+
+  // Step 1 → Step 2: validate locally, do NOT call API yet
+  const handleContinue = () => {
+    const err = validateDomain(domain);
+    if (err) { setDomainError(err); return; }
+    if (!subdomain.trim()) { setDomainError(t("Subdomain is required", "النطاق الفرعي مطلوب")); return; }
+    setDomainError("");
+    setStep("dns");
+  };
+
+  // Step 2 → call API → Step 3
+  const handleConfirmDNS = async () => {
     setIsSubmitting(true);
     try {
-      const response = await addDomain.mutateAsync({ domain: fullDomain });
-      
-      if (response.success) {
-        toast({
-          title: t("Success", "نجح"),
-          description: t("Domain added successfully", "تم إضافة الدومين بنجاح"),
-        });
-        setStep("done");
-      }
+      const response = await addDomain.mutateAsync({
+        domain: domain.trim(),
+        subdomain: subdomain.trim() || undefined,
+      });
+
+      // Extract CNAME target if returned by backend
+      const target =
+        response?.data?.data?.cnameTarget ||
+        response?.data?.cnameTarget ||
+        response?.cnameTarget ||
+        "snip.sa";
+      setCnameTarget(target);
+
+      toast({
+        title: t("Domain added", "تمت إضافة الدومين"),
+        description: t("Configure your DNS records to verify ownership.", "أضف سجلات DNS للتحقق من ملكيتك."),
+      });
+      setStep("done");
     } catch (error: any) {
       toast({
         title: t("Error", "خطأ"),
@@ -55,14 +85,21 @@ const AddDomain = () => {
   };
 
   const dnsRecords = [
-    { type: "CNAME", name: subdomain.trim() ? `${subdomain.trim()}.${domain.trim()}` : domain.trim(), value: "proxy.lovable.app", description: t("Domain pointer", "توجيه الدومين") },
+    {
+      type: "CNAME",
+      name: fullDomain || t("your-subdomain.domain.sa", "نطاقك-الفرعي.دومينك.sa"),
+      value: cnameTarget,
+      description: t("Domain pointer", "توجيه الدومين"),
+    },
   ];
 
   const steps = [
     { key: "enter", label: t("Enter Domain", "أدخل الدومين") },
-    { key: "verify", label: t("Configure DNS", "إعداد DNS") },
-    { key: "done", label: t("Verified", "تم التحقق") },
+    { key: "dns", label: t("Configure DNS", "إعداد DNS") },
+    { key: "done", label: t("Complete", "اكتمل") },
   ];
+
+  const stepIndex = steps.findIndex((s) => s.key === step);
 
   return (
     <DashboardLayout>
@@ -90,13 +127,13 @@ const AddDomain = () => {
         {/* Steps indicator */}
         <div className="flex items-center gap-1.5 sm:gap-3 mb-5 sm:mb-8">
           {steps.map((s, i) => {
-            const isActive = s.key === step;
-            const isDone =
-              (step === "verify" && i === 0) ||
-              (step === "done" && i <= 1);
+            const isDone = i < stepIndex;
+            const isActive = i === stepIndex;
             return (
               <div key={s.key} className="flex items-center gap-1.5 sm:gap-2">
-                {i > 0 && <div className={`w-4 sm:w-8 h-px ${isDone || isActive ? "bg-primary" : "bg-border"}`} />}
+                {i > 0 && (
+                  <div className={`w-4 sm:w-8 h-px ${isDone || isActive ? "bg-primary" : "bg-border"}`} />
+                )}
                 <div className="flex items-center gap-1 sm:gap-2">
                   <div
                     className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold ${
@@ -109,7 +146,11 @@ const AddDomain = () => {
                   >
                     {isDone ? <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : i + 1}
                   </div>
-                  <span className={`text-[11px] sm:text-sm font-body ${isActive || isDone ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  <span
+                    className={`text-[11px] sm:text-sm font-body ${
+                      isActive || isDone ? "text-foreground font-medium" : "text-muted-foreground"
+                    }`}
+                  >
                     {s.label}
                   </span>
                 </div>
@@ -118,39 +159,36 @@ const AddDomain = () => {
           })}
         </div>
 
-        {/* Step 1: Enter domain */}
+        {/* ── Step 1: Enter domain ── */}
         {step === "enter" && (
           <div className="bg-background border border-border rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5 text-foreground text-xs sm:text-sm">
                 <Globe className="w-3.5 h-3.5" />
-                {t("Domain", "الدومين")} *
+                {t("Root Domain", "الدومين الأساسي")} *
               </Label>
               <Input
                 placeholder={t("e.g. mystore.sa", "مثال: متجري.sa")}
                 value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="h-10 sm:h-12 text-sm"
+                onChange={(e) => { setDomain(e.target.value); setDomainError(""); }}
+                className={`h-10 sm:h-12 text-sm ${domainError ? "border-destructive" : ""}`}
               />
               <p className="text-[11px] sm:text-xs text-muted-foreground font-body">
-                {t(
-                  "Enter your root domain",
-                  "أدخل الدومين الأساسي"
-                )}
+                {t("Enter your root domain without www or subdomain", "أدخل الدومين الأساسي بدون www أو نطاق فرعي")}
               </p>
             </div>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5 text-foreground text-xs sm:text-sm">
                 <Globe className="w-3.5 h-3.5" />
-                {t("Subdomain", "النطاق الفرعي")} *
+                {t("Subdomain Prefix", "بادئة النطاق الفرعي")} *
               </Label>
               <div className="flex items-center gap-0">
                 <Input
                   placeholder={t("e.g. go", "مثال: go")}
                   value={subdomain}
-                  onChange={(e) => setSubdomain(e.target.value)}
-                  className="h-10 sm:h-12 text-sm rounded-e-none border-e-0"
+                  onChange={(e) => { setSubdomain(e.target.value); setDomainError(""); }}
+                  className={`h-10 sm:h-12 text-sm rounded-e-none border-e-0 ${domainError ? "border-destructive" : ""}`}
                 />
                 <div className="h-10 sm:h-12 px-3 flex items-center bg-muted/50 border border-input rounded-e-md text-sm text-muted-foreground font-mono whitespace-nowrap">
                   .{domain.trim() || "domain.sa"}
@@ -158,35 +196,30 @@ const AddDomain = () => {
               </div>
               <p className="text-[11px] sm:text-xs text-muted-foreground font-body">
                 {t(
-                  "Enter a subdomain prefix, the domain is added automatically",
-                  "أدخل بادئة النطاق الفرعي، الدومين يُضاف تلقائيًا"
+                  "Short links will use: ",
+                  "الروابط المختصرة ستستخدم: "
                 )}
+                <span className="text-primary font-mono">
+                  {subdomain.trim() && domain.trim() ? fullDomain : t("subdomain.domain.sa", "نطاق.دومين.sa")}
+                </span>
               </p>
+              {domainError && (
+                <p className="text-xs text-destructive font-body">{domainError}</p>
+              )}
             </div>
 
             <Button
-              onClick={() => {
-                if (domain.trim()) {
-                  handleSubmitDomain();
-                }
-              }}
+              onClick={handleContinue}
               className="h-10 sm:h-12 w-full bg-primary text-primary-foreground text-sm"
-              disabled={!domain.trim() || !subdomain.trim() || isSubmitting}
+              disabled={!domain.trim() || !subdomain.trim()}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                  {t("Adding...", "جاري الإضافة...")}
-                </>
-              ) : (
-                t("Continue", "متابعة")
-              )}
+              {t("Continue", "متابعة")}
             </Button>
           </div>
         )}
 
-        {/* Step 2: DNS configuration */}
-        {step === "verify" && (
+        {/* ── Step 2: DNS configuration ── */}
+        {step === "dns" && (
           <div className="space-y-4 sm:space-y-6">
             <div className="bg-background border border-border rounded-xl p-4 sm:p-6">
               <div className="flex items-start gap-2.5 sm:gap-3 mb-4 sm:mb-5">
@@ -197,8 +230,8 @@ const AddDomain = () => {
                   </h3>
                   <p className="text-[11px] sm:text-xs text-muted-foreground font-body mt-1">
                     {t(
-                      "Add the following DNS records at your domain registrar. DNS propagation can take up to 72 hours.",
-                      "أضف سجلات DNS التالية عند مزود الدومين. قد يستغرق التحديث حتى 72 ساعة."
+                      `Add the following DNS record at your registrar for ${fullDomain}. DNS propagation can take up to 72 hours.`,
+                      `أضف سجل DNS التالي عند مزود ${fullDomain}. قد يستغرق التحديث حتى 72 ساعة.`
                     )}
                   </p>
                 </div>
@@ -244,8 +277,8 @@ const AddDomain = () => {
             <div className="bg-muted/50 border border-border rounded-xl p-3 sm:p-4">
               <p className="text-[11px] sm:text-xs text-muted-foreground font-body leading-relaxed">
                 💡 {t(
-                  "Make sure to add both the root domain and www subdomain. Remove any conflicting A records pointing elsewhere.",
-                  "تأكد من إضافة الدومين الأساسي ونطاق www الفرعي. احذف أي سجلات A قديمة تشير لمكان آخر."
+                  "Make sure to remove any conflicting A or CNAME records for the same subdomain.",
+                  "تأكد من حذف أي سجلات A أو CNAME متعارضة لنفس النطاق الفرعي."
                 )}
               </p>
             </div>
@@ -262,16 +295,21 @@ const AddDomain = () => {
                 {t("I'll Add Later", "سأضيفها لاحقًا")}
               </Button>
               <Button
-                onClick={() => setStep("done")}
+                onClick={handleConfirmDNS}
                 className="flex-1 h-10 sm:h-12 bg-primary text-primary-foreground text-sm"
+                disabled={isSubmitting}
               >
-                {t("I've Added the Records", "أضفت السجلات")}
+                {isSubmitting ? (
+                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Adding Domain...", "جاري الإضافة...")}</>
+                ) : (
+                  t("I've Added the Records", "أضفت السجلات")
+                )}
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Done */}
+        {/* ── Step 3: Done ── */}
         {step === "done" && (
           <div className="bg-background border border-border rounded-xl p-6 sm:p-8 text-center">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -280,22 +318,27 @@ const AddDomain = () => {
             <h3 className="font-display font-bold text-foreground text-base sm:text-lg mb-2">
               {t("Domain Submitted!", "تم إرسال الدومين!")}
             </h3>
-            <p className="text-sm text-muted-foreground font-body mb-2">
-              <span className="text-primary font-semibold">
-                {subdomain.trim() ? `${subdomain.trim()}.${domain.trim()}` : domain.trim()}
-              </span>
-            </p>
+            <p className="text-sm font-semibold text-primary mb-2">{fullDomain}</p>
             <p className="text-xs sm:text-sm text-muted-foreground font-body mb-5 sm:mb-6 max-w-md mx-auto">
               {t(
-                "We're verifying your DNS records. This usually takes a few minutes but can take up to 72 hours. We'll notify you once it's active.",
-                "نتحقق الآن من سجلات DNS. عادةً يستغرق دقائق لكن قد يصل إلى 72 ساعة. سنعلمك عند التفعيل."
+                "We're verifying your DNS records. This usually takes a few minutes but can take up to 72 hours. You can check the status in your domains list.",
+                "نتحقق الآن من سجلات DNS. عادةً يستغرق دقائق لكن قد يصل إلى 72 ساعة. يمكنك متابعة الحالة في قائمة الدومينات."
               )}
             </p>
             <div className="flex gap-2 sm:gap-3 justify-center">
               <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => navigate("/dashboard/domains")}>
                 {t("Go to Domains", "الذهاب للدومينات")}
               </Button>
-              <Button size="sm" className="text-xs sm:text-sm" onClick={() => { setStep("enter"); setDomain(""); }}>
+              <Button
+                size="sm"
+                className="text-xs sm:text-sm"
+                onClick={() => {
+                  setStep("enter");
+                  setDomain("");
+                  setSubdomain("");
+                  setDomainError("");
+                }}
+              >
                 {t("Add Another", "إضافة دومين آخر")}
               </Button>
             </div>

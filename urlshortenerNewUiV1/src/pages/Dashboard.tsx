@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Link2, ArrowRight, Copy, Check, MousePointer, BarChart3, QrCode, ExternalLink, Clock, Loader2 } from "lucide-react";
+import {
+  Link2, ArrowRight, Copy, Check, MousePointer,
+  BarChart3, QrCode, ExternalLink, Clock, Loader2, Globe,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUrlStats, useAnalyticsDashboard, useUrls, useCreateUrl } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
@@ -19,12 +22,80 @@ const Dashboard = () => {
   const [geoTab, setGeoTab] = useState<"countries" | "cities">("countries");
   const [isShortening, setIsShortening] = useState(false);
 
-  // Fetch real data from API
+  // ─── API calls ───────────────────────────────────────────────────────────
   const { data: urlStatsData, isLoading: statsLoading } = useUrlStats();
-  const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsDashboard();
-  const { data: urlsData, isLoading: urlsLoading } = useUrls();
+  const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsDashboard({ period: "30d" });
+  const { data: urlsData, isLoading: urlsLoading } = useUrls({ limit: 500 });
   const createUrl = useCreateUrl();
 
+  // ─── Normalize API data ───────────────────────────────────────────────────
+  // GET /urls/stats → { success, totalLinks, totalClicks, customDomains, data.stats.* }
+  const totalLinks   = urlStatsData?.totalLinks   ?? urlStatsData?.data?.stats?.totalUrls  ?? 0;
+  const totalClicks  = urlStatsData?.totalClicks  ?? urlStatsData?.data?.stats?.totalClicks ?? 0;
+
+  // GET /analytics/dashboard → { success, data: { overview, chartData, topStats } }
+  const overview  = analyticsData?.data?.overview  || {};
+  const topStats  = analyticsData?.data?.topStats  || {};
+  const chartData = analyticsData?.data?.chartData || {};
+
+  const totalQRScans = overview.totalQRScans ?? 0;
+
+  const stats = [
+    { label: t("Total Links", "إجمالي الروابط"),   value: totalLinks.toString(),   icon: Link2 },
+    { label: t("Total Clicks", "إجمالي الضغطات"),  value: totalClicks.toString(),  icon: MousePointer },
+    { label: t("QR Scans", "مسح QR"),              value: totalQRScans.toString(), icon: QrCode },
+  ];
+
+  // Recent links
+  const urls = urlsData?.data?.urls || [];
+  const recentLinks = urls.slice(0, 3).map((url: any) => {
+    const shortCode = url.customCode || url.shortCode || "";
+    const domain = url.domain || "snip.sa";
+    const diffDays = Math.floor((Date.now() - new Date(url.createdAt).getTime()) / 86_400_000);
+    const diffWeeks = Math.floor(diffDays / 7);
+    let timeText =
+      diffDays === 0 ? t("Today", "اليوم") :
+      diffDays === 1 ? t("Yesterday", "أمس") :
+      diffDays < 7   ? t(`${diffDays} days ago`, `قبل ${diffDays} أيام`) :
+      diffWeeks === 1 ? t("1 week ago", "قبل أسبوع") :
+                        t(`${diffWeeks} weeks ago`, `قبل ${diffWeeks} أسابيع`);
+    return {
+      id: url._id,
+      name: url.title || shortCode,
+      short: `${domain}/${shortCode}`,
+      clicks: url.clickCount || 0,
+      time: timeText,
+    };
+  });
+
+  // Geography — API: topStats.countries = [{ country, countryName, clicks }]
+  const totalGeoClicks = overview.totalClicks || 1;
+
+  const topCountries = (topStats.countries || []).slice(0, 3).map((c: any) => ({
+    name: c.countryName || c.country || t("Unknown", "غير معروف"),
+    value: c.clicks || 0,
+    pct: Math.round(((c.clicks || 0) / totalGeoClicks) * 100),
+  }));
+
+  const topCities = (topStats.cities || []).slice(0, 3).map((c: any) => ({
+    name: c.city || t("Unknown", "غير معروف"),
+    value: c.clicks || 0,
+    pct: Math.round(((c.clicks || 0) / totalGeoClicks) * 100),
+  }));
+
+  // Peak days — dashboard analytics only has clicksByDay (no hourly breakdown)
+  const clicksByDay: { date: string; clicks: number }[] = chartData.clicksByDay || [];
+  const topDays = [...clicksByDay]
+    .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+    .slice(0, 4);
+  const maxDayClicks = Math.max(...topDays.map((d) => d.clicks || 0), 1);
+  const peakDays = topDays.map((d) => ({
+    label: new Date(d.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+    clicks: d.clicks || 0,
+    pct: Math.round(((d.clicks || 0) / maxDayClicks) * 100),
+  }));
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────
   const handleCopyLink = (short: string) => {
     navigator.clipboard.writeText(`https://${short}`);
     setCopiedLink(short);
@@ -40,21 +111,16 @@ const Dashboard = () => {
       });
       return;
     }
-
     setIsShortening(true);
     try {
-      const response = await createUrl.mutateAsync({
-        originalUrl: longUrl,
-      });
-
+      const response = await createUrl.mutateAsync({ originalUrl: longUrl });
       if (response.success && response.data) {
-        const shortCode = response.data.shortCode || response.data.customCode;
-        const domain = response.data.domain || "snip.sa";
+        // API returns: { data: { url: { shortCode, customCode, ... }, domain: { fullDomain } } }
+        const urlData = response.data.url || response.data;
+        const shortCode = urlData.customCode || urlData.shortCode;
+        const domain = response.data.domain?.fullDomain || urlData.domain || "snip.sa";
         setShortened(`${domain}/${shortCode}`);
-        toast({
-          title: t("Success", "نجح"),
-          description: t("Link shortened successfully", "تم اختصار الرابط بنجاح"),
-        });
+        setLongUrl("");
       }
     } catch (error: any) {
       toast({
@@ -73,92 +139,9 @@ const Dashboard = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Extract real stats from API
-  const urlStats = urlStatsData?.data || {};
-  const analyticsStats = analyticsData?.data || {};
-  const urls = urlsData?.data?.urls || [];
+  const isLoading = statsLoading || analyticsLoading;
 
-  const stats = [
-    { 
-      label: t("Total Links", "إجمالي الروابط"), 
-      value: urlStats.totalUrls?.toString() || "0", 
-      icon: Link2 
-    },
-    { 
-      label: t("Total Clicks", "إجمالي الضغطات"), 
-      value: urlStats.totalClicks?.toString() || "0", 
-      icon: MousePointer 
-    },
-    { 
-      label: t("QR Scans", "مسح QR"), 
-      value: urlStats.totalQRScans?.toString() || "0", 
-      icon: QrCode 
-    },
-  ];
-
-  // Get recent links from API
-  const recentLinks = urls
-    .slice(0, 3)
-    .map((url: any) => {
-      const shortCode = url.customCode || url.shortCode || "";
-      const domain = url.domain || "snip.sa";
-      const createdAt = new Date(url.createdAt);
-      const now = new Date();
-      const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-      const diffWeeks = Math.floor(diffDays / 7);
-      
-      let timeText = "";
-      if (diffDays === 0) timeText = t("Today", "اليوم");
-      else if (diffDays === 1) timeText = t("Yesterday", "أمس");
-      else if (diffDays < 7) timeText = t(`${diffDays} days ago`, `قبل ${diffDays} أيام`);
-      else if (diffWeeks === 1) timeText = t("1 week ago", "قبل أسبوع");
-      else timeText = t(`${diffWeeks} weeks ago`, `قبل ${diffWeeks} أسابيع`);
-
-      return {
-        id: url._id,
-        name: url.title || shortCode,
-        short: `${domain}/${shortCode}`,
-        clicks: url.clickCount || 0,
-        time: timeText,
-      };
-    });
-
-  // Extract geographic data from analytics
-  const topCountries = (analyticsStats.topCountries || [])
-    .slice(0, 3)
-    .map((country: any) => {
-      const total = analyticsStats.totalClicks || 1;
-      return {
-        name: country.country || t("Unknown", "غير معروف"),
-        value: country.clicks || 0,
-        pct: Math.round((country.clicks / total) * 100),
-      };
-    });
-
-  const topCities = (analyticsStats.topCities || [])
-    .slice(0, 3)
-    .map((city: any) => {
-      const total = analyticsStats.totalClicks || 1;
-      return {
-        name: city.city || t("Unknown", "غير معروف"),
-        value: city.clicks || 0,
-        pct: Math.round((city.clicks / total) * 100),
-      };
-    });
-
-  // Extract peak hours from analytics
-  const peakHours = (analyticsStats.hourlyData || [])
-    .sort((a: any, b: any) => (b.clicks || 0) - (a.clicks || 0))
-    .slice(0, 4)
-    .map((hour: any) => {
-      const maxClicks = Math.max(...(analyticsStats.hourlyData || []).map((h: any) => h.clicks || 0), 1);
-      return {
-        label: `${hour.hour}:00`,
-        clicks: hour.clicks || 0,
-        pct: Math.round((hour.clicks / maxClicks) * 100),
-      };
-    });
-
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <DashboardLayout>
       {/* Shorten URL */}
@@ -178,9 +161,17 @@ const Dashboard = () => {
               className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none py-3 font-body text-sm"
             />
           </div>
-          <Button onClick={handleShorten} className="bg-primary text-primary-foreground font-body shrink-0 px-6">
+          <Button
+            onClick={handleShorten}
+            disabled={isShortening}
+            className="bg-primary text-primary-foreground font-body shrink-0 px-6"
+          >
+            {isShortening ? (
+              <Loader2 size={14} className="animate-spin me-1.5" />
+            ) : (
+              <ArrowRight size={14} className="ms-1.5" />
+            )}
             {t("Shorten", "اختصر")}
-            <ArrowRight size={14} className="ms-1.5" />
           </Button>
         </div>
 
@@ -201,19 +192,25 @@ const Dashboard = () => {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-background border border-border rounded-xl p-5 hover:shadow-md transition-shadow">
+          <div
+            key={stat.label}
+            className="bg-background border border-border rounded-xl p-5 hover:shadow-md transition-shadow"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                 <stat.icon className="w-4 h-4 text-primary" />
               </div>
+              {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
             </div>
-            <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+            <p className="text-2xl font-display font-bold text-foreground">
+              {isLoading ? "—" : stat.value}
+            </p>
             <p className="text-xs text-muted-foreground font-body mt-1">{stat.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Recent links + Top countries/cities */}
+      {/* Recent links + Peak Days + Top Geo */}
       <div className="grid lg:grid-cols-[1fr_280px_280px] gap-6">
         {/* Recent links */}
         <div className="bg-background border border-border rounded-xl overflow-hidden">
@@ -221,91 +218,160 @@ const Dashboard = () => {
             <h2 className="font-display font-semibold text-foreground text-sm">
               {t("Recent Links", "آخر الروابط")}
             </h2>
-            <Button variant="ghost" size="sm" className="text-primary text-xs" onClick={() => navigate("/dashboard/links")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary text-xs"
+              onClick={() => navigate("/dashboard/links")}
+            >
               {t("View All", "عرض الكل")} →
             </Button>
           </div>
-          <div className="divide-y divide-border">
-            {recentLinks.map((link) => (
-              <div key={link.short} className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/40 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-body font-medium text-foreground">{link.name}</p>
-                  <p className="text-xs text-primary font-body flex items-center gap-1 mt-0.5">
-                    <ExternalLink size={10} /> {link.short}
-                    <button onClick={() => handleCopyLink(link.short)} className="ml-1 text-muted-foreground hover:text-primary transition-colors">
-                      {copiedLink === link.short ? <Check size={12} /> : <Copy size={12} />}
-                    </button>
-                  </p>
+
+          {urlsLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : recentLinks.length === 0 ? (
+            <div className="text-center py-10">
+              <Link2 className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground font-body">
+                {t("No links yet", "لا توجد روابط بعد")}
+              </p>
+              <Button
+                size="sm"
+                className="mt-3"
+                onClick={() => navigate("/dashboard/create-link")}
+              >
+                {t("Create your first link", "أنشئ رابطك الأول")}
+              </Button>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {recentLinks.map((link) => (
+                <div
+                  key={link.id}
+                  className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/40 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-body font-medium text-foreground truncate">{link.name}</p>
+                    <p className="text-xs text-primary font-body flex items-center gap-1 mt-0.5">
+                      <ExternalLink size={10} />
+                      <span className="truncate">{link.short}</span>
+                      <button
+                        onClick={() => handleCopyLink(link.short)}
+                        className="ml-1 text-muted-foreground hover:text-primary transition-colors shrink-0"
+                      >
+                        {copiedLink === link.short ? <Check size={12} /> : <Copy size={12} />}
+                      </button>
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0 ml-4 flex items-center gap-3">
+                    <div>
+                      <p className="text-sm font-display font-semibold text-foreground">{link.clicks}</p>
+                      <p className="text-[10px] text-muted-foreground font-body">{t("clicks", "ضغطات")}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-muted-foreground hover:text-primary"
+                      onClick={() => navigate(`/dashboard/analytics/${link.id}`)}
+                    >
+                      <BarChart3 size={14} />
+                    </Button>
+                  </div>
                 </div>
-                <div className="text-right shrink-0 ml-4">
-                  <p className="text-sm font-display font-semibold text-foreground">{link.clicks}</p>
-                  <p className="text-[10px] text-muted-foreground font-body">{t("clicks", "ضغطات")}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Peak Hours */}
+        {/* Peak Days (from clicksByDay — no hourly breakdown in dashboard API) */}
         <div className="bg-background border border-border rounded-xl p-5">
           <div className="flex items-center gap-1.5 mb-4">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <h2 className="font-display font-semibold text-foreground text-sm">
-              {t("Peak Hours", "ساعات الذروة")}
+              {t("Peak Days", "أبرز الأيام")}
             </h2>
           </div>
-          <div className="space-y-3">
-            {peakHours.map((h) => (
-              <div key={h.label}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-body text-foreground">{h.label}</span>
-                  <span className="text-xs font-body text-muted-foreground">
-                    {h.clicks} {t("clicks", "ضغطات")}
-                  </span>
+
+          {analyticsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : peakDays.length === 0 ? (
+            <p className="text-xs text-muted-foreground font-body text-center py-8">
+              {t("No click data yet", "لا توجد بيانات ضغطات بعد")}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {peakDays.map((d) => (
+                <div key={d.label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-body text-foreground">{d.label}</span>
+                    <span className="text-xs font-body text-muted-foreground">
+                      {d.clicks} {t("clicks", "ضغطات")}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${d.pct}%` }} />
+                  </div>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: `${h.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Top countries / cities */}
         <div className="bg-background border border-border rounded-xl p-5">
           <div className="flex items-center gap-1.5 mb-4">
-            <button
-              className={cn(
-                "text-xs font-display font-semibold px-2.5 py-1 rounded-md transition-colors",
-                geoTab === "countries" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-              )}
-              onClick={() => setGeoTab("countries")}
-            >
-              {t("Countries", "الدول")}
-            </button>
-            <button
-              className={cn(
-                "text-xs font-display font-semibold px-2.5 py-1 rounded-md transition-colors",
-                geoTab === "cities" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-              )}
-              onClick={() => setGeoTab("cities")}
-            >
-              {t("Cities", "المدن")}
-            </button>
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <div className="flex gap-1">
+              {(["countries", "cities"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  className={cn(
+                    "text-xs font-display font-semibold px-2.5 py-1 rounded-md transition-colors",
+                    geoTab === tab
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted"
+                  )}
+                  onClick={() => setGeoTab(tab)}
+                >
+                  {tab === "countries" ? t("Countries", "الدول") : t("Cities", "المدن")}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="space-y-4">
-            {(geoTab === "countries" ? topCountries : topCities).map((c) => (
-              <div key={c.name}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-body text-foreground">{c.name}</span>
-                  <span className="text-xs font-body text-muted-foreground">{c.pct}%</span>
+
+          {analyticsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : (geoTab === "countries" ? topCountries : topCities).length === 0 ? (
+            <p className="text-xs text-muted-foreground font-body text-center py-8">
+              {t("No geographic data yet", "لا توجد بيانات جغرافية بعد")}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {(geoTab === "countries" ? topCountries : topCities).map((c) => (
+                <div key={c.name}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-body text-foreground">{c.name}</span>
+                    <span className="text-xs font-body text-muted-foreground">
+                      {c.value} ({c.pct}%)
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${c.pct}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${c.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
