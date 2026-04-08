@@ -111,7 +111,7 @@ const sendRegistrationOTP = async (req, res) => {
 const register = async (req, res) => {
   console.log('Registration request body:', req.body);
   try {
-    const { email, password, firstName, lastName, phone, otp } = req.body;
+    const { email, password, fullName, phone, otp } = req.body;
     const normalizedPhone = normalizePhone(phone);
 
     if (!email) {
@@ -141,7 +141,7 @@ const register = async (req, res) => {
         const dataKey = `registration_data:${email}`;
         
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
-        await cacheSet(dataKey, JSON.stringify({ email, password, firstName, lastName, phone: normalizedPhone }), 5 * 60);
+        await cacheSet(dataKey, JSON.stringify({ email, password, fullName, phone: normalizedPhone }), 5 * 60);
 
         // Determine method based on available contact info
         const method = normalizedPhone ? 'sms' : 'email';
@@ -214,8 +214,9 @@ const register = async (req, res) => {
       const user = new User({
         email: registrationData.email,
         password: registrationData.password,
-        firstName: registrationData.firstName,
-        lastName: registrationData.lastName,
+        // firstName: registrationData.firstName,
+        // lastName: registrationData.lastName,
+        fullName: registrationData.fullName,
         phone: registrationData.phone,
         isEmailVerified: true, // Mark email as verified since OTP is verified
         role: 'admin',

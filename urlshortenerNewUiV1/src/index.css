@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 3-Color Palette: Deep Rose #7a253a + Bright Rose #a83244 + Warm White #FFFBF5 */
+    --navy: 350 52% 31%;
+    --sky: 350 54% 43%;
+    --cream: 36 100% 98%;
+
+    --background: var(--cream);
+    --foreground: var(--navy);
+
+    --card: 30 40% 98%;
+    --card-foreground: var(--navy);
+
+    --popover: 30 40% 98%;
+    --popover-foreground: var(--navy);
+
+    --primary: var(--sky);
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: var(--navy);
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 30 15% 91%;
+    --muted-foreground: 220 20% 45%;
+
+    --accent: var(--sky);
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: var(--sky);
+
+    --radius: 1rem;
+
+    --shadow-soft: 0 2px 8px hsl(20 14% 9% / 0.06);
+    --shadow-card: 0 8px 32px hsl(20 14% 9% / 0.08);
+    --shadow-elevated: 0 16px 48px hsl(20 14% 9% / 0.12);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: var(--sky);
+  }
+
+  /* Lighter theme for internal dashboard pages */
+  .dashboard-light {
+    --background: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: var(--navy);
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--navy);
+    --muted: 220 14% 96%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+  }
+
+  .dashboard-dark {
+    --background: 230 30% 10%;
+    --foreground: 210 40% 98%;
+    --card: 230 28% 13%;
+    --card-foreground: 210 40% 98%;
+    --popover: 230 28% 13%;
+    --popover-foreground: 210 40% 98%;
+    --primary: var(--sky);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--navy);
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 25% 16%;
+    --muted-foreground: 220 15% 55%;
+    --accent: var(--sky);
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 230 20% 20%;
+    --input: 230 20% 20%;
+    --ring: var(--sky);
+    --shadow-soft: 0 4px 20px hsl(0 0% 0% / 0.3);
+    --shadow-card: 0 2px 12px hsl(0 0% 0% / 0.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  .font-arabic {
+    font-family: 'Noto Kufi Arabic', system-ui, sans-serif;
+  }
+
+  .font-arabic h1,
+  .font-arabic h2,
+  .font-arabic h3,
+  .font-arabic h4,
+  .font-arabic h5,
+  .font-arabic h6 {
+    font-family: 'Noto Kufi Arabic', system-ui, sans-serif;
+    line-height: 1.5;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Section backgrounds — cream shades + navy/sky */
+  .section-navy {
+    background-color: hsl(var(--navy));
+    color: hsl(var(--cream));
+  }
+
+  .section-sky {
+    background-color: hsl(var(--sky));
+    color: hsl(0 0% 100%);
+  }
+
+  /* Cream shades — lightest to warmest */
+  .section-cream {
+    background-color: hsl(36 100% 98%);
+    color: hsl(var(--navy));
+  }
+
+  .section-cream-warm {
+    background-color: hsl(33 60% 95%);
+    color: hsl(var(--navy));
+  }
+
+  .section-cream-soft {
+    background-color: hsl(30 40% 96%);
+    color: hsl(var(--navy));
+  }
+
+  .section-cream-rose {
+    background-color: hsl(20 50% 96%);
+    color: hsl(var(--navy));
+  }
+
+  .section-cream-blush {
+    background-color: hsl(15 45% 95%);
+    color: hsl(var(--navy));
+  }
+
+  .gradient-kaleidoscope {
+    background: linear-gradient(135deg, hsl(var(--navy)), hsl(var(--sky)), hsl(var(--navy)));
+  }
+}
