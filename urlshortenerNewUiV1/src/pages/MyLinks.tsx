@@ -47,7 +47,7 @@ const MyLinks = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const res = await myLinksService.getAll({ limit: 500 });
+      const res = await myLinksService.getAll({ limit: 100 });
       setUrls(res?.data?.urls ?? []);
     } catch {
       setIsError(true);

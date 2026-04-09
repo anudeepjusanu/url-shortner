@@ -25,7 +25,7 @@ const Dashboard = () => {
   // ─── API calls ───────────────────────────────────────────────────────────
   const { data: urlStatsData, isLoading: statsLoading } = useUrlStats();
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsDashboard({ period: "30d" });
-  const { data: urlsData, isLoading: urlsLoading } = useUrls({ limit: 500 });
+  const { data: urlsData, isLoading: urlsLoading } = useUrls({ limit: 100 });
   const createUrl = useCreateUrl();
 
   // ─── Normalize API data ───────────────────────────────────────────────────

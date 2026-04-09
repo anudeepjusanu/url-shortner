@@ -87,7 +87,7 @@ const UrlManagement = () => {
     setIsError(false);
     try {
       const [urlsRes, statsRes] = await Promise.all([
-        adminService.getUrls({ limit: 200 }),
+        adminService.getUrls({ limit: 100 }),
         adminService.getStats(),
       ]);
       setUrls(urlsRes?.data?.urls ?? []);
