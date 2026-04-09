@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<any>;
+  login: (credentials: { email?: string; password?: string; phoneNumber?: string; otp?: string }) => Promise<any>;
   register: (userData: any) => Promise<any>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (credentials: { email: string; password: string }) => {
+  const login = async (credentials: { email?: string; password?: string; phoneNumber?: string; otp?: string }) => {
     try {
       const response = await authAPI.login(credentials);
       

@@ -521,13 +521,18 @@ const getDashboardAnalytics = async (req, res) => {
     ]);
     
     const totalUrls = urls.length;
+    // Use all-time counters from Url model (consistent with uniqueClicks and qrScans below)
+    const totalClicksAllTime = urls.reduce((sum, url) => sum + (url.clickCount || 0), 0);
     const totalUniqueClicks = urls.reduce((sum, url) => sum + (url.uniqueClickCount || 0), 0);
     const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
     const totalUniqueQRScans = urls.reduce((sum, url) => sum + (url.uniqueQrScanCount || 0), 0);
-    
+    // Period-filtered click count (from analytics_clicks collection, for chart accuracy)
+    const periodClicks = totalClicks;
+
     console.log('📊 Dashboard Analytics Results:', {
       totalUrls,
-      totalClicks,
+      totalClicksAllTime,
+      periodClicks,
       totalUniqueClicks,
       totalQRScans,
       clicksByDayCount: clicksByDay.length,
@@ -539,12 +544,13 @@ const getDashboardAnalytics = async (req, res) => {
       data: {
         overview: {
           totalUrls,
-          totalClicks,
+          totalClicks: totalClicksAllTime,
+          periodClicks,
           totalUniqueClicks,
           totalQRScans,
           totalUniqueQRScans,
           totalCustomDomains,
-          averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0
+          averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicksAllTime / totalUrls) : 0
         },
         chartData: {
           clicksByDay: clicksByDay.map(item => ({

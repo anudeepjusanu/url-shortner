@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2 } from "lucide-react";
+import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,7 @@ const Login = () => {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [otpData, setOtpData] = useState<any>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSendEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,14 +226,23 @@ const Login = () => {
                         {t("Forgot password?", "نسيت كلمة المرور؟")}
                       </Link>
                     </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-11"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-11 pe-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
                     <p className="text-xs text-muted-foreground font-body">
                       {t("We'll send a verification code after confirming your email and password", "راح نرسل رمز تحقق بعد تأكيد البريد وكلمة المرور")}
                     </p>

@@ -29,16 +29,18 @@ const Dashboard = () => {
   const createUrl = useCreateUrl();
 
   // ─── Normalize API data ───────────────────────────────────────────────────
-  // GET /urls/stats → { success, totalLinks, totalClicks, customDomains, data.stats.* }
+  // GET /urls/stats → { success, totalLinks, totalClicks, totalQRScans, customDomains, data.stats.* }
   const totalLinks   = urlStatsData?.totalLinks   ?? urlStatsData?.data?.stats?.totalUrls  ?? 0;
   const totalClicks  = urlStatsData?.totalClicks  ?? urlStatsData?.data?.stats?.totalClicks ?? 0;
+  const totalQRScansFromStats = urlStatsData?.totalQRScans ?? urlStatsData?.data?.stats?.totalQRScans ?? null;
 
   // GET /analytics/dashboard → { success, data: { overview, chartData, topStats } }
   const overview  = analyticsData?.data?.overview  || {};
   const topStats  = analyticsData?.data?.topStats  || {};
   const chartData = analyticsData?.data?.chartData || {};
 
-  const totalQRScans = overview.totalQRScans ?? 0;
+  // Prefer all-time QR scans from /urls/stats if available, fall back to overview
+  const totalQRScans = totalQRScansFromStats ?? overview.totalQRScans ?? 0;
 
   const stats = [
     { label: t("Total Links", "إجمالي الروابط"),   value: totalLinks.toString(),   icon: Link2 },
