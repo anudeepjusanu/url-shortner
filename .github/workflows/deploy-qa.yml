@@ -35,7 +35,7 @@ jobs:
           mkdir -p deploy-temp/frontend
           cp -r src deploy-temp/
           cp -r scripts deploy-temp/
-          cp -r urlshortenerNewUiV1/build deploy-temp/frontend/
+          cp -r urlshortenerNewUiV1/dist deploy-temp/frontend/
           cp package*.json deploy-temp/
           mkdir -p deploy-temp/logs
           # Copy GA credentials if present
@@ -86,7 +86,7 @@ jobs:
 
             # Restart frontend serve (CRA builds to build/, not dist/)
             pm2 delete url-shortener-qa-ui || true
-            pm2 serve frontend/build 3021 --name url-shortener-qa-ui --spa
+            pm2 serve frontend/dist 3021 --name url-shortener-qa-ui --spa
 
             # Save PM2 state
             pm2 save --force
