@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
   },
   css: {
     postcss: {
-      plugins: [require("tailwindcss"), require("autoprefixer")],
+      plugins: [require("tailwindcss")("./tailwind.config.ts"), require("autoprefixer")],
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
