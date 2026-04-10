@@ -27,7 +27,7 @@ jobs:
       - name: Build frontend
         run: cd urlshortenerNewUiV1 && npm run build
         env:
-          REACT_APP_API_URL: https://qa.snip.sa/api
+          VITE_API_URL: https://qa.snip.sa/api
           REACT_APP_DEFAULT_DOMAIN: qa.snip.sa
 
       - name: Create deployment package
