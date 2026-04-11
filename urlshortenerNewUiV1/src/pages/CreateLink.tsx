@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, ArrowRight, Save, QrCode, Pencil, Plus, Globe, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag } from "lucide-react";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,12 +21,20 @@ const CreateLink = () => {
   const [selectedDomainId, setSelectedDomainId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // UTM state
+  const [utmEnabled, setUtmEnabled] = useState(false);
+  const [utmSource, setUtmSource] = useState("");
+  const [utmMedium, setUtmMedium] = useState("");
+  const [utmCampaign, setUtmCampaign] = useState("");
+  const [utmTerm, setUtmTerm] = useState("");
+  const [utmContent, setUtmContent] = useState("");
+
   // Fetch available domains from API
   const { data: domainsData, isLoading: domainsLoading, isError: domainsError } = useAvailableDomains();
   const createUrl = useCreateUrl();
 
   // Extract domains array from response
-  const availableDomains = Array.isArray(domainsData?.data?.domains) 
+  const availableDomains = Array.isArray(domainsData?.data?.domains)
     ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
     : [];
 
@@ -52,6 +60,25 @@ const CreateLink = () => {
       });
     }
   }, [domainsError, toast, t]);
+
+  // Build live destination URL preview with UTM params appended
+  const utmPreviewUrl = useMemo(() => {
+    if (!utmEnabled || !originalUrl.trim()) return null;
+    const hasAnyUtm = utmSource.trim() || utmMedium.trim() || utmCampaign.trim() || utmTerm.trim() || utmContent.trim();
+    if (!hasAnyUtm) return null;
+    try {
+      const url = new URL(originalUrl.trim());
+      const params = url.searchParams;
+      if (utmSource.trim()) params.set("utm_source", utmSource.trim());
+      if (utmMedium.trim()) params.set("utm_medium", utmMedium.trim());
+      if (utmCampaign.trim()) params.set("utm_campaign", utmCampaign.trim());
+      if (utmTerm.trim()) params.set("utm_term", utmTerm.trim());
+      if (utmContent.trim()) params.set("utm_content", utmContent.trim());
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }, [utmEnabled, originalUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent]);
 
   const handleSubmit = async () => {
     if (!originalUrl.trim()) {
@@ -95,6 +122,19 @@ const CreateLink = () => {
 
       if (generateQR) {
         payload.generateQR = true;
+      }
+
+      // Only include UTM params if the toggle is on at save time (req 8)
+      if (utmEnabled) {
+        const utm: Record<string, string> = {};
+        if (utmSource.trim()) utm.source = utmSource.trim();
+        if (utmMedium.trim()) utm.medium = utmMedium.trim();
+        if (utmCampaign.trim()) utm.campaign = utmCampaign.trim();
+        if (utmTerm.trim()) utm.term = utmTerm.trim();
+        if (utmContent.trim()) utm.content = utmContent.trim();
+        if (Object.keys(utm).length > 0) {
+          payload.utm = utm;
+        }
       }
 
       const response = await createUrl.mutateAsync(payload);
@@ -208,7 +248,7 @@ const CreateLink = () => {
             <p className="text-xs text-muted-foreground font-body">
               {t("Your Short Link:", "رابطك القصير:")}{" "}
               <span className="text-primary">
-                {selectedDomainId 
+                {selectedDomainId
                   ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.shortUrl || 'https://...'}/${customAlias || "your-code"}`
                   : `https://.../${customAlias || "your-code"}`
                 }
@@ -233,7 +273,7 @@ const CreateLink = () => {
             </Label>
             <div className="flex">
               <div className="flex items-center px-3 bg-muted border border-e-0 border-border rounded-s-md text-sm text-muted-foreground font-body">
-                {selectedDomainId 
+                {selectedDomainId
                   ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.fullDomain || '...'}/`
                   : '.../'}
               </div>
@@ -270,9 +310,129 @@ const CreateLink = () => {
             </div>
           </div>
 
+          {/* UTM Parameters toggle */}
+          <div className="border border-border rounded-xl p-5 bg-background">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Tag className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-body font-medium text-foreground">
+                    {t("Add UTM Parameters", "إضافة معاملات UTM")}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-body">
+                    {t("Track campaign performance in analytics", "تتبع أداء الحملة في التحليلات")}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={utmEnabled}
+                onCheckedChange={setUtmEnabled}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {/* UTM Fields — visible only when toggle is on (req 4, 6) */}
+            {utmEnabled && (
+              <div className="mt-5 pt-5 border-t border-border space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* UTM Source */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-foreground font-body">
+                      {t("Source", "المصدر")}{" "}
+                      <span className="text-muted-foreground text-xs font-mono">utm_source</span>
+                    </Label>
+                    <Input
+                      placeholder={t("google, newsletter, twitter", "google, newsletter, twitter")}
+                      value={utmSource}
+                      onChange={(e) => setUtmSource(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* UTM Medium */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-foreground font-body">
+                      {t("Medium", "الوسيلة")}{" "}
+                      <span className="text-muted-foreground text-xs font-mono">utm_medium</span>
+                    </Label>
+                    <Input
+                      placeholder={t("cpc, email, social", "cpc, email, social")}
+                      value={utmMedium}
+                      onChange={(e) => setUtmMedium(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* UTM Campaign */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-foreground font-body">
+                      {t("Campaign", "الحملة")}{" "}
+                      <span className="text-muted-foreground text-xs font-mono">utm_campaign</span>
+                    </Label>
+                    <Input
+                      placeholder={t("spring_sale, product_launch", "spring_sale, product_launch")}
+                      value={utmCampaign}
+                      onChange={(e) => setUtmCampaign(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* UTM Term */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm text-foreground font-body">
+                      {t("Term", "الكلمة المفتاحية")}{" "}
+                      <span className="text-muted-foreground text-xs font-mono">utm_term</span>
+                    </Label>
+                    <Input
+                      placeholder={t("running+shoes, seo+keyword", "running+shoes, seo+keyword")}
+                      value={utmTerm}
+                      onChange={(e) => setUtmTerm(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+
+                {/* UTM Content — full width */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm text-foreground font-body">
+                    {t("Content", "المحتوى")}{" "}
+                    <span className="text-muted-foreground text-xs font-mono">utm_content</span>
+                  </Label>
+                  <Input
+                    placeholder={t("logolink, textlink, banner_top", "logolink, textlink, banner_top")}
+                    value={utmContent}
+                    onChange={(e) => setUtmContent(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Live destination URL preview */}
+                {utmPreviewUrl && (
+                  <div className="p-3 rounded-lg bg-muted/60 border border-border">
+                    <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                      {t("Destination URL Preview", "معاينة رابط الوجهة")}
+                    </p>
+                    <p className="text-xs font-mono text-foreground break-all leading-relaxed">
+                      {utmPreviewUrl}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground font-body">
+                  {t(
+                    "UTM parameters will be appended to the destination URL when the link is visited.",
+                    "ستضاف معاملات UTM إلى رابط الوجهة عند زيارة الرابط."
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <Button 
+            <Button
               className="flex-1 h-12 text-base bg-primary text-primary-foreground"
               onClick={handleSubmit}
               disabled={isSubmitting || !originalUrl.trim()}

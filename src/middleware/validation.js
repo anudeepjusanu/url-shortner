@@ -156,6 +156,31 @@ const validateUrlCreation = [
     .optional()
     .isIn([301, 302, 307])
     .withMessage('Redirect type must be 301, 302, or 307'),
+  body('utm.source')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM source cannot exceed 100 characters'),
+  body('utm.medium')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM medium cannot exceed 100 characters'),
+  body('utm.campaign')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM campaign cannot exceed 200 characters'),
+  body('utm.term')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM term cannot exceed 200 characters'),
+  body('utm.content')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM content cannot exceed 200 characters'),
   handleValidationErrors
 ];
 
