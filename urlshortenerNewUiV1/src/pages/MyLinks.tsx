@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Copy, BarChart3, Trash2, Link2, ExternalLink,
-  Search, Check, QrCode, Loader2,
+  Search, Check, QrCode, Loader2, Tag,
 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -269,6 +269,12 @@ const MyLinks = () => {
                       <p className="text-[11px] text-muted-foreground font-body truncate mt-0.5">
                         {dest}
                       </p>
+                      {url.utm && (url.utm.source || url.utm.medium || url.utm.campaign) && (
+                        <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-body font-medium">
+                          <Tag className="w-2.5 h-2.5" />
+                          UTM
+                        </span>
+                      )}
                     </div>
                   </div>
 
