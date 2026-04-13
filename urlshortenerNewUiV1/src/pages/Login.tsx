@@ -10,16 +10,23 @@ import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff } from "
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
+const COUNTRY_OPTIONS = [
+  { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
+  { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+];
+
 const Login = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithPhone } = useAuth();
   const { toast } = useToast();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMethod, setAuthMethod] = useState<"email" | "otp">("email");
   const [phone, setPhone] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
+  const [countryOpen, setCountryOpen] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -67,9 +74,9 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const phoneNumber = `+966${phone}`;
-      const response = await login({ phoneNumber });
-      
+      const phoneNumber = `${selectedCountry.dialCode}${phone}`;
+      const response = await loginWithPhone({ phoneNumber });
+
       if (response.otpRequired) {
         setOtpSent(true);
         setOtpData(response.otpData);
@@ -91,18 +98,18 @@ const Login = () => {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length < 6) return;
+    if (otp.length < 4) return;
 
     setIsLoading(true);
     try {
-      let response;
+      let response: any;
       if (authMethod === "email") {
         response = await login({ email, password, otp });
       } else {
-        const phoneNumber = `+966${phone}`;
-        response = await login({ phoneNumber, otp });
+        const phoneNumber = `${selectedCountry.dialCode}${phone}`;
+        response = await loginWithPhone({ phoneNumber, otp });
       }
-      
+
       if (response.success) {
         toast({
           title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
@@ -267,9 +274,9 @@ const Login = () => {
                       id="email-otp"
                       type="text"
                       inputMode="numeric"
-                      placeholder="000000"
+                      placeholder="0000"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       className="h-11 text-center text-lg tracking-[0.5em] font-display"
                       dir="ltr"
                     />
@@ -278,7 +285,7 @@ const Login = () => {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={otp.length < 6 || isLoading}>
+                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={otp.length < 4 || isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -307,15 +314,49 @@ const Login = () => {
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">{t("Phone Number", "رقم الجوال")}</Label>
                     <div className="flex gap-2">
-                      <div className="flex items-center justify-center px-3 h-11 bg-muted border border-border rounded-md text-sm font-body text-muted-foreground shrink-0">
-                        +966
+                      {/* Country code selector */}
+                      <div className="relative shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setCountryOpen(!countryOpen)}
+                          className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-muted/50 text-sm font-body text-foreground hover:bg-muted transition-colors"
+                        >
+                          <span>{selectedCountry.flag}</span>
+                          <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
+                          <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {countryOpen && (
+                          <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                            {COUNTRY_OPTIONS.map((c) => (
+                              <button
+                                key={c.dialCode}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCountry(c);
+                                  setPhone("");
+                                  setCountryOpen(false);
+                                }}
+                                className={cn(
+                                  "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-left",
+                                  selectedCountry.dialCode === c.dialCode && "bg-muted"
+                                )}
+                              >
+                                <span>{c.flag}</span>
+                                <span className="text-muted-foreground">{c.dialCode}</span>
+                                <span className="text-foreground">{c.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <Input
                         id="phone"
                         type="tel"
-                        placeholder="5XXXXXXXX"
+                        placeholder={selectedCountry.placeholder}
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits))}
                         className="h-11"
                         dir="ltr"
                       />
@@ -325,7 +366,7 @@ const Login = () => {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={phone.length < 9 || isLoading}>
+                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={phone.length < selectedCountry.maxDigits || isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -344,18 +385,18 @@ const Login = () => {
                       id="otp"
                       type="text"
                       inputMode="numeric"
-                      placeholder="000000"
+                      placeholder="0000"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       className="h-11 text-center text-lg tracking-[0.5em] font-display"
                       dir="ltr"
                     />
                     <p className="text-xs text-muted-foreground font-body">
-                      {t(`Code sent to +966${phone}`, `تم إرسال الرمز إلى 966${phone}+`)}
+                      {t(`Code sent to ${selectedCountry.dialCode}${phone}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phone}`)}
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={otp.length < 6 || isLoading}>
+                  <Button type="submit" className="w-full h-11 text-base bg-primary text-primary-foreground" disabled={otp.length < 4 || isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />

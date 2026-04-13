@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Link2, BarChart3, QrCode, ArrowRight, Globe, ShieldCheck, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
 
 const BASE_URL = "https://snip.sa/api";
 
@@ -375,6 +377,11 @@ const ApiDocs = () => {
   const navigate = useNavigate();
   const [copiedIdx, setCopiedIdx] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    window.open(MINTLIFY_DOCS_URL, "_blank", "noopener,noreferrer");
+    navigate("/dashboard", { replace: true });
+  }, [navigate]);
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);

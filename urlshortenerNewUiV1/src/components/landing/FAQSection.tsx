@@ -34,7 +34,7 @@ const FAQSection = () => {
   ];
 
   return (
-    <section className="section-cream-warm py-28 md:py-36">
+    <section id="faq" className="section-cream-warm py-28 md:py-36">
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
           <motion.div

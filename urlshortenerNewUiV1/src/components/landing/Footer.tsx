@@ -1,10 +1,20 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-dark.png";
 
 const Footer = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (id: string) => {
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/", { state: { scrollTo: id } });
+    }
+  };
 
   return (
     <footer className="section-navy py-10 md:py-14">
@@ -22,28 +32,68 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Product", "المنتج")}</h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="#features" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Features", "الميزات")}</a></li>
-              <li><a href="#developers" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Documentation", "وثائق الـ API")}</a></li>
+              <li>
+                <button onClick={() => scrollToSection("features")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  {t("Features", "الميزات")}
+                </button>
+              </li>
+              <li>
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                  {t("API Documentation", "وثائق الـ API")}
+                </a>
+              </li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("For Developers", "للمطورين")}</h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Documentation", "وثائق الـ API")}</a></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Code Examples", "أمثلة بالأكواد")}</a></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">SDKs (Node, Python, PHP)</a></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">Webhooks</a></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Status", "حالة النظام")}</a></li>
+              <li>
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                  {t("API Documentation", "وثائق الـ API")}
+                </a>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  {t("Code Examples", "أمثلة بالأكواد")}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  SDKs (Node, Python, PHP)
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  Webhooks
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  {t("API Status", "حالة النظام")}
+                </button>
+              </li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Resources", "الموارد")}</h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Help Center", "مركز المساعدة")}</a></li>
-              <li><Link to="/blog" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Blog", "المدونة")}</Link></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("FAQ", "أسئلة شائعة")}</a></li>
+              <li>
+                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  {t("Help Center", "مركز المساعدة")}
+                </button>
+              </li>
+              <li>
+                <Link to="/blog" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                  {t("Blog", "المدونة")}
+                </Link>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                  {t("FAQ", "أسئلة شائعة")}
+                </button>
+              </li>
             </ul>
           </div>
 

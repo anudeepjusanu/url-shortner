@@ -163,6 +163,18 @@ const BlogPost = () => {
               {title}
             </h1>
 
+            {/* Cover image */}
+            {post.image && (
+              <div className="rounded-2xl overflow-hidden mb-10 shadow-md">
+                <img
+                  src={post.image}
+                  alt={title}
+                  className="w-full h-64 md:h-80 object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
             {/* Article content */}
             <div className="prose-custom">
               {renderContent(content)}

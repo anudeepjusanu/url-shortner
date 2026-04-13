@@ -19,17 +19,28 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import logoIcon from "@/assets/logo.png";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+interface NavItemConfig {
+  label: string;
+  icon: any;
+  path: string;
+  external?: boolean;
+}
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang } = useLanguage();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isSuperAdmin = user?.role === "super_admin";
 
   const toggleLang = () => setLang(lang === "en" ? "ar" : "en");
 
@@ -49,29 +60,45 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("Custom Domains", "الدومينات"), icon: Globe, path: "/dashboard/domains" },
   ];
 
-  const accountNav = [
+  const accountNav: NavItemConfig[] = [
     { label: t("Profile", "الملف الشخصي"), icon: User, path: "/dashboard/profile" },
-    { label: t("API Docs", "مستندات API"), icon: FileText, path: "/dashboard/api" },
+    { label: t("API Docs", "مستندات API"), icon: FileText, path: "https://docs.snip.sa", external: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
-  const NavItem = ({ item }: { item: { label: string; icon: any; path: string } }) => (
-    <Link
-      to={item.path}
-      onClick={() => setSidebarOpen(false)}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all duration-200",
-        isActive(item.path)
-          ? "bg-primary text-primary-foreground font-medium"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      )}
-    >
-      <item.icon className="w-4 h-4 shrink-0" />
-      <span>{item.label}</span>
-      {isActive(item.path) && <ChevronRight className="w-3 h-3 ms-auto" />}
-    </Link>
-  );
+  const NavItem = ({ item }: { item: NavItemConfig }) => {
+    if (item.external) {
+      return (
+        <a
+          href={item.path}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all duration-200 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <item.icon className="w-4 h-4 shrink-0" />
+          <span>{item.label}</span>
+        </a>
+      );
+    }
+    return (
+      <Link
+        to={item.path}
+        onClick={() => setSidebarOpen(false)}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all duration-200",
+          isActive(item.path)
+            ? "bg-primary text-primary-foreground font-medium"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        )}
+      >
+        <item.icon className="w-4 h-4 shrink-0" />
+        <span>{item.label}</span>
+        {isActive(item.path) && <ChevronRight className="w-3 h-3 ms-auto" />}
+      </Link>
+    );
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -88,16 +115,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </div>
 
-        <div>
-          <p className="px-3 mb-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">
-            {t("Admin", "الإدارة")}
-          </p>
-          <div className="space-y-1">
-            {adminNav.map((item) => (
-              <NavItem key={item.path} item={item} />
-            ))}
+        {isSuperAdmin && (
+          <div>
+            <p className="px-3 mb-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">
+              {t("Admin", "الإدارة")}
+            </p>
+            <div className="space-y-1">
+              {adminNav.map((item) => (
+                <NavItem key={item.path} item={item} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <p className="px-3 mb-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">
@@ -166,7 +195,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </Button>
           <Link to="/dashboard" className="flex items-center gap-1">
             <img src={logoIcon} alt="forsa" className="h-8 md:h-10" />
-            <span className="font-display font-bold text-lg text-foreground">forsa</span>
+            <span className="font-display font-bold text-lg text-foreground">FORSA</span>
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-3">

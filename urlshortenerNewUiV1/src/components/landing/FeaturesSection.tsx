@@ -2,6 +2,7 @@ import { Link2, QrCode, Globe, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { LinksPreview, QRCodesPreview, DomainsPreview } from "./PreviewMockups";
 
 const FeaturesSection = () => {
@@ -60,9 +61,11 @@ const FeaturesSection = () => {
                   <p className="font-body text-lg leading-relaxed mb-8 max-w-md text-[hsl(var(--navy))]/65">
                     {feature.description}
                   </p>
-                  <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all">
-                    {t("Get started for free", "ابدأ مجاناً")}
-                    <ArrowRight size={16} className="ms-1.5" />
+                  <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>
+                    <Link to="/signup">
+                      {t("Get started for free", "ابدأ مجاناً")}
+                      <ArrowRight size={16} className="ms-1.5" />
+                    </Link>
                   </Button>
                 </motion.div>
 

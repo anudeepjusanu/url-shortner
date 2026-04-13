@@ -8,6 +8,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
+import { cn } from "@/lib/utils";
+
+const COUNTRY_OPTIONS = [
+  { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9,  placeholder: "5XXXXXXXX"  },
+  // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+];
 
 // Password strength rules matching backend validateRegistration
 const passwordRules = [
@@ -26,6 +32,8 @@ const Signup = () => {
   const [fullName, setFullName]   = useState("");
   const [email, setEmail]         = useState("");
   const [phone, setPhone]         = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
+  const [countryOpen, setCountryOpen]         = useState(false);
   const [password, setPassword]   = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword]       = useState(false);
@@ -54,7 +62,7 @@ const Signup = () => {
       return t("Full name must be at least 2 characters", "الاسم الكامل يجب أن يكون حرفين على الأقل");
     if (!email.trim())
       return t("Email is required", "البريد الإلكتروني مطلوب");
-    if (!phone.trim() || phone.trim().length < 9)
+    if (!phone.trim() || phone.trim().length < selectedCountry.maxDigits)
       return t("Phone number is required", "رقم الجوال مطلوب");
     if (!allRulesMet)
       return t("Password does not meet requirements", "كلمة المرور لا تستوفي المتطلبات");
@@ -79,7 +87,7 @@ const Signup = () => {
         email: email.trim(),
         password,
       };
-      payload.phone = phone.trim();
+      payload.phone = selectedCountry.dialCode + phone.trim();
 
       const response = await register(payload);
 
@@ -114,7 +122,7 @@ const Signup = () => {
   // ── Second submit: verify OTP ──
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length < 6) return;
+    if (otp.length < 4) return;
 
     setIsLoading(true);
     try {
@@ -124,7 +132,7 @@ const Signup = () => {
         password,
         otp,
       };
-      payload.phone = phone.trim();
+      payload.phone = selectedCountry.dialCode + phone.trim();
 
       const response = await register(payload);
 
@@ -211,12 +219,12 @@ const Signup = () => {
                   id="otp"
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder="0000"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))}
                   className="h-12 text-center text-xl tracking-[0.6em] font-display"
                   dir="ltr"
-                  maxLength={6}
+                  maxLength={4}
                   autoFocus
                   required
                 />
@@ -225,7 +233,7 @@ const Signup = () => {
               <Button
                 type="submit"
                 className="w-full h-11 text-base bg-primary text-primary-foreground"
-                disabled={otp.length < 6 || isLoading}
+                disabled={otp.length < 4 || isLoading}
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Verifying...", "جاري التحقق...")}</>
@@ -286,18 +294,51 @@ const Signup = () => {
                   {t("Phone Number", "رقم الجوال")} *
                 </Label>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-muted/50 text-sm font-body text-foreground shrink-0">
-                    <span>🇸🇦</span>
-                    <span className="text-muted-foreground">+966</span>
+                  {/* Country code selector */}
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCountryOpen(!countryOpen)}
+                      className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-muted/50 text-sm font-body text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span>{selectedCountry.flag}</span>
+                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
+                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                        {COUNTRY_OPTIONS.map((c) => (
+                          <button
+                            key={c.dialCode}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(c);
+                              setPhone("");
+                              setCountryOpen(false);
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-left",
+                              selectedCountry.dialCode === c.dialCode && "bg-muted"
+                            )}
+                          >
+                            <span>{c.flag}</span>
+                            <span className="text-muted-foreground">{c.dialCode}</span>
+                            <span className="text-foreground">{c.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="5XXXXXXXX"
+                    placeholder={selectedCountry.placeholder}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits))}
                     className="h-11"
-                    maxLength={9}
+                    maxLength={selectedCountry.maxDigits}
                     dir="ltr"
                   />
                 </div>

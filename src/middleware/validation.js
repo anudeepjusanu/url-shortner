@@ -413,10 +413,23 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
+const validatePhoneLogin = [
+  body('phoneNumber')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .custom((value) => {
+      const normalized = String(value).trim().replace(/\s+/g, '');
+      return /^\+\d{7,15}$/.test(normalized);
+    })
+    .withMessage('Please enter a valid phone number in international format (e.g., +919876543210)'),
+  handleValidationErrors
+];
+
 module.exports = {
   handleValidationErrors,
   validateRegistration,
   validateLogin,
+  validatePhoneLogin,
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,

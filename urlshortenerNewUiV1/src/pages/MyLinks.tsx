@@ -34,6 +34,7 @@ const MyLinks = () => {
   const [urls, setUrls] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [availableDomains, setAvailableDomains] = useState<any[]>([]);
 
   // Delete confirmation dialog
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -58,6 +59,9 @@ const MyLinks = () => {
 
   useEffect(() => {
     fetchUrls();
+    myLinksService.getAvailableDomains().then((res: any) => {
+      setAvailableDomains(res?.data?.domains ?? []);
+    }).catch(() => {});
   }, [fetchUrls]);
 
   // Refetch when tab becomes visible again
@@ -70,16 +74,20 @@ const MyLinks = () => {
   }, [fetchUrls]);
 
   const getShortUrl = (url: any) => {
-    const domain = url.domain || "";
     const code = url.customCode || url.shortCode || "";
-    return domain ? `${domain}/${code}` : code;
+    if (url.domain) {
+      const domain = url.domain.startsWith("http") ? url.domain : `https://${url.domain}`;
+      return `${domain}/${code}`;
+    }
+    const baseDomain = availableDomains.find((d: any) => d.id === "base");
+    const baseUrl = baseDomain?.shortUrl || window.location.origin;
+    return `${baseUrl}/${code}`;
   };
 
   const handleCopy = (url: any) => {
     const shortUrl = getShortUrl(url);
-    const protocol = shortUrl.startsWith("http") ? "" : "https://";
-    navigator.clipboard.writeText(`${protocol}${shortUrl}`);
-    setCopiedId(shortUrl);
+    navigator.clipboard.writeText(shortUrl);
+    setCopiedId(url.customCode || url.shortCode || "");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -258,12 +266,20 @@ const MyLinks = () => {
                     <div className="min-w-0 flex-1">
                       <h3 className="font-body font-medium text-foreground text-sm">{name}</h3>
                       <p className="text-xs text-primary font-body flex items-center gap-1 mt-1">
-                        <ExternalLink size={10} /> {shortUrl}
+                        <ExternalLink size={10} />
+                        <a
+                          href={shortUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {shortUrl}
+                        </a>
                         <button
                           onClick={() => handleCopy(url)}
                           className="ml-1 text-muted-foreground hover:text-primary transition-colors"
                         >
-                          {copiedId === shortUrl ? <Check size={12} /> : <Copy size={12} />}
+                          {copiedId === (url.customCode || url.shortCode || "") ? <Check size={12} /> : <Copy size={12} />}
                         </button>
                       </p>
                       <p className="text-[11px] text-muted-foreground font-body truncate mt-0.5">
