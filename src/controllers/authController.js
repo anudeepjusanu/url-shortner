@@ -10,7 +10,7 @@ const { getLocationFromIP, getClientIP } = require('../services/geoLocationServi
 
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
-const generateOtpCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+const generateOtpCode = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 const normalizePhone = (phone) => {
   if (!phone) return undefined;
@@ -210,15 +210,19 @@ const register = async (req, res) => {
         console.error('Failed to get location:', locError.message);
       }
 
+      // Split fullName into firstName / lastName for the schema
+      const nameParts = (registrationData.fullName || '').trim().split(/\s+/);
+      const firstName = nameParts[0] || registrationData.fullName;
+      const lastName  = nameParts.slice(1).join(' ') || undefined;
+
       console.log('Creating user with email:', registrationData.email);
       const user = new User({
         email: registrationData.email,
         password: registrationData.password,
-        // firstName: registrationData.firstName,
-        // lastName: registrationData.lastName,
-        fullName: registrationData.fullName,
+        firstName,
+        lastName,
         phone: registrationData.phone,
-        isEmailVerified: true, // Mark email as verified since OTP is verified
+        isEmailVerified: true,
         role: 'admin',
         registrationLocation: registrationLocation
       });
@@ -319,20 +323,16 @@ const login = async (req, res) => {
         const otpKey = `otp:${user._id}`;
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
 
-        // Determine method based on available contact info
-        const method = phone ? 'sms' : 'email';
-
-        // Send OTP via Authentica
-        await otpService.sendOtp({ email: emailAddr, phone, otp: generatedOtp, method });
+        // Email login always sends OTP to email — phone OTP has its own endpoint
+        await otpService.sendOtp({ email: emailAddr, phone: undefined, otp: generatedOtp, method: 'email' });
 
         return res.status(202).json({
           success: true,
-          message: phone ? 'OTP sent to your phone number. Please verify.' : 'OTP sent to your email. Please verify.',
+          message: 'OTP sent to your email. Please verify.',
           data: {
             otpSent: true,
-            method,
-            phone: phone ? maskPhone(phone) : undefined,
-            email: phone ? undefined : emailAddr
+            method: 'email',
+            email: emailAddr
           }
         });
       } catch (err) {
@@ -827,6 +827,117 @@ const resetPasswordWithOTP = async (req, res) => {
   }
 };
 
+const loginWithPhoneOtp = async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
+
+    if (!phoneNumber) {
+      return res.status(400).json({ success: false, message: 'Phone number is required' });
+    }
+
+    // Find user by phone number (stored in E.164 format)
+    const user = await User.findOne({ phone: phoneNumber });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'No account found with this phone number' });
+    }
+
+    if (user.isLocked) {
+      return res.status(423).json({ success: false, message: 'Account temporarily locked due to too many failed login attempts' });
+    }
+
+    if (!otp) {
+      // Step 1: Generate and send OTP
+      try {
+        const generatedOtp = generateOtpCode();
+        const otpKey = `phone_login_otp:${user._id}`;
+        await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
+
+        await otpService.sendOtp({
+          email: user.email,
+          phone: phoneNumber,
+          otp: generatedOtp,
+          method: 'sms'
+        });
+
+        return res.status(202).json({
+          success: true,
+          message: 'OTP sent to your phone number. Please verify.',
+          data: {
+            otpSent: true,
+            method: 'sms',
+            phone: maskPhone(phoneNumber)
+          }
+        });
+      } catch (err) {
+        console.error('Send phone OTP error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send OTP',
+          error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+      }
+    } else {
+      // Step 2: Verify OTP
+      const otpKey = `phone_login_otp:${user._id}`;
+      const storedOtp = await cacheGet(otpKey);
+
+      if (!storedOtp) {
+        return res.status(401).json({ success: false, message: 'OTP expired or invalid. Please request a new one.' });
+      }
+
+      if (storedOtp !== otp) {
+        return res.status(401).json({ success: false, message: 'Invalid OTP. Please try again.' });
+      }
+
+      await cacheDel(otpKey);
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ success: false, message: 'Account deactivated' });
+    }
+
+    await user.resetLoginAttempts();
+    user.lastLogin = new Date();
+    await user.save();
+
+    const { accessToken, refreshToken } = generateTokens(user._id);
+
+    await cacheSet(`user:${user._id}`, {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      organization: user.organization
+    }, config.CACHE_TTL.USER_CACHE);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          role: user.role,
+          organization: user.organization,
+          isEmailVerified: user.isEmailVerified,
+          lastLogin: user.lastLogin
+        },
+        accessToken,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    console.error('Phone login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Login failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 // Get user's API key
 const getApiKey = async (req, res) => {
   try {
@@ -1014,6 +1125,7 @@ module.exports = {
   sendPasswordResetOTP,
   verifyPasswordResetOTP,
   resetPasswordWithOTP,
+  loginWithPhoneOtp,
   getApiKey,
   regenerateApiKey,
   getPreferences,

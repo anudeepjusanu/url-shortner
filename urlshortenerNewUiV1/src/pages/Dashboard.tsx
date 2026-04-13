@@ -85,16 +85,16 @@ const Dashboard = () => {
     pct: Math.round(((c.clicks || 0) / totalGeoClicks) * 100),
   }));
 
-  // Peak days — dashboard analytics only has clicksByDay (no hourly breakdown)
-  const clicksByDay: { date: string; clicks: number }[] = chartData.clicksByDay || [];
-  const topDays = [...clicksByDay]
+  // Peak hours — from hourly aggregation in dashboard analytics
+  const clicksByHour: { hour: number; clicks: number }[] = chartData.clicksByHour || [];
+  const topHours = [...clicksByHour]
     .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
     .slice(0, 4);
-  const maxDayClicks = Math.max(...topDays.map((d) => d.clicks || 0), 1);
-  const peakDays = topDays.map((d) => ({
-    label: new Date(d.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
-    clicks: d.clicks || 0,
-    pct: Math.round(((d.clicks || 0) / maxDayClicks) * 100),
+  const maxHourClicks = Math.max(...topHours.map((h) => h.clicks || 0), 1);
+  const peakHours = topHours.map((h) => ({
+    label: `${String(h.hour).padStart(2, "0")}:00 – ${String(h.hour + 1).padStart(2, "0")}:00`,
+    clicks: h.clicks || 0,
+    pct: Math.round(((h.clicks || 0) / maxHourClicks) * 100),
   }));
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
@@ -288,12 +288,12 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Peak Days (from clicksByDay — no hourly breakdown in dashboard API) */}
+        {/* Peak Hours (from hourly aggregation in dashboard API) */}
         <div className="bg-background border border-border rounded-xl p-5">
           <div className="flex items-center gap-1.5 mb-4">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <h2 className="font-display font-semibold text-foreground text-sm">
-              {t("Peak Days", "أبرز الأيام")}
+              {t("Peak Hours", "أبرز الساعات")}
             </h2>
           </div>
 
@@ -301,22 +301,22 @@ const Dashboard = () => {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
-          ) : peakDays.length === 0 ? (
+          ) : peakHours.length === 0 ? (
             <p className="text-xs text-muted-foreground font-body text-center py-8">
               {t("No click data yet", "لا توجد بيانات ضغطات بعد")}
             </p>
           ) : (
             <div className="space-y-3">
-              {peakDays.map((d) => (
-                <div key={d.label}>
+              {peakHours.map((h) => (
+                <div key={h.label}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-body text-foreground">{d.label}</span>
+                    <span className="text-sm font-body text-foreground">{h.label}</span>
                     <span className="text-xs font-body text-muted-foreground">
-                      {d.clicks} {t("clicks", "ضغطات")}
+                      {h.clicks} {t("clicks", "ضغطات")}
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${d.pct}%` }} />
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${h.pct}%` }} />
                   </div>
                 </div>
               ))}

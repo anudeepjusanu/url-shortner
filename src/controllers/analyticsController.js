@@ -355,6 +355,7 @@ const getDashboardAnalytics = async (req, res) => {
     const [
       totalClicks,
       clicksByDay,
+      clicksByHour,
       topCountries,
       topCities,
       topDevices,
@@ -386,7 +387,24 @@ const getDashboardAnalytics = async (req, res) => {
         },
         { $sort: { _id: 1 } }
       ]),
-      
+
+      Click.aggregate([
+        {
+          $match: {
+            url: { $in: urlIds },
+            timestamp: { $gte: startDate },
+            isBot: { $ne: true }
+          }
+        },
+        {
+          $group: {
+            _id: { $hour: '$timestamp' },
+            clicks: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]),
+
       Click.aggregate([
         {
           $match: {
@@ -555,6 +573,10 @@ const getDashboardAnalytics = async (req, res) => {
         chartData: {
           clicksByDay: clicksByDay.map(item => ({
             date: item._id,
+            clicks: item.clicks
+          })),
+          clicksByHour: clicksByHour.map(item => ({
+            hour: item._id,
             clicks: item.clicks
           }))
         },

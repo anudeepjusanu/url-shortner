@@ -155,9 +155,9 @@ const UserManagement = () => {
   };
 
   const statCards = [
-    { label: t("Total Users", "إجمالي المستخدمين"), value: stats.totalUsers, icon: Users },
-    { label: t("Active Users (30d)", "مستخدمون نشطون (30 يوم)"), value: stats.activeUsers, icon: Link2 },
-    { label: t("Total URLs", "إجمالي الروابط"), value: stats.totalUrls, icon: BarChart3 },
+    { label: t("Number of Signups", "عدد المُسجّلين"), value: stats.totalUsers, icon: Users },
+    { label: t("Users With Links", "مستخدمون لديهم روابط"), value: stats.activeUsers, icon: Link2 },
+    { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: stats.totalUrls, icon: BarChart3 },
     { label: t("New Users (30d)", "مستخدمون جدد (30 يوم)"), value: stats.newUsersLast30Days, icon: UserPlus },
   ];
 

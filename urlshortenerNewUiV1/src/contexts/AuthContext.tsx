@@ -14,6 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: { email?: string; password?: string; phoneNumber?: string; otp?: string }) => Promise<any>;
+  loginWithPhone: (credentials: { phoneNumber: string; otp?: string }) => Promise<any>;
   register: (userData: any) => Promise<any>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -86,6 +87,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const loginWithPhone = async (credentials: { phoneNumber: string; otp?: string }) => {
+    try {
+      const response = await authAPI.loginWithPhone(credentials);
+
+      if (response.success && response.data) {
+        if (response.otpRequired) {
+          return response;
+        }
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Phone login error:', error);
+      throw error;
+    }
+  };
+
   const register = async (userData: any) => {
     try {
       const response = await authAPI.register(userData);
@@ -136,6 +157,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     isLoading,
     login,
+    loginWithPhone,
     register,
     logout,
     refreshUser,

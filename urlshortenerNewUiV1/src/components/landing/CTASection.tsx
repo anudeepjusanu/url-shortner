@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Link2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [url, setUrl] = useState("");
 
   return (
@@ -42,6 +44,7 @@ const CTASection = () => {
             </div>
             <Button
               size="lg"
+              onClick={() => navigate("/signup")}
               className="bg-[hsl(var(--sky))] text-white font-body font-bold text-base px-8 rounded-full hover:brightness-110 transition-all shrink-0"
             >
               {t("Start Free Now", "ابدأ مجاناً")}

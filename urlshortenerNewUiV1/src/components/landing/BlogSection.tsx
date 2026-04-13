@@ -45,8 +45,12 @@ const BlogSection = () => {
               to={`/blog/${featured.slug}`}
               className="group block bg-white rounded-3xl overflow-hidden border border-[hsl(var(--navy))]/10 hover:border-[hsl(var(--sky))]/30 hover:-translate-y-1 transition-all duration-300 h-full"
             >
-              <div className="h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center relative">
-                <span className="text-white/10 font-display text-[10rem] font-black">01</span>
+              <div className="h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center relative overflow-hidden">
+                {featured.image ? (
+                  <img src={featured.image} alt={lang === "ar" ? featured.title.ar : featured.title.en} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <span className="text-white/10 font-display text-[10rem] font-black">01</span>
+                )}
                 <span className="absolute top-5 start-5 text-xs font-body font-bold text-white bg-[hsl(var(--sky))] px-4 py-1.5 rounded-full">
                   {lang === "ar" ? featured.category.ar : featured.category.en}
                 </span>
@@ -86,10 +90,14 @@ const BlogSection = () => {
                   to={`/blog/${post.slug}`}
                   className="group block bg-white rounded-3xl overflow-hidden border border-[hsl(var(--navy))]/10 hover:border-[hsl(var(--sky))]/30 hover:-translate-y-1 transition-all duration-300 h-full"
                 >
-                  <div className={`h-28 ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"} flex items-center justify-center`}>
-                    <span className="text-white/10 font-display text-7xl font-black">
-                      {String(i + 2).padStart(2, "0")}
-                    </span>
+                  <div className={`h-28 ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"} flex items-center justify-center overflow-hidden`}>
+                    {post.image ? (
+                      <img src={post.image} alt={lang === "ar" ? post.title.ar : post.title.en} className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <span className="text-white/10 font-display text-7xl font-black">
+                        {String(i + 2).padStart(2, "0")}
+                      </span>
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-2">

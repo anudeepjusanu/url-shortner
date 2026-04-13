@@ -7,6 +7,7 @@ const { authLimiter, strictAuthLimiter, passwordResetLimiter } = require('../mid
 const {
   validateRegistration,
   validateLogin,
+  validatePhoneLogin,
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,
@@ -27,6 +28,9 @@ router.post('/register', authLimiter, validateRegistration, authController.regis
 
 // Temporarily disable strict rate limiter for debugging
 router.post('/login', authLimiter, validateLogin, authController.login);
+
+// Phone number OTP login (no password required)
+router.post('/login-with-phone', authLimiter, validatePhoneLogin, authController.loginWithPhoneOtp);
 
 router.post('/refresh', authController.refreshToken);
 

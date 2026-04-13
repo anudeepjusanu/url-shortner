@@ -78,12 +78,16 @@ const DeveloperSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6">
-                {t("Read API Documentation", "شوف الـ API Docs")}
-                <ArrowRight size={14} className="ms-1.5" />
+              <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6" asChild>
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer">
+                  {t("Read API Documentation", "شوف الـ API Docs")}
+                  <ArrowRight size={14} className="ms-1.5" />
+                </a>
               </Button>
-              <Button variant="outline" className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))]/5 bg-transparent py-6 px-8">
-                {t("Get Your API Key", "احصل على مفتاح API")}
+              <Button variant="outline" className="font-body font-bold rounded-full border-2 border-[hsl(var(--navy))] text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))] hover:text-white bg-transparent py-6 px-8 transition-all" asChild>
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer">
+                  {t("Get Your API Key", "احصل على مفتاح API")}
+                </a>
               </Button>
             </div>
           </motion.div>

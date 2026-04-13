@@ -6,6 +6,7 @@ const endpoints = {
   auth: {
     register: '/auth/register-simple',
     login: '/auth/login',
+    loginWithPhone: '/auth/login-with-phone',
     logout: '/auth/logout',
     refreshToken: '/auth/refresh-token',
     profile: '/auth/profile',
@@ -321,6 +322,48 @@ export const authAPI = {
       return response;
     } catch (error) {
       console.error('Login API error:', error);
+      throw error;
+    }
+  },
+
+  loginWithPhone: async (credentials: { phoneNumber: string; otp?: string }) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.loginWithPhone}`;
+    const token = apiClient.getToken();
+
+    const config: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify(credentials)
+    };
+
+    try {
+      const res = await fetch(url, config);
+      const response = await res.json();
+
+      if (res.status === 202 && response.data && response.data.otpSent) {
+        return { ...response, otpRequired: true, otpData: response.data };
+      }
+
+      if (res.ok && response.success && response.data) {
+        const { accessToken, refreshToken } = response.data;
+        if (accessToken) {
+          apiClient.setToken(accessToken);
+          if (refreshToken) {
+            localStorage.setItem('refreshToken', refreshToken);
+          }
+        }
+      }
+
+      if (!res.ok) {
+        throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Phone login API error:', error);
       throw error;
     }
   },

@@ -32,16 +32,27 @@ const Blog = () => {
               <Link
                 to={`/blog/${post.slug}`}
                 key={post.slug}
-                className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="h-44 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                  <span className="text-primary/40 font-display text-6xl font-bold">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
+                <div className="h-48 overflow-hidden bg-[hsl(var(--navy))]">
+                  {post.image ? (
+                    <img
+                      src={post.image}
+                      alt={lang === "ar" ? post.title.ar : post.title.en}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <span className="text-primary/30 font-display text-6xl font-bold">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xs font-body font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-body font-bold text-white bg-primary px-3 py-1 rounded-full">
                       {lang === "ar" ? post.category.ar : post.category.en}
                     </span>
                     <span className="flex items-center gap-1 text-muted-foreground text-xs font-body">

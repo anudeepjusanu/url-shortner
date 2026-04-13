@@ -156,6 +156,31 @@ const validateUrlCreation = [
     .optional()
     .isIn([301, 302, 307])
     .withMessage('Redirect type must be 301, 302, or 307'),
+  body('utm.source')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM source cannot exceed 100 characters'),
+  body('utm.medium')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM medium cannot exceed 100 characters'),
+  body('utm.campaign')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM campaign cannot exceed 200 characters'),
+  body('utm.term')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM term cannot exceed 200 characters'),
+  body('utm.content')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM content cannot exceed 200 characters'),
   handleValidationErrors
 ];
 
@@ -388,10 +413,23 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
+const validatePhoneLogin = [
+  body('phoneNumber')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .custom((value) => {
+      const normalized = String(value).trim().replace(/\s+/g, '');
+      return /^\+\d{7,15}$/.test(normalized);
+    })
+    .withMessage('Please enter a valid phone number in international format (e.g., +919876543210)'),
+  handleValidationErrors
+];
+
 module.exports = {
   handleValidationErrors,
   validateRegistration,
   validateLogin,
+  validatePhoneLogin,
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,

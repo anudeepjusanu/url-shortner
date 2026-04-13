@@ -20,11 +20,29 @@ const WEEK = 7 * DAY;
 
 type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 
+// ─── Hour weight curve (index = hour 0–23) ───
+const HOUR_WEIGHTS = [1,1,1,1,1,2,3,5,7,8,9,8,7,8,9,8,6,5,4,3,2,2,1,1];
+const TOTAL_WEIGHT = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
+
+// Distribute `total` across 24 hours using the largest-remainder method.
+// Unlike Math.round(), this guarantees sum === total and places clicks at the
+// correct peak hours even when total is very small (e.g. 1–5 clicks).
+function distributeAcrossHours(total: number): number[] {
+  if (total === 0) return new Array(24).fill(0);
+  const exact = HOUR_WEIGHTS.map(w => (w / TOTAL_WEIGHT) * total);
+  const floored = exact.map(Math.floor);
+  const remainder = total - floored.reduce((a, b) => a + b, 0);
+  exact
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac || a.i - b.i)
+    .slice(0, remainder)
+    .forEach(({ i }) => floored[i]++);
+  return floored;
+}
+
 // ─── Build raw hourly timeline from daily seed data ───
 const buildHourlyTimeline = (dailyData: { date: string; clicks: number; visitors: number; qrScans: number }[]) => {
   if (!dailyData.length) return [];
-  const weights = [1,1,1,1,1,2,3,5,7,8,9,8,7,8,9,8,6,5,4,3,2,2,1,1];
-  const totalW = weights.reduce((a, b) => a + b, 0);
   const dataMap = new Map(dailyData.map(d => [d.date, d]));
   const start = new Date(dailyData[0].date);
   const end = new Date(dailyData[dailyData.length - 1].date);
@@ -33,16 +51,13 @@ const buildHourlyTimeline = (dailyData: { date: string; clicks: number; visitors
   while (cur <= end) {
     const key = cur.toISOString().split("T")[0];
     const dd = dataMap.get(key) || { clicks: 0, visitors: 0, qrScans: 0 };
-    let rC = dd.clicks, rV = dd.visitors, rQ = dd.qrScans;
+    const clickDist   = distributeAcrossHours(dd.clicks);
+    const visitorDist = distributeAcrossHours(dd.visitors);
+    const qrDist      = distributeAcrossHours(dd.qrScans);
     for (let h = 0; h < 24; h++) {
-      const r = weights[h] / totalW;
-      const hC = h === 23 ? rC : Math.round(dd.clicks * r);
-      const hV = h === 23 ? rV : Math.round(dd.visitors * r);
-      const hQ = h === 23 ? rQ : Math.round(dd.qrScans * r);
-      rC -= hC; rV -= hV; rQ -= hQ;
       const d = new Date(cur);
       d.setHours(h, 0, 0, 0);
-      timeline.push({ ts: d.getTime(), clicks: Math.max(0, hC), visitors: Math.max(0, hV), qrScans: Math.max(0, hQ) });
+      timeline.push({ ts: d.getTime(), clicks: clickDist[h], visitors: visitorDist[h], qrScans: qrDist[h] });
     }
     cur.setDate(cur.getDate() + 1);
   }
@@ -214,14 +229,55 @@ const AnalyticsPage = () => {
   // ─── Normalize timeSeries from API ───
   const allClicksDataFull = useMemo(() => {
     if (!apiData) return [];
+
+    // Largest-remainder spread of `total` across n days proportional to each
+    // day's click share — guarantees sum === total with no rounding loss.
+    const spreadByClicks = (
+      total: number,
+      clickCounts: number[],
+    ): number[] => {
+      const sumClicks = clickCounts.reduce((a, b) => a + b, 0) || 1;
+      const exact = clickCounts.map(c => (c / sumClicks) * total);
+      const floored = exact.map(Math.floor);
+      const remainder = total - floored.reduce((a, b) => a + b, 0);
+      exact
+        .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+        .sort((a, b) => b.frac - a.frac || a.i - b.i)
+        .slice(0, remainder)
+        .forEach(({ i }) => floored[i]++);
+      return floored;
+    };
+
     if (linkId) {
       // URL-specific analytics: timeSeries = [{ date, clicks, uniqueClicks }]
       const ts: any[] = apiData.timeSeries || [];
-      return ts.map((d: any) => ({
-        date: d.date,
-        clicks: d.clicks || 0,
-        visitors: d.uniqueClicks || 0,
-        qrScans: 0,
+      const mapped: { date: string; clicks: number; visitors: number; qrScans: number }[] =
+        ts.map((d: any) => ({
+          date: d.date,
+          clicks: d.clicks || 0,
+          visitors: d.uniqueClicks || 0,
+          qrScans: 0,
+        }));
+
+      if (mapped.length === 0) return mapped;
+
+      const overviewVisitors = apiData.overview?.uniqueClicks || 0;
+      const overviewQR       = apiData.url?.qrScanCount || 0;
+      const clickCounts      = mapped.map(d => d.clicks);
+
+      // timeSeries often omits uniqueClicks and never includes qrScans per day.
+      // Distribute the overview totals proportionally across days so the chart
+      // lines for "Unique Visitors" and "QR Scans" actually render.
+      const missingVisitors = mapped.every(d => d.visitors === 0) && overviewVisitors > 0;
+      const visitorDist = missingVisitors ? spreadByClicks(overviewVisitors, clickCounts) : null;
+      const qrDist      = overviewQR > 0  ? spreadByClicks(overviewQR,       clickCounts) : null;
+
+      if (!visitorDist && !qrDist) return mapped;
+
+      return mapped.map((d, i) => ({
+        ...d,
+        visitors: visitorDist ? visitorDist[i] : d.visitors,
+        qrScans:  qrDist      ? qrDist[i]      : d.qrScans,
       }));
     } else {
       // Dashboard analytics: chartData.clicksByDay = [{ date, clicks }]
@@ -330,12 +386,47 @@ const AnalyticsPage = () => {
 
   // Filter raw data by selected date range
   const filteredClicksData = useMemo(() => {
-    if (!allClicksDataFull.length) return [];
-    return allClicksDataFull.filter(d => {
+    const data = allClicksDataFull.filter(d => {
       const ts = new Date(d.date).getTime();
       return ts >= filterStart && ts <= filterEnd;
     });
-  }, [allClicksDataFull, filterStart, filterEnd]);
+
+    // When the API returns overview totals but no time-series data,
+    // synthesize daily entries distributed across the range so the chart
+    // can render hourly click breakdowns that match the stat cards above.
+    if (allClicksDataFull.length === 0 && apiData) {
+      const totalClicks = linkId
+        ? (apiData.overview?.totalClicks || 0)
+        : (apiData.overview?.totalClicks || 0);
+      const totalVisitors = linkId
+        ? (apiData.overview?.uniqueClicks || 0)
+        : (apiData.overview?.totalUniqueClicks || 0);
+      const totalQR = linkId
+        ? (apiData.url?.qrScanCount || 0)
+        : (apiData.overview?.totalQRScans || 0);
+
+      if (totalClicks > 0 || totalVisitors > 0 || totalQR > 0) {
+        const daysInRange = Math.max(1, Math.round((filterEnd - filterStart) / DAY));
+        const cPD = Math.round(totalClicks / daysInRange);
+        const vPD = Math.round(totalVisitors / daysInRange);
+        const qPD = Math.round(totalQR / daysInRange);
+
+        return Array.from({ length: daysInRange }, (_, i) => {
+          const d = new Date(filterStart + i * DAY);
+          const date = d.toISOString().split("T")[0];
+          const isLast = i === daysInRange - 1;
+          return {
+            date,
+            clicks: isLast ? Math.max(0, totalClicks - cPD * (daysInRange - 1)) : cPD,
+            visitors: isLast ? Math.max(0, totalVisitors - vPD * (daysInRange - 1)) : vPD,
+            qrScans: isLast ? Math.max(0, totalQR - qPD * (daysInRange - 1)) : qPD,
+          };
+        });
+      }
+    }
+
+    return data;
+  }, [allClicksDataFull, filterStart, filterEnd, apiData, linkId]);
 
   const hourlyTimeline = useMemo(() => buildHourlyTimeline(filteredClicksData), [filteredClicksData]);
   const timelineStart = hourlyTimeline[0]?.ts ?? filterStart;
@@ -726,9 +817,14 @@ const AnalyticsPage = () => {
           {/* Chart + Stats */}
           <div className="bg-background border border-border rounded-xl p-3 sm:p-6 mb-4 sm:mb-6">
             <div className="flex items-center justify-between gap-2 mb-3 sm:mb-5">
-              <h2 className="font-display font-semibold text-foreground text-xs sm:text-sm shrink-0">
-                {t("Engagement Over Time", "التفاعل عبر الوقت")}
-              </h2>
+              <div className="flex items-center gap-2 shrink-0">
+                <h2 className="font-display font-semibold text-foreground text-xs sm:text-sm">
+                  {t("Engagement Over Time", "التفاعل عبر الوقت")}
+                </h2>
+                <span className="text-[10px] sm:text-xs font-body text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                  {granularityLabel}
+                </span>
+              </div>
               <div className="flex items-center gap-1.5">
                 <select
                   className="text-[10px] sm:text-xs font-body bg-muted/50 text-muted-foreground px-2 py-1 rounded border-none outline-none cursor-pointer"
