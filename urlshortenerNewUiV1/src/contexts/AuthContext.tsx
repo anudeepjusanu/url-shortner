@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI } from '@/services/api';
+import amplitudeService from '@/services/amplitude';
 
 interface User {
   id: string;
@@ -48,6 +49,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const response = await authAPI.getProfile();
           if (response.success && response.data) {
             setUser(response.data);
+            amplitudeService.setUser(response.data.id, {
+              email: response.data.email,
+              role: response.data.role,
+            });
           }
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
@@ -77,9 +82,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Set user data
         if (response.data.user) {
           setUser(response.data.user);
+          amplitudeService.trackLogin(response.data.user.id, 'email');
         }
       }
-      
+
       return response;
     } catch (error) {
       console.error('Login error:', error);
@@ -97,6 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
         if (response.data.user) {
           setUser(response.data.user);
+          amplitudeService.trackLogin(response.data.user.id, 'phone');
         }
       }
 
@@ -120,9 +127,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Set user data
         if (response.data.user) {
           setUser(response.data.user);
+          amplitudeService.trackRegistrationCompleted(response.data.user.id, {
+            email: response.data.user.email,
+            role: response.data.user.role,
+            registration_method: 'email',
+          });
         }
       }
-      
+
       return response;
     } catch (error) {
       console.error('Register error:', error);
@@ -136,6 +148,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      amplitudeService.trackLogout();
       setUser(null);
     }
   };

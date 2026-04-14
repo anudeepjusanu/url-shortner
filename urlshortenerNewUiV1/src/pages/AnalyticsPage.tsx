@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useUrlAnalytics, useAnalyticsDashboard } from "@/hooks/useApi";
 import { analyticsService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import amplitudeService from "@/services/amplitude";
 
 // ─── Constants ───
 const HOUR = 3600_000;
@@ -187,6 +188,10 @@ const AnalyticsPage = () => {
   const dragStartWindow = useRef({ start: 0, end: 0 });
   const lastPinchDist = useRef(0);
   const pinchAnchor = useRef(0.5);
+
+  useEffect(() => {
+    amplitudeService.track('Analytics View');
+  }, []);
 
   const [dateFilter, setDateFilter] = useState<DateFilter>("30d");
   const [customFrom, setCustomFrom] = useState<Date | undefined>();

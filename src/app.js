@@ -159,9 +159,16 @@ app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
+app.use('/api/bio-pages', require('./routes/bioPages'));
 
 // SEO routes - sitemap.xml and robots.txt
 app.use('/', require('./routes/sitemapRoutes'));
+
+// Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+app.get('/bio/:username', (req, res) => {
+  res.redirect(`${frontendUrl}/#/bio/${req.params.username}`);
+});
 
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');

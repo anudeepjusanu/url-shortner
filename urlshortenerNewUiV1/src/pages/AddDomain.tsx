@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Globe, CheckCircle, Copy, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useAddDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import amplitudeService from "@/services/amplitude";
 
 type Step = "enter" | "dns" | "done";
 
@@ -68,6 +69,7 @@ const AddDomain = () => {
         "snip.sa";
       setCnameTarget(target);
 
+      amplitudeService.track('add custom-domain');
       toast({
         title: t("Domain added", "تمت إضافة الدومين"),
         description: t("Configure your DNS records to verify ownership.", "أضف سجلات DNS للتحقق من ملكيتك."),

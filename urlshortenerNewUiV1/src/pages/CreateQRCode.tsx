@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, QrCode, Palette, Maximize, Download } from "lucide-react";
+import amplitudeService from "@/services/amplitude";
 
 const CreateQRCode = () => {
   const { t } = useLanguage();
@@ -25,6 +26,7 @@ const CreateQRCode = () => {
   const [fgColor, setFgColor] = useState("#1a2744");
   const [bgColor, setBgColor] = useState("#ffffff");
   const handleCreate = () => {
+    amplitudeService.track('QR Code');
     navigate("/dashboard/qr-codes");
   };
 

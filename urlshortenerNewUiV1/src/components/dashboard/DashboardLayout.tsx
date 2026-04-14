@@ -16,6 +16,7 @@ import {
   Users,
   LinkIcon,
   Languages,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("My Links", "روابطي"), icon: Link2, path: "/dashboard/links" },
     { label: t("Analytics", "التحليلات"), icon: BarChart3, path: "/dashboard/analytics" },
     { label: t("QR Codes", "أكواد QR"), icon: QrCode, path: "/dashboard/qr-codes" },
+    { label: t("Link in Bio", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
   ];
 
   const adminNav = [

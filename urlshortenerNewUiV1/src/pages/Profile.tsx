@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { profileService, myLinksService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import amplitudeService from "@/services/amplitude";
 
 const Profile = () => {
   const { t } = useLanguage();
@@ -188,6 +189,7 @@ const Profile = () => {
       if (res?.apiKey) {
         setApiKey(res.apiKey);
         setShowKey(true);
+        amplitudeService.track('generate API Key');
         toast({ title: t("API key regenerated", "تم إعادة إنشاء مفتاح API") });
       }
     } catch (err: any) {

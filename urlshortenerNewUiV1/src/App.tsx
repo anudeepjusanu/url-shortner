@@ -1,9 +1,24 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import ScrollToTop from "@/components/ScrollToTop";
+import amplitudeService from "@/services/amplitude";
+
+// Initialize Amplitude once at module load
+amplitudeService.initialize();
+
+// Tracks a Page View event on every route change
+const PageViewTracker = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
+    amplitudeService.trackPageView(pageName, location.pathname);
+  }, [location]);
+  return null;
+};
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
@@ -24,6 +39,9 @@ import UserManagement from "./pages/UserManagement";
 import UrlManagement from "./pages/UrlManagement";
 import CreateQRCode from "./pages/CreateQRCode";
 import AddDomain from "./pages/AddDomain";
+import BioPages from "./pages/BioPages";
+import BioPageEditor from "./pages/BioPageEditor";
+import PublicBioPage from "./pages/PublicBioPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +54,7 @@ const App = () => (
           <Sonner />
           <HashRouter>
             <ScrollToTop />
+            <PageViewTracker />
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -55,6 +74,10 @@ const App = () => (
             <Route path="/dashboard/api" element={<ApiDocs />} />
             <Route path="/dashboard/users" element={<UserManagement />} />
             <Route path="/dashboard/urls" element={<UrlManagement />} />
+            <Route path="/dashboard/bio-pages" element={<BioPages />} />
+            <Route path="/dashboard/bio-pages/create" element={<BioPageEditor />} />
+            <Route path="/dashboard/bio-pages/:id/edit" element={<BioPageEditor />} />
+            <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

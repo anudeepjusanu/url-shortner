@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
+import amplitudeService from "@/services/amplitude";
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
@@ -51,6 +52,7 @@ const Login = () => {
         });
       } else {
         // Login successful without OTP
+        amplitudeService.track('login');
         toast({
           title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
           description: t("Welcome back!", "مرحباً بعودتك!"),
@@ -111,6 +113,7 @@ const Login = () => {
       }
 
       if (response.success) {
+        amplitudeService.track('login');
         toast({
           title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
           description: t("Welcome back!", "مرحباً بعودتك!"),

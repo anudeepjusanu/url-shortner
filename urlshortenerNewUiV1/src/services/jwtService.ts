@@ -61,7 +61,12 @@ async function authRequest<T = any>(
   const response = await fetch(url, config);
 
   if (response.status === 401) {
-    jwtTokens.clearTokens();
+    // Only clear tokens when a token was actually sent and rejected by the server.
+    // If no token was present, there is nothing to clear — and we must NOT wipe
+    // tokens that other in-flight requests are still using (cascade prevention).
+    if (token) {
+      jwtTokens.clearTokens();
+    }
     throw new Error('Session expired. Please login again.');
   }
 
@@ -93,7 +98,9 @@ async function authFetch(endpoint: string, options: RequestInit = {}): Promise<R
   });
 
   if (response.status === 401) {
-    jwtTokens.clearTokens();
+    if (token) {
+      jwtTokens.clearTokens();
+    }
     throw new Error('Session expired. Please login again.');
   }
 

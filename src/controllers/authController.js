@@ -71,7 +71,6 @@ const sendRegistrationOTP = async (req, res) => {
       });
     }
 
-    // Generate 6-digit OTP
     const otp = generateOtpCode();
 
     // Store OTP in cache with email as key for 5 minutes
@@ -133,7 +132,6 @@ const register = async (req, res) => {
     // If OTP not provided, store registration data and send OTP
     if (!otp) {
       try {
-        // Generate 6-digit OTP
         const generatedOtp = generateOtpCode();
 
         // Store both OTP and registration data in cache for 5 minutes
@@ -316,7 +314,6 @@ const login = async (req, res) => {
           });
         }
 
-        // Generate random 6-digit OTP
         const generatedOtp = generateOtpCode();
 
         // Store OTP in cache for 5 minutes
@@ -689,7 +686,7 @@ const sendPasswordResetOTP = async (req, res) => {
     console.log('✅ User found:', user.email);
     
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     
     console.log('🔢 Generated OTP:', otp);
     

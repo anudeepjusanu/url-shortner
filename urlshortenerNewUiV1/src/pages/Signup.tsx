@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
+import amplitudeService from "@/services/amplitude";
+
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9,  placeholder: "5XXXXXXXX"  },
@@ -43,6 +45,10 @@ const Signup = () => {
   // OTP verification step
   const [otpStep, setOtpStep] = useState(false);
   const [otp, setOtp]         = useState("");
+
+  useEffect(() => {
+    amplitudeService.trackRegistrationStarted('direct');
+  }, []);
 
   // ── Derived ──
   const pwRulesMet = passwordRules.map((r) => r.test(password));
@@ -96,12 +102,13 @@ const Signup = () => {
         toast({
           title: t("OTP Sent", "تم إرسال رمز التحقق"),
           description: t(
-            "Please check your email or phone for the 6-digit code",
-            "تحقق من بريدك الإلكتروني أو هاتفك للحصول على الرمز المكون من 6 أرقام"
+            "Please check your email or phone for the 4-digit code",
+            "تحقق من بريدك الإلكتروني أو هاتفك للحصول على الرمز المكون من 4 أرقام"
           ),
         });
       } else {
         // Direct registration (no OTP required)
+        amplitudeService.track('Sign Up');
         toast({
           title: t("Registration Successful", "تم التسجيل بنجاح"),
           description: t("Welcome!", "مرحباً بك!"),
@@ -137,6 +144,7 @@ const Signup = () => {
       const response = await register(payload);
 
       if (response?.success) {
+        amplitudeService.track('Sign Up');
         toast({
           title: t("Registration Successful", "تم التسجيل بنجاح"),
           description: t("Welcome!", "مرحباً بك!"),
