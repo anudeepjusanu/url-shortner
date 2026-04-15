@@ -65,4 +65,7 @@ router.post('/regenerate-api-key', authenticate, authController.regenerateApiKey
 router.get('/preferences', authenticate, authController.getPreferences);
 router.put('/preferences', authenticate, authController.updatePreferences);
 
+// Delete account
+router.delete('/account', authenticate, authController.deleteAccount);
+
 module.exports = router;

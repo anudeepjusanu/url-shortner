@@ -321,6 +321,10 @@ export const profileService = {
   /** PUT /auth/preferences */
   updatePreferences: (data: Record<string, unknown>) =>
     authRequest('/auth/preferences', { method: 'PUT', body: data as any }),
+
+  /** DELETE /auth/account — permanently delete the authenticated user's account */
+  deleteAccount: () =>
+    authRequest('/auth/account', { method: 'DELETE' }),
 };
 
 // ─── Analytics Service ────────────────────────────────────────────────────────

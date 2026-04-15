@@ -25,9 +25,9 @@ const normalizePhone = (phone) => {
     normalized = normalized.slice(1);
   }
   
-  // If phone doesn't start with +, add default country code for Saudi Arabia
+  // If phone doesn't start with +, add the + prefix for international format
   if (!normalized.startsWith('+')) {
-    normalized = '+966' + normalized;
+    normalized = '+' + normalized;
   }
   
   return normalized;
@@ -1108,12 +1108,36 @@ const updatePreferences = async (req, res) => {
   }
 };
 
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Clear user cache
+    await cacheDel(`user:${userId}`);
+
+    // Delete the user document
+    await User.findByIdAndDelete(userId);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete account'
+    });
+  }
+};
+
 module.exports = {
   sendRegistrationOTP,
   register,
   login,
   refreshToken,
   logout,
+  deleteAccount,
   getProfile,
   updateProfile,
   changePassword,

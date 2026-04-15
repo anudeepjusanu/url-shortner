@@ -1,6 +1,4 @@
-const mongoose = require('mongoose');
-const Plan = require('../src/models/Plan');
-require('dotenv').config();
+const Plan = require('../models/Plan');
 
 const plans = [
   {
@@ -32,11 +30,11 @@ const plans = [
       yearly: 90
     },
     stripePriceId: {
-      monthly: 'price_1QCabcdef123456789', // Replace with actual Stripe price IDs
+      monthly: 'price_1QCabcdef123456789',
       yearly: 'price_1QCabcdef987654321'
     },
     features: {
-      urlsPerMonth: -1, // Unlimited
+      urlsPerMonth: -1,
       customDomains: 5,
       analytics: 'advanced',
       passwordProtection: true,
@@ -56,12 +54,12 @@ const plans = [
       yearly: 290
     },
     stripePriceId: {
-      monthly: 'price_1QCenterpriseMonthly', // Replace with actual Stripe price IDs
+      monthly: 'price_1QCenterpriseMonthly',
       yearly: 'price_1QCenterpriseYearly'
     },
     features: {
-      urlsPerMonth: -1, // Unlimited
-      customDomains: -1, // Unlimited
+      urlsPerMonth: -1,
+      customDomains: -1,
       analytics: 'enterprise',
       passwordProtection: true,
       apiAccess: true,
@@ -76,38 +74,6 @@ const plans = [
   }
 ];
 
-async function initializePlans() {
-  try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/url-shortener');
-    console.log('Connected to MongoDB');
-
-    // Check if plans already exist
-    const existingPlans = await Plan.countDocuments();
-    if (existingPlans > 0) {
-      console.log(`Found ${existingPlans} existing plans. Skipping initialization.`);
-      return;
-    }
-
-    // Insert new plans
-    const createdPlans = await Plan.insertMany(plans);
-    console.log(`Created ${createdPlans.length} plans:`);
-
-    createdPlans.forEach(plan => {
-      console.log(`- ${plan.displayName} (${plan.name}): $${plan.price.monthly}/month`);
-    });
-
-    console.log('Plans initialized successfully!');
-  } catch (error) {
-    console.error('Error initializing plans:', error);
-    throw error;
-  } finally {
-    await mongoose.connection.close();
-    console.log('Database connection closed');
-  }
-}
-
-// Seed plans without managing the DB connection (called from server.js on startup)
 async function seedPlans() {
   try {
     const existingPlans = await Plan.countDocuments();
@@ -120,10 +86,4 @@ async function seedPlans() {
   }
 }
 
-// Run the initialization
-if (require.main === module) {
-  initializePlans();
-}
-
-module.exports = initializePlans;
-module.exports.seedPlans = seedPlans;
+module.exports = { seedPlans };

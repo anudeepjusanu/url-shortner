@@ -39,6 +39,8 @@ import UserManagement from "./pages/UserManagement";
 import UrlManagement from "./pages/UrlManagement";
 import CreateQRCode from "./pages/CreateQRCode";
 import AddDomain from "./pages/AddDomain";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
 import PublicBioPage from "./pages/PublicBioPage";
@@ -62,6 +64,8 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/links" element={<ProtectedRoute><MyLinks /></ProtectedRoute>} />
             <Route path="/dashboard/create-link" element={<ProtectedRoute><CreateLink /></ProtectedRoute>} />

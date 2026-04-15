@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface QROptions {
   size: number;
@@ -64,6 +65,9 @@ const QRCodes = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get("urlId");
+  const highlightRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState("");
   const [allUrls, setAllUrls] = useState<any[]>([]);
@@ -120,7 +124,14 @@ const QRCodes = () => {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [fetchUrls]);
 
-  // Fetch missing QR images for generated-but-null records
+  // Scroll to highlighted card when data loads
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  }, [highlightId, allUrls.length]);
   useEffect(() => {
     const missing = allUrls.filter((u) => u.qrCodeGenerated && !u.qrCode);
     if (missing.length === 0) return;
@@ -210,7 +221,9 @@ const QRCodes = () => {
     setGenerateLoading(true);
     try {
       let res;
-      if (isUpdating) {
+      // If link already has a QR code, always update (never duplicate)
+      const shouldUpdate = isUpdating || !!selectedLink.qrCodeGenerated;
+      if (shouldUpdate) {
         res = await qrCodeService.updateCustomization(selectedLink._id, {
           ...qrOptions,
           errorCorrectionLevel: qrOptions.errorCorrection,
@@ -547,7 +560,13 @@ const QRCodes = () => {
             return (
               <div
                 key={url._id}
-                className="bg-background border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                ref={url._id === highlightId ? highlightRef : null}
+                className={cn(
+                  "bg-background border rounded-xl overflow-hidden hover:shadow-md transition-shadow",
+                  url._id === highlightId
+                    ? "border-primary ring-2 ring-primary/30"
+                    : "border-border"
+                )}
               >
                 {/* QR preview area */}
                 <div className="bg-muted/40 aspect-square flex items-center justify-center p-8">
@@ -564,10 +583,13 @@ const QRCodes = () => {
                         variant="outline"
                         size="sm"
                         className="text-xs"
-                        onClick={() => openGenerateModal(url)}
+                        onClick={() =>
+                          // If qrCodeGenerated is true but image is missing, customize (not duplicate)
+                          hasQR ? openCustomizeModal(url) : openGenerateModal(url)
+                        }
                       >
                         <QrCode className="w-3.5 h-3.5 me-1.5" />
-                        {t("Generate", "إنشاء")}
+                        {hasQR ? t("Regenerate", "إعادة إنشاء") : t("Generate", "إنشاء")}
                       </Button>
                     </div>
                   )}

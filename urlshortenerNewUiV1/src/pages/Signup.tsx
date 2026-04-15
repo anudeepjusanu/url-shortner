@@ -14,7 +14,7 @@ import amplitudeService from "@/services/amplitude";
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9,  placeholder: "5XXXXXXXX"  },
-  // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+  { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
 ];
 
 // Password strength rules matching backend validateRegistration
@@ -26,7 +26,7 @@ const passwordRules = [
 ];
 
 const Signup = () => {
-  const { t } = useLanguage();
+  const { t, isAr } = useLanguage();
   const navigate = useNavigate();
   const { register } = useAuth();
   const { toast } = useToast();
@@ -179,7 +179,7 @@ const Signup = () => {
               "أنشئ حسابك وابدأ باختصار الروابط وإنشاء أكواد QR وتتبع التحليلات."
             )}
           </p>
-          <div className="space-y-4 text-left">
+          <div className="space-y-4 text-start">
             {[
               { icon: Zap,      label: t("Real-time analytics", "تحليلات لحظية") },
               { icon: QrCode,   label: t("QR code generation", "إنشاء أكواد QR") },
@@ -273,7 +273,7 @@ const Signup = () => {
                   placeholder={t("Your full name", "اسمك الكامل")}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="h-11"
+                  className={cn("h-11", isAr && "text-right")}
                   required
                   minLength={2}
                 />
@@ -290,7 +290,7 @@ const Signup = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11"
+                  className={cn("h-11", isAr && "text-right")}
                   required
                   dir="ltr"
                 />
@@ -301,7 +301,7 @@ const Signup = () => {
                 <Label htmlFor="phone" className="text-foreground text-sm">
                   {t("Phone Number", "رقم الجوال")} *
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2" dir="ltr">
                   {/* Country code selector */}
                   <div className="relative shrink-0">
                     <button
@@ -316,7 +316,7 @@ const Signup = () => {
                       </svg>
                     </button>
                     {countryOpen && (
-                      <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                      <div className="absolute top-full start-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
                         {COUNTRY_OPTIONS.map((c) => (
                           <button
                             key={c.dialCode}
@@ -327,7 +327,7 @@ const Signup = () => {
                               setCountryOpen(false);
                             }}
                             className={cn(
-                              "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-left",
+                              "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start",
                               selectedCountry.dialCode === c.dialCode && "bg-muted"
                             )}
                           >
@@ -345,7 +345,7 @@ const Signup = () => {
                     placeholder={selectedCountry.placeholder}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits))}
-                    className="h-11"
+                    className={cn("h-11", isAr && "text-right")}
                     maxLength={selectedCountry.maxDigits}
                     dir="ltr"
                   />
@@ -357,14 +357,14 @@ const Signup = () => {
                 <Label htmlFor="password" className="text-foreground text-sm">
                   {t("Password", "كلمة المرور")} *
                 </Label>
-                <div className="relative">
+                <div className="relative" dir="ltr">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 pe-10"
+                    className={cn("h-11 pe-10", isAr && "text-right")}
                     required
                     dir="ltr"
                   />
@@ -399,16 +399,16 @@ const Signup = () => {
                 <Label htmlFor="confirmPassword" className="text-foreground text-sm">
                   {t("Confirm Password", "تأكيد كلمة المرور")} *
                 </Label>
-                <div className="relative">
+                <div className="relative" dir="ltr">
                   <Input
                     id="confirmPassword"
                     type={showConfirm ? "text" : "password"}
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`h-11 pe-10 ${
+                    className={cn(`h-11 pe-10`, isAr && "text-right",
                       confirmPassword.length > 0 && !passwordsMatch ? "border-destructive" : ""
-                    }`}
+                    )}
                     required
                     dir="ltr"
                   />

@@ -26,6 +26,36 @@ const AddDomain = () => {
 
   const addDomain = useAddDomain();
 
+  const [isAddingLater, setIsAddingLater] = useState(false);
+
+  // "I'll Add Later" — save domain as pending, then navigate away
+  const handleAddLater = async () => {
+    setIsAddingLater(true);
+    try {
+      await addDomain.mutateAsync({
+        domain: domain.trim(),
+        subdomain: subdomain.trim() || undefined,
+      });
+      amplitudeService.track('add custom-domain', { method: 'later' });
+      toast({
+        title: t("Domain saved", "تم حفظ الدومين"),
+        description: t(
+          "Domain saved as pending. You can verify DNS records anytime from the Domains page.",
+          "تم حفظ الدومين كـ قيد الانتظار. يمكنك التحقق من سجلات DNS في أي وقت من صفحة الدومينات."
+        ),
+      });
+      navigate("/dashboard/domains");
+    } catch (error: any) {
+      toast({
+        title: t("Error", "خطأ"),
+        description: error.message || t("Failed to save domain", "فشل حفظ الدومين"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingLater(false);
+    }
+  };
+
   const fullDomain = subdomain.trim()
     ? `${subdomain.trim()}.${domain.trim()}`
     : domain.trim();
@@ -291,10 +321,15 @@ const AddDomain = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => navigate("/dashboard/domains")}
+                onClick={handleAddLater}
                 className="h-10 sm:h-12 text-sm"
+                disabled={isAddingLater || isSubmitting}
               >
-                {t("I'll Add Later", "سأضيفها لاحقًا")}
+                {isAddingLater ? (
+                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Saving...", "جاري الحفظ...")}</>
+                ) : (
+                  t("I'll Add Later", "سأضيفها لاحقًا")
+                )}
               </Button>
               <Button
                 onClick={handleConfirmDNS}

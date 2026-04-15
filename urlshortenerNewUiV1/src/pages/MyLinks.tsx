@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { myLinksService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const MyLinks = () => {
   const { t } = useLanguage();
@@ -30,6 +31,16 @@ const MyLinks = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">("latest");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedDest, setExpandedDest] = useState<Set<string>>(new Set());
+
+  const toggleDest = (id: string) => {
+    setExpandedDest((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const [urls, setUrls] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -255,23 +266,23 @@ const MyLinks = () => {
             return (
               <div
                 key={url._id}
-                className="bg-background border border-border rounded-xl px-5 py-5 hover:shadow-md transition-all"
+                className="bg-background border border-border rounded-xl px-5 py-5 hover:shadow-md transition-all overflow-hidden"
               >
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">
+                  <div className="flex items-center gap-4 flex-1 min-w-0 overflow-hidden">
                     <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <Link2 className="w-4 h-4 text-primary" />
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-body font-medium text-foreground text-sm">{name}</h3>
-                      <p className="text-xs text-primary font-body flex items-center gap-1 mt-1">
-                        <ExternalLink size={10} />
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <h3 className="font-body font-medium text-foreground text-sm truncate">{name}</h3>
+                      <p className="text-xs text-primary font-body flex items-center gap-1 mt-1 min-w-0">
+                        <ExternalLink size={10} className="shrink-0" />
                         <a
                           href={shortUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:underline"
+                          className="hover:underline truncate min-w-0"
                         >
                           {shortUrl}
                         </a>
@@ -282,7 +293,13 @@ const MyLinks = () => {
                           {copiedId === (url.customCode || url.shortCode || "") ? <Check size={12} /> : <Copy size={12} />}
                         </button>
                       </p>
-                      <p className="text-[11px] text-muted-foreground font-body truncate mt-0.5">
+                      <p
+                        className={`text-[11px] text-muted-foreground font-body mt-0.5 cursor-pointer hover:text-foreground transition-colors ${
+                          expandedDest.has(url._id) ? "break-all" : "truncate"
+                        }`}
+                        onClick={() => toggleDest(url._id)}
+                        title={expandedDest.has(url._id) ? t("Click to collapse", "اضغط للطي") : t("Click to expand", "اضغط للتوسيع")}
+                      >
                         {dest}
                       </p>
                       {url.utm && (url.utm.source || url.utm.medium || url.utm.campaign) && (
@@ -310,11 +327,23 @@ const MyLinks = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-2.5"
-                        onClick={() =>
-                          navigate(
-                            `/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`
-                          )
+                        className={cn(
+                          "h-8 px-2.5",
+                          url.qrCodeGenerated && "text-primary border-primary/40 hover:bg-primary/5"
+                        )}
+                        onClick={() => {
+                          if (url.qrCodeGenerated) {
+                            // QR already exists — go to QR codes page
+                            navigate("/dashboard/qr-codes");
+                          } else {
+                            // QR not yet created — go to creation page with this link pre-selected
+                            navigate(`/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`);
+                          }
+                        }}
+                        title={
+                          url.qrCodeGenerated
+                            ? t("View QR Code", "عرض كود QR")
+                            : t("Generate QR Code", "إنشاء كود QR")
                         }
                       >
                         <QrCode className="w-3.5 h-3.5" />

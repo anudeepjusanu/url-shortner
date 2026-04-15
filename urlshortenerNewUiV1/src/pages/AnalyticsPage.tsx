@@ -21,7 +21,19 @@ const WEEK = 7 * DAY;
 
 type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 
-// ─── Hour weight curve (index = hour 0–23) ───
+// ─── Saudi Arabia Standard Time offset (UTC+3) ───
+const SAST_OFFSET_MS = 3 * 3600_000;
+
+// Get hour in Saudi Arabia Standard Time (UTC+3)
+function getSASTHour(ts: number): number {
+  return new Date(ts + SAST_OFFSET_MS).getUTCHours();
+}
+
+// Format hour label in SAST
+function formatSASTHour(utcHour: number): string {
+  const sastHour = (utcHour + 3) % 24;
+  return `${String(sastHour).padStart(2, "0")}:00`;
+}
 const HOUR_WEIGHTS = [1,1,1,1,1,2,3,5,7,8,9,8,7,8,9,8,6,5,4,3,2,2,1,1];
 const TOTAL_WEIGHT = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
 
@@ -188,6 +200,13 @@ const AnalyticsPage = () => {
   const dragStartWindow = useRef({ start: 0, end: 0 });
   const lastPinchDist = useRef(0);
   const pinchAnchor = useRef(0.5);
+  // Always-fresh refs for event handlers — avoids stale closure bugs
+  const windowStartRef = useRef(0);
+  const windowEndRef = useRef(0);
+  const clampWindowRef = useRef<(s: number, e: number) => { start: number; end: number }>(
+    (s, e) => ({ start: s, end: e })
+  );
+  const totalDurationRef = useRef(DAY);
 
   useEffect(() => {
     amplitudeService.track('Analytics View');
@@ -266,8 +285,18 @@ const AnalyticsPage = () => {
 
       if (mapped.length === 0) return mapped;
 
-      const overviewVisitors = apiData.overview?.uniqueClicks || 0;
-      const overviewQR       = apiData.url?.qrScanCount || 0;
+      const overviewVisitors =
+        apiData.overview?.uniqueClicks ||
+        apiData.overview?.uniqueVisitors ||
+        apiData.overview?.totalUniqueClicks ||
+        apiData.overview?.unique_clicks ||
+        0;
+      const overviewQR =
+        apiData.url?.qrScanCount ||
+        apiData.overview?.qrScans ||
+        apiData.overview?.totalQRScans ||
+        apiData.overview?.qr_scans ||
+        0;
       const clickCounts      = mapped.map(d => d.clicks);
 
       // timeSeries often omits uniqueClicks and never includes qrScans per day.
@@ -302,14 +331,34 @@ const AnalyticsPage = () => {
     if (linkId) {
       return {
         clicks: apiData.overview?.totalClicks || 0,
-        visitors: apiData.overview?.uniqueClicks || 0,
-        qrScans: apiData.url?.qrScanCount || 0,
+        // Try all possible field names the backend might use for unique visitors
+        visitors:
+          apiData.overview?.uniqueClicks ||
+          apiData.overview?.uniqueVisitors ||
+          apiData.overview?.totalUniqueClicks ||
+          apiData.overview?.unique_clicks ||
+          0,
+        // Try all possible field names for QR scans
+        qrScans:
+          apiData.url?.qrScanCount ||
+          apiData.overview?.qrScans ||
+          apiData.overview?.totalQRScans ||
+          apiData.overview?.qr_scans ||
+          0,
       };
     } else {
       return {
         clicks: apiData.overview?.totalClicks || 0,
-        visitors: apiData.overview?.totalUniqueClicks || 0,
-        qrScans: apiData.overview?.totalQRScans || 0,
+        visitors:
+          apiData.overview?.totalUniqueClicks ||
+          apiData.overview?.uniqueClicks ||
+          apiData.overview?.uniqueVisitors ||
+          0,
+        qrScans:
+          apiData.overview?.totalQRScans ||
+          apiData.overview?.qrScans ||
+          apiData.overview?.qr_scans ||
+          0,
       };
     }
   }, [apiData, linkId]);
@@ -404,11 +453,11 @@ const AnalyticsPage = () => {
         ? (apiData.overview?.totalClicks || 0)
         : (apiData.overview?.totalClicks || 0);
       const totalVisitors = linkId
-        ? (apiData.overview?.uniqueClicks || 0)
-        : (apiData.overview?.totalUniqueClicks || 0);
+        ? (apiData.overview?.uniqueClicks || apiData.overview?.uniqueVisitors || apiData.overview?.totalUniqueClicks || 0)
+        : (apiData.overview?.totalUniqueClicks || apiData.overview?.uniqueClicks || 0);
       const totalQR = linkId
-        ? (apiData.url?.qrScanCount || 0)
-        : (apiData.overview?.totalQRScans || 0);
+        ? (apiData.url?.qrScanCount || apiData.overview?.qrScans || apiData.overview?.totalQRScans || 0)
+        : (apiData.overview?.totalQRScans || apiData.overview?.qrScans || 0);
 
       if (totalClicks > 0 || totalVisitors > 0 || totalQR > 0) {
         const daysInRange = Math.max(1, Math.round((filterEnd - filterStart) / DAY));
@@ -491,7 +540,13 @@ const AnalyticsPage = () => {
     setWindowEnd(timelineEnd);
   }, [timelineStart, timelineEnd]);
 
-  // Scroll to zoom
+  // Keep refs in sync so event handlers always have fresh values
+  windowStartRef.current = windowStart;
+  windowEndRef.current = windowEnd;
+  clampWindowRef.current = clampWindow;
+  totalDurationRef.current = totalDuration;
+
+  // Scroll to zoom — registered once, reads fresh values via refs
   useEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
@@ -499,21 +554,23 @@ const AnalyticsPage = () => {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const mouseRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const curDur = windowEnd - windowStart;
+      const ws = windowStartRef.current;
+      const we = windowEndRef.current;
+      const curDur = we - ws;
       const factor = e.deltaY < 0 ? 0.85 : 1.15;
-      const newDur = Math.max(DAY, Math.min(totalDuration, curDur * factor));
-      const anchor = windowStart + curDur * mouseRatio;
+      const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * factor));
+      const anchor = ws + curDur * mouseRatio;
       const newStart = anchor - newDur * mouseRatio;
       const newEnd = newStart + newDur;
-      const c = clampWindow(newStart, newEnd);
+      const c = clampWindowRef.current(newStart, newEnd);
       setWindowStart(c.start);
       setWindowEnd(c.end);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [windowStart, windowEnd, totalDuration, clampWindow]);
+  }, []); // empty — uses refs for fresh values
 
-  // Pinch to zoom on touch
+  // Pinch to zoom on touch — registered once, reads fresh values via refs
   useEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
@@ -536,12 +593,14 @@ const AnalyticsPage = () => {
         const dist = getTouchDist(e);
         const ratio = lastPinchDist.current / dist;
         lastPinchDist.current = dist;
-        const curDur = windowEnd - windowStart;
-        const newDur = Math.max(DAY, Math.min(totalDuration, curDur * ratio));
-        const anchor = windowStart + curDur * pinchAnchor.current;
+        const ws = windowStartRef.current;
+        const we = windowEndRef.current;
+        const curDur = we - ws;
+        const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * ratio));
+        const anchor = ws + curDur * pinchAnchor.current;
         const newStart = anchor - newDur * pinchAnchor.current;
         const newEnd = newStart + newDur;
-        const c = clampWindow(newStart, newEnd);
+        const c = clampWindowRef.current(newStart, newEnd);
         setWindowStart(c.start);
         setWindowEnd(c.end);
       }
@@ -552,16 +611,16 @@ const AnalyticsPage = () => {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
     };
-  }, [windowStart, windowEnd, totalDuration, clampWindow]);
+  }, []); // empty — uses refs for fresh values
 
-  // Drag to pan
+  // Drag to pan — registered once, reads fresh values via refs
   useEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
     const onDown = (e: PointerEvent) => {
       isDragging.current = true;
       dragStartX.current = e.clientX;
-      dragStartWindow.current = { start: windowStart, end: windowEnd };
+      dragStartWindow.current = { start: windowStartRef.current, end: windowEndRef.current };
       el.setPointerCapture(e.pointerId);
       el.style.cursor = "grabbing";
     };
@@ -571,7 +630,10 @@ const AnalyticsPage = () => {
       const rect = el.getBoundingClientRect();
       const dur = dragStartWindow.current.end - dragStartWindow.current.start;
       const dtMs = -(dx / rect.width) * dur;
-      const c = clampWindow(dragStartWindow.current.start + dtMs, dragStartWindow.current.end + dtMs);
+      const c = clampWindowRef.current(
+        dragStartWindow.current.start + dtMs,
+        dragStartWindow.current.end + dtMs
+      );
       setWindowStart(c.start);
       setWindowEnd(c.end);
     };
@@ -589,7 +651,7 @@ const AnalyticsPage = () => {
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
     };
-  }, [windowStart, windowEnd, clampWindow]);
+  }, []); // empty — uses refs for fresh values
 
   // Compute tick interval to avoid label crowding
   const xTickInterval = useMemo(() => {
@@ -627,11 +689,11 @@ const AnalyticsPage = () => {
 
   const [geoTab, setGeoTab] = useState<"countries" | "cities">("countries");
 
-  // Peak hours data — top 4 busiest hours
+  // Peak hours data — top 4 busiest hours in Saudi Arabia Standard Time (UTC+3)
   const peakHoursData = useMemo(() => {
     const hourBuckets = Array.from({ length: 24 }, (_, i) => ({ hour: i, clicks: 0 }));
     hourlyTimeline.forEach(e => {
-      const h = new Date(e.ts).getHours();
+      const h = getSASTHour(e.ts);
       hourBuckets[h].clicks += e.clicks;
     });
     const sorted = [...hourBuckets].sort((a, b) => b.clicks - a.clicks).slice(0, 4);
@@ -846,10 +908,10 @@ const AnalyticsPage = () => {
                     const durations: Record<string, number> = { "24h": DAY, "5d": 5 * DAY, "20d": 20 * DAY };
                     const newDur = durations[val];
                     if (!newDur) return;
-                    const center = (windowStart + windowEnd) / 2;
+                    const center = (windowStartRef.current + windowEndRef.current) / 2;
                     const newStart = center - newDur / 2;
                     const newEnd = center + newDur / 2;
-                    const c = clampWindow(newStart, newEnd);
+                    const c = clampWindowRef.current(newStart, newEnd);
                     setWindowStart(c.start);
                     setWindowEnd(c.end);
                   }}
