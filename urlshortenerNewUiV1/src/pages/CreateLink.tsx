@@ -122,7 +122,7 @@ const CreateLink = () => {
       }
 
       if (generateQR) {
-        payload.generateQR = true;
+        payload.generateQRCode = true;
       }
 
       // Only include UTM params if the toggle is on at save time (req 8)

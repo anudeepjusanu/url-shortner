@@ -25,6 +25,10 @@ const LinkSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  isFeatured: {
+    type: Boolean,
+    default: false,
+  },
   clickCount: {
     type: Number,
     default: 0,
@@ -42,6 +46,13 @@ const ThemeSchema = new mongoose.Schema(
       enum: ['rounded', 'square', 'pill'],
       default: 'pill',
     },
+    buttonVariant: {
+      type: String,
+      enum: ['solid', 'outline', 'ghost'],
+      default: 'solid',
+    },
+    backgroundImage: { type: String, default: '' },
+    backgroundImageOpacity: { type: Number, default: 0.15, min: 0, max: 1 },
     textColor: { type: String, default: '#111827' },
     secondaryTextColor: { type: String, default: '#6b7280' },
     fontFamily: { type: String, default: 'Inter' },

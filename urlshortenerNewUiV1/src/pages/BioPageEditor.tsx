@@ -10,9 +10,12 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Plus, Trash2, ArrowUp, ArrowDown, Loader2, CheckCircle2, XCircle,
   Save, Eye, Globe, Instagram, Twitter, Linkedin, Github, Youtube, Link2,
+  Camera, MousePointerClick, Star, Share2, Copy, Check, ImageIcon,
 } from "lucide-react";
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
@@ -27,15 +30,19 @@ interface BioLink {
   icon: string;
   order: number;
   isActive: boolean;
+  isFeatured?: boolean;
   clickCount?: number;
 }
 
 interface BioTheme {
   backgroundColor: string;
   backgroundGradient: string;
+  backgroundImage: string;
+  backgroundImageOpacity: number;
   buttonColor: string;
   buttonTextColor: string;
   buttonStyle: "pill" | "rounded" | "square";
+  buttonVariant: "solid" | "outline" | "ghost";
   textColor: string;
   secondaryTextColor: string;
   fontFamily: string;
@@ -86,9 +93,12 @@ const DEFAULT_FORM: FormData = {
   theme: {
     backgroundColor: "#ffffff",
     backgroundGradient: "",
+    backgroundImage: "",
+    backgroundImageOpacity: 0.15,
     buttonColor: "#111827",
     buttonTextColor: "#ffffff",
     buttonStyle: "pill",
+    buttonVariant: "solid",
     textColor: "#111827",
     secondaryTextColor: "#6b7280",
     fontFamily: "Inter",
@@ -97,6 +107,51 @@ const DEFAULT_FORM: FormData = {
   links: [],
   socialLinks: { instagram: "", twitter: "", tiktok: "", youtube: "", linkedin: "", github: "", facebook: "", website: "" },
 };
+
+// ─── Blocked image URL patterns ───────────────────────────────────────────
+// These hosts either block cross-origin embedding or require auth/cookies.
+
+const BLOCKED_IMAGE_DOMAINS = [
+  { pattern: /encrypted-tbn\d*\.gstatic\.com/i,  reason: "Google image search cache — not embeddable" },
+  { pattern: /googleusercontent\.com/i,           reason: "Google user content — CORS restricted"     },
+  { pattern: /lh\d\.googleusercontent\.com/i,     reason: "Google Photos — CORS restricted"           },
+  { pattern: /facebook\.com\/photo/i,             reason: "Facebook photos — login required"          },
+  { pattern: /instagram\.com\/(p|reel)\//i,       reason: "Instagram post image — login required"     },
+  { pattern: /pbs\.twimg\.com/i,                  reason: "Twitter/X media — may be restricted"       },
+  { pattern: /private/i,                          reason: "URL contains 'private' — may require auth" },
+];
+
+function getAvatarUrlWarning(url: string): string | null {
+  if (!url || url.startsWith("data:")) return null;
+  const match = BLOCKED_IMAGE_DOMAINS.find(({ pattern }) => pattern.test(url));
+  return match ? match.reason : null;
+}
+
+// ─── Image compression helper ──────────────────────────────────────────────
+
+function compressImage(file: File, maxSize = 320, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = ev.target!.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // ─── Phone Preview ─────────────────────────────────────────────────────────
 
@@ -108,14 +163,17 @@ const PhonePreview = ({ form }: { form: FormData }) => {
     : { backgroundColor: theme.backgroundColor };
 
   const btnRadius = theme.buttonStyle === "pill" ? "9999px" : theme.buttonStyle === "rounded" ? "10px" : "4px";
-  const btnStyle: React.CSSProperties = {
-    backgroundColor: theme.buttonColor,
-    color: theme.buttonTextColor,
-    borderRadius: btnRadius,
-  };
+  const variant = theme.buttonVariant ?? "solid";
+  const btnStyle: React.CSSProperties =
+    variant === "outline"
+      ? { backgroundColor: "transparent", color: theme.buttonColor, border: `1.5px solid ${theme.buttonColor}`, borderRadius: btnRadius }
+      : variant === "ghost"
+      ? { backgroundColor: "transparent", color: theme.buttonColor, textDecoration: "underline", borderRadius: btnRadius }
+      : { backgroundColor: theme.buttonColor, color: theme.buttonTextColor, borderRadius: btnRadius };
 
   const activeSocial = Object.entries(socialLinks).filter(([, v]) => v);
   const activeLinks = links.filter((l) => l.isActive);
+  const sortedLinks = [...activeLinks].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
 
   return (
     <div className="flex flex-col items-center">
@@ -125,10 +183,20 @@ const PhonePreview = ({ form }: { form: FormData }) => {
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-4 bg-gray-900 rounded-full z-10" />
         {/* Screen */}
         <div
-          className="w-full h-full rounded-[28px] overflow-hidden overflow-y-auto"
+          className="w-full h-full rounded-[28px] overflow-hidden overflow-y-auto relative"
           style={bgStyle}
         >
-          <div className="flex flex-col items-center px-4 py-8 gap-3 min-h-full">
+          {/* Background image overlay — only render when URL is present */}
+          {theme.backgroundImage && (
+            <div
+              className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+              style={{
+                backgroundImage: `url(${theme.backgroundImage})`,
+                opacity: theme.backgroundImageOpacity ?? 0.4,
+              }}
+            />
+          )}
+          <div className="relative z-10 flex flex-col items-center px-4 py-8 gap-3 min-h-full">
             {/* Avatar */}
             {form.avatarUrl ? (
               <img
@@ -159,18 +227,23 @@ const PhonePreview = ({ form }: { form: FormData }) => {
             </div>
 
             {/* Links */}
-            <div className="w-full space-y-2 mt-1">
-              {activeLinks.length === 0 && (
+            <div className="w-full space-y-2 mt-1 relative z-10">
+              {sortedLinks.length === 0 && (
                 <div className="text-center text-[10px] opacity-40" style={{ color: theme.textColor }}>
                   Add links to see them here
                 </div>
               )}
-              {activeLinks.slice(0, 8).map((link, i) => (
+              {sortedLinks.slice(0, 8).map((link, i) => (
                 <div
                   key={i}
-                  className="w-full py-2 px-3 text-center text-[11px] font-medium truncate"
-                  style={btnStyle}
+                  className="w-full px-3 text-center text-[11px] font-medium truncate relative"
+                  style={{
+                    ...btnStyle,
+                    padding: link.isFeatured ? "9px 12px" : "7px 12px",
+                    fontSize: link.isFeatured ? "12px" : "11px",
+                  }}
                 >
+                  {link.isFeatured && <span className="absolute top-0.5 right-1.5 text-[8px] opacity-60">★</span>}
                   {link.icon && <span className="mr-1">{link.icon}</span>}
                   {link.title || "Link Title"}
                 </div>
@@ -214,8 +287,36 @@ const BioPageEditor = () => {
   const [form, setForm] = useState<FormData>(DEFAULT_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(isEditMode);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [bgImageStatus, setBgImageStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const usernameTimer = useRef<ReturnType<typeof setTimeout>>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ variant: "destructive", title: t("Invalid file", "ملف غير صالح"), description: t("Please select an image file", "يرجى اختيار ملف صورة") });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ variant: "destructive", title: t("File too large", "الملف كبير جداً"), description: t("Max image size is 10 MB", "الحجم الأقصى للصورة هو 10 ميغابايت") });
+      return;
+    }
+    setIsUploadingAvatar(true);
+    try {
+      const compressed = await compressImage(file);
+      setField("avatarUrl", compressed);
+    } catch {
+      toast({ variant: "destructive", title: t("Upload failed", "فشل الرفع"), description: t("Could not process the image", "تعذّر معالجة الصورة") });
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Load existing page for edit mode
   useEffect(() => {
@@ -238,6 +339,7 @@ const BioPageEditor = () => {
             icon: l.icon || "",
             order: l.order ?? 0,
             isActive: l.isActive ?? true,
+            isFeatured: l.isFeatured ?? false,
             clickCount: l.clickCount || 0,
           })),
           socialLinks: { ...DEFAULT_FORM.socialLinks, ...(p.socialLinks || {}) },
@@ -250,6 +352,19 @@ const BioPageEditor = () => {
       }
     })();
   }, [id, isEditMode, navigate, toast, t]);
+
+  // Background image URL validation — preload test
+  useEffect(() => {
+    const url = form.theme.backgroundImage;
+    if (!url) { setBgImageStatus("idle"); return; }
+    setBgImageStatus("loading");
+    const img = new Image();
+    img.onload = () => setBgImageStatus("ok");
+    img.onerror = () => setBgImageStatus("error");
+    img.src = url;
+    // Cleanup if URL changes before image loads
+    return () => { img.onload = null; img.onerror = null; };
+  }, [form.theme.backgroundImage]);
 
   // Username availability check (debounced)
   const checkUsername = useCallback(
@@ -284,7 +399,7 @@ const BioPageEditor = () => {
   const addLink = () =>
     setForm((prev) => ({
       ...prev,
-      links: [...prev.links, { title: "", url: "", icon: "", order: prev.links.length, isActive: true }],
+      links: [...prev.links, { title: "", url: "", icon: "", order: prev.links.length, isActive: true, isFeatured: false }],
     }));
 
   const removeLink = (index: number) =>
@@ -305,6 +420,17 @@ const BioPageEditor = () => {
       [links[index], links[target]] = [links[target], links[index]];
       return { ...prev, links: links.map((l, i) => ({ ...l, order: i })) };
     });
+  };
+
+  // Only one link can be featured at a time
+  const toggleFeatured = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      links: prev.links.map((l, i) => ({
+        ...l,
+        isFeatured: i === index ? !l.isFeatured : false,
+      })),
+    }));
   };
 
   const applyPreset = (presetId: string) => {
@@ -375,6 +501,55 @@ const BioPageEditor = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* QR / Share dialog — only shown once a username exists */}
+            {form.username && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Share2 className="w-4 h-4" />
+                    {t("Share", "مشاركة")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xs text-center">
+                  <DialogHeader>
+                    <DialogTitle>{t("Share your bio page", "شارك صفحتك")}</DialogTitle>
+                  </DialogHeader>
+                  {/* QR code via qrserver.com — no library needed */}
+                  <div className="flex justify-center my-2">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(
+                        `${window.location.origin}${window.location.pathname}#/bio/${form.username}`
+                      )}`}
+                      alt="QR Code"
+                      className="w-48 h-48 rounded-xl border border-border"
+                    />
+                  </div>
+                  {/* Public URL + copy button */}
+                  <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2 text-sm font-mono break-all">
+                    <span className="flex-1 text-start text-xs text-muted-foreground truncate">
+                      {window.location.origin}{window.location.pathname}#/bio/{form.username}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-7 h-7 flex-shrink-0"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}${window.location.pathname}#/bio/${form.username}`
+                        );
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                    >
+                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("Scan or copy the link to share your bio page", "امسح أو انسخ الرابط لمشاركة صفحتك")}
+                  </p>
+                </DialogContent>
+              </Dialog>
+            )}
             <Button variant="outline" onClick={() => navigate("/dashboard/bio-pages")}>
               {t("Cancel", "إلغاء")}
             </Button>
@@ -461,15 +636,106 @@ const BioPageEditor = () => {
                 <p className="text-xs text-muted-foreground text-end">{form.description.length}/300</p>
               </div>
 
-              {/* Avatar URL */}
-              <div className="space-y-2">
-                <Label htmlFor="avatar">{t("Avatar / Profile Image URL", "رابط صورة الملف الشخصي")}</Label>
-                <Input
-                  id="avatar"
-                  value={form.avatarUrl}
-                  onChange={(e) => setField("avatarUrl", e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                />
+              {/* Avatar upload */}
+              <div className="space-y-3">
+                <Label>{t("Avatar / Profile Image", "صورة الملف الشخصي")}</Label>
+
+                {/* Preview + upload button row */}
+                <div className="flex items-center gap-4">
+                  {/* Current avatar preview */}
+                  <div className="flex-shrink-0">
+                    {form.avatarUrl && !avatarLoadError ? (
+                      <img
+                        src={form.avatarUrl}
+                        alt="avatar preview"
+                        className="w-16 h-16 rounded-full object-cover ring-2 ring-border"
+                        onError={() => setAvatarLoadError(true)}
+                      />
+                    ) : (
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold ring-2 ring-border"
+                        style={{ backgroundColor: form.theme.buttonColor, color: form.theme.buttonTextColor }}
+                      >
+                        {form.title ? form.title.slice(0, 2).toUpperCase() : "AB"}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    {/* Hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 w-full"
+                      disabled={isUploadingAvatar}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {isUploadingAvatar
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Camera className="w-4 h-4" />}
+                      {isUploadingAvatar
+                        ? t("Processing…", "جاري المعالجة…")
+                        : t("Upload Photo", "رفع صورة")}
+                    </Button>
+                    {form.avatarUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-destructive hover:bg-destructive/10 text-xs"
+                        onClick={() => setField("avatarUrl", "")}
+                      >
+                        {t("Remove photo", "إزالة الصورة")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* URL fallback input */}
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">{t("Or paste an image URL", "أو الصق رابط صورة")}</p>
+                  <Input
+                    value={form.avatarUrl.startsWith("data:") ? "" : form.avatarUrl}
+                    onChange={(e) => {
+                      setAvatarLoadError(false);
+                      setField("avatarUrl", e.target.value);
+                    }}
+                    placeholder="https://example.com/avatar.jpg"
+                    className={cn(
+                      (getAvatarUrlWarning(form.avatarUrl) || avatarLoadError) && "border-amber-400 focus-visible:ring-amber-400"
+                    )}
+                  />
+                  {/* Blocked-domain warning */}
+                  {getAvatarUrlWarning(form.avatarUrl) && (
+                    <p className="text-xs text-amber-600 flex items-start gap-1.5">
+                      <span className="mt-0.5">⚠</span>
+                      <span>
+                        {t("This URL may not load:", "هذا الرابط قد لا يعمل:")} {getAvatarUrlWarning(form.avatarUrl)}.{" "}
+                        {t("Upload a photo instead.", "استخدم زر رفع الصورة عوضاً عن ذلك.")}
+                      </span>
+                    </p>
+                  )}
+                  {/* Generic load failure (CORS / 403 / network) */}
+                  {avatarLoadError && !getAvatarUrlWarning(form.avatarUrl) && (
+                    <p className="text-xs text-amber-600 flex items-start gap-1.5">
+                      <span className="mt-0.5">⚠</span>
+                      <span>
+                        {t(
+                          "Image failed to load — the server may block cross-origin requests. Try uploading the photo directly.",
+                          "تعذّر تحميل الصورة — قد يمنع الخادم الطلبات من مصادر خارجية. حاول رفع الصورة مباشرةً."
+                        )}
+                      </span>
+                    </p>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -546,9 +812,113 @@ const BioPageEditor = () => {
 
               <Separator />
 
-              {/* Button style */}
+              {/* Background image */}
               <div className="space-y-3">
-                <Label>{t("Button Style", "شكل الزر")}</Label>
+                <Label className="flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  {t("Background Image", "صورة الخلفية")}
+                </Label>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  {t(
+                    "Paste a direct image URL ending in .jpg, .png, .webp, etc. — not a webpage link.",
+                    "الصق رابطاً مباشراً للصورة ينتهي بـ .jpg أو .png أو .webp — وليس رابط صفحة ويب."
+                  )}
+                </p>
+
+                {/* Input with live status indicator */}
+                <div className="relative">
+                  <Input
+                    value={form.theme.backgroundImage}
+                    onChange={(e) => {
+                      setBgImageStatus("idle");
+                      setTheme({ backgroundImage: e.target.value });
+                    }}
+                    placeholder="https://example.com/background.jpg"
+                    className={cn(
+                      bgImageStatus === "error" && "border-destructive focus-visible:ring-destructive",
+                      bgImageStatus === "ok"    && "border-green-500 focus-visible:ring-green-500"
+                    )}
+                  />
+                  {/* Inline status icon */}
+                  <span className="absolute end-3 top-1/2 -translate-y-1/2">
+                    {bgImageStatus === "loading" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                    {bgImageStatus === "ok"      && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                    {bgImageStatus === "error"   && <XCircle className="w-4 h-4 text-destructive" />}
+                  </span>
+                </div>
+
+                {/* Error explanation */}
+                {bgImageStatus === "error" && (
+                  <p className="text-xs text-destructive flex items-start gap-1.5">
+                    <span className="mt-0.5">✕</span>
+                    <span>
+                      {t(
+                        "Could not load this image. Make sure it's a direct image URL (not a webpage). Try right-clicking an image → \"Copy image address\".",
+                        "تعذّر تحميل هذه الصورة. تأكد أن الرابط مباشر للصورة (وليس صفحة ويب). جرّب النقر بزر الفأرة الأيمن على الصورة ← \"نسخ عنوان الصورة\"."
+                      )}
+                    </span>
+                  </p>
+                )}
+
+                {/* Opacity slider + preview — only shown when image loads successfully */}
+                {form.theme.backgroundImage && bgImageStatus === "ok" && (
+                  <div className="space-y-3">
+                    {/* Mini preview strip */}
+                    <div
+                      className="w-full h-16 rounded-lg border border-border overflow-hidden relative"
+                      style={{ backgroundColor: form.theme.backgroundColor }}
+                    >
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${form.theme.backgroundImage})`,
+                          opacity: form.theme.backgroundImageOpacity,
+                        }}
+                      />
+                      <div className="relative z-10 flex items-center justify-center h-full">
+                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-black/30 text-white">
+                          {t("Preview", "معاينة")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{t("Image opacity", "شفافية الصورة")}</span>
+                        <span className="font-mono font-medium">{Math.round(form.theme.backgroundImageOpacity * 100)}%</span>
+                      </div>
+                      <Slider
+                        min={5}
+                        max={100}
+                        step={5}
+                        value={[Math.round(form.theme.backgroundImageOpacity * 100)]}
+                        onValueChange={([v]) => setTheme({ backgroundImageOpacity: v / 100 })}
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-destructive hover:bg-destructive/10 h-7"
+                      onClick={() => { setTheme({ backgroundImage: "" }); setBgImageStatus("idle"); }}
+                    >
+                      {t("Remove background image", "إزالة صورة الخلفية")}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Show slider even while loading so it doesn't disappear */}
+                {form.theme.backgroundImage && bgImageStatus === "loading" && (
+                  <p className="text-xs text-muted-foreground">{t("Checking image…", "جاري التحقق من الصورة…")}</p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Button shape */}
+              <div className="space-y-3">
+                <Label>{t("Button Shape", "شكل الزر")}</Label>
                 <div className="flex gap-3">
                   {(["pill", "rounded", "square"] as const).map((style) => (
                     <button
@@ -567,6 +937,38 @@ const BioPageEditor = () => {
                   ))}
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Button fill variant */}
+              <div className="space-y-3">
+                <Label>{t("Button Style", "نمط الزر")}</Label>
+                <div className="flex gap-3">
+                  {(["solid", "outline", "ghost"] as const).map((variant) => {
+                    const labels: Record<string, [string, string]> = {
+                      solid:   [t("Solid",   "ممتلئ"),  "bg-foreground text-background"],
+                      outline: [t("Outline", "محيط"),   "border-2 border-foreground bg-transparent text-foreground"],
+                      ghost:   [t("Ghost",   "شفاف"),   "bg-transparent text-foreground underline underline-offset-2"],
+                    };
+                    const [label, previewCls] = labels[variant];
+                    return (
+                      <button
+                        key={variant}
+                        onClick={() => setTheme({ buttonVariant: variant })}
+                        className={cn(
+                          "flex-1 py-2 text-xs font-medium border rounded-lg transition-all flex flex-col items-center gap-1.5 pt-3 pb-2",
+                          form.theme.buttonVariant === variant
+                            ? "ring-2 ring-primary border-primary"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <span className={cn("text-[10px] px-3 py-1 rounded", previewCls)}>{label}</span>
+                        <span className="text-muted-foreground text-[10px]">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </TabsContent>
 
             {/* ── Links Tab ── */}
@@ -574,13 +976,28 @@ const BioPageEditor = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{t("Links", "الروابط")}</p>
-                  <p className="text-xs text-muted-foreground">{t("Add up to 50 links", "أضف حتى 50 رابطاً")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Add up to 50 links · ⭐ star one to feature it", "أضف حتى 50 رابطاً · ⭐ ميّز رابطاً واحداً")}
+                  </p>
                 </div>
                 <Button size="sm" variant="outline" onClick={addLink} disabled={form.links.length >= 50} className="gap-1.5">
                   <Plus className="w-4 h-4" />
                   {t("Add Link", "إضافة رابط")}
                 </Button>
               </div>
+
+              {/* Total clicks summary — only in edit mode when there is data */}
+              {isEditMode && form.links.some((l) => (l.clickCount ?? 0) > 0) && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary/8 border border-primary/20">
+                  <MousePointerClick className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {form.links.reduce((acc, l) => acc + (l.clickCount ?? 0), 0).toLocaleString()}{" "}
+                      {t("total clicks across all links", "إجمالي النقرات على جميع الروابط")}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {form.links.length === 0 && (
                 <div className="text-center py-10 border border-dashed rounded-xl">
@@ -627,6 +1044,20 @@ const BioPageEditor = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className={cn(
+                          "w-8 h-8 transition-colors",
+                          link.isFeatured
+                            ? "text-amber-500 hover:text-amber-600"
+                            : "text-muted-foreground hover:text-amber-400"
+                        )}
+                        onClick={() => toggleFeatured(i)}
+                        title={t("Featured link", "رابط مميز")}
+                      >
+                        <Star className={cn("w-4 h-4", link.isFeatured && "fill-amber-500")} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="w-8 h-8 text-destructive hover:bg-destructive/10"
                         onClick={() => removeLink(i)}
                       >
@@ -644,8 +1075,16 @@ const BioPageEditor = () => {
                     {link.url && !link.url.startsWith("http") && (
                       <p className="text-xs text-amber-500">{t("URL should start with https://", "يجب أن يبدأ الرابط بـ https://")}</p>
                     )}
-                    {link.clickCount !== undefined && link.clickCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">{link.clickCount} {t("clicks", "نقرة")}</Badge>
+                    {isEditMode && (
+                      <div className="flex items-center gap-1.5">
+                        <MousePointerClick className="w-3 h-3 text-muted-foreground" />
+                        <span className={cn(
+                          "text-xs font-medium",
+                          (link.clickCount ?? 0) > 0 ? "text-primary" : "text-muted-foreground"
+                        )}>
+                          {(link.clickCount ?? 0).toLocaleString()} {t("clicks", "نقرة")}
+                        </span>
+                      </div>
                     )}
                   </div>
                 ))}

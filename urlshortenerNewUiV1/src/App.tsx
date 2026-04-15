@@ -42,6 +42,7 @@ import AddDomain from "./pages/AddDomain";
 import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
 import PublicBioPage from "./pages/PublicBioPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -61,22 +62,22 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/links" element={<MyLinks />} />
-            <Route path="/dashboard/create-link" element={<CreateLink />} />
-            <Route path="/dashboard/qr-codes" element={<QRCodes />} />
-            <Route path="/dashboard/qr-codes/create" element={<CreateQRCode />} />
-            <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-            <Route path="/dashboard/analytics/:linkId" element={<AnalyticsPage />} />
-            <Route path="/dashboard/domains" element={<CustomDomains />} />
-            <Route path="/dashboard/domains/add" element={<AddDomain />} />
-            <Route path="/dashboard/profile" element={<Profile />} />
-            <Route path="/dashboard/api" element={<ApiDocs />} />
-            <Route path="/dashboard/users" element={<UserManagement />} />
-            <Route path="/dashboard/urls" element={<UrlManagement />} />
-            <Route path="/dashboard/bio-pages" element={<BioPages />} />
-            <Route path="/dashboard/bio-pages/create" element={<BioPageEditor />} />
-            <Route path="/dashboard/bio-pages/:id/edit" element={<BioPageEditor />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/links" element={<ProtectedRoute><MyLinks /></ProtectedRoute>} />
+            <Route path="/dashboard/create-link" element={<ProtectedRoute><CreateLink /></ProtectedRoute>} />
+            <Route path="/dashboard/qr-codes" element={<ProtectedRoute><QRCodes /></ProtectedRoute>} />
+            <Route path="/dashboard/qr-codes/create" element={<ProtectedRoute><CreateQRCode /></ProtectedRoute>} />
+            <Route path="/dashboard/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/dashboard/analytics/:linkId" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/dashboard/domains" element={<ProtectedRoute><CustomDomains /></ProtectedRoute>} />
+            <Route path="/dashboard/domains/add" element={<ProtectedRoute><AddDomain /></ProtectedRoute>} />
+            <Route path="/dashboard/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/dashboard/api" element={<ProtectedRoute><ApiDocs /></ProtectedRoute>} />
+            <Route path="/dashboard/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+            <Route path="/dashboard/urls" element={<ProtectedRoute><UrlManagement /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages" element={<ProtectedRoute><BioPages /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

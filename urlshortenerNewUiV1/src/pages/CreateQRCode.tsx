@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, QrCode, Palette, Maximize, Download } from "lucide-react";
 import amplitudeService from "@/services/amplitude";
+import { myLinksService, qrCodeService } from "@/services/jwtService";
+import { QRCodeCanvas } from "qrcode.react";
 
 const CreateQRCode = () => {
   const { t } = useLanguage();
@@ -25,9 +27,32 @@ const CreateQRCode = () => {
   const [format, setFormat] = useState("png");
   const [fgColor, setFgColor] = useState("#1a2744");
   const [bgColor, setBgColor] = useState("#ffffff");
-  const handleCreate = () => {
-    amplitudeService.track('QR Code');
-    navigate("/dashboard/qr-codes");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCreate = async () => {
+    if (!url.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const newLink = await myLinksService.create({
+        originalUrl: url.trim(),
+        ...(label.trim() && { title: label.trim() }),
+      });
+      const urlId = newLink?.data?.url?._id;
+      await qrCodeService.generate(urlId, {
+        size: parseInt(size),
+        format: (format === "jpg" ? "jpeg" : format) as any,
+        foregroundColor: fgColor,
+        backgroundColor: bgColor,
+      });
+      amplitudeService.track('QR Code');
+      navigate("/dashboard/qr-codes");
+    } catch (err: any) {
+      setError(err.message || t("Failed to create QR code", "فشل إنشاء كود QR"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -172,12 +197,17 @@ const CreateQRCode = () => {
               <Button
                 onClick={handleCreate}
                 className="flex-1 h-12 text-base bg-primary text-primary-foreground"
-                disabled={!url.trim()}
+                disabled={!url.trim() || loading}
               >
                 <QrCode className="w-4 h-4 me-2" />
-                {t("Create QR Code", "إنشاء كود QR")}
+                {loading
+                  ? t("Creating...", "جار الإنشاء...")
+                  : t("Create QR Code", "إنشاء كود QR")}
               </Button>
             </div>
+            {error && (
+              <p className="text-sm text-destructive font-body">{error}</p>
+            )}
           </div>
         </div>
 
@@ -191,8 +221,15 @@ const CreateQRCode = () => {
             style={{ backgroundColor: bgColor }}
           >
             {url.trim() ? (
-              <div className="text-center">
-                <QrCode className="w-32 h-32 mx-auto" style={{ color: fgColor }} />
+              <div className="text-center p-4">
+                <QRCodeCanvas
+                  value={url.trim()}
+                  size={200}
+                  fgColor={fgColor}
+                  bgColor={bgColor}
+                  level="M"
+                  className="rounded mx-auto"
+                />
                 <p className="text-xs text-muted-foreground font-body mt-3">
                   {size} × {size} • {format.toUpperCase()}
                 </p>

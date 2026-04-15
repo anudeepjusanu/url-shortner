@@ -225,6 +225,13 @@ export const qrCodeService = {
   getStats: () => authRequest('/qr-codes/stats'),
 
   /**
+   * DELETE /qr-codes/:id
+   * Remove the QR code from a URL without deleting the short link itself.
+   */
+  delete: (urlId: string) =>
+    authRequest(`/qr-codes/${urlId}`, { method: 'DELETE' }),
+
+  /**
    * PUT /qr-codes/customize/:id
    * Update the visual customization of an existing QR code.
    */
