@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
+import amplitudeService from "@/services/amplitude";
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
@@ -16,7 +17,7 @@ const COUNTRY_OPTIONS = [
 ];
 
 const Login = () => {
-  const { t } = useLanguage();
+  const { t, isAr } = useLanguage();
   const navigate = useNavigate();
   const { login, loginWithPhone } = useAuth();
   const { toast } = useToast();
@@ -51,6 +52,7 @@ const Login = () => {
         });
       } else {
         // Login successful without OTP
+        amplitudeService.track('login');
         toast({
           title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
           description: t("Welcome back!", "مرحباً بعودتك!"),
@@ -111,6 +113,7 @@ const Login = () => {
       }
 
       if (response.success) {
+        amplitudeService.track('login');
         toast({
           title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
           description: t("Welcome back!", "مرحباً بعودتك!"),
@@ -147,7 +150,7 @@ const Login = () => {
           </p>
 
           {/* Feature highlights */}
-          <div className="space-y-4 text-left">
+          <div className="space-y-4 text-start">
             {[
               { icon: Zap, label: t("Real-time analytics", "تحليلات لحظية") },
               { icon: QrCode, label: t("QR code generation", "إنشاء أكواد QR") },
@@ -222,7 +225,8 @@ const Login = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-11"
+                      className={cn("h-11", isAr && "text-right")}
+                      dir="ltr"
                     />
                   </div>
 
@@ -233,14 +237,15 @@ const Login = () => {
                         {t("Forgot password?", "نسيت كلمة المرور؟")}
                       </Link>
                     </div>
-                    <div className="relative">
+                    <div className="relative" dir="ltr">
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 pe-10"
+                        className={cn("h-11 pe-10", isAr && "text-right")}
+                        dir="ltr"
                       />
                       <button
                         type="button"
@@ -281,7 +286,10 @@ const Login = () => {
                       dir="ltr"
                     />
                     <p className="text-xs text-muted-foreground font-body">
-                      {t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
+                      {t(
+                        `Code sent to ${otpData?.phone || otpData?.sentTo || email}`,
+                        `تم إرسال الرمز إلى ${otpData?.phone || otpData?.sentTo || email}`
+                      )}
                     </p>
                   </div>
 
@@ -313,7 +321,7 @@ const Login = () => {
                 <form onSubmit={handleSendOtp} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">{t("Phone Number", "رقم الجوال")}</Label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" dir="ltr">
                       {/* Country code selector */}
                       <div className="relative shrink-0">
                         <button
@@ -328,7 +336,7 @@ const Login = () => {
                           </svg>
                         </button>
                         {countryOpen && (
-                          <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                          <div className="absolute top-full start-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
                             {COUNTRY_OPTIONS.map((c) => (
                               <button
                                 key={c.dialCode}
@@ -339,7 +347,7 @@ const Login = () => {
                                   setCountryOpen(false);
                                 }}
                                 className={cn(
-                                  "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-left",
+                                  "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start",
                                   selectedCountry.dialCode === c.dialCode && "bg-muted"
                                 )}
                               >
@@ -357,7 +365,7 @@ const Login = () => {
                         placeholder={selectedCountry.placeholder}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits))}
-                        className="h-11"
+                        className={cn("h-11", isAr && "text-right")}
                         dir="ltr"
                       />
                     </div>
@@ -392,7 +400,10 @@ const Login = () => {
                       dir="ltr"
                     />
                     <p className="text-xs text-muted-foreground font-body">
-                      {t(`Code sent to ${selectedCountry.dialCode}${phone}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phone}`)}
+                      {t(
+                        `Code sent to ${otpData?.phone || otpData?.sentTo || `${selectedCountry.dialCode}${phone}`}`,
+                        `تم إرسال الرمز إلى ${otpData?.phone || otpData?.sentTo || `${selectedCountry.dialCode}${phone}`}`
+                      )}
                     </p>
                   </div>
 

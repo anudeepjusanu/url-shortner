@@ -1,10 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -31,10 +37,11 @@ import {
 } from "@/components/ui/select";
 import {
   QrCode, Download, Trash2, Plus, ExternalLink,
-  Search, Loader2, Settings2, BarChart2, ScanLine, Zap, ArrowDownToLine,
+  Search, Loader2,
 } from "lucide-react";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface QROptions {
   size: number;
@@ -58,23 +65,14 @@ const QRCodes = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get("urlId");
+  const highlightRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState("");
   const [allUrls, setAllUrls] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-
-  // Stats
-  const [stats, setStats] = useState({
-    totalQRCodes: 0,
-    totalScans: 0,
-    activeQRCodes: 0,
-    downloadsToday: 0,
-  });
-
-  // Bulk select
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Generate / Customize modal
   const [showModal, setShowModal] = useState(false);
@@ -113,40 +111,27 @@ const QRCodes = () => {
     }
   }, []);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const res = await qrCodeService.getStats();
-      if (res?.success && res?.data) {
-        setStats({
-          totalQRCodes: res.data.totalQRCodes || 0,
-          totalScans: res.data.totalScans || 0,
-          activeQRCodes: res.data.activeQRCodes || 0,
-          downloadsToday: res.data.downloadsToday || 0,
-        });
-      }
-    } catch {
-      // non-critical — silently ignore
-    }
-  }, []);
-
   useEffect(() => {
     fetchUrls();
-    loadStats();
-  }, [fetchUrls, loadStats]);
+  }, [fetchUrls]);
 
   // Refetch when tab becomes visible again
   useEffect(() => {
     const handleVisibility = () => {
-      if (!document.hidden) {
-        fetchUrls();
-        loadStats();
-      }
+      if (!document.hidden) fetchUrls();
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, [fetchUrls, loadStats]);
+  }, [fetchUrls]);
 
-  // Fetch missing QR images for generated-but-null records
+  // Scroll to highlighted card when data loads
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  }, [highlightId, allUrls.length]);
   useEffect(() => {
     const missing = allUrls.filter((u) => u.qrCodeGenerated && !u.qrCode);
     if (missing.length === 0) return;
@@ -177,12 +162,18 @@ const QRCodes = () => {
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
   const getShortUrl = (url: any) => {
+    // Prefer the virtual shortUrl from the model (always has the full URL)
+    if (url.shortUrl) {
+      return url.shortUrl.replace(/^https?:\/\//, "");
+    }
+    // Fallback: build from domain + code
     const domain = url.domain || "";
     const code = url.customCode || url.shortCode || "";
     return domain ? `${domain}/${code}` : code;
   };
 
   const filtered = allUrls.filter((url) => {
+    if (!url.qrCodeGenerated) return false;
     const name = url.title || url.shortCode || "";
     const short = getShortUrl(url);
     return (
@@ -191,46 +182,6 @@ const QRCodes = () => {
       (url.originalUrl || "").toLowerCase().includes(search.toLowerCase())
     );
   });
-
-  // ─── Bulk select ─────────────────────────────────────────────────────────
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filtered.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filtered.map((u) => u._id));
-    }
-  };
-
-  const handleBulkGenerate = async () => {
-    if (selectedIds.length === 0) return;
-    setBulkLoading(true);
-    try {
-      await qrCodeService.bulkGenerate(selectedIds, {
-        size: 300,
-        format: "png",
-        errorCorrectionLevel: "M",
-      });
-      setSelectedIds([]);
-      await fetchUrls();
-      await loadStats();
-      toast({ title: t("QR codes generated", "تم إنشاء أكواد QR") });
-    } catch (err: any) {
-      toast({
-        title: t("Bulk generate failed", "فشل الإنشاء الجماعي"),
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setBulkLoading(false);
-    }
-  };
 
   // ─── Generate / Customize ────────────────────────────────────────────────
 
@@ -244,7 +195,6 @@ const QRCodes = () => {
   const openCustomizeModal = async (link: any) => {
     setSelectedLink(link);
     setIsUpdating(true);
-    // Load existing customization from API
     try {
       const res = await qrCodeService.get(link._id);
       const customization = res?.data?.customization;
@@ -271,7 +221,9 @@ const QRCodes = () => {
     setGenerateLoading(true);
     try {
       let res;
-      if (isUpdating) {
+      // If link already has a QR code, always update (never duplicate)
+      const shouldUpdate = isUpdating || !!selectedLink.qrCodeGenerated;
+      if (shouldUpdate) {
         res = await qrCodeService.updateCustomization(selectedLink._id, {
           ...qrOptions,
           errorCorrectionLevel: qrOptions.errorCorrection,
@@ -295,7 +247,6 @@ const QRCodes = () => {
 
       setShowModal(false);
       setSelectedLink(null);
-      loadStats();
       toast({
         title: isUpdating
           ? t("QR code updated", "تم تحديث كود QR")
@@ -324,7 +275,6 @@ const QRCodes = () => {
       a.download = `qr-${url.shortCode || url._id}.${qrOptions.format || "png"}`;
       a.click();
       URL.revokeObjectURL(blobUrl);
-      loadStats();
     } catch (err: any) {
       toast({
         title: t("Download Failed", "فشل التحميل"),
@@ -347,10 +297,15 @@ const QRCodes = () => {
     setDeletingId(deleteDialog.id);
     setDeleteDialog((d) => ({ ...d, open: false }));
     try {
-      await myLinksService.delete(deleteDialog.id);
-      setAllUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
-      loadStats();
-      toast({ title: t("Deleted successfully", "تم الحذف بنجاح") });
+      await qrCodeService.delete(deleteDialog.id);
+      setAllUrls((prev) =>
+        prev.map((u) =>
+          u._id === deleteDialog.id
+            ? { ...u, qrCode: undefined, qrCodeGenerated: false }
+            : u
+        )
+      );
+      toast({ title: t("QR code deleted successfully", "تم حذف كود QR بنجاح") });
     } catch (err: any) {
       toast({
         title: t("Delete failed", "فشل الحذف"),
@@ -375,11 +330,11 @@ const QRCodes = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete Link", "حذف الرابط")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("Delete QR Code", "حذف كود QR")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t(
-                `Are you sure you want to delete "${deleteDialog.shortUrl}"? This cannot be undone.`,
-                `هل أنت متأكد من حذف "${deleteDialog.shortUrl}"؟ لا يمكن التراجع.`
+                `This will remove the QR code for "${deleteDialog.shortUrl}". The short link will remain active.`,
+                `سيتم حذف كود QR للرابط "${deleteDialog.shortUrl}". سيبقى الرابط المختصر نشطاً.`
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -407,7 +362,6 @@ const QRCodes = () => {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {/* Size */}
             <div className="grid grid-cols-2 items-center gap-3">
               <Label>{t("Size (px)", "الحجم (px)")}</Label>
               <input
@@ -422,7 +376,6 @@ const QRCodes = () => {
               />
             </div>
 
-            {/* Format */}
             <div className="grid grid-cols-2 items-center gap-3">
               <Label>{t("Format", "الصيغة")}</Label>
               <Select
@@ -444,7 +397,6 @@ const QRCodes = () => {
               </Select>
             </div>
 
-            {/* Error correction */}
             <div className="grid grid-cols-2 items-center gap-3">
               <Label>{t("Error Correction", "تصحيح الخطأ")}</Label>
               <Select
@@ -468,7 +420,6 @@ const QRCodes = () => {
               </Select>
             </div>
 
-            {/* Colors */}
             <div className="grid grid-cols-2 items-center gap-3">
               <Label>{t("Foreground", "اللون الأمامي")}</Label>
               <input
@@ -480,6 +431,7 @@ const QRCodes = () => {
                 className="h-9 w-full rounded-md border border-border cursor-pointer"
               />
             </div>
+
             <div className="grid grid-cols-2 items-center gap-3">
               <Label>{t("Background", "لون الخلفية")}</Label>
               <input
@@ -492,7 +444,6 @@ const QRCodes = () => {
               />
             </div>
 
-            {/* Include margin */}
             <div className="flex items-center gap-3">
               <Checkbox
                 id="includeMargin"
@@ -518,127 +469,54 @@ const QRCodes = () => {
       </Dialog>
 
       {/* ── Page header ── */}
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 className="text-lg sm:text-2xl font-display font-bold text-foreground">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-display font-bold text-foreground">
           {t("QR Codes", "أكواد QR")}
         </h1>
         <Button
-          className="bg-primary text-primary-foreground text-xs sm:text-sm"
-          size="sm"
+          className="bg-primary text-primary-foreground"
           onClick={() => navigate("/dashboard/qr-codes/create")}
         >
-          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5" />
+          <Plus className="w-4 h-4 me-1.5" />
           {t("New QR Code", "كود QR جديد")}
         </Button>
       </div>
 
-      {/* ── Stats cards ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        {[
-          {
-            icon: <QrCode className="w-5 h-5 text-primary" />,
-            value: stats.totalQRCodes,
-            label: t("Total QR Codes", "إجمالي أكواد QR"),
-          },
-          {
-            icon: <ScanLine className="w-5 h-5 text-emerald-500" />,
-            value: stats.totalScans,
-            label: t("Total Scans", "إجمالي المسح"),
-          },
-          {
-            icon: <Zap className="w-5 h-5 text-violet-500" />,
-            value: stats.activeQRCodes,
-            label: t("Active QR Codes", "أكواد QR النشطة"),
-          },
-          {
-            icon: <ArrowDownToLine className="w-5 h-5 text-amber-500" />,
-            value: stats.downloadsToday,
-            label: t("Downloads Today", "تحميلات اليوم"),
-          },
-        ].map((card, i) => (
-          <div
-            key={i}
-            className="bg-background border border-border rounded-xl px-4 py-3 flex items-center gap-3"
-          >
-            <div className="shrink-0">{card.icon}</div>
-            <div>
-              <p className="text-lg font-display font-bold text-foreground leading-none">
-                {card.value.toLocaleString()}
-              </p>
-              <p className="text-[11px] text-muted-foreground font-body mt-0.5">{card.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Search + bulk actions ── */}
-      <div className="flex items-center gap-2 sm:gap-3 mb-4">
-        <div className="bg-background border border-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-2 shrink-0">
-          <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-          <span className="text-sm font-display font-bold text-foreground">{qrCount}</span>
-          <span className="text-[11px] sm:text-xs text-muted-foreground font-body">
-            {t("Generated", "تم إنشاؤه")}
+      {/* ── Tab bar + search ── */}
+      <div className="flex items-center gap-4 border-b border-border mb-6">
+        <div className="flex items-center gap-2 pb-3 border-b-2 border-primary -mb-px">
+          <QrCode className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">
+            {t("QR Codes", "أكواد QR")}
           </span>
-        </div>
-        <div className="flex items-center gap-2 px-3 sm:px-4 bg-background border border-border rounded-lg flex-1">
-          <Search size={14} className="text-muted-foreground shrink-0" />
-          <input
-            type="text"
-            placeholder={t("Search links...", "ابحث في الروابط...")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none py-2.5 sm:py-3 font-body text-xs sm:text-sm"
-          />
-        </div>
-        {selectedIds.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleBulkGenerate}
-            disabled={bulkLoading}
-            className="shrink-0 text-xs sm:text-sm"
-          >
-            {bulkLoading ? (
-              <Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />
-            ) : (
-              <QrCode className="w-3.5 h-3.5 me-1.5" />
-            )}
-            {t(`Bulk Generate (${selectedIds.length})`, `إنشاء جماعي (${selectedIds.length})`)}
-          </Button>
-        )}
-      </div>
-
-      {/* ── Select all row ── */}
-      {filtered.length > 0 && (
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <Checkbox
-            id="select-all"
-            checked={selectedIds.length === filtered.length && filtered.length > 0}
-            onCheckedChange={toggleSelectAll}
-          />
-          <Label htmlFor="select-all" className="text-xs text-muted-foreground font-body cursor-pointer">
-            {selectedIds.length === filtered.length && filtered.length > 0
-              ? t("Deselect all", "إلغاء تحديد الكل")
-              : t("Select all", "تحديد الكل")}
-          </Label>
-          {selectedIds.length > 0 && (
-            <span className="text-xs text-muted-foreground font-body">
-              ({selectedIds.length} {t("selected", "محدد")})
+          {qrCount > 0 && (
+            <span className="text-xs bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded-full">
+              {qrCount}
             </span>
           )}
         </div>
-      )}
+        <div className="flex items-center gap-2 px-3 bg-background border border-border rounded-lg ms-auto mb-3" style={{ minWidth: 220 }}>
+          <Search size={14} className="text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            placeholder={t("Search QR codes...", "ابحث في أكواد QR...")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none py-2 font-body text-sm"
+          />
+        </div>
+      </div>
 
-      {/* Loading */}
+      {/* ── Loading ── */}
       {isLoading && (
-        <div className="flex items-center justify-center py-16">
+        <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
-      {/* Error */}
+      {/* ── Error ── */}
       {isError && !isLoading && (
-        <div className="text-center py-12">
+        <div className="text-center py-16">
           <p className="text-sm text-destructive font-body">
             {t(
               "Failed to load QR codes. Please try again.",
@@ -648,21 +526,31 @@ const QRCodes = () => {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* ── Empty ── */}
       {!isLoading && !isError && filtered.length === 0 && (
-        <div className="text-center py-12">
-          <QrCode className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <QrCode className="w-12 h-12 text-muted-foreground/25" />
           <p className="text-sm text-muted-foreground font-body">
             {allUrls.length === 0
               ? t("No links yet. Create a link first!", "لا توجد روابط بعد. أنشئ رابطاً أولاً!")
-              : t("No links found", "لا توجد روابط")}
+              : t("No QR codes found", "لا توجد أكواد QR")}
           </p>
+          {allUrls.length === 0 && (
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground mt-1"
+              onClick={() => navigate("/dashboard/qr-codes/create")}
+            >
+              <Plus className="w-4 h-4 me-1.5" />
+              {t("New QR Code", "كود QR جديد")}
+            </Button>
+          )}
         </div>
       )}
 
-      {/* ── Link list (ALL links, not just QR-enabled) ── */}
+      {/* ── Card grid ── */}
       {!isLoading && !isError && filtered.length > 0 && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((url) => {
             const shortUrl = getShortUrl(url);
             const name = url.title || url.shortCode || "";
@@ -672,109 +560,107 @@ const QRCodes = () => {
             return (
               <div
                 key={url._id}
-                className="bg-background border border-border rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow"
+                ref={url._id === highlightId ? highlightRef : null}
+                className={cn(
+                  "bg-background border rounded-xl overflow-hidden hover:shadow-md transition-shadow",
+                  url._id === highlightId
+                    ? "border-primary ring-2 ring-primary/30"
+                    : "border-border"
+                )}
               >
-                <div className="flex items-center gap-3 sm:gap-4">
-                  {/* Checkbox */}
-                  <Checkbox
-                    checked={selectedIds.includes(url._id)}
-                    onCheckedChange={() => toggleSelect(url._id)}
-                  />
-
-                  {/* QR preview thumbnail */}
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-lg flex items-center justify-center border border-border shrink-0 overflow-hidden">
-                    {url.qrCode ? (
-                      <img
-                        src={url.qrCode}
-                        alt={`QR ${name}`}
-                        className="w-full h-full object-contain p-1"
-                      />
-                    ) : (
-                      <QrCode className="w-7 h-7 text-muted-foreground/40" />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-body font-medium text-foreground text-sm truncate">
-                      {name}
-                    </h3>
-                    <p className="text-xs text-primary font-body flex items-center gap-1 mt-0.5">
-                      <ExternalLink size={10} className="shrink-0" />
-                      <span className="truncate">{shortUrl}</span>
-                    </p>
-                    {hasQR && (
-                      <p className="text-[11px] text-muted-foreground font-body mt-0.5">
-                        {scans} {t("scans", "مسح")}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {hasQR ? (
-                      <>
-                        {/* Download */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-2.5 text-xs"
-                          onClick={() => handleDownload(url)}
-                          disabled={downloadingId === url._id}
-                        >
-                          {downloadingId === url._id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Download className="w-3.5 h-3.5" />
-                          )}
-                          <span className="hidden sm:inline ms-1.5">{t("Download", "تحميل")}</span>
-                        </Button>
-                        {/* Customize */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-2.5"
-                          onClick={() => openCustomizeModal(url)}
-                        >
-                          <Settings2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </>
-                    ) : (
-                      /* Generate for links without QR */
+                {/* QR preview area */}
+                <div className="bg-muted/40 aspect-square flex items-center justify-center p-8">
+                  {url.qrCode ? (
+                    <img
+                      src={url.qrCode}
+                      alt={`QR ${name}`}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <QrCode className="w-24 h-24 text-muted-foreground/30" />
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-2.5 text-xs"
-                        onClick={() => openGenerateModal(url)}
+                        className="text-xs"
+                        onClick={() =>
+                          // If qrCodeGenerated is true but image is missing, customize (not duplicate)
+                          hasQR ? openCustomizeModal(url) : openGenerateModal(url)
+                        }
                       >
                         <QrCode className="w-3.5 h-3.5 me-1.5" />
-                        {t("Generate", "إنشاء")}
+                        {hasQR ? t("Regenerate", "إعادة إنشاء") : t("Generate", "إنشاء")}
                       </Button>
-                    )}
-                    {/* Analytics */}
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="px-4 pt-3 pb-1">
+                  <h3 className="font-display font-semibold text-foreground text-sm truncate">
+                    {name}
+                  </h3>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-xs text-primary font-body flex items-center gap-1 mt-0.5 cursor-default w-full min-w-0">
+                          <ExternalLink size={10} className="shrink-0" />
+                          <span className="truncate">{shortUrl}</span>
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs break-all">
+                        {shortUrl}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  {hasQR && (
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">
+                      {scans} {t("scans", "مسح")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="px-4 pb-4 pt-3 flex items-center gap-2">
+                  {hasQR && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-2.5"
-                      onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
+                      className="flex-1 text-xs h-9"
+                      onClick={() => handleDownload(url)}
+                      disabled={downloadingId === url._id}
                     >
-                      <BarChart2 className="w-3.5 h-3.5" />
-                    </Button>
-                    {/* Delete */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => openDeleteDialog(url)}
-                      disabled={deletingId === url._id}
-                    >
-                      {deletingId === url._id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {downloadingId === url._id ? (
+                        <Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />
                       ) : (
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Download className="w-3.5 h-3.5 me-1.5" />
                       )}
+                      {t("Download", "تحميل")}
                     </Button>
-                  </div>
+                  )}
+                  {hasQR && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-9 px-3"
+                      onClick={() => openCustomizeModal(url)}
+                    >
+                      {t("Edit", "تعديل")}
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3 text-destructive hover:text-destructive hover:bg-destructive/10 ms-auto"
+                    onClick={() => openDeleteDialog(url)}
+                    disabled={deletingId === url._id}
+                  >
+                    {deletingId === url._id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
                 </div>
               </div>
             );

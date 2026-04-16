@@ -25,9 +25,9 @@ const normalizePhone = (phone) => {
     normalized = normalized.slice(1);
   }
   
-  // If phone doesn't start with +, add default country code for Saudi Arabia
+  // If phone doesn't start with +, add the + prefix for international format
   if (!normalized.startsWith('+')) {
-    normalized = '+966' + normalized;
+    normalized = '+' + normalized;
   }
   
   return normalized;
@@ -71,7 +71,6 @@ const sendRegistrationOTP = async (req, res) => {
       });
     }
 
-    // Generate 6-digit OTP
     const otp = generateOtpCode();
 
     // Store OTP in cache with email as key for 5 minutes
@@ -133,7 +132,6 @@ const register = async (req, res) => {
     // If OTP not provided, store registration data and send OTP
     if (!otp) {
       try {
-        // Generate 6-digit OTP
         const generatedOtp = generateOtpCode();
 
         // Store both OTP and registration data in cache for 5 minutes
@@ -316,7 +314,6 @@ const login = async (req, res) => {
           });
         }
 
-        // Generate random 6-digit OTP
         const generatedOtp = generateOtpCode();
 
         // Store OTP in cache for 5 minutes
@@ -689,7 +686,7 @@ const sendPasswordResetOTP = async (req, res) => {
     console.log('✅ User found:', user.email);
     
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     
     console.log('🔢 Generated OTP:', otp);
     
@@ -1111,12 +1108,36 @@ const updatePreferences = async (req, res) => {
   }
 };
 
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Clear user cache
+    await cacheDel(`user:${userId}`);
+
+    // Delete the user document
+    await User.findByIdAndDelete(userId);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete account'
+    });
+  }
+};
+
 module.exports = {
   sendRegistrationOTP,
   register,
   login,
   refreshToken,
   logout,
+  deleteAccount,
   getProfile,
   updateProfile,
   changePassword,

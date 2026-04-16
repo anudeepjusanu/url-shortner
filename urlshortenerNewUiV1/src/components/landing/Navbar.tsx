@@ -22,7 +22,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
+    <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
       <div className="container mx-auto">
         <div className="bg-white rounded-full px-6 py-2 flex items-center justify-between shadow-card">
           <a href="/" className="flex items-center gap-1 -ms-3">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Link2, Check, Copy, MousePointerClick, QrCode, Eye } from "lucide-react";
+import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +11,7 @@ const SCREENS = 3;
 
 const HeroSection = () => {
   const [url, setUrl] = useState("");
-  const { t } = useLanguage();
+  const { t, isAr } = useLanguage();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -98,6 +98,7 @@ const HeroSection = () => {
                     onChange={(e) => setUrl(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
                     className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-3.5 font-body text-sm"
+                    dir="ltr"
                   />
                 </div>
                 <Button
@@ -105,7 +106,7 @@ const HeroSection = () => {
                   className="bg-[hsl(var(--navy))] text-white font-body font-bold px-8 shrink-0 rounded-full hover:opacity-90 transition-all text-base"
                 >
                   {t("Shorten Link", "اختصر الرابط")}
-                  <ArrowRight size={16} className="ms-1.5" />
+                  {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
                 </Button>
               </div>
 

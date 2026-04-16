@@ -1,9 +1,24 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import ScrollToTop from "@/components/ScrollToTop";
+import amplitudeService from "@/services/amplitude";
+
+// Initialize Amplitude once at module load
+amplitudeService.initialize();
+
+// Tracks a Page View event on every route change
+const PageViewTracker = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
+    amplitudeService.trackPageView(pageName, location.pathname);
+  }, [location]);
+  return null;
+};
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
@@ -24,6 +39,12 @@ import UserManagement from "./pages/UserManagement";
 import UrlManagement from "./pages/UrlManagement";
 import CreateQRCode from "./pages/CreateQRCode";
 import AddDomain from "./pages/AddDomain";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import BioPages from "./pages/BioPages";
+import BioPageEditor from "./pages/BioPageEditor";
+import PublicBioPage from "./pages/PublicBioPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -36,25 +57,32 @@ const App = () => (
           <Sonner />
           <HashRouter>
             <ScrollToTop />
+            <PageViewTracker />
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/links" element={<MyLinks />} />
-            <Route path="/dashboard/create-link" element={<CreateLink />} />
-            <Route path="/dashboard/qr-codes" element={<QRCodes />} />
-            <Route path="/dashboard/qr-codes/create" element={<CreateQRCode />} />
-            <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-            <Route path="/dashboard/analytics/:linkId" element={<AnalyticsPage />} />
-            <Route path="/dashboard/domains" element={<CustomDomains />} />
-            <Route path="/dashboard/domains/add" element={<AddDomain />} />
-            <Route path="/dashboard/profile" element={<Profile />} />
-            <Route path="/dashboard/api" element={<ApiDocs />} />
-            <Route path="/dashboard/users" element={<UserManagement />} />
-            <Route path="/dashboard/urls" element={<UrlManagement />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/links" element={<ProtectedRoute><MyLinks /></ProtectedRoute>} />
+            <Route path="/dashboard/create-link" element={<ProtectedRoute><CreateLink /></ProtectedRoute>} />
+            <Route path="/dashboard/qr-codes" element={<ProtectedRoute><QRCodes /></ProtectedRoute>} />
+            <Route path="/dashboard/qr-codes/create" element={<ProtectedRoute><CreateQRCode /></ProtectedRoute>} />
+            <Route path="/dashboard/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/dashboard/analytics/:linkId" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/dashboard/domains" element={<ProtectedRoute><CustomDomains /></ProtectedRoute>} />
+            <Route path="/dashboard/domains/add" element={<ProtectedRoute><AddDomain /></ProtectedRoute>} />
+            <Route path="/dashboard/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/dashboard/api" element={<ProtectedRoute><ApiDocs /></ProtectedRoute>} />
+            <Route path="/dashboard/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+            <Route path="/dashboard/urls" element={<ProtectedRoute><UrlManagement /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages" element={<ProtectedRoute><BioPages /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

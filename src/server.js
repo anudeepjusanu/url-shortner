@@ -2,10 +2,21 @@ const app = require('./app');
 const connectDB = require('./config/database');
 const ScheduledTasks = require('./services/scheduledTasks');
 const amplitudeService = require('./services/amplitudeService');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Initialize Amplitude Analytics
 amplitudeService.initialize();
+
+// Seed default plans once the DB connection is open
+mongoose.connection.once('open', async () => {
+  try {
+    const { seedPlans } = require('./scripts/init-plans');
+    await seedPlans();
+  } catch (err) {
+    console.error('⚠️  Plan auto-seed error:', err.message);
+  }
+});
 
 // Connect to database
 connectDB();

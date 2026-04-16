@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import amplitudeService from "@/services/amplitude";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -379,6 +380,7 @@ const ApiDocs = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    amplitudeService.track('API view');
     window.open(MINTLIFY_DOCS_URL, "_blank", "noopener,noreferrer");
     navigate("/dashboard", { replace: true });
   }, [navigate]);

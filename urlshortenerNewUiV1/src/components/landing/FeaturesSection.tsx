@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { LinksPreview, QRCodesPreview, DomainsPreview } from "./PreviewMockups";
 
 const FeaturesSection = () => {
-  const { t } = useLanguage();
+  const { t, isAr } = useLanguage();
 
   const features = [
     {
@@ -43,11 +43,12 @@ const FeaturesSection = () => {
   return (
     <section id="features">
       {features.map((feature, i) => {
-        const isReversed = i % 2 === 1;
+        // In RTL, visual alternation is mirrored — odd becomes even and vice versa
+        const isReversed = isAr ? i % 2 === 0 : i % 2 === 1;
         return (
           <div key={i} className={`${creamShades[i]} py-24 md:py-32`}>
             <div className="container mx-auto px-6">
-              <div className={`grid lg:grid-cols-2 gap-16 items-center ${isReversed ? "direction-normal" : ""}`}>
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
                 <motion.div
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}

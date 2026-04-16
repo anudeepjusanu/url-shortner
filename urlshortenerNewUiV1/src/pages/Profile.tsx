@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -21,10 +22,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { profileService, myLinksService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import amplitudeService from "@/services/amplitude";
 
 const Profile = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // ── Profile state ────────────────────────────────────────────────────────────
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -75,6 +80,27 @@ const Profile = () => {
 
   // ── Delete account ───────────────────────────────────────────────────────────
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await profileService.deleteAccount();
+      amplitudeService.track('Delete Account');
+      // Clear auth state and tokens, then go to login
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (err: any) {
+      toast({
+        title: t("Failed to delete account", "فشل حذف الحساب"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setDeleteAccountOpen(false);
+    }
+  };
 
   // ── Load data ────────────────────────────────────────────────────────────────
   const loadProfile = useCallback(async () => {
@@ -188,6 +214,7 @@ const Profile = () => {
       if (res?.apiKey) {
         setApiKey(res.apiKey);
         setShowKey(true);
+        amplitudeService.track('generate API Key');
         toast({ title: t("API key regenerated", "تم إعادة إنشاء مفتاح API") });
       }
     } catch (err: any) {
@@ -257,9 +284,17 @@ const Profile = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t("Delete Account", "حذف الحساب")}
+            <AlertDialogCancel disabled={isDeletingAccount}>{t("Cancel", "إلغاء")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? (
+                <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Deleting...", "جاري الحذف...")}</>
+              ) : (
+                t("Delete Account", "حذف الحساب")
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

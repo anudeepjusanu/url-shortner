@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag } from "lucide-react";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import amplitudeService from "@/services/amplitude";
 
 const CreateLink = () => {
   const { t } = useLanguage();
@@ -121,7 +122,7 @@ const CreateLink = () => {
       }
 
       if (generateQR) {
-        payload.generateQR = true;
+        payload.generateQRCode = true;
       }
 
       // Only include UTM params if the toggle is on at save time (req 8)
@@ -140,6 +141,7 @@ const CreateLink = () => {
       const response = await createUrl.mutateAsync(payload);
 
       if (response.success) {
+        amplitudeService.track('Link Creation');
         toast({
           title: t("Success", "نجح"),
           description: t("Link created successfully", "تم إنشاء الرابط بنجاح"),

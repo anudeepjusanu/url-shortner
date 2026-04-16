@@ -53,7 +53,7 @@ const Footer = () => {
                   {t("API Documentation", "وثائق الـ API")}
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
                   {t("Code Examples", "أمثلة بالأكواد")}
                 </button>
@@ -83,7 +83,7 @@ const Footer = () => {
                 <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
                   {t("Help Center", "مركز المساعدة")}
                 </button>
-              </li>
+              </li> */}
               <li>
                 <Link to="/blog" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
                   {t("Blog", "المدونة")}
@@ -100,15 +100,15 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Company", "الشركة")}</h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Privacy Policy", "الخصوصية")}</a></li>
-              <li><a href="#" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</a></li>
+              <li><Link to="/privacy-policy" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Privacy Policy", "الخصوصية")}</Link></li>
+              <li><Link to="/terms" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</Link></li>
               <li><a href="mailto:support@4r.sa" className="hover:text-[hsl(var(--cream))]/80 transition-colors">support@4r.sa</a></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-[hsl(var(--cream))]/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt:order-1">
             <Button variant="ghost" className="text-[hsl(var(--cream))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--cream))]/20 hover:bg-[hsl(var(--cream))]/10" asChild>
               <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
             </Button>
@@ -117,8 +117,8 @@ const Footer = () => {
             </Button>
           </div>
 
-          <p className="text-[hsl(var(--cream))]/30 text-sm font-body">
-            {t("© 2025 4r.sa · All rights reserved", "© 2025 4r.sa · جميع الحقوق محفوظة")}
+          <p className="text-[hsl(var(--cream))]/30 text-sm font-body mt:order-2">
+            {t("© 2026 4r.sa · All rights reserved", "© 2026 4r.sa · جميع الحقوق محفوظة")}
           </p>
         </div>
       </div>

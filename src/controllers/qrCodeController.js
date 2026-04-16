@@ -784,11 +784,47 @@ const updateQRCodeCustomization = async (req, res) => {
   }
 };
 
+// Delete QR Code (clears QR data from the URL, does NOT delete the short link)
+const deleteQRCode = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const url = await Url.findById(id);
+
+    if (!url) {
+      return res.status(404).json({ success: false, message: 'URL not found' });
+    }
+
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())
+    ) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    // Clear QR fields on the URL document
+    url.qrCode = undefined;
+    url.qrCodeGenerated = false;
+    url.qrCodeGeneratedAt = undefined;
+    url.qrCodeSettings = undefined;
+    await url.save();
+
+    // Remove the QR code customization document if it exists
+    await QRCodeModel.findOneAndDelete({ url: id });
+
+    res.json({ success: true, message: 'QR code deleted successfully' });
+  } catch (error) {
+    console.error('Delete QR Code error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete QR code' });
+  }
+};
+
 module.exports = {
   generateQRCode,
   downloadQRCode,
   getUrlQRCode,
   bulkGenerateQRCodes,
   getQRCodeStats,
-  updateQRCodeCustomization
+  updateQRCodeCustomization,
+  deleteQRCode
 };

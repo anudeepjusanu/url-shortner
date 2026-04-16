@@ -61,7 +61,12 @@ async function authRequest<T = any>(
   const response = await fetch(url, config);
 
   if (response.status === 401) {
-    jwtTokens.clearTokens();
+    // Only clear tokens when a token was actually sent and rejected by the server.
+    // If no token was present, there is nothing to clear — and we must NOT wipe
+    // tokens that other in-flight requests are still using (cascade prevention).
+    if (token) {
+      jwtTokens.clearTokens();
+    }
     throw new Error('Session expired. Please login again.');
   }
 
@@ -93,7 +98,9 @@ async function authFetch(endpoint: string, options: RequestInit = {}): Promise<R
   });
 
   if (response.status === 401) {
-    jwtTokens.clearTokens();
+    if (token) {
+      jwtTokens.clearTokens();
+    }
     throw new Error('Session expired. Please login again.');
   }
 
@@ -218,6 +225,13 @@ export const qrCodeService = {
   getStats: () => authRequest('/qr-codes/stats'),
 
   /**
+   * DELETE /qr-codes/:id
+   * Remove the QR code from a URL without deleting the short link itself.
+   */
+  delete: (urlId: string) =>
+    authRequest(`/qr-codes/${urlId}`, { method: 'DELETE' }),
+
+  /**
    * PUT /qr-codes/customize/:id
    * Update the visual customization of an existing QR code.
    */
@@ -307,6 +321,10 @@ export const profileService = {
   /** PUT /auth/preferences */
   updatePreferences: (data: Record<string, unknown>) =>
     authRequest('/auth/preferences', { method: 'PUT', body: data as any }),
+
+  /** DELETE /auth/account — permanently delete the authenticated user's account */
+  deleteAccount: () =>
+    authRequest('/auth/account', { method: 'DELETE' }),
 };
 
 // ─── Analytics Service ────────────────────────────────────────────────────────

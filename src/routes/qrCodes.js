@@ -42,6 +42,13 @@ router.put('/customize/:id',
   qrCodeController.updateQRCodeCustomization
 );
 
+// Delete QR code (keeps the short link intact)
+router.delete('/:id',
+  apiLimiter,
+  validateObjectId,
+  qrCodeController.deleteQRCode
+);
+
 // Bulk generate QR codes
 router.post('/bulk-generate',
   apiLimiter,

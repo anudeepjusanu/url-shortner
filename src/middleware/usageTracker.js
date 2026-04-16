@@ -1,6 +1,18 @@
 const User = require('../models/User');
 const Plan = require('../models/Plan');
 
+// Fallback plan used when the plans collection hasn't been seeded yet
+const DEFAULT_FREE_PLAN = {
+  features: {
+    urlsPerMonth: 100,
+    customDomains: 0,
+    analytics: 'basic',
+    apiAccess: false,
+    bulkOperations: false,
+    passwordProtection: false,
+  }
+};
+
 class UsageTracker {
   // Check if user can perform action
   static async canPerformAction(userId, action, amount = 1) {
@@ -13,10 +25,7 @@ class UsageTracker {
       // Reset monthly usage if needed
       await this.resetMonthlyUsageIfNeeded(user);
 
-      const plan = await Plan.getByName(user.plan);
-      if (!plan) {
-        return { allowed: false, reason: 'Invalid plan' };
-      }
+      const plan = (await Plan.getByName(user.plan)) || DEFAULT_FREE_PLAN;
 
       // Check specific action limits
       switch (action) {

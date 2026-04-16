@@ -85,17 +85,20 @@ const Dashboard = () => {
     pct: Math.round(((c.clicks || 0) / totalGeoClicks) * 100),
   }));
 
-  // Peak hours — from hourly aggregation in dashboard analytics
+  // Peak hours — convert UTC hour from API to Saudi Arabia Standard Time (UTC+3)
   const clicksByHour: { hour: number; clicks: number }[] = chartData.clicksByHour || [];
   const topHours = [...clicksByHour]
     .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
     .slice(0, 4);
   const maxHourClicks = Math.max(...topHours.map((h) => h.clicks || 0), 1);
-  const peakHours = topHours.map((h) => ({
-    label: `${String(h.hour).padStart(2, "0")}:00 – ${String(h.hour + 1).padStart(2, "0")}:00`,
-    clicks: h.clicks || 0,
-    pct: Math.round(((h.clicks || 0) / maxHourClicks) * 100),
-  }));
+  const peakHours = topHours.map((h) => {
+    const sastHour = (h.hour + 3) % 24;
+    return {
+      label: `${String(sastHour).padStart(2, "0")}:00 – ${String((sastHour + 1) % 24).padStart(2, "0")}:00`,
+      clicks: h.clicks || 0,
+      pct: Math.round(((h.clicks || 0) / maxHourClicks) * 100),
+    };
+  });
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
   const handleCopyLink = (short: string) => {

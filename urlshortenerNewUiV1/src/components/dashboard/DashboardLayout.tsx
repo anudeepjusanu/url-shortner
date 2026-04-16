@@ -13,9 +13,11 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronLeft,
   Users,
   LinkIcon,
   Languages,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,7 +36,7 @@ interface NavItemConfig {
 }
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { t, lang, setLang } = useLanguage();
+  const { t, lang, setLang, isAr } = useLanguage();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,6 +51,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("My Links", "روابطي"), icon: Link2, path: "/dashboard/links" },
     { label: t("Analytics", "التحليلات"), icon: BarChart3, path: "/dashboard/analytics" },
     { label: t("QR Codes", "أكواد QR"), icon: QrCode, path: "/dashboard/qr-codes" },
+    { label: t("Link in Bio", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
   ];
 
   const adminNav = [
@@ -95,7 +98,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       >
         <item.icon className="w-4 h-4 shrink-0" />
         <span>{item.label}</span>
-        {isActive(item.path) && <ChevronRight className="w-3 h-3 ms-auto" />}
+        {isActive(item.path) && (isAr ? <ChevronLeft className="w-3 h-3 ms-auto" /> : <ChevronRight className="w-3 h-3 ms-auto" />)}
       </Link>
     );
   };
@@ -187,7 +190,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ms-64">
+      <div className="flex-1 min-w-0 lg:ms-64 overflow-x-hidden">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
@@ -213,7 +216,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8">
+        <main className="p-4 lg:p-8 overflow-x-hidden">
           {children}
         </main>
       </div>

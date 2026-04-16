@@ -151,19 +151,15 @@ class ApiClient {
 
       // Handle unsuccessful responses
       if (!response.ok) {
-        // Handle 401 - Unauthorized (token expired)
+        // Handle 401 - Unauthorized
         if (response.status === 401) {
-          this.clearTokens();
-
-          // Check if we're on a page that requires auth
-          const currentPath = window.location.pathname;
-          const publicPaths = ['/', '/login', '/signup', '/blog'];
-
-          // Only redirect if not already on a public page
-          if (!publicPaths.some(path => currentPath.startsWith(path))) {
-            console.error('Authentication required. Please login.');
+          // Only clear tokens if a token was actually sent (i.e., it was rejected by the server)
+          // This prevents one failing request from killing auth for all other requests
+          const hadToken = !!this.getToken();
+          if (hadToken) {
+            // Token was present but rejected — it is expired or invalid, safe to clear
+            this.clearTokens();
           }
-
           throw new Error(data.message || 'Authentication required. Please login to continue.');
         }
 
@@ -536,6 +532,23 @@ export const googleAnalyticsAPI = {
   getDevices: (params = {}) => apiClient.get(endpoints.googleAnalytics.devices, params),
   getBrowsers: (params = {}) => apiClient.get(endpoints.googleAnalytics.browsers, params),
   getDashboard: (params = {}) => apiClient.get(endpoints.googleAnalytics.dashboard, params)
+};
+
+// Bio Pages API methods
+export const bioPageAPI = {
+  // CRUD (authenticated)
+  list: () => apiClient.get('/bio-pages'),
+  get: (id: string) => apiClient.get(`/bio-pages/${id}`),
+  create: (data: any) => apiClient.post('/bio-pages', data),
+  update: (id: string, data: any) => apiClient.put(`/bio-pages/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/bio-pages/${id}`),
+  getAnalytics: (id: string) => apiClient.get(`/bio-pages/${id}/analytics`),
+
+  // Public (no auth)
+  getPublic: (username: string) => apiClient.get(`/bio-pages/public/${username}`),
+  trackClick: (username: string, linkId: string) =>
+    apiClient.post(`/bio-pages/public/${username}/click/${linkId}`, {}),
+  checkUsername: (username: string) => apiClient.get(`/bio-pages/check-username/${username}`),
 };
 
 export default apiClient;
