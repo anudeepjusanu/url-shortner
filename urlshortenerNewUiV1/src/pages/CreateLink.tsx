@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag } from "lucide-react";
+import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag, Copy, Check } from "lucide-react";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 import amplitudeService from "@/services/amplitude";
@@ -21,6 +21,8 @@ const CreateLink = () => {
   const [generateQR, setGenerateQR] = useState(false);
   const [selectedDomainId, setSelectedDomainId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [copiedUtmUrl, setCopiedUtmUrl] = useState(false);
 
   // UTM state
   const [utmEnabled, setUtmEnabled] = useState(false);
@@ -410,12 +412,36 @@ const CreateLink = () => {
                   />
                 </div>
 
-                {/* Live destination URL preview */}
+                {/* Live destination URL preview with copy button */}
                 {utmPreviewUrl && (
                   <div className="p-3 rounded-lg bg-muted/60 border border-border">
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">
-                      {t("Destination URL Preview", "معاينة رابط الوجهة")}
-                    </p>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {t("Destination URL Preview", "معاينة رابط الوجهة")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(utmPreviewUrl);
+                          setCopiedUtmUrl(true);
+                          setTimeout(() => setCopiedUtmUrl(false), 2000);
+                        }}
+                        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                        title={t("Copy URL", "نسخ الرابط")}
+                      >
+                        {copiedUtmUrl ? (
+                          <>
+                            <Check className="w-3 h-3" />
+                            {t("Copied!", "تم النسخ!")}
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            {t("Copy", "نسخ")}
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <p className="text-xs font-mono text-foreground break-all leading-relaxed">
                       {utmPreviewUrl}
                     </p>
