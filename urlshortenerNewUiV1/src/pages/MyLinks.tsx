@@ -31,6 +31,7 @@ const MyLinks = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">("latest");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedUtmId, setCopiedUtmId] = useState<string | null>(null);
   const [expandedDest, setExpandedDest] = useState<Set<string>>(new Set());
 
   const toggleDest = (id: string) => {
@@ -93,6 +94,22 @@ const MyLinks = () => {
     const baseDomain = availableDomains.find((d: any) => d.id === "base");
     const baseUrl = baseDomain?.shortUrl || window.location.origin;
     return `${baseUrl}/${code}`;
+  };
+
+  const buildUtmUrl = (url: any): string | null => {
+    const utm = url.utm;
+    if (!utm || (!utm.source && !utm.medium && !utm.campaign && !utm.term && !utm.content)) return null;
+    try {
+      const parsed = new URL(url.originalUrl);
+      if (utm.source) parsed.searchParams.set("utm_source", utm.source);
+      if (utm.medium) parsed.searchParams.set("utm_medium", utm.medium);
+      if (utm.campaign) parsed.searchParams.set("utm_campaign", utm.campaign);
+      if (utm.term) parsed.searchParams.set("utm_term", utm.term);
+      if (utm.content) parsed.searchParams.set("utm_content", utm.content);
+      return parsed.toString();
+    } catch {
+      return null;
+    }
   };
 
   const handleCopy = (url: any) => {
@@ -259,6 +276,7 @@ const MyLinks = () => {
             const shortUrl = getShortUrl(url);
             const name = url.title || url.shortCode || "";
             const dest = url.originalUrl || "";
+            const utmUrl = buildUtmUrl(url);
             const clicks = url.clickCount || 0;
             const date = formatDate(url.createdAt);
             const relative = getRelativeTime(url.createdAt);
@@ -302,11 +320,29 @@ const MyLinks = () => {
                       >
                         {dest}
                       </p>
-                      {url.utm && (url.utm.source || url.utm.medium || url.utm.campaign) && (
-                        <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-body font-medium">
-                          <Tag className="w-2.5 h-2.5" />
-                          UTM
-                        </span>
+                      {utmUrl && (
+                        <div className="mt-1.5 flex items-start gap-1 min-w-0">
+                          <Tag className="w-2.5 h-2.5 text-primary shrink-0 mt-0.5" />
+                          <p
+                            className={`text-[11px] text-primary/80 font-mono flex-1 min-w-0 ${
+                              expandedDest.has(url._id) ? "break-all" : "truncate"
+                            }`}
+                            title={t("Final UTM URL", "رابط UTM النهائي")}
+                          >
+                            {utmUrl}
+                          </p>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(utmUrl);
+                              setCopiedUtmId(url._id);
+                              setTimeout(() => setCopiedUtmId(null), 2000);
+                            }}
+                            className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                            title={t("Copy UTM URL", "نسخ رابط UTM")}
+                          >
+                            {copiedUtmId === url._id ? <Check size={11} /> : <Copy size={11} />}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

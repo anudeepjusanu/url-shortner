@@ -388,11 +388,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
+      // clicksByHour: no date filter — peak-hour patterns are an all-time aggregate
+      // so the widget stays populated even when the selected period has no recent data.
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true }
           }
         },
@@ -405,13 +406,15 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
+      // topStats aggregations: no date filter — geographic/device breakdowns are
+      // all-time patterns so the widgets stay populated even when the selected
+      // period has no recent click records in the analytics collection.
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            'location.country': { $ne: null, $ne: '' }
+            'location.country': { $exists: true, $ne: null, $nin: ['', null] }
           }
         },
         {
@@ -426,14 +429,13 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } },
         { $limit: 10 }
       ]),
-      
+
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            'location.city': { $ne: null, $ne: '' }
+            'location.city': { $exists: true, $ne: null, $nin: ['', null] }
           }
         },
         {
@@ -449,12 +451,11 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } },
         { $limit: 10 }
       ]),
-      
+
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true }
           }
         },
@@ -466,14 +467,13 @@ const getDashboardAnalytics = async (req, res) => {
         },
         { $sort: { clicks: -1 } }
       ]),
-      
+
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            'device.browser.name': { $ne: null, $ne: '' }
+            'device.browser.name': { $exists: true, $ne: null, $nin: ['', null] }
           }
         },
         {
@@ -485,14 +485,13 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } },
         { $limit: 10 }
       ]),
-      
+
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            'device.os.name': { $ne: null, $ne: '' }
+            'device.os.name': { $exists: true, $ne: null, $nin: ['', null] }
           }
         },
         {
@@ -504,14 +503,13 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } },
         { $limit: 10 }
       ]),
-      
+
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
             isBot: { $ne: true },
-            referer: { $ne: null, $ne: '' }
+            referer: { $exists: true, $ne: null, $nin: ['', null] }
           }
         },
         {

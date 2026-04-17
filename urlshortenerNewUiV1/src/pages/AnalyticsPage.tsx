@@ -24,16 +24,7 @@ type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 // ─── Saudi Arabia Standard Time offset (UTC+3) ───
 const SAST_OFFSET_MS = 3 * 3600_000;
 
-// Get hour in Saudi Arabia Standard Time (UTC+3)
-function getSASTHour(ts: number): number {
-  return new Date(ts + SAST_OFFSET_MS).getUTCHours();
-}
 
-// Format hour label in SAST
-function formatSASTHour(utcHour: number): string {
-  const sastHour = (utcHour + 3) % 24;
-  return `${String(sastHour).padStart(2, "0")}:00`;
-}
 const HOUR_WEIGHTS = [1,1,1,1,1,2,3,5,7,8,9,8,7,8,9,8,6,5,4,3,2,2,1,1];
 const TOTAL_WEIGHT = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
 
@@ -194,6 +185,10 @@ const AnalyticsPage = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { linkId } = useParams<{ linkId?: string }>();
+  // chartEl is stored in state so that the event-listener effects re-run the
+  // first time the chart container actually appears in the DOM (it is inside a
+  // {!isLoading && ...} block, so chartContainerRef.current is null on mount).
+  const [chartEl, setChartEl] = useState<HTMLDivElement | null>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
@@ -546,9 +541,9 @@ const AnalyticsPage = () => {
   clampWindowRef.current = clampWindow;
   totalDurationRef.current = totalDuration;
 
-  // Scroll to zoom — registered once, reads fresh values via refs
+  // Scroll to zoom — re-registers whenever the chart container mounts/unmounts
   useEffect(() => {
-    const el = chartContainerRef.current;
+    const el = chartEl;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -568,11 +563,11 @@ const AnalyticsPage = () => {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, []); // empty — uses refs for fresh values
+  }, [chartEl]); // chartEl in deps: runs when container first appears in DOM
 
-  // Pinch to zoom on touch — registered once, reads fresh values via refs
+  // Pinch to zoom on touch — re-registers whenever the chart container mounts/unmounts
   useEffect(() => {
-    const el = chartContainerRef.current;
+    const el = chartEl;
     if (!el) return;
     const getTouchDist = (e: TouchEvent) => {
       const [a, b] = [e.touches[0], e.touches[1]];
@@ -611,11 +606,11 @@ const AnalyticsPage = () => {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
     };
-  }, []); // empty — uses refs for fresh values
+  }, [chartEl]); // chartEl in deps: runs when container first appears in DOM
 
-  // Drag to pan — registered once, reads fresh values via refs
+  // Drag to pan — re-registers whenever the chart container mounts/unmounts
   useEffect(() => {
-    const el = chartContainerRef.current;
+    const el = chartEl;
     if (!el) return;
     const onDown = (e: PointerEvent) => {
       isDragging.current = true;
@@ -651,7 +646,7 @@ const AnalyticsPage = () => {
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
     };
-  }, []); // empty — uses refs for fresh values
+  }, [chartEl]); // chartEl in deps: runs when container first appears in DOM
 
   // Compute tick interval to avoid label crowding
   const xTickInterval = useMemo(() => {
@@ -689,21 +684,43 @@ const AnalyticsPage = () => {
 
   const [geoTab, setGeoTab] = useState<"countries" | "cities">("countries");
 
-  // Peak hours data — top 4 busiest hours in Saudi Arabia Standard Time (UTC+3)
+  // Peak hours data — top 4 busiest hours in Saudi Arabia Standard Time (UTC+3).
+  // For dashboard analytics: use real clicksByHour from the API (same source as Dashboard page)
+  // so both views always show identical, consistent data.
+  // For URL-specific analytics: fall back to the hourly timeline (no per-hour API data available).
   const peakHoursData = useMemo(() => {
+    if (!linkId) {
+      // Real hourly data from the dashboard API — hours are in UTC, convert to SAST (+3)
+      const clicksByHour: { hour: number; clicks: number }[] = apiData?.chartData?.clicksByHour || [];
+      const topHours = [...clicksByHour]
+        .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+        .slice(0, 4);
+      const maxHourClicks = Math.max(...topHours.map((h) => h.clicks || 0), 1);
+      return topHours.map((h) => {
+        const sastHour = (h.hour + 3) % 24;
+        return {
+          label: `${String(sastHour).padStart(2, "0")}:00 – ${String((sastHour + 1) % 24).padStart(2, "0")}:00`,
+          clicks: h.clicks || 0,
+          pct: Math.round(((h.clicks || 0) / maxHourClicks) * 100),
+        };
+      });
+    }
+
+    // URL-specific fallback: aggregate synthesized hourly timeline into SAST buckets
     const hourBuckets = Array.from({ length: 24 }, (_, i) => ({ hour: i, clicks: 0 }));
     hourlyTimeline.forEach(e => {
-      const h = getSASTHour(e.ts);
-      hourBuckets[h].clicks += e.clicks;
+      // Convert UTC-based timestamp to SAST hour by adding 3 hours before reading UTC hours
+      const sastHour = new Date(e.ts + SAST_OFFSET_MS).getUTCHours();
+      hourBuckets[sastHour].clicks += e.clicks;
     });
     const sorted = [...hourBuckets].sort((a, b) => b.clicks - a.clicks).slice(0, 4);
-    const totalClicks = sorted.reduce((sum, bucket) => sum + bucket.clicks, 0) || 1;
+    const maxClicks = Math.max(...sorted.map(b => b.clicks), 1);
     return sorted.map(b => ({
-      label: `${String(b.hour).padStart(2, "0")}:00`,
+      label: `${String(b.hour).padStart(2, "0")}:00 – ${String((b.hour + 1) % 24).padStart(2, "0")}:00`,
       clicks: b.clicks,
-      pct: Math.round((b.clicks / totalClicks) * 100),
+      pct: Math.round((b.clicks / maxClicks) * 100),
     }));
-  }, [hourlyTimeline]);
+  }, [hourlyTimeline, linkId, apiData]);
 
   // Export handler
   const handleExport = async () => {
@@ -952,7 +969,10 @@ const AnalyticsPage = () => {
               <span className="sm:hidden">{t("Pinch to zoom · Drag to pan", "اقرص للتكبير · اسحب للتنقل")}</span>
             </p>
 
-            <div ref={chartContainerRef} style={{ cursor: "grab", touchAction: "none" }}>
+            <div
+              ref={(el) => { chartContainerRef.current = el; setChartEl(el); }}
+              style={{ cursor: "grab", touchAction: "none" }}
+            >
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
