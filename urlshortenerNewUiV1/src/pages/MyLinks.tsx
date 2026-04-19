@@ -280,131 +280,188 @@ const MyLinks = () => {
             const clicks = url.clickCount || 0;
             const date = formatDate(url.createdAt);
             const relative = getRelativeTime(url.createdAt);
+            const hasPreview = url.metaData?.ogImage || url.metaData?.ogTitle || url.metaData?.ogDescription;
 
             return (
               <div
                 key={url._id}
-                className="bg-background border border-border rounded-xl px-5 py-5 hover:shadow-md transition-all overflow-hidden"
+                className="bg-background border border-border rounded-xl overflow-hidden hover:shadow-md transition-all"
               >
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">
-                  <div className="flex items-center gap-4 flex-1 min-w-0 overflow-hidden">
-                    <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                      <Link2 className="w-4 h-4 text-primary" />
-                    </div>
-
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <h3 className="font-body font-medium text-foreground text-sm truncate">{name}</h3>
-                      <p className="text-xs text-primary font-body flex items-center gap-1 mt-1 min-w-0">
-                        <ExternalLink size={10} className="shrink-0" />
-                        <a
-                          href={shortUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline truncate min-w-0"
-                        >
-                          {shortUrl}
-                        </a>
-                        <button
-                          onClick={() => handleCopy(url)}
-                          className="ml-1 text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          {copiedId === (url.customCode || url.shortCode || "") ? <Check size={12} /> : <Copy size={12} />}
-                        </button>
-                      </p>
-                      <p
-                        className={`text-[11px] text-muted-foreground font-body mt-0.5 cursor-pointer hover:text-foreground transition-colors ${
-                          expandedDest.has(url._id) ? "break-all" : "truncate"
-                        }`}
-                        onClick={() => toggleDest(url._id)}
-                        title={expandedDest.has(url._id) ? t("Click to collapse", "اضغط للطي") : t("Click to expand", "اضغط للتوسيع")}
-                      >
-                        {dest}
-                      </p>
-                      {utmUrl && (
-                        <div className="mt-1.5 flex items-start gap-1 min-w-0">
-                          <Tag className="w-2.5 h-2.5 text-primary shrink-0 mt-0.5" />
-                          <p
-                            className={`text-[11px] text-primary/80 font-mono flex-1 min-w-0 ${
-                              expandedDest.has(url._id) ? "break-all" : "truncate"
-                            }`}
-                            title={t("Final UTM URL", "رابط UTM النهائي")}
-                          >
-                            {utmUrl}
-                          </p>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(utmUrl);
-                              setCopiedUtmId(url._id);
-                              setTimeout(() => setCopiedUtmId(null), 2000);
+                <div className="flex flex-col lg:flex-row gap-0 min-w-0">
+                  {/* Website Preview */}
+                  {hasPreview && (
+                    <div className="lg:w-64 flex-shrink-0 bg-muted/30 border-b lg:border-b-0 lg:border-r border-border">
+                      {url.metaData?.ogImage ? (
+                        <div className="relative w-full h-40 lg:h-full">
+                          <img
+                            src={url.metaData.ogImage}
+                            alt={url.metaData.ogTitle || name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              (e.target as HTMLImageElement).parentElement!.innerHTML = `
+                                <div class="w-full h-full flex items-center justify-center bg-muted/50">
+                                  <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                  </svg>
+                                </div>
+                              `;
                             }}
-                            className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
-                            title={t("Copy UTM URL", "نسخ رابط UTM")}
-                          >
-                            {copiedUtmId === url._id ? <Check size={11} /> : <Copy size={11} />}
-                          </button>
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-40 lg:h-full flex flex-col items-center justify-center p-4 text-center">
+                          <Link2 className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                          {url.metaData?.ogTitle && (
+                            <p className="text-xs font-medium text-foreground line-clamp-2 mb-1">
+                              {url.metaData.ogTitle}
+                            </p>
+                          )}
+                          {url.metaData?.ogDescription && (
+                            <p className="text-[10px] text-muted-foreground line-clamp-3">
+                              {url.metaData.ogDescription}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex items-center gap-4 justify-between lg:justify-end w-full lg:w-auto">
-                    <div className="text-center">
-                      <p className="text-lg font-display font-bold text-foreground">{clicks}</p>
-                      <p className="text-[10px] text-muted-foreground font-body">
-                        {t("clicks", "ضغطات")}
-                      </p>
-                    </div>
-                    <div className="text-center hidden sm:block">
-                      <p className="text-xs font-body text-muted-foreground">{date}</p>
-                      <p className="text-[10px] text-muted-foreground font-body">{relative}</p>
-                    </div>
+                  {/* Content */}
+                  <div className="flex-1 px-5 py-5 min-w-0">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">
+                      <div className="flex items-center gap-4 flex-1 min-w-0 overflow-hidden">
+                        {!hasPreview && (
+                          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                            <Link2 className="w-4 h-4 text-primary" />
+                          </div>
+                        )}
 
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={cn(
-                          "h-8 px-2.5",
-                          url.qrCodeGenerated && "text-primary border-primary/40 hover:bg-primary/5"
-                        )}
-                        onClick={() => {
-                          if (url.qrCodeGenerated) {
-                            // QR already exists — go to QR codes page
-                            navigate("/dashboard/qr-codes");
-                          } else {
-                            // QR not yet created — go to creation page with this link pre-selected
-                            navigate(`/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`);
-                          }
-                        }}
-                        title={
-                          url.qrCodeGenerated
-                            ? t("View QR Code", "عرض كود QR")
-                            : t("Generate QR Code", "إنشاء كود QR")
-                        }
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-2.5"
-                        onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
-                      >
-                        <BarChart3 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => openDeleteDialog(url)}
-                        disabled={deletingId === url._id}
-                      >
-                        {deletingId === url._id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </Button>
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                          <h3 className="font-body font-medium text-foreground text-sm truncate">{name}</h3>
+                          <p className="text-xs text-primary font-body flex items-center gap-1 mt-1 min-w-0">
+                            <ExternalLink size={10} className="shrink-0" />
+                            <a
+                              href={shortUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline truncate min-w-0"
+                            >
+                              {shortUrl}
+                            </a>
+                            <button
+                              onClick={() => handleCopy(url)}
+                              className="ml-1 text-muted-foreground hover:text-primary transition-colors"
+                            >
+                              {copiedId === (url.customCode || url.shortCode || "") ? <Check size={12} /> : <Copy size={12} />}
+                            </button>
+                          </p>
+                          <p
+                            className={`text-[11px] text-muted-foreground font-body mt-0.5 cursor-pointer hover:text-foreground transition-colors ${
+                              expandedDest.has(url._id) ? "break-all" : "truncate"
+                            }`}
+                            onClick={() => toggleDest(url._id)}
+                            title={expandedDest.has(url._id) ? t("Click to collapse", "اضغط للطي") : t("Click to expand", "اضغط للتوسيع")}
+                          >
+                            {dest}
+                          </p>
+                          {utmUrl && (
+                            <div className="mt-1.5 flex items-start gap-1 min-w-0">
+                              <Tag className="w-2.5 h-2.5 text-primary shrink-0 mt-0.5" />
+                              <p
+                                className={`text-[11px] text-primary/80 font-mono flex-1 min-w-0 ${
+                                  expandedDest.has(url._id) ? "break-all" : "truncate"
+                                }`}
+                                title={t("Final UTM URL", "رابط UTM النهائي")}
+                              >
+                                {utmUrl}
+                              </p>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(utmUrl);
+                                  setCopiedUtmId(url._id);
+                                  setTimeout(() => setCopiedUtmId(null), 2000);
+                                }}
+                                className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                                title={t("Copy UTM URL", "نسخ رابط UTM")}
+                              >
+                                {copiedUtmId === url._id ? <Check size={11} /> : <Copy size={11} />}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 justify-between lg:justify-end w-full lg:w-auto">
+                        <div className="text-center">
+                          <p className="text-lg font-display font-bold text-foreground">{clicks}</p>
+                          <p className="text-[10px] text-muted-foreground font-body">
+                            {t("clicks", "ضغطات")}
+                          </p>
+                        </div>
+                        <div className="text-center hidden sm:block">
+                          <p className="text-xs font-body text-muted-foreground">{date}</p>
+                          <p className="text-[10px] text-muted-foreground font-body">{relative}</p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <div className="relative">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn(
+                                "h-8 px-2.5",
+                                url.qrCodeGenerated
+                                  ? "text-primary border-primary/40 hover:bg-primary/5"
+                                  : "border-orange-300 hover:border-orange-400 hover:bg-orange-50 dark:border-orange-500/40 dark:hover:bg-orange-500/10"
+                              )}
+                              onClick={() => {
+                                if (url.qrCodeGenerated) {
+                                  // QR already exists — go to QR codes page
+                                  navigate("/dashboard/qr-codes");
+                                } else {
+                                  // QR not yet created — go to creation page with this link pre-selected
+                                  navigate(`/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`);
+                                }
+                              }}
+                              title={
+                                url.qrCodeGenerated
+                                  ? t("View QR Code", "عرض كود QR")
+                                  : t("Generate QR Code", "إنشاء كود QR")
+                              }
+                            >
+                              <QrCode className={cn("w-3.5 h-3.5", !url.qrCodeGenerated && "text-orange-400")} />
+                            </Button>
+                            {!url.qrCodeGenerated && (
+                              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-400" />
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2.5"
+                            onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
+                          >
+                            <BarChart3 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => openDeleteDialog(url)}
+                            disabled={deletingId === url._id}
+                          >
+                            {deletingId === url._id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

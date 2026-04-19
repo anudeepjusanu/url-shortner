@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
     {
       title: t("Clause 1: Introduction", "البند 1: المقدمة"),
       content: t(
-        "Forsa respects your privacy and is committed to providing excellent service to all our customers. This Privacy Notice has been drafted in accordance with the Personal Data Protection Law and its regulations in the Kingdom of Saudi Arabia to help you understand the nature of the data we collect from you and how this data will be handled by Forsa. Out of Forsa's commitment to the privacy and confidentiality of user data, we are dedicated to maintaining the security and confidentiality of this information and using it to deliver the expected level of service in compliance with the applicable terms and conditions in the Kingdom of Saudi Arabia. By using the Forsa website, the user consents to this Privacy Policy.",
+        "Snip respects your privacy and is committed to providing excellent service to all our customers. This Privacy Notice has been drafted in accordance with the Personal Data Protection Law and its regulations in the Kingdom of Saudi Arabia to help you understand the nature of the data we collect from you and how this data will be handled by Snip. Out of Snip's commitment to the privacy and confidentiality of user data, we are dedicated to maintaining the security and confidentiality of this information and using it to deliver the expected level of service in compliance with the applicable terms and conditions in the Kingdom of Saudi Arabia. By using the Snip website, the user consents to this Privacy Policy.",
         "تحترم فرصة خصوصيتك وتلتزم بتقديم خدمة ممتازة لجميع عملائنا. تم إعداد إشعار الخصوصية هذا وفقاً لنظام حماية البيانات الشخصية ولوائحه في المملكة العربية السعودية لمساعدتك على فهم طبيعة البيانات التي نجمعها منك وكيفية معالجة هذه البيانات من قِبل فرصة. وانطلاقاً من التزام فرصة بخصوصية وسرية بيانات المستخدمين، نحرص على الحفاظ على أمن وسرية هذه المعلومات واستخدامها لتقديم مستوى الخدمة المتوقع وفقاً للشروط والأحكام المعمول بها في المملكة العربية السعودية. باستخدام موقع فرصة، يوافق المستخدم على سياسة الخصوصية هذه."
       ),
     },
@@ -54,14 +54,14 @@ const PrivacyPolicy = () => {
     {
       title: t("Clause 5: Storage and Destruction of Personal Data", "البند 5: تخزين البيانات الشخصية وإتلافها"),
       content: t(
-        "Personal data is stored within the Kingdom of Saudi Arabia on servers protected by advanced technologies in compliance with the policies and controls of the National Cybersecurity Authority and international standards to prevent unauthorized access and mitigate cybersecurity risks. When the data is no longer needed and as per the regulations, it will be destroyed securely to ensure it cannot be accessed or recovered, in accordance with Forsa's policies.",
+        "Personal data is stored within the Kingdom of Saudi Arabia on servers protected by advanced technologies in compliance with the policies and controls of the National Cybersecurity Authority and international standards to prevent unauthorized access and mitigate cybersecurity risks. When the data is no longer needed and as per the regulations, it will be destroyed securely to ensure it cannot be accessed or recovered, in accordance with Snip's policies.",
         "يتم تخزين البيانات الشخصية داخل المملكة العربية السعودية على خوادم محمية بتقنيات متقدمة وفقاً لسياسات وضوابط الهيئة الوطنية للأمن السيبراني والمعايير الدولية لمنع الوصول غير المصرح به والحد من مخاطر الأمن السيبراني. عند انتفاء الحاجة إلى البيانات ووفقاً للوائح، سيتم إتلافها بشكل آمن لضمان عدم الوصول إليها أو استردادها، وفقاً لسياسات فرصة."
       ),
     },
     {
       title: t("Clause 6: Legal Basis for Collecting and Processing Personal Data", "البند 6: الأساس القانوني لجمع البيانات الشخصية ومعالجتها"),
       content: t(
-        "Personal data is collected and processed based on the consent of the data subject. The data subject may withdraw their consent to collect and process their data at any time, unless there is another legal basis. To do so, please contact Forsa's support team via:",
+        "Personal data is collected and processed based on the consent of the data subject. The data subject may withdraw their consent to collect and process their data at any time, unless there is another legal basis. To do so, please contact Snip's support team via:",
         "يتم جمع البيانات الشخصية ومعالجتها بناءً على موافقة صاحب البيانات. يجوز لصاحب البيانات سحب موافقته على جمع بياناته ومعالجتها في أي وقت، ما لم يكن هناك أساس قانوني آخر. للقيام بذلك، يرجى التواصل مع فريق دعم فرصة عبر:"
       ),
       contact: true,
@@ -136,7 +136,7 @@ const PrivacyPolicy = () => {
     {
       title: t("Clause 11: Updates to the Privacy Policy", "البند 11: تحديثات سياسة الخصوصية"),
       content: t(
-        "The Privacy Policy was last updated on January 13, 2025. Forsa reserves the right to add or modify any terms of the Privacy Policy. The website management will notify the data subject of any changes, and the data subject's account may be terminated if they do not accept the updated Privacy Policy after being notified.",
+        "The Privacy Policy was last updated on January 13, 2025. Snip reserves the right to add or modify any terms of the Privacy Policy. The website management will notify the data subject of any changes, and the data subject's account may be terminated if they do not accept the updated Privacy Policy after being notified.",
         "آخر تحديث لسياسة الخصوصية كان في 13 يناير 2025. تحتفظ فرصة بالحق في إضافة أي شروط في سياسة الخصوصية أو تعديلها. ستُخطر إدارة الموقع صاحب البيانات بأي تغييرات، وقد يتم إنهاء حساب صاحب البيانات إذا لم يقبل سياسة الخصوصية المُحدَّثة بعد إخطاره."
       ),
     },

@@ -281,17 +281,24 @@ clickSchema.statics.updateDailySummary = async function(clickData) {
   }
 };
 
-clickSchema.statics.getTopStats = async function(urlId, days = 30) {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-  
-  console.log('📊 getTopStats called:', { urlId, days, startDate });
-  
+clickSchema.statics.getTopStats = async function(urlId, daysOrRange = 30) {
+  // Accept either a number of days (legacy) or a MongoDB date range object
+  let timestampFilter;
+  if (typeof daysOrRange === 'object' && daysOrRange !== null && ('$gte' in daysOrRange || '$lte' in daysOrRange)) {
+    timestampFilter = daysOrRange;
+  } else {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - (typeof daysOrRange === 'number' ? daysOrRange : 30));
+    timestampFilter = { $gte: startDate };
+  }
+
+  console.log('📊 getTopStats called:', { urlId, timestampFilter });
+
   const pipeline = [
     {
       $match: {
         url: urlId,
-        timestamp: { $gte: startDate },
+        timestamp: timestampFilter,
         isBot: { $ne: true }
       }
     },
@@ -299,8 +306,8 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
       $facet: {
         countries: [
           {
-            $match: { 
-              'location.country': { $exists: true, $ne: null, $ne: '' }
+            $match: {
+              'location.country': { $exists: true, $nin: [null, ''] }
             }
           },
           {
@@ -317,8 +324,8 @@ clickSchema.statics.getTopStats = async function(urlId, days = 30) {
         ],
         cities: [
           {
-            $match: { 
-              'location.city': { $exists: true, $ne: null, $ne: '' }
+            $match: {
+              'location.city': { $exists: true, $nin: [null, ''] }
             }
           },
           {

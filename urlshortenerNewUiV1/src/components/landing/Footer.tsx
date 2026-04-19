@@ -21,7 +21,7 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <div className="mb-3 flex items-center gap-2">
-            <img src={logo} alt="4r.sa" className="h-16" />
+            <img src={logo} alt="snip.sa" className="h-16" />
           </div>
           <p className="text-[hsl(var(--cream))]/40 text-sm font-body max-w-sm">
             {t("Shorten your links. Track your campaigns.", "اختصار روابطك، تتبع حملاتك.")}
@@ -102,7 +102,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
               <li><Link to="/privacy-policy" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Privacy Policy", "الخصوصية")}</Link></li>
               <li><Link to="/terms" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</Link></li>
-              <li><a href="mailto:support@4r.sa" className="hover:text-[hsl(var(--cream))]/80 transition-colors">support@4r.sa</a></li>
+              <li><a href="mailto:support@snip.sa" className="hover:text-[hsl(var(--cream))]/80 transition-colors">support@snip.sa</a></li>
             </ul>
           </div>
         </div>
@@ -118,7 +118,7 @@ const Footer = () => {
           </div>
 
           <p className="text-[hsl(var(--cream))]/30 text-sm font-body mt:order-2">
-            {t("© 2026 4r.sa · All rights reserved", "© 2026 4r.sa · جميع الحقوق محفوظة")}
+            {t("© 2026 snip.sa · All rights reserved", "© 2026 snip.sa · جميع الحقوق محفوظة")}
           </p>
         </div>
       </div>

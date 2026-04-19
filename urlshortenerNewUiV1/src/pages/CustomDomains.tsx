@@ -78,13 +78,15 @@ const CustomDomains = () => {
     setVerifyingId(id);
     try {
       const response = await verifyDomain.mutateAsync(id);
-      if (response.success && response.data?.verified) {
+      // Check if verification was successful
+      if (response?.success && response?.data?.verified) {
         setShowVerified(true);
         toast({
           title: t("Success", "نجح"),
           description: t("Domain verified successfully", "تم التحقق من الدومين بنجاح"),
         });
       } else {
+        // Verification API call succeeded but DNS records not found yet
         toast({
           title: t("Verification Pending", "التحقق قيد الانتظار"),
           description: t("DNS records not found yet. Please wait and try again.", "لم يتم العثور على سجلات DNS بعد. انتظر وحاول مرة أخرى."),

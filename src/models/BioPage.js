@@ -127,6 +127,11 @@ const BioPageSchema = new mongoose.Schema(
       type: SocialLinksSchema,
       default: () => ({}),
     },
+    socialLinkImages: {
+      type: Map,
+      of: String,
+      default: () => ({}),
+    },
     totalViews: {
       type: Number,
       default: 0,

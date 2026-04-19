@@ -101,7 +101,7 @@ const getUrlAnalytics = async (req, res) => {
         isBot: { $ne: true }
       }).sort({ timestamp: -1 }).limit(1000),
       
-      Click.getTopStats(urlObjectId, 30),
+      Click.getTopStats(urlObjectId, dateRange),
       
       Click.aggregate([
         {
@@ -290,10 +290,10 @@ const getUrlAnalytics = async (req, res) => {
 
 const getDashboardAnalytics = async (req, res) => {
   try {
-    const { period = '30d' } = req.query;
+    const { period = '30d', startDate: startDateParam, endDate: endDateParam } = req.query;
     const userId = req.user.id;
     const organizationId = req.user.organization;
-    
+
     // Convert user ID to ObjectId for proper MongoDB queries
     let userObjectId;
     try {
@@ -304,7 +304,7 @@ const getDashboardAnalytics = async (req, res) => {
         message: 'Invalid user ID format'
       });
     }
-    
+
     let orgObjectId = null;
     if (organizationId) {
       try {
@@ -313,7 +313,7 @@ const getDashboardAnalytics = async (req, res) => {
         // Ignore invalid org ID, just don't filter by it
       }
     }
-    
+
     const filter = {
       $or: [
         { creator: userObjectId },
@@ -321,26 +321,38 @@ const getDashboardAnalytics = async (req, res) => {
       ]
     };
 
-    const days = {
-      '24h': 1,
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      '1y': 365
-    }[period] || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    
+    // Build date range: prefer explicit startDate/endDate from the frontend
+    // (which encode the exact client-selected window) over the coarse period string.
+    const now = new Date();
+    let dateRange;
+    if (startDateParam && endDateParam) {
+      dateRange = {
+        $gte: new Date(startDateParam),
+        $lte: new Date(endDateParam)
+      };
+    } else {
+      const days = {
+        '24h': 1,
+        '7d': 7,
+        '30d': 30,
+        '90d': 90,
+        '1y': 365
+      }[period] || 30;
+      const start = new Date(now);
+      start.setDate(start.getDate() - days);
+      dateRange = { $gte: start, $lte: now };
+    }
+
     console.log('📊 Dashboard Analytics Query:', {
       userId: userObjectId,
       organizationId: orgObjectId,
       period,
-      startDate
+      dateRange
     });
-    
+
     const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
     const urlIds = urls.map(url => url._id);
-    
+
     // Get custom domains count for the user
     const customDomainsFilter = {
       $or: [
@@ -349,9 +361,9 @@ const getDashboardAnalytics = async (req, res) => {
       ]
     };
     const totalCustomDomains = await Domain.countDocuments(customDomainsFilter);
-    
+
     console.log('📊 Found URLs:', urlIds.length, 'Custom Domains:', totalCustomDomains);
-    
+
     const [
       totalClicks,
       clicksByDay,
@@ -361,19 +373,22 @@ const getDashboardAnalytics = async (req, res) => {
       topDevices,
       topBrowsers,
       topOS,
-      topReferrers
+      topReferrers,
+      periodStats
     ] = await Promise.all([
+      // Period-filtered total clicks
       Click.countDocuments({
         url: { $in: urlIds },
-        timestamp: { $gte: startDate },
+        timestamp: dateRange,
         isBot: { $ne: true }
       }),
-      
+
+      // Daily click series (filtered to selected range)
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
-            timestamp: { $gte: startDate },
+            timestamp: dateRange,
             isBot: { $ne: true }
           }
         },
@@ -388,12 +403,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
-      // clicksByHour: no date filter — peak-hour patterns are an all-time aggregate
-      // so the widget stays populated even when the selected period has no recent data.
+      // Peak hours filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true }
           }
         },
@@ -406,13 +421,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
-      // topStats aggregations: no date filter — geographic/device breakdowns are
-      // all-time patterns so the widgets stay populated even when the selected
-      // period has no recent click records in the analytics collection.
+      // Top countries — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true },
             'location.country': { $exists: true, $ne: null, $nin: ['', null] }
           }
@@ -430,10 +444,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
+      // Top cities — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true },
             'location.city': { $exists: true, $ne: null, $nin: ['', null] }
           }
@@ -452,10 +468,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
+      // Top devices — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true }
           }
         },
@@ -468,10 +486,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } }
       ]),
 
+      // Top browsers — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true },
             'device.browser.name': { $exists: true, $ne: null, $nin: ['', null] }
           }
@@ -486,10 +506,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
+      // Top operating systems — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true },
             'device.os.name': { $exists: true, $ne: null, $nin: ['', null] }
           }
@@ -504,10 +526,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
+      // Top referrers — filtered to selected range
       Click.aggregate([
         {
           $match: {
             url: { $in: urlIds },
+            timestamp: dateRange,
             isBot: { $ne: true },
             referer: { $exists: true, $ne: null, $nin: ['', null] }
           }
@@ -533,28 +557,47 @@ const getDashboardAnalytics = async (req, res) => {
         },
         { $sort: { clicks: -1 } },
         { $limit: 10 }
+      ]),
+
+      // Period-specific unique clicks and QR scans (derived from click records)
+      Click.aggregate([
+        {
+          $match: {
+            url: { $in: urlIds },
+            timestamp: dateRange,
+            isBot: { $ne: true }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            uniqueClicks: { $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] } },
+            qrScans: { $sum: { $cond: [{ $eq: ['$clickSource', 'qr_code'] }, 1, 0] } }
+          }
+        }
       ])
     ]);
-    
+
     const totalUrls = urls.length;
-    // Use all-time counters from Url model (consistent with uniqueClicks and qrScans below)
     const totalClicksAllTime = urls.reduce((sum, url) => sum + (url.clickCount || 0), 0);
     const totalUniqueClicks = urls.reduce((sum, url) => sum + (url.uniqueClickCount || 0), 0);
     const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
     const totalUniqueQRScans = urls.reduce((sum, url) => sum + (url.uniqueQrScanCount || 0), 0);
-    // Period-filtered click count (from analytics_clicks collection, for chart accuracy)
+
     const periodClicks = totalClicks;
+    const periodUniqueClicks = periodStats[0]?.uniqueClicks || 0;
+    const periodQRScans = periodStats[0]?.qrScans || 0;
 
     console.log('📊 Dashboard Analytics Results:', {
       totalUrls,
       totalClicksAllTime,
       periodClicks,
-      totalUniqueClicks,
-      totalQRScans,
+      periodUniqueClicks,
+      periodQRScans,
       clicksByDayCount: clicksByDay.length,
       topCountriesCount: topCountries.length
     });
-    
+
     res.json({
       success: true,
       data: {
@@ -562,6 +605,8 @@ const getDashboardAnalytics = async (req, res) => {
           totalUrls,
           totalClicks: totalClicksAllTime,
           periodClicks,
+          periodUniqueClicks,
+          periodQRScans,
           totalUniqueClicks,
           totalQRScans,
           totalUniqueQRScans,

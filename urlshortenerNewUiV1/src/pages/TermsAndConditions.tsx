@@ -31,7 +31,7 @@ const TermsAndConditions = () => {
               </h2>
               <p>
                 {t(
-                  'This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: "we," "the Company," "the Service," or "this Contract" refer to Forsa Company. "The Second Party" refers to the person who requested the service.',
+                  'This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: "we," "the Company," "the Service," or "this Contract" refer to Snip Company. "The Second Party" refers to the person who requested the service.',
                   'يُعدّ هذا التمهيد والبنود التالية جزءاً لا يتجزأ من الشروط والأحكام العامة للاستخدام لهذا المستند. تشير المصطلحات: "نحن" و"الشركة" و"الخدمة" أو "هذا العقد" إلى شركة فرصة. ويشير مصطلح "الطرف الثاني" إلى الشخص الذي طلب الخدمة.'
                 )}
               </p>
@@ -163,7 +163,7 @@ const TermsAndConditions = () => {
                     ar: 'يحتوي الموقع الإلكتروني على مواد محمية بحقوق الملكية الفكرية، بما في ذلك النصوص والبرامج والصور والرسومات والأسماء والشعارات والألوان والتطبيقات والبرمجيات والملفات الصوتية ("المحتوى"). وهي محمية بموجب حقوق النشر وحقوق العلامات التجارية والقوانين المعمول بها في المملكة العربية السعودية.',
                   },
                   {
-                    en: "All intellectual property rights related to applications, software, and designs are the exclusive property of Forsa Company or authorized service providers.",
+                    en: "All intellectual property rights related to applications, software, and designs are the exclusive property of Snip Company or authorized service providers.",
                     ar: "جميع حقوق الملكية الفكرية المتعلقة بالتطبيقات والبرمجيات والتصاميم هي الملكية الحصرية لشركة فرصة أو مزودي الخدمة المرخصين.",
                   },
                   {

@@ -50,7 +50,7 @@ const UseCasesSection = () => {
       ],
       cta: t("View API Docs", "شوف الـ API Docs"),
       image: "/images/developer-illustration.png?v=2",
-      imageAlt: t("Developer integrating 4r.sa API with code and webhooks", "مطور يدمج API 4r.sa"),
+      imageAlt: t("Developer integrating snip.sa API with code and webhooks", "مطور يدمج API snip.sa"),
     },
   ];
 

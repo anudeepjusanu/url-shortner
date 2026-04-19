@@ -124,7 +124,7 @@ const CreateQRCode = () => {
     }
 
     // 2. Check if the typed URL matches any existing short link
-    //    (user may have pasted a short URL like https://4r.sa/abc)
+    //    (user may have pasted a short URL like https://snip.sa/abc)
     const existingMatch = allLinks.find((l) => {
       const code = l.customCode || l.shortCode || "";
       const rawDomain = (l.domain || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -136,7 +136,7 @@ const CreateQRCode = () => {
         shortUrl === trimmedClean ||
         // Domain + code match
         (rawDomain && code && trimmedClean === `${rawDomain}/${code}`) ||
-        // Just the code path match (e.g. user typed "4r.sa/abc")
+        // Just the code path match (e.g. user typed "snip.sa/abc")
         trimmedClean.endsWith(`/${code}`) ||
         // Original URL match — user pasted the long URL that's already shortened
         l.originalUrl === trimmed
@@ -209,7 +209,7 @@ const CreateQRCode = () => {
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8">
         {/* Form */}
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-display font-bold text-foreground mb-2">
             {t("Create QR Code", "إنشاء كود QR")}
           </h1>
@@ -323,7 +323,7 @@ const CreateQRCode = () => {
                 dir="ltr"
               />
               {selectedLink && (
-                <p className="text-xs text-muted-foreground font-body">
+                <p className="text-xs text-muted-foreground font-body truncate" title={selectedLink.originalUrl}>
                   {t("Original URL:", "الرابط الأصلي:")} {selectedLink.originalUrl}
                 </p>
               )}
