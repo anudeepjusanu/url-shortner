@@ -163,8 +163,8 @@ function aggregateTimeline(
 
 type DateFilter = "today" | "7d" | "30d" | "60d" | "90d" | "180d" | "1y" | "custom";
 
-// Map UI date filter → backend period param
-const filterToPeriod: Record<DateFilter, string> = {
+// Nearest backend-supported period for the dashboard endpoint (only accepts fixed values)
+const dashboardPeriodMap: Record<DateFilter, string> = {
   today: "24h",
   "7d": "7d",
   "30d": "30d",
@@ -172,7 +172,7 @@ const filterToPeriod: Record<DateFilter, string> = {
   "90d": "90d",
   "180d": "1y",
   "1y": "1y",
-  custom: "30d",
+  custom: "1y",
 };
 
 // Build stat entries from a list of { name, count } items with percentage
@@ -226,15 +226,40 @@ const AnalyticsPage = () => {
     custom: t("Custom", "مخصص"),
   };
 
-  // Build API params
+  // Build API params.
+  // Always include both period (for dashboard endpoint) AND startDate/endDate
+  // (for URL-specific endpoint, which supports exact date ranges, and now the
+  // dashboard endpoint does too).
+  // Full ISO datetime strings are sent so the backend receives exact timestamps,
+  // avoiding UTC midnight mismatches on date-only strings.
+  // Unique startDate/endDate per filter guarantees a unique React Query cache key.
   const apiParams = useMemo(() => {
+    const now = new Date();
+
     if (dateFilter === "custom" && customFrom && customTo) {
+      // Start at 00:00:00.000 of the chosen start day, end at 23:59:59.999 of end day
+      const start = new Date(customFrom.getFullYear(), customFrom.getMonth(), customFrom.getDate(), 0, 0, 0, 0);
+      const end = new Date(customTo.getFullYear(), customTo.getMonth(), customTo.getDate(), 23, 59, 59, 999);
       return {
-        startDate: customFrom.toISOString().split("T")[0],
-        endDate: customTo.toISOString().split("T")[0],
+        period: "1y",
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
       };
     }
-    return { period: filterToPeriod[dateFilter] };
+
+    const daysMap: Record<string, number> = {
+      today: 0, "7d": 7, "30d": 30, "60d": 60, "90d": 90, "180d": 180, "1y": 365,
+    };
+    const days = daysMap[dateFilter] ?? 30;
+    const start = new Date(now);
+    start.setDate(start.getDate() - days);
+    start.setHours(0, 0, 0, 0);
+
+    return {
+      period: dashboardPeriodMap[dateFilter] || "30d",
+      startDate: start.toISOString(),   // exact local-midnight timestamp
+      endDate: now.toISOString(),        // exact current time
+    };
   }, [dateFilter, customFrom, customTo]);
 
   // Fetch URL-specific or dashboard analytics
@@ -320,44 +345,6 @@ const AnalyticsPage = () => {
     }
   }, [apiData, linkId]);
 
-  // ─── Normalize overview totals ───
-  const overviewTotals = useMemo(() => {
-    if (!apiData) return { clicks: 0, visitors: 0, qrScans: 0 };
-    if (linkId) {
-      return {
-        clicks: apiData.overview?.totalClicks || 0,
-        // Try all possible field names the backend might use for unique visitors
-        visitors:
-          apiData.overview?.uniqueClicks ||
-          apiData.overview?.uniqueVisitors ||
-          apiData.overview?.totalUniqueClicks ||
-          apiData.overview?.unique_clicks ||
-          0,
-        // Try all possible field names for QR scans
-        qrScans:
-          apiData.url?.qrScanCount ||
-          apiData.overview?.qrScans ||
-          apiData.overview?.totalQRScans ||
-          apiData.overview?.qr_scans ||
-          0,
-      };
-    } else {
-      return {
-        clicks: apiData.overview?.totalClicks || 0,
-        visitors:
-          apiData.overview?.totalUniqueClicks ||
-          apiData.overview?.uniqueClicks ||
-          apiData.overview?.uniqueVisitors ||
-          0,
-        qrScans:
-          apiData.overview?.totalQRScans ||
-          apiData.overview?.qrScans ||
-          apiData.overview?.qr_scans ||
-          0,
-      };
-    }
-  }, [apiData, linkId]);
-
   // ─── Normalize topStats ───
   const topStatsData = useMemo(() => {
     if (!apiData?.topStats) {
@@ -435,47 +422,45 @@ const AnalyticsPage = () => {
 
   // Filter raw data by selected date range
   const filteredClicksData = useMemo(() => {
-    const data = allClicksDataFull.filter(d => {
+    return allClicksDataFull.filter(d => {
       const ts = new Date(d.date).getTime();
       return ts >= filterStart && ts <= filterEnd;
     });
+  }, [allClicksDataFull, filterStart, filterEnd]);
 
-    // When the API returns overview totals but no time-series data,
-    // synthesize daily entries distributed across the range so the chart
-    // can render hourly click breakdowns that match the stat cards above.
-    if (allClicksDataFull.length === 0 && apiData) {
-      const totalClicks = linkId
-        ? (apiData.overview?.totalClicks || 0)
-        : (apiData.overview?.totalClicks || 0);
-      const totalVisitors = linkId
-        ? (apiData.overview?.uniqueClicks || apiData.overview?.uniqueVisitors || apiData.overview?.totalUniqueClicks || 0)
-        : (apiData.overview?.totalUniqueClicks || apiData.overview?.uniqueClicks || 0);
-      const totalQR = linkId
-        ? (apiData.url?.qrScanCount || apiData.overview?.qrScans || apiData.overview?.totalQRScans || 0)
-        : (apiData.overview?.totalQRScans || apiData.overview?.qrScans || 0);
-
-      if (totalClicks > 0 || totalVisitors > 0 || totalQR > 0) {
-        const daysInRange = Math.max(1, Math.round((filterEnd - filterStart) / DAY));
-        const cPD = Math.round(totalClicks / daysInRange);
-        const vPD = Math.round(totalVisitors / daysInRange);
-        const qPD = Math.round(totalQR / daysInRange);
-
-        return Array.from({ length: daysInRange }, (_, i) => {
-          const d = new Date(filterStart + i * DAY);
-          const date = d.toISOString().split("T")[0];
-          const isLast = i === daysInRange - 1;
-          return {
-            date,
-            clicks: isLast ? Math.max(0, totalClicks - cPD * (daysInRange - 1)) : cPD,
-            visitors: isLast ? Math.max(0, totalVisitors - vPD * (daysInRange - 1)) : vPD,
-            qrScans: isLast ? Math.max(0, totalQR - qPD * (daysInRange - 1)) : qPD,
-          };
-        });
-      }
+  // ─── Normalize overview totals ───
+  // Must be declared after filteredClicksData (used in dashboard branch below)
+  const overviewTotals = useMemo(() => {
+    if (!apiData) return { clicks: 0, visitors: 0, qrScans: 0 };
+    if (linkId) {
+      // URL-specific analytics: API receives exact startDate/endDate so all
+      // overview totals are accurate for the selected period.
+      return {
+        clicks: apiData.overview?.totalClicks || 0,
+        visitors:
+          apiData.overview?.uniqueClicks ||
+          apiData.overview?.uniqueVisitors ||
+          apiData.overview?.totalUniqueClicks ||
+          apiData.overview?.unique_clicks ||
+          0,
+        qrScans:
+          apiData.url?.qrScanCount ||
+          apiData.overview?.qrScans ||
+          apiData.overview?.totalQRScans ||
+          apiData.overview?.qr_scans ||
+          0,
+      };
+    } else {
+      // Dashboard analytics: the backend now filters all metrics (clicks, unique
+      // visitors, QR scans, countries, devices, etc.) by the exact startDate/endDate
+      // we sent, so use the period-specific overview fields directly.
+      return {
+        clicks: apiData.overview?.periodClicks || 0,
+        visitors: apiData.overview?.periodUniqueClicks || 0,
+        qrScans: apiData.overview?.periodQRScans || 0,
+      };
     }
-
-    return data;
-  }, [allClicksDataFull, filterStart, filterEnd, apiData, linkId]);
+  }, [apiData, linkId]);
 
   const hourlyTimeline = useMemo(() => buildHourlyTimeline(filteredClicksData), [filteredClicksData]);
   const timelineStart = hourlyTimeline[0]?.ts ?? filterStart;

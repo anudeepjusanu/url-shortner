@@ -20,6 +20,13 @@ import {
   LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import logoIcon from "@/assets/logo.png";
@@ -37,7 +44,7 @@ interface NavItemConfig {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang, isAr } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,13 +66,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("URL Management", "إدارة الروابط"), icon: LinkIcon, path: "/dashboard/urls" },
   ];
 
-  const settingsNav = [
+  const settingsNav: NavItemConfig[] = [
     { label: t("Custom Domains", "الدومينات"), icon: Globe, path: "/dashboard/domains" },
-  ];
-
-  const accountNav: NavItemConfig[] = [
-    { label: t("Profile", "الملف الشخصي"), icon: User, path: "/dashboard/profile" },
-    { label: t("API Docs", "مستندات API"), icon: FileText, path: "https://docs.snip.sa", external: true },
+    { label: t("API", "API"), icon: FileText, path: "https://docs.snip.sa", external: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -142,27 +145,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </div>
 
-        <div>
-          <p className="px-3 mb-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">
-            {t("Account", "الحساب")}
-          </p>
-          <div className="space-y-1">
-            {accountNav.map((item) => (
-              <NavItem key={item.path} item={item} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Logout */}
-      <div className="px-3 py-4 border-t border-border">
-        <button
-          onClick={() => navigate("/login")}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>{t("Log out", "تسجيل خروج")}</span>
-        </button>
       </div>
     </div>
   );
@@ -209,9 +191,29 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <Languages className="w-4 h-4" />
               <span>{lang === "en" ? "العربية" : "English"}</span>
             </button>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  <User className="w-4 h-4 text-primary" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+                    <User className="w-4 h-4" />
+                    {t("Profile", "الملف الشخصي")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={async () => { await logout(); navigate("/login"); }}
+                  className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  {t("Log out", "تسجيل خروج")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 

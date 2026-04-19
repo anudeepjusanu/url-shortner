@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { bioPageAPI } from "@/services/api";
-import { Loader2, Instagram, Twitter, Linkedin, Github, Youtube, Globe, Link2, ExternalLink } from "lucide-react";
+import { Loader2, Link2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -48,19 +48,48 @@ interface PublicPage {
   theme: BioTheme;
   links: BioLink[];
   socialLinks: BioSocialLinks;
+  socialLinkImages?: Record<string, string>;
 }
 
-// ─── Social icon map ────────────────────────────────────────────────────────
+// ─── Social platform map ────────────────────────────────────────────────────
 
-const SOCIAL_CONFIG: Record<string, { Icon: any; label: string }> = {
-  instagram: { Icon: Instagram, label: "Instagram" },
-  twitter:   { Icon: Twitter,   label: "Twitter"   },
-  youtube:   { Icon: Youtube,   label: "YouTube"   },
-  linkedin:  { Icon: Linkedin,  label: "LinkedIn"  },
-  github:    { Icon: Github,    label: "GitHub"    },
-  tiktok:    { Icon: Link2,     label: "TikTok"    },
-  facebook:  { Icon: Link2,     label: "Facebook"  },
-  website:   { Icon: Globe,     label: "Website"   },
+const SOCIAL_CONFIG: Record<string, { label: string }> = {
+  instagram: { label: "Instagram" },
+  twitter:   { label: "Twitter / X" },
+  youtube:   { label: "YouTube"   },
+  linkedin:  { label: "LinkedIn"  },
+  github:    { label: "GitHub"    },
+  tiktok:    { label: "TikTok"    },
+  facebook:  { label: "Facebook"  },
+  website:   { label: "Website"   },
+};
+
+const SOCIAL_DOMAINS: Record<string, string> = {
+  instagram: "instagram.com",
+  twitter:   "twitter.com",
+  youtube:   "youtube.com",
+  linkedin:  "linkedin.com",
+  github:    "github.com",
+  tiktok:    "tiktok.com",
+  facebook:  "facebook.com",
+};
+
+function extractDomain(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; }
+}
+
+// Small component that renders a platform favicon with a Link2 fallback
+const PlatformFavicon = ({ domain, label, color }: { domain: string; label: string; color: string }) => {
+  const [err, setErr] = useState(false);
+  if (!domain || err) return <Link2 className="w-5 h-5" style={{ color }} />;
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+      alt={label}
+      className="w-5 h-5 object-contain"
+      onError={() => setErr(true)}
+    />
+  );
 };
 
 // ─── Animation variants ─────────────────────────────────────────────────────
@@ -264,7 +293,8 @@ const PublicBioPage = () => {
     };
   };
 
-  const activeSocials = Object.entries(socialLinks).filter(([, v]) => !!v);
+  const activeSocials = Object.entries(socialLinks ?? {}).filter(([, v]) => !!v);
+  const socialLinkImages = page.socialLinkImages ?? {};
 
   return (
     <div className="min-h-screen w-full relative" style={bgStyle}>
@@ -345,8 +375,9 @@ const PublicBioPage = () => {
           >
             {activeSocials.map(([key, url]) => {
               const cfg = SOCIAL_CONFIG[key];
-              if (!cfg) return null;
-              const { Icon, label } = cfg;
+              const label = cfg?.label ?? key;
+              const customImg = socialLinkImages[key];
+              const domain = SOCIAL_DOMAINS[key] || extractDomain(url as string);
               return (
                 <motion.a
                   key={key}
@@ -357,14 +388,17 @@ const PublicBioPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={label}
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
                   style={{
                     backgroundColor: theme.buttonColor + "20",
-                    color: theme.buttonColor,
                     border: `1.5px solid ${theme.buttonColor}40`,
                   }}
                 >
-                  <Icon className="w-4.5 h-4.5" />
+                  {customImg ? (
+                    <img src={customImg} alt={label} className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <PlatformFavicon domain={domain} label={label} color={theme.buttonColor} />
+                  )}
                 </motion.a>
               );
             })}

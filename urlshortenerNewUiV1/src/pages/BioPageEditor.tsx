@@ -20,6 +20,7 @@ import {
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ interface BioLink {
   title: string;
   url: string;
   icon: string;
+  thumbnail?: string;
   order: number;
   isActive: boolean;
   isFeatured?: boolean;
@@ -60,6 +62,11 @@ interface BioSocialLinks {
   website: string;
 }
 
+interface ExtraSocialLink {
+  platform: string;
+  url: string;
+}
+
 interface FormData {
   username: string;
   title: string;
@@ -69,6 +76,8 @@ interface FormData {
   theme: BioTheme;
   links: BioLink[];
   socialLinks: BioSocialLinks;
+  extraSocialLinks: ExtraSocialLink[];
+  socialLinkImages: Record<string, string>;
 }
 
 // ─── Theme presets ─────────────────────────────────────────────────────────
@@ -106,7 +115,27 @@ const DEFAULT_FORM: FormData = {
   },
   links: [],
   socialLinks: { instagram: "", twitter: "", tiktok: "", youtube: "", linkedin: "", github: "", facebook: "", website: "" },
+  extraSocialLinks: [],
+  socialLinkImages: {},
 };
+
+const KNOWN_SOCIAL_KEYS: (keyof BioSocialLinks)[] = [
+  "instagram", "twitter", "tiktok", "youtube", "linkedin", "github", "facebook", "website",
+];
+
+const SOCIAL_DOMAINS: Record<string, string> = {
+  instagram: "instagram.com",
+  twitter:   "twitter.com",
+  youtube:   "youtube.com",
+  linkedin:  "linkedin.com",
+  github:    "github.com",
+  tiktok:    "tiktok.com",
+  facebook:  "facebook.com",
+};
+
+function extractDomain(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; }
+}
 
 // ─── Blocked image URL patterns ───────────────────────────────────────────
 // These hosts either block cross-origin embedding or require auth/cookies.
@@ -153,10 +182,38 @@ function compressImage(file: File, maxSize = 320, quality = 0.82): Promise<strin
   });
 }
 
+// ─── Social favicon button ─────────────────────────────────────────────────
+
+const SocialFaviconButton = ({
+  socialKey, url, customImage, buttonColor,
+}: { socialKey: string; url: string; customImage?: string; buttonColor: string }) => {
+  const [faviconError, setFaviconError] = useState(false);
+  const domain = SOCIAL_DOMAINS[socialKey] || extractDomain(url);
+  return (
+    <div
+      className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+      style={{ backgroundColor: buttonColor + "20", border: `1px solid ${buttonColor}30` }}
+    >
+      {customImage ? (
+        <img src={customImage} alt={socialKey} className="w-full h-full rounded-full object-cover" />
+      ) : domain && !faviconError ? (
+        <img
+          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+          alt={socialKey}
+          className="w-3.5 h-3.5 object-contain"
+          onError={() => setFaviconError(true)}
+        />
+      ) : (
+        <Link2 className="w-3 h-3" style={{ color: buttonColor }} />
+      )}
+    </div>
+  );
+};
+
 // ─── Phone Preview ─────────────────────────────────────────────────────────
 
 const PhonePreview = ({ form }: { form: FormData }) => {
-  const { theme, links, socialLinks } = form;
+  const { theme, links, socialLinks, socialLinkImages } = form;
 
   const bgStyle: React.CSSProperties = theme.backgroundGradient
     ? { background: theme.backgroundGradient }
@@ -236,7 +293,7 @@ const PhonePreview = ({ form }: { form: FormData }) => {
               {sortedLinks.slice(0, 8).map((link, i) => (
                 <div
                   key={i}
-                  className="w-full px-3 text-center text-[11px] font-medium truncate relative"
+                  className="w-full text-center text-[11px] font-medium truncate relative flex items-center justify-center gap-2"
                   style={{
                     ...btnStyle,
                     padding: link.isFeatured ? "9px 12px" : "7px 12px",
@@ -244,8 +301,17 @@ const PhonePreview = ({ form }: { form: FormData }) => {
                   }}
                 >
                   {link.isFeatured && <span className="absolute top-0.5 right-1.5 text-[8px] opacity-60">★</span>}
-                  {link.icon && <span className="mr-1">{link.icon}</span>}
-                  {link.title || "Link Title"}
+                  {link.thumbnail && (
+                    <img
+                      src={link.thumbnail}
+                      alt=""
+                      className="w-5 h-5 rounded object-cover flex-shrink-0"
+                    />
+                  )}
+                  {link.icon && !link.thumbnail && <span className="flex-shrink-0">{link.icon}</span>}
+                  <span className="truncate">
+                    {link.title || "Link Title"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -253,14 +319,14 @@ const PhonePreview = ({ form }: { form: FormData }) => {
             {/* Social icons */}
             {activeSocial.length > 0 && (
               <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
-                {activeSocial.map(([key]) => (
-                  <div
+                {activeSocial.map(([key, url]) => (
+                  <SocialFaviconButton
                     key={key}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold"
-                    style={{ backgroundColor: theme.buttonColor + "20", color: theme.buttonColor }}
-                  >
-                    {key.slice(0, 2).toUpperCase()}
-                  </div>
+                    socialKey={key}
+                    url={url as string}
+                    customImage={socialLinkImages?.[key]}
+                    buttonColor={theme.buttonColor}
+                  />
                 ))}
               </div>
             )}
@@ -292,8 +358,19 @@ const BioPageEditor = () => {
   const [copied, setCopied] = useState(false);
   const [bgImageStatus, setBgImageStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const [uploadingSocialKey, setUploadingSocialKey] = useState<string | null>(null);
+  const [avatarCropFile, setAvatarCropFile] = useState<File | null>(null);
+  const [bgCropFile, setBgCropFile] = useState<File | null>(null);
+  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
+  const [showBgCrop, setShowBgCrop] = useState(false);
+  const [colorErrors, setColorErrors] = useState<Record<string, string>>({});
+  const [bgUploadError, setBgUploadError] = useState<string>("");
+  const [uploadingLinkThumbnail, setUploadingLinkThumbnail] = useState<number | null>(null);
   const usernameTimer = useRef<ReturnType<typeof setTimeout>>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bgFileInputRef = useRef<HTMLInputElement>(null);
+  const socialImageInputRef = useRef<HTMLInputElement>(null);
+  const linkThumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -306,15 +383,77 @@ const BioPageEditor = () => {
       toast({ variant: "destructive", title: t("File too large", "الملف كبير جداً"), description: t("Max image size is 10 MB", "الحجم الأقصى للصورة هو 10 ميغابايت") });
       return;
     }
-    setIsUploadingAvatar(true);
-    try {
-      const compressed = await compressImage(file);
-      setField("avatarUrl", compressed);
-    } catch {
-      toast({ variant: "destructive", title: t("Upload failed", "فشل الرفع"), description: t("Could not process the image", "تعذّر معالجة الصورة") });
-    } finally {
-      setIsUploadingAvatar(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    setAvatarCropFile(file);
+    setShowAvatarCrop(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAvatarCropConfirm = (croppedDataUrl: string) => {
+    setField("avatarUrl", croppedDataUrl);
+    setAvatarLoadError(false);
+  };
+
+  const handleBgImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+   
+    setBgUploadError("");
+   
+    if (!file.type.startsWith("image/")) {
+      const errorMsg = t("Please select an image file (JPG, PNG, WebP)", "يرجى اختيار ملف صورة (JPG, PNG, WebP)");
+      setBgUploadError(errorMsg);
+      toast({ variant: "destructive", title: t("Invalid file", "ملف غير صالح"), description: errorMsg });
+      if (bgFileInputRef.current) bgFileInputRef.current.value = "";
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      const errorMsg = t("Max image size is 10 MB", "الحجم الأقصى للصورة هو 10 ميغابايت");
+      setBgUploadError(errorMsg);
+      toast({ variant: "destructive", title: t("File too large", "الملف كبير جداً"), description: errorMsg });
+      if (bgFileInputRef.current) bgFileInputRef.current.value = "";
+      return;
+    }
+    setBgCropFile(file);
+    setShowBgCrop(true);
+    if (bgFileInputRef.current) bgFileInputRef.current.value = "";
+  };
+
+  const handleBgCropConfirm = (croppedDataUrl: string) => {
+    setTheme({ backgroundImage: croppedDataUrl });
+    setBgImageStatus("ok");
+    setBgUploadError("");
+  };
+
+  const validateHexColor = (value: string): boolean => {
+    const hexRegex = /^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    return hexRegex.test(value);
+  };
+
+  const normalizeHexColor = (value: string): string => {
+    let normalized = value.trim();
+    if (!normalized.startsWith("#")) {
+      normalized = "#" + normalized;
+    }
+    return normalized.toUpperCase();
+  };
+
+  const handleColorInputChange = (key: string, value: string) => {
+    const trimmed = value.trim();
+   
+    if (!trimmed) {
+      setColorErrors((prev) => ({ ...prev, [key]: "" }));
+      return;
+    }
+
+    if (validateHexColor(trimmed)) {
+      const normalized = normalizeHexColor(trimmed);
+      setTheme({ [key]: normalized } as any);
+      setColorErrors((prev) => ({ ...prev, [key]: "" }));
+    } else {
+      setColorErrors((prev) => ({
+        ...prev,
+        [key]: t("Invalid hex color (e.g., #FF5733 or FF5733)", "لون hex غير صالح (مثال: #FF5733 أو FF5733)"),
+      }));
     }
   };
 
@@ -342,7 +481,11 @@ const BioPageEditor = () => {
             isFeatured: l.isFeatured ?? false,
             clickCount: l.clickCount || 0,
           })),
-          socialLinks: { ...DEFAULT_FORM.socialLinks, ...(p.socialLinks || {}) },
+          socialLinks: { ...DEFAULT_FORM.socialLinks, ...Object.fromEntries(KNOWN_SOCIAL_KEYS.map((k) => [k, (p.socialLinks || {})[k] || ""])) } as BioSocialLinks,
+          extraSocialLinks: Object.entries(p.socialLinks || {})
+            .filter(([k, v]) => !KNOWN_SOCIAL_KEYS.includes(k as keyof BioSocialLinks) && v)
+            .map(([platform, url]) => ({ platform, url: url as string })),
+          socialLinkImages: p.socialLinkImages || {},
         });
       } catch {
         toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Failed to load bio page", "فشل تحميل الصفحة") });
@@ -395,6 +538,85 @@ const BioPageEditor = () => {
 
   const setSocial = (key: keyof BioSocialLinks, value: string) =>
     setForm((prev) => ({ ...prev, socialLinks: { ...prev.socialLinks, [key]: value } }));
+
+  const addExtraSocial = () =>
+    setForm((prev) => ({ ...prev, extraSocialLinks: [...prev.extraSocialLinks, { platform: "", url: "" }] }));
+
+  const removeExtraSocial = (index: number) =>
+    setForm((prev) => ({ ...prev, extraSocialLinks: prev.extraSocialLinks.filter((_, i) => i !== index) }));
+
+  const updateExtraSocial = (index: number, patch: Partial<ExtraSocialLink>) =>
+    setForm((prev) => {
+      const extraSocialLinks = [...prev.extraSocialLinks];
+      extraSocialLinks[index] = { ...extraSocialLinks[index], ...patch };
+      return { ...prev, extraSocialLinks };
+    });
+
+  const setSocialImage = (key: string, dataUrl: string) =>
+    setForm((prev) => ({ ...prev, socialLinkImages: { ...prev.socialLinkImages, [key]: dataUrl } }));
+
+  const removeSocialImage = (key: string) =>
+    setForm((prev) => {
+      const { [key]: _, ...rest } = prev.socialLinkImages;
+      return { ...prev, socialLinkImages: rest };
+    });
+
+  const triggerSocialImageUpload = (key: string) => {
+    setUploadingSocialKey(key);
+    socialImageInputRef.current?.click();
+  };
+
+  const handleSocialImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !uploadingSocialKey) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ variant: "destructive", title: t("Invalid file", "ملف غير صالح"), description: t("Please select an image file", "يرجى اختيار ملف صورة") });
+      setUploadingSocialKey(null);
+      return;
+    }
+    try {
+      const compressed = await compressImage(file, 128, 0.85);
+      setSocialImage(uploadingSocialKey, compressed);
+    } catch {
+      toast({ variant: "destructive", title: t("Upload failed", "فشل الرفع"), description: t("Could not process the image", "تعذّر معالجة الصورة") });
+    } finally {
+      setUploadingSocialKey(null);
+      if (socialImageInputRef.current) socialImageInputRef.current.value = "";
+    }
+  };
+
+  const triggerLinkThumbnailUpload = (index: number) => {
+    setUploadingLinkThumbnail(index);
+    linkThumbnailInputRef.current?.click();
+  };
+
+  const handleLinkThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || uploadingLinkThumbnail === null) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ variant: "destructive", title: t("Invalid file", "ملف غير صالح"), description: t("Please select an image file", "يرجى اختيار ملف صورة") });
+      setUploadingLinkThumbnail(null);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ variant: "destructive", title: t("File too large", "الملف كبير جداً"), description: t("Max image size is 5 MB", "الحجم الأقصى للصورة هو 5 ميغابايت") });
+      setUploadingLinkThumbnail(null);
+      return;
+    }
+    try {
+      const compressed = await compressImage(file, 128, 0.85);
+      updateLink(uploadingLinkThumbnail, { thumbnail: compressed });
+    } catch {
+      toast({ variant: "destructive", title: t("Upload failed", "فشل الرفع"), description: t("Could not process the image", "تعذّر معالجة الصورة") });
+    } finally {
+      setUploadingLinkThumbnail(null);
+      if (linkThumbnailInputRef.current) linkThumbnailInputRef.current.value = "";
+    }
+  };
+
+  const removeLinkThumbnail = (index: number) => {
+    updateLink(index, { thumbnail: undefined });
+  };
 
   const addLink = () =>
     setForm((prev) => ({
@@ -454,9 +676,18 @@ const BioPageEditor = () => {
 
     setIsSaving(true);
     try {
+      const { extraSocialLinks: _extra, ...formRest } = form;
       const payload = {
-        ...form,
+        ...formRest,
         links: form.links.map((l, i) => ({ ...l, order: i })),
+        socialLinks: {
+          ...form.socialLinks,
+          ...Object.fromEntries(
+            form.extraSocialLinks
+              .filter(({ platform }) => platform.trim())
+              .map(({ platform, url }) => [platform.trim().toLowerCase().replace(/\s+/g, "_"), url])
+          ),
+        },
       };
       if (isEditMode) {
         await bioPageAPI.update(id!, payload);
@@ -662,7 +893,7 @@ const BioPageEditor = () => {
                   </div>
 
                   <div className="flex-1 space-y-2">
-                    {/* Hidden file input */}
+                    {/* Hidden file input — avatar */}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -670,20 +901,23 @@ const BioPageEditor = () => {
                       className="hidden"
                       onChange={handleAvatarUpload}
                     />
+                    {/* Hidden file input — social link images */}
+                    <input
+                      ref={socialImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleSocialImageUpload}
+                    />
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       className="gap-2 w-full"
-                      disabled={isUploadingAvatar}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {isUploadingAvatar
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Camera className="w-4 h-4" />}
-                      {isUploadingAvatar
-                        ? t("Processing…", "جاري المعالجة…")
-                        : t("Upload Photo", "رفع صورة")}
+                      <Camera className="w-4 h-4" />
+                      {t("Upload Photo", "رفع صورة")}
                     </Button>
                     {form.avatarUrl && (
                       <Button
@@ -794,17 +1028,36 @@ const BioPageEditor = () => {
                     { key: "buttonTextColor", label: t("Button Text", "نص الزر") },
                     { key: "textColor", label: t("Text Color", "لون النص") },
                   ].map(({ key, label }) => (
-                    <div key={key} className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={(form.theme as any)[key]}
-                        onChange={(e) => setTheme({ [key]: e.target.value } as any)}
-                        className="w-10 h-10 rounded-lg border border-border cursor-pointer p-0.5"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{label}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{(form.theme as any)[key]}</p>
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={(form.theme as any)[key]}
+                          onChange={(e) => {
+                            setTheme({ [key]: e.target.value } as any);
+                            setColorErrors((prev) => ({ ...prev, [key]: "" }));
+                          }}
+                          className="w-10 h-10 rounded-lg border border-border cursor-pointer p-0.5 flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium mb-1">{label}</p>
+                          <Input
+                            value={(form.theme as any)[key]}
+                            onChange={(e) => handleColorInputChange(key, e.target.value)}
+                            placeholder="#FF5733"
+                            className={cn(
+                              "font-mono text-xs h-8",
+                              colorErrors[key] && "border-destructive focus-visible:ring-destructive"
+                            )}
+                          />
+                        </div>
                       </div>
+                      {colorErrors[key] && (
+                        <p className="text-xs text-destructive flex items-start gap-1 pl-[52px]">
+                          <span className="mt-0.5">⚠</span>
+                          <span>{colorErrors[key]}</span>
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -820,15 +1073,51 @@ const BioPageEditor = () => {
                 </Label>
                 <p className="text-xs text-muted-foreground -mt-1">
                   {t(
-                    "Paste a direct image URL ending in .jpg, .png, .webp, etc. — not a webpage link.",
-                    "الصق رابطاً مباشراً للصورة ينتهي بـ .jpg أو .png أو .webp — وليس رابط صفحة ويب."
+                    "Upload an image or paste a direct image URL ending in .jpg, .png, .webp, etc. — not a webpage link.",
+                    "ارفع صورة أو الصق رابطاً مباشراً للصورة ينتهي بـ .jpg أو .png أو .webp — وليس رابط صفحة ويب."
                   )}
+                </p>
+
+                {/* Upload button */}
+                <input
+                  ref={bgFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={handleBgImageUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "gap-2 w-full",
+                    bgUploadError && "border-destructive"
+                  )}
+                  onClick={() => {
+                    setBgUploadError("");
+                    bgFileInputRef.current?.click();
+                  }}
+                >
+                  <Camera className="w-4 h-4" />
+                  {t("Upload Background Image", "رفع صورة الخلفية")}
+                </Button>
+
+                {bgUploadError && (
+                  <p className="text-xs text-destructive flex items-start gap-1.5">
+                    <span className="mt-0.5">⚠</span>
+                    <span>{bgUploadError}</span>
+                  </p>
+                )}
+
+                <p className="text-xs text-muted-foreground text-center">
+                  {t("Or paste an image URL below", "أو الصق رابط صورة أدناه")}
                 </p>
 
                 {/* Input with live status indicator */}
                 <div className="relative">
                   <Input
-                    value={form.theme.backgroundImage}
+                    value={form.theme.backgroundImage.startsWith("data:") ? "" : form.theme.backgroundImage}
                     onChange={(e) => {
                       setBgImageStatus("idle");
                       setTheme({ backgroundImage: e.target.value });
@@ -1007,6 +1296,15 @@ const BioPageEditor = () => {
               )}
 
               <div className="space-y-3">
+                {/* Hidden file input for link thumbnails */}
+                <input
+                  ref={linkThumbnailInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleLinkThumbnailUpload}
+                />
+               
                 {form.links.map((link, i) => (
                   <div key={i} className="bg-muted/30 border border-border rounded-xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
@@ -1075,6 +1373,58 @@ const BioPageEditor = () => {
                     {link.url && !link.url.startsWith("http") && (
                       <p className="text-xs text-amber-500">{t("URL should start with https://", "يجب أن يبدأ الرابط بـ https://")}</p>
                     )}
+
+                    {/* Thumbnail upload section */}
+                    <div className="flex items-center gap-3 pt-2 border-t border-border">
+                      <Label className="text-xs text-muted-foreground flex-shrink-0">
+                        {t("Thumbnail", "صورة مصغرة")}
+                      </Label>
+                      <div className="flex items-center gap-2 flex-1">
+                        {link.thumbnail ? (
+                          <div className="relative">
+                            <img
+                              src={link.thumbnail}
+                              alt="thumbnail"
+                              className="w-10 h-10 rounded object-cover ring-1 ring-border"
+                            />
+                            <button
+                              type="button"
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-white flex items-center justify-center text-[10px] leading-none"
+                              onClick={() => removeLinkThumbnail(i)}
+                              title={t("Remove thumbnail", "إزالة الصورة المصغرة")}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="w-10 h-10 rounded border border-dashed border-border flex items-center justify-center hover:border-primary transition-colors"
+                            onClick={() => triggerLinkThumbnailUpload(i)}
+                            title={t("Upload thumbnail", "رفع صورة مصغرة")}
+                          >
+                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        )}
+                        {link.thumbnail && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => triggerLinkThumbnailUpload(i)}
+                          >
+                            {t("Replace", "استبدال")}
+                          </Button>
+                        )}
+                        {!link.thumbnail && (
+                          <p className="text-xs text-muted-foreground">
+                            {t("Optional square image for this link", "صورة مربعة اختيارية لهذا الرابط")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
                     {isEditMode && (
                       <div className="flex items-center gap-1.5">
                         <MousePointerClick className="w-3 h-3 text-muted-foreground" />
@@ -1109,22 +1459,124 @@ const BioPageEditor = () => {
                 { key: "tiktok", icon: Link2, placeholder: "https://tiktok.com/@yourhandle", label: "TikTok" },
                 { key: "facebook", icon: Link2, placeholder: "https://facebook.com/yourpage", label: "Facebook" },
                 { key: "website", icon: Globe, placeholder: "https://yourwebsite.com", label: t("Website", "الموقع") },
-              ].map(({ key, icon: Icon, placeholder, label }) => (
-                <div key={key} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-muted-foreground" />
+              ].map(({ key, icon: Icon, placeholder, label }) => {
+                const customImg = form.socialLinkImages[key];
+                return (
+                  <div key={key} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-xs text-muted-foreground">{label}</Label>
+                      <Input
+                        value={(form.socialLinks as any)[key]}
+                        onChange={(e) => setSocial(key as keyof BioSocialLinks, e.target.value)}
+                        placeholder={placeholder}
+                        type="url"
+                      />
+                    </div>
+                    {/* Per-button custom image */}
+                    <div className="flex-shrink-0">
+                      {customImg ? (
+                        <div className="relative w-8 h-8">
+                          <img src={customImg} alt={key} className="w-8 h-8 rounded-full object-cover ring-1 ring-border" />
+                          <button
+                            type="button"
+                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-white flex items-center justify-center text-[10px] leading-none"
+                            onClick={() => removeSocialImage(key)}
+                            title={t("Remove custom image", "إزالة الصورة المخصصة")}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="w-8 h-8 rounded-full border border-dashed border-border flex items-center justify-center hover:border-primary transition-colors"
+                          onClick={() => triggerSocialImageUpload(key)}
+                          title={t("Upload custom logo", "رفع شعار مخصص")}
+                        >
+                          <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <Label className="text-xs text-muted-foreground">{label}</Label>
-                    <Input
-                      value={(form.socialLinks as any)[key]}
-                      onChange={(e) => setSocial(key as keyof BioSocialLinks, e.target.value)}
-                      placeholder={placeholder}
-                      type="url"
-                    />
+                );
+              })}
+
+              {/* Extra / custom social links */}
+              {form.extraSocialLinks.map((item, i) => {
+                const extraKey = item.platform.trim().toLowerCase().replace(/\s+/g, "_") || `extra_${i}`;
+                const customImg = form.socialLinkImages[extraKey];
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <Link2 className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <Input
+                        value={item.platform}
+                        onChange={(e) => updateExtraSocial(i, { platform: e.target.value })}
+                        placeholder={t("Platform name (e.g. Snapchat)", "اسم المنصة (مثال: Snapchat)")}
+                        className="h-7 text-xs"
+                      />
+                      <Input
+                        value={item.url}
+                        onChange={(e) => updateExtraSocial(i, { url: e.target.value })}
+                        placeholder="https://..."
+                        type="url"
+                      />
+                      {item.url && !item.url.startsWith("http") && (
+                        <p className="text-xs text-amber-500">{t("URL should start with https://", "يجب أن يبدأ الرابط بـ https://")}</p>
+                      )}
+                    </div>
+                    {/* Per-button custom image */}
+                    <div className="flex-shrink-0">
+                      {customImg ? (
+                        <div className="relative w-8 h-8">
+                          <img src={customImg} alt={extraKey} className="w-8 h-8 rounded-full object-cover ring-1 ring-border" />
+                          <button
+                            type="button"
+                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-white flex items-center justify-center text-[10px] leading-none"
+                            onClick={() => removeSocialImage(extraKey)}
+                            title={t("Remove custom image", "إزالة الصورة المخصصة")}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="w-8 h-8 rounded-full border border-dashed border-border flex items-center justify-center hover:border-primary transition-colors"
+                          onClick={() => triggerSocialImageUpload(extraKey)}
+                          title={t("Upload custom logo", "رفع شعار مخصص")}
+                        >
+                          <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-8 h-8 text-destructive hover:bg-destructive/10 flex-shrink-0"
+                      onClick={() => removeExtraSocial(i)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={addExtraSocial}
+              >
+                <Plus className="w-4 h-4" />
+                {t("Add More", "إضافة المزيد")}
+              </Button>
             </TabsContent>
           </Tabs>
 
@@ -1133,6 +1585,24 @@ const BioPageEditor = () => {
             <PhonePreview form={form} />
           </div>
         </div>
+
+        {/* Image Crop Dialogs */}
+        <ImageCropDialog
+          open={showAvatarCrop}
+          onOpenChange={setShowAvatarCrop}
+          file={avatarCropFile}
+          onConfirm={handleAvatarCropConfirm}
+          aspectRatio={1}
+          title={t("Crop Avatar Image", "اقتصاص صورة الملف الشخصي")}
+        />
+        <ImageCropDialog
+          open={showBgCrop}
+          onOpenChange={setShowBgCrop}
+          file={bgCropFile}
+          onConfirm={handleBgCropConfirm}
+          aspectRatio={9 / 16}
+          title={t("Crop Background Image", "اقتصاص صورة الخلفية")}
+        />
       </div>
     </DashboardLayout>
   );

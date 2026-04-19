@@ -42,7 +42,7 @@ const bioPageService = {
   },
 
   async createBioPage(userId, data) {
-    const { username, title, description, avatarUrl, theme, links = [], socialLinks } = data;
+    const { username, title, description, avatarUrl, theme, links = [], socialLinks, socialLinkImages } = data;
 
     if (!username) throw makeError('Username is required', 400);
     if (!title) throw makeError('Title is required', 400);
@@ -65,6 +65,7 @@ const bioPageService = {
       theme: theme || {},
       links: links.map((l, i) => ({ ...l, order: l.order ?? i })),
       socialLinks: socialLinks || {},
+      socialLinkImages: socialLinkImages || {},
     });
 
     await bioPage.save();
@@ -102,7 +103,7 @@ const bioPageService = {
       bioPage.links = data.links.map((l, i) => ({ ...l, order: l.order ?? i }));
     }
 
-    const updatableFields = ['title', 'description', 'avatarUrl', 'theme', 'socialLinks', 'isPublished'];
+    const updatableFields = ['title', 'description', 'avatarUrl', 'theme', 'socialLinks', 'socialLinkImages', 'isPublished'];
     for (const field of updatableFields) {
       if (data[field] !== undefined) {
         bioPage[field] = data[field];
@@ -145,8 +146,9 @@ const bioPageService = {
       links: bioPage.links
         .filter((l) => l.isActive)
         .sort((a, b) => a.order - b.order)
-        .map((l) => ({ _id: l._id, title: l.title, url: l.url, icon: l.icon })),
-      socialLinks: bioPage.socialLinks,
+        .map((l) => ({ _id: l._id, title: l.title, url: l.url, icon: l.icon, isFeatured: l.isFeatured })),
+      socialLinks: bioPage.socialLinks ?? {},
+      socialLinkImages: bioPage.socialLinkImages ? Object.fromEntries(bioPage.socialLinkImages) : {},
     };
   },
 

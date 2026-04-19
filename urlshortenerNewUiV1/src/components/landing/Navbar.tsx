@@ -4,10 +4,12 @@ import { Menu, X, Globe } from "lucide-react";
 import logoFull from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { lang, setLang, t } = useLanguage();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,18 +59,36 @@ const Navbar = () => {
               <Globe size={14} />
               {lang === "en" ? "العربية" : "English"}
             </button>
-            <Button variant="ghost" size="sm" className="text-[hsl(var(--navy))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--navy))]/20" asChild>
-              <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
-            </Button>
-            <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all" asChild>
-              <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
-            </Button>
+            {!isLoading && (
+              isAuthenticated ? (
+                <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all" asChild>
+                  <Link to="/dashboard">{t("Dashboard", "لوحة التحكم")}</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" className="text-[hsl(var(--navy))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--navy))]/20" asChild>
+                    <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
+                  </Button>
+                  <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all" asChild>
+                    <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
+                  </Button>
+                </>
+              )
+            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-4 text-xs hover:opacity-90 transition-all" asChild>
-              <Link to="/login">{t("Sign in", "دخول")}</Link>
-            </Button>
+            {!isLoading && (
+              isAuthenticated ? (
+                <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-4 text-xs hover:opacity-90 transition-all" asChild>
+                  <Link to="/dashboard">{t("Dashboard", "لوحة التحكم")}</Link>
+                </Button>
+              ) : (
+                <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-4 text-xs hover:opacity-90 transition-all" asChild>
+                  <Link to="/login">{t("Sign in", "دخول")}</Link>
+                </Button>
+              )
+            )}
             <button onClick={toggleLang} className="text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors p-1.5">
               <Globe size={18} />
             </button>
@@ -86,12 +106,22 @@ const Navbar = () => {
             <button onClick={() => { scrollToSection("analytics"); setIsOpen(false); }} className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl text-start">{t("Analytics", "التحليلات")}</button>
             <button onClick={() => { scrollToSection("developers"); setIsOpen(false); }} className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl text-start">{t("Developers", "المطورين")}</button>
             <Link to="/blog" className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl">{t("Blog", "المدونة")}</Link>
-            <Button className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full" asChild>
-              <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
-            </Button>
-            <Button variant="ghost" className="text-[hsl(var(--navy))]/70 rounded-full" asChild>
-              <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
-            </Button>
+            {!isLoading && (
+              isAuthenticated ? (
+                <Button className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full" asChild>
+                  <Link to="/dashboard">{t("Dashboard", "لوحة التحكم")}</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full" asChild>
+                    <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
+                  </Button>
+                  <Button variant="ghost" className="text-[hsl(var(--navy))]/70 rounded-full" asChild>
+                    <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
+                  </Button>
+                </>
+              )
+            )}
           </div>
         </div>
       )}

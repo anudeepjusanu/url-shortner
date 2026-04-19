@@ -167,7 +167,7 @@ app.use('/', require('./routes/sitemapRoutes'));
 // Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.get('/bio/:username', (req, res) => {
-  res.redirect(`${frontendUrl}/#/bio/${req.params.username}`);
+  res.redirect(`${frontendUrl}/bio/${req.params.username}`);
 });
 
 // Redirect route - must be after API routes but before 404 handler

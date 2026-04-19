@@ -209,7 +209,7 @@ const CreateQRCode = () => {
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8">
         {/* Form */}
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-display font-bold text-foreground mb-2">
             {t("Create QR Code", "إنشاء كود QR")}
           </h1>
@@ -323,7 +323,7 @@ const CreateQRCode = () => {
                 dir="ltr"
               />
               {selectedLink && (
-                <p className="text-xs text-muted-foreground font-body">
+                <p className="text-xs text-muted-foreground font-body truncate" title={selectedLink.originalUrl}>
                   {t("Original URL:", "الرابط الأصلي:")} {selectedLink.originalUrl}
                 </p>
               )}
