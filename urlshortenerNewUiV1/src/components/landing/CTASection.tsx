@@ -36,7 +36,7 @@ const CTASection = () => {
               <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
               <input
                 type="url"
-                placeholder="4r.sa/"
+                placeholder="snip.sa/"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-3.5 font-body text-sm"

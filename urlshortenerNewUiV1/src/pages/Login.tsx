@@ -137,7 +137,7 @@ const Login = () => {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12 bg-muted/30">
         <div className="relative z-10 text-center max-w-md">
           <div className="flex items-center justify-center mb-10">
-            <img src={logoIcon} alt="4r.sa" className="h-20" />
+            <img src={logoIcon} alt="snip.sa" className="h-20" />
           </div>
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">
             {t("Shorten. Track. Grow.", "اختصر. تابع. انمو.")}
@@ -171,7 +171,7 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center justify-center mb-4">
-            <img src={logoIcon} alt="4r.sa" className="h-14" />
+            <img src={logoIcon} alt="snip.sa" className="h-14" />
           </div>
 
           <div className="text-center">

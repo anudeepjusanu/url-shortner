@@ -17,7 +17,7 @@ import {
   Users,
   LinkIcon,
   Languages,
-  LayoutList,
+  // LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +58,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("My Links", "روابطي"), icon: Link2, path: "/dashboard/links" },
     { label: t("Analytics", "التحليلات"), icon: BarChart3, path: "/dashboard/analytics" },
     { label: t("QR Codes", "أكواد QR"), icon: QrCode, path: "/dashboard/qr-codes" },
-    { label: t("Link in Bio", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
+    // { label: t("Link in Bio", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
   ];
 
   const adminNav = [
@@ -179,8 +179,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <Menu className="w-5 h-5" />
           </Button>
           <Link to="/dashboard" className="flex items-center gap-1">
-            <img src={logoIcon} alt="forsa" className="h-8 md:h-10" />
-            <span className="font-display font-bold text-lg text-foreground">FORSA</span>
+            <img src={logoIcon} alt="snip" className="h-8 md:h-10" />
+            <span className="font-display font-bold text-lg text-foreground">SNIP</span>
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-3">

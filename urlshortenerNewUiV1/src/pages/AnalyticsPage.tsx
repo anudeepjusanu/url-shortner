@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Download, MousePointer, Users, QrCode, ZoomIn, RotateCcw, CalendarIcon, ChevronDown, Clock, Loader2 } from "lucide-react";
+import { Download, MousePointer, Users, QrCode, ZoomIn, ZoomOut, RotateCcw, CalendarIcon, ChevronDown, Clock, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -520,6 +520,19 @@ const AnalyticsPage = () => {
     setWindowEnd(timelineEnd);
   }, [timelineStart, timelineEnd]);
 
+  const handleZoomOut = useCallback(() => {
+    const ws = windowStartRef.current;
+    const we = windowEndRef.current;
+    const curDur = we - ws;
+    const newDur = Math.min(totalDurationRef.current, curDur * 1.5);
+    const center = (ws + we) / 2;
+    const newStart = center - newDur / 2;
+    const newEnd = center + newDur / 2;
+    const c = clampWindowRef.current(newStart, newEnd);
+    setWindowStart(c.start);
+    setWindowEnd(c.end);
+  }, []);
+
   // Keep refs in sync so event handlers always have fresh values
   windowStartRef.current = windowStart;
   windowEndRef.current = windowEnd;
@@ -531,20 +544,40 @@ const AnalyticsPage = () => {
     const el = chartEl;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const rect = el.getBoundingClientRect();
-      const mouseRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const ws = windowStartRef.current;
-      const we = windowEndRef.current;
-      const curDur = we - ws;
-      const factor = e.deltaY < 0 ? 0.85 : 1.15;
-      const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * factor));
-      const anchor = ws + curDur * mouseRatio;
-      const newStart = anchor - newDur * mouseRatio;
-      const newEnd = newStart + newDur;
-      const c = clampWindowRef.current(newStart, newEnd);
-      setWindowStart(c.start);
-      setWindowEnd(c.end);
+      // Check if this is a trackpad pan gesture (horizontal scroll or two-finger pan)
+      // Trackpad panning typically has smaller deltaY and may have deltaX
+      const isTrackpadPan = e.ctrlKey === false && Math.abs(e.deltaX) > 0;
+      
+      if (isTrackpadPan) {
+        // Two-finger trackpad panning
+        e.preventDefault();
+        const rect = el.getBoundingClientRect();
+        const ws = windowStartRef.current;
+        const we = windowEndRef.current;
+        const dur = we - ws;
+        // Use deltaX for horizontal panning, deltaY for vertical trackpad movement
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const dtMs = (delta / rect.width) * dur;
+        const c = clampWindowRef.current(ws + dtMs, we + dtMs);
+        setWindowStart(c.start);
+        setWindowEnd(c.end);
+      } else {
+        // Scroll wheel zoom
+        e.preventDefault();
+        const rect = el.getBoundingClientRect();
+        const mouseRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const ws = windowStartRef.current;
+        const we = windowEndRef.current;
+        const curDur = we - ws;
+        const factor = e.deltaY < 0 ? 0.85 : 1.15;
+        const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * factor));
+        const anchor = ws + curDur * mouseRatio;
+        const newStart = anchor - newDur * mouseRatio;
+        const newEnd = newStart + newDur;
+        const c = clampWindowRef.current(newStart, newEnd);
+        setWindowStart(c.start);
+        setWindowEnd(c.end);
+      }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
@@ -554,6 +587,7 @@ const AnalyticsPage = () => {
   useEffect(() => {
     const el = chartEl;
     if (!el) return;
+    let isTwoFingerTouch = false;
     const getTouchDist = (e: TouchEvent) => {
       const [a, b] = [e.touches[0], e.touches[1]];
       return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
@@ -561,15 +595,19 @@ const AnalyticsPage = () => {
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
+        isTwoFingerTouch = true;
         lastPinchDist.current = getTouchDist(e);
         const rect = el.getBoundingClientRect();
         const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
         pinchAnchor.current = Math.max(0, Math.min(1, (midX - rect.left) / rect.width));
+      } else if (e.touches.length === 1) {
+        isTwoFingerTouch = false;
       }
     };
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
+        isTwoFingerTouch = true;
         const dist = getTouchDist(e);
         const ratio = lastPinchDist.current / dist;
         lastPinchDist.current = dist;
@@ -585,11 +623,18 @@ const AnalyticsPage = () => {
         setWindowEnd(c.end);
       }
     };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        isTwoFingerTouch = false;
+      }
+    };
     el.addEventListener("touchstart", onTouchStart, { passive: false });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
     return () => {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
     };
   }, [chartEl]); // chartEl in deps: runs when container first appears in DOM
 
@@ -598,6 +643,9 @@ const AnalyticsPage = () => {
     const el = chartEl;
     if (!el) return;
     const onDown = (e: PointerEvent) => {
+      // Only handle left mouse button (0) and middle mouse button (1)
+      if (e.button !== 0 && e.button !== 1) return;
+      e.preventDefault();
       isDragging.current = true;
       dragStartX.current = e.clientX;
       dragStartWindow.current = { start: windowStartRef.current, end: windowEndRef.current };
@@ -621,15 +669,23 @@ const AnalyticsPage = () => {
       isDragging.current = false;
       el.style.cursor = "grab";
     };
+    // Add auxclick handler for middle mouse button
+    const onAuxClick = (e: MouseEvent) => {
+      if (e.button === 1) {
+        e.preventDefault();
+      }
+    };
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
     el.addEventListener("pointercancel", onUp);
+    el.addEventListener("auxclick", onAuxClick);
     return () => {
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
+      el.removeEventListener("auxclick", onAuxClick);
     };
   }, [chartEl]); // chartEl in deps: runs when container first appears in DOM
 
@@ -926,8 +982,13 @@ const AnalyticsPage = () => {
                     <option value="custom" disabled>{zoomDescription}</option>
                   )}
                 </select>
+                {windowDuration < totalDuration * 0.9 && (
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={handleZoomOut} title={t("Zoom out", "تصغير")}>
+                    <ZoomOut className="w-3 h-3" />
+                  </Button>
+                )}
                 {(windowStart > timelineStart || windowEnd < timelineEnd) && (
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={handleReset}>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={handleReset} title={t("Reset zoom", "إعادة تعيين التكبير")}>
                     <RotateCcw className="w-3 h-3" />
                   </Button>
                 )}

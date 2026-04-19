@@ -31,8 +31,8 @@ const FeaturesSection = () => {
       icon: Globe,
       title: t("Use your own domain", "استخدم نطاقك الخاص"),
       description: t(
-        "Make links with your domain instead of 4r.sa. Like go.yourshop.sa/ramadanoffer. Free SSL included, setup takes 2 minutes.",
-        "خلي الروابط بنطاقك مو 4r.sa. مثلاً: go.متجرك.sa/عرض_رمضان. SSL مجاني والإعداد يخلص في دقيقتين."
+        "Make links with your domain instead of snip.sa. Like go.yourshop.sa/ramadanoffer. Free SSL included, setup takes 2 minutes.",
+        "خلي الروابط بنطاقك مو snip.sa. مثلاً: go.متجرك.sa/عرض_رمضان. SSL مجاني والإعداد يخلص في دقيقتين."
       ),
       visual: <DomainsPreview />,
     },

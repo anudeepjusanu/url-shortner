@@ -125,11 +125,11 @@ const LinksScreen = () => (
   <div className="h-full bg-card flex flex-col p-4 pt-16">
     <div className="space-y-2.5 flex-1">
       {[
-        { short: "4r.sa/ramadan", original: "myshop.sa/ramadan-offers", clicks: "2,847" },
-        { short: "4r.sa/menu", original: "restaurant.sa/full-menu", clicks: "1,203" },
-        { short: "4r.sa/app", original: "apps.apple.com/sa/myapp", clicks: "956" },
-        { short: "4r.sa/sale", original: "brand.sa/summer-sale", clicks: "734" },
-        { short: "4r.sa/event", original: "events.sa/riyadh-season", clicks: "512" },
+        { short: "snip.sa/ramadan", original: "myshop.sa/ramadan-offers", clicks: "2,847" },
+        { short: "snip.sa/menu", original: "restaurant.sa/full-menu", clicks: "1,203" },
+        { short: "snip.sa/app", original: "apps.apple.com/sa/myapp", clicks: "956" },
+        { short: "snip.sa/sale", original: "brand.sa/summer-sale", clicks: "734" },
+        { short: "snip.sa/event", original: "events.sa/riyadh-season", clicks: "512" },
       ].map((link, i) => (
         <motion.div
           key={i}

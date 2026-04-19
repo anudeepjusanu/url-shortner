@@ -10,9 +10,9 @@ import { Link2, ExternalLink, Copy, BarChart3, Trash2, QrCode, Download, Globe, 
 export const LinksPreview = () => {
   const { t } = useLanguage();
   const links = [
-    { name: "Ramadan Offer", short: "4r.sa/ramadan", dest: "myshop.sa/offers/ramadan-2026", clicks: 1420, time: t("3 days ago", "قبل 3 أيام") },
-    { name: "New Collection", short: "4r.sa/newdrop", dest: "myshop.sa/collections/spring", clicks: 863, time: t("1 week ago", "قبل أسبوع") },
-    { name: "Support Page", short: "4r.sa/help", dest: "myshop.sa/support", clicks: 241, time: t("2 weeks ago", "قبل أسبوعين") },
+    { name: "Ramadan Offer", short: "snip.sa/ramadan", dest: "myshop.sa/offers/ramadan-2026", clicks: 1420, time: t("3 days ago", "قبل 3 أيام") },
+    { name: "New Collection", short: "snip.sa/newdrop", dest: "myshop.sa/collections/spring", clicks: 863, time: t("1 week ago", "قبل أسبوع") },
+    { name: "Support Page", short: "snip.sa/help", dest: "myshop.sa/support", clicks: 241, time: t("2 weeks ago", "قبل أسبوعين") },
   ];
 
   return (

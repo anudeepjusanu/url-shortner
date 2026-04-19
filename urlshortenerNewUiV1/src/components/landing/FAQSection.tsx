@@ -49,8 +49,8 @@ const FAQSection = () => {
             </h2>
             <p className="font-body text-base text-[hsl(var(--navy))]/60 leading-relaxed">
               {t(
-                "Everything you need to know about 4r.sa. Can't find an answer? Chat with us on WhatsApp.",
-                "كل اللي تحتاج تعرفه عن 4r.sa. ما لقيت جوابك؟ كلمنا على واتساب."
+                "Everything you need to know about snip.sa. Can't find an answer? Chat with us on WhatsApp.",
+                "كل اللي تحتاج تعرفه عن snip.sa. ما لقيت جوابك؟ كلمنا على واتساب."
               )}
             </p>
           </motion.div>

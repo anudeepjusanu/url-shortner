@@ -35,7 +35,7 @@ const ComparisonSection = () => {
           className="text-center max-w-2xl mx-auto mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
-            {t("How 4r.sa compares to Bitly and others", "كيف 4r.sa يتفوق على Bitly وغيرهم")}
+            {t("How snip.sa compares to Bitly and others", "كيف snip.sa يتفوق على Bitly وغيرهم")}
           </h2>
         </motion.div>
 
@@ -52,7 +52,7 @@ const ComparisonSection = () => {
               <tr className="border-b border-[hsl(var(--navy))]/10">
                 <th className="text-start font-display font-bold text-[hsl(var(--navy))] text-sm py-5 px-6">{t("Feature", "الميزة")}</th>
                 <th className="text-center py-5 px-4">
-                  <span className="inline-flex items-center gap-1.5 bg-[hsl(var(--sky))] text-white font-display font-bold text-sm px-4 py-1.5 rounded-full">4r.sa</span>
+                  <span className="inline-flex items-center gap-1.5 bg-[hsl(var(--sky))] text-white font-display font-bold text-sm px-4 py-1.5 rounded-full">snip.sa</span>
                 </th>
                 <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">Bitly</th>
                 <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">TinyURL</th>
@@ -85,7 +85,7 @@ const ComparisonSection = () => {
               <p className="font-body text-sm font-bold text-[hsl(var(--navy))] mb-3">{row.feature}</p>
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
-                  <span className="text-[10px] font-display font-bold text-white bg-[hsl(var(--sky))] px-2 py-0.5 rounded-full">4r.sa</span>
+                  <span className="text-[10px] font-display font-bold text-white bg-[hsl(var(--sky))] px-2 py-0.5 rounded-full">snip.sa</span>
                   <div className="mt-2">{renderCell(row.fourr)}</div>
                 </div>
                 <div className="text-center">

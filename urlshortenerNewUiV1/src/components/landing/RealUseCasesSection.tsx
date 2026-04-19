@@ -21,7 +21,7 @@ const RealUseCasesSection = () => {
     {
       title: t("Restaurants", "المطاعم"),
       challenge: t("Printed 10,000 flyers with a long website URL. Hard to type, hard to track.", "طبعنا 10,000 فلاير برابط طويل. صعب يُكتب وصعب يُتتبع."),
-      solution: t("One QR code on every flyer pointing to 4r.sa/menu. Track exactly how many people scan it.", "QR Code واحد على كل فلاير يوجه لـ 4r.sa/menu. تتبع بالضبط كم شخص مسحه."),
+      solution: t("One QR code on every flyer pointing to snip.sa/menu. Track exactly how many people scan it.", "QR Code واحد على كل فلاير يوجه لـ snip.sa/menu. تتبع بالضبط كم شخص مسحه."),
       result: t("\"We know exactly which neighborhoods respond to flyers. We only print in areas with high scan rates now. Cut printing costs by 60%.\"", "\"عرفنا بالضبط أي أحياء تستجيب للفلايرات. الحين نطبع بس في المناطق اللي فيها مسح عالي. وفرنا 60% من تكاليف الطباعة.\""),
       attribution: t("Restaurant Chain, Eastern Province", "سلسلة مطاعم، المنطقة الشرقية"),
     },
@@ -41,7 +41,7 @@ const RealUseCasesSection = () => {
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
             {t("How Saudi businesses", "كيف الشركات السعودية")}
             <br />
-            {t("use 4r.sa", "تستخدم 4r.sa")}
+            {t("use snip.sa", "تستخدم snip.sa")}
           </h2>
         </div>
 

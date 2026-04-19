@@ -11,7 +11,7 @@ interface LanguageContextType {
 
 const META = {
   en: {
-    title: "4r.sa — Smart URL Shortener for Saudi Arabia",
+    title: "snip.sa — Smart URL Shortener for Saudi Arabia",
     description:
       "The smartest URL shortener built for Saudi marketers and developers. Shorten links, generate QR codes, use custom domains, and track real-time analytics. Hosted in Saudi Arabia. PDPL compliant.",
   },

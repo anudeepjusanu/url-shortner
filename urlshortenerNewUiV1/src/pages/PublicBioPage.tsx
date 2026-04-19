@@ -169,7 +169,7 @@ function useBioPageSEO(page: PublicPage | null) {
       injectedMetas.current.forEach((el) => el.remove());
       injectedMetas.current = [];
       const restore = [
-        ["property", "og:title",       "4r.sa — Smart URL Shortener for Saudi Arabia"],
+        ["property", "og:title",       "snip.sa — Smart URL Shortener for Saudi Arabia"],
         ["property", "og:description", "Shorten links, generate QR codes, and track real-time analytics."],
         ["name",     "description",    "The smartest URL shortener built for Saudi marketers and developers."],
       ] as const;
@@ -465,7 +465,7 @@ const PublicBioPage = () => {
             className="text-xs font-semibold hover:opacity-80 transition-opacity"
             style={{ color: theme.textColor }}
           >
-            FORSA
+            SNIP
           </Link>
         </motion.div>
 

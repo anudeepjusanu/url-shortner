@@ -13,7 +13,7 @@ const HeroDashboardMockup = () => {
         </div>
         <div className="flex-1 mx-8">
           <div className="bg-background border border-border rounded-md px-3 py-1 text-xs text-muted-foreground font-body max-w-xs">
-            dashboard.4r.sa
+            dashboard.snip.sa
           </div>
         </div>
       </div>
@@ -74,9 +74,9 @@ const HeroDashboardMockup = () => {
               <p className="text-sm font-display font-semibold text-foreground">Recent links</p>
             </div>
             {[
-              { short: "4r.sa/launch", clicks: "2,341", dest: "mysite.com/product-launch-2026" },
-              { short: "4r.sa/demo", clicks: "891", dest: "app.example.com/demo-request" },
-              { short: "4r.sa/sale", clicks: "1,204", dest: "store.example.sa/ramadan-sale" },
+              { short: "snip.sa/launch", clicks: "2,341", dest: "mysite.com/product-launch-2026" },
+              { short: "snip.sa/demo", clicks: "891", dest: "app.example.com/demo-request" },
+              { short: "snip.sa/sale", clicks: "1,204", dest: "store.example.sa/ramadan-sale" },
             ].map((link) => (
               <div key={link.short} className="flex items-center justify-between px-5 py-3 border-b border-border last:border-0">
                 <div>

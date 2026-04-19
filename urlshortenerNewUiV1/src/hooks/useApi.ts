@@ -231,23 +231,14 @@ export const useCreateDomain = () => {
 
 export const useVerifyDomain = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
     mutationFn: domainsAPI.verifyDomain,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
-      toast({
-        title: 'Success',
-        description: 'Domain verified successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Verification Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onSuccess: (data) => {
+      // Only invalidate queries if verification was successful
+      if (data?.success && data?.data?.verified) {
+        queryClient.invalidateQueries({ queryKey: ['domains'] });
+      }
     },
   });
 };

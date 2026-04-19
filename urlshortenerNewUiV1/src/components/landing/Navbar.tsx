@@ -28,8 +28,8 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="bg-white rounded-full px-6 py-2 flex items-center justify-between shadow-card">
           <a href="/" className="flex items-center gap-1 -ms-3">
-            <img src={logoFull} alt="forsa" className="h-8 md:h-10" />
-            <span className="font-display font-bold text-lg md:text-xl text-foreground">FORSA</span>
+            <img src={logoFull} alt="snip" className="h-8 md:h-10" />
+            <span className="font-display font-bold text-lg md:text-xl text-foreground">SNIP</span>
           </a>
 
           <div className="hidden md:flex items-center gap-1">
