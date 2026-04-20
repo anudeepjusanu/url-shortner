@@ -45,15 +45,43 @@ function distributeAcrossHours(total: number): number[] {
 }
 
 // ─── Build raw hourly timeline from daily seed data ───
-const buildHourlyTimeline = (dailyData: { date: string; clicks: number; visitors: number; qrScans: number }[]) => {
-  if (!dailyData.length) return [];
-  const dataMap = new Map(dailyData.map(d => [d.date, d]));
-  const start = new Date(dailyData[0].date);
-  const end = new Date(dailyData[dailyData.length - 1].date);
+// rangeStartMs/rangeEndMs extend the timeline to cover the full selected period,
+// ensuring sparse API data (e.g. only days-with-clicks) doesn't shrink the window.
+const buildHourlyTimeline = (
+  dailyData: { date: string; clicks: number; visitors: number; qrScans: number }[],
+  rangeStartMs?: number,
+  rangeEndMs?: number,
+) => {
+  if (!dailyData.length && rangeStartMs === undefined) return [];
+  // Normalize keys to local "YYYY-MM-DD" so full ISO timestamps (e.g. "2026-04-20T00:00:00.000Z")
+  // from the API match the local-date key generated in the while-loop below.
+  const toLocalKey = (raw: string) => {
+    const d = new Date(raw);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const dataMap = new Map(dailyData.map(d => [toLocalKey(d.date), d]));
+
+  let start: Date;
+  let end: Date;
+  if (rangeStartMs !== undefined && rangeEndMs !== undefined) {
+    // Use the full filter range so the initial window always covers the whole period
+    start = new Date(rangeStartMs);
+    end = new Date(rangeEndMs);
+  } else if (dailyData.length) {
+    start = new Date(dailyData[0].date);
+    end = new Date(dailyData[dailyData.length - 1].date);
+  } else {
+    return [];
+  }
+
+  // Normalize to day boundaries using local time (avoids UTC-midnight vs local-midnight mismatch)
+  start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
+  end   = new Date(end.getFullYear(),   end.getMonth(),   end.getDate(),   23, 0, 0, 0);
+
   const timeline: { ts: number; clicks: number; visitors: number; qrScans: number }[] = [];
   const cur = new Date(start);
   while (cur <= end) {
-    const key = cur.toISOString().split("T")[0];
+    const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
     const dd = dataMap.get(key) || { clicks: 0, visitors: 0, qrScans: 0 };
     const clickDist   = distributeAcrossHours(dd.clicks);
     const visitorDist = distributeAcrossHours(dd.visitors);
@@ -61,6 +89,7 @@ const buildHourlyTimeline = (dailyData: { date: string; clicks: number; visitors
     for (let h = 0; h < 24; h++) {
       const d = new Date(cur);
       d.setHours(h, 0, 0, 0);
+      if (d.getTime() > end.getTime()) break;
       timeline.push({ ts: d.getTime(), clicks: clickDist[h], visitors: visitorDist[h], qrScans: qrDist[h] });
     }
     cur.setDate(cur.getDate() + 1);
@@ -255,10 +284,15 @@ const AnalyticsPage = () => {
     start.setDate(start.getDate() - days);
     start.setHours(0, 0, 0, 0);
 
+    // Always request through end of today so the API returns today's full
+    // available data regardless of when the page was loaded.
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
     return {
       period: dashboardPeriodMap[dateFilter] || "30d",
-      startDate: start.toISOString(),   // exact local-midnight timestamp
-      endDate: now.toISOString(),        // exact current time
+      startDate: start.toISOString(),
+      endDate: endOfToday.toISOString(),
     };
   }, [dateFilter, customFrom, customTo]);
 
@@ -417,14 +451,25 @@ const AnalyticsPage = () => {
     const start = new Date(now);
     start.setDate(start.getDate() - days);
     start.setHours(0, 0, 0, 0);
-    return { filterStart: start.getTime(), filterEnd: now.getTime() };
+    // Use end-of-today so any timestamp format for today's entry passes the filter.
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+    return { filterStart: start.getTime(), filterEnd: endOfToday.getTime() };
   }, [dateFilter, customFrom, customTo]);
 
-  // Filter raw data by selected date range
+  // Filter raw data by selected date range.
+  // Compare local date strings ("YYYY-MM-DD") to avoid UTC-midnight vs local-midnight
+  // mismatches that occur when the API returns date-only strings (parsed as UTC).
   const filteredClicksData = useMemo(() => {
+    const toLocalKey = (ms: number) => {
+      const d = new Date(ms);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    const startKey = toLocalKey(filterStart);
+    const endKey   = toLocalKey(filterEnd);
     return allClicksDataFull.filter(d => {
-      const ts = new Date(d.date).getTime();
-      return ts >= filterStart && ts <= filterEnd;
+      const key = toLocalKey(new Date(d.date).getTime());
+      return key >= startKey && key <= endKey;
     });
   }, [allClicksDataFull, filterStart, filterEnd]);
 
@@ -462,7 +507,10 @@ const AnalyticsPage = () => {
     }
   }, [apiData, linkId]);
 
-  const hourlyTimeline = useMemo(() => buildHourlyTimeline(filteredClicksData), [filteredClicksData]);
+  const hourlyTimeline = useMemo(
+    () => buildHourlyTimeline(filteredClicksData, filterStart, filterEnd),
+    [filteredClicksData, filterStart, filterEnd],
+  );
   const timelineStart = hourlyTimeline[0]?.ts ?? filterStart;
   const timelineEnd = hourlyTimeline[hourlyTimeline.length - 1]?.ts ?? filterEnd;
   const totalDuration = Math.max(timelineEnd - timelineStart, DAY);
@@ -596,6 +644,8 @@ const AnalyticsPage = () => {
       if (e.touches.length === 2) {
         e.preventDefault();
         isTwoFingerTouch = true;
+        // Cancel any single-finger drag that was in progress to prevent interference
+        isDragging.current = false;
         lastPinchDist.current = getTouchDist(e);
         const rect = el.getBoundingClientRect();
         const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -621,6 +671,9 @@ const AnalyticsPage = () => {
         const c = clampWindowRef.current(newStart, newEnd);
         setWindowStart(c.start);
         setWindowEnd(c.end);
+      } else if (e.touches.length === 1 && isDragging.current) {
+        // Prevent page scroll while single-finger chart pan is active
+        e.preventDefault();
       }
     };
     const onTouchEnd = (e: TouchEvent) => {
@@ -657,7 +710,7 @@ const AnalyticsPage = () => {
       const dx = e.clientX - dragStartX.current;
       const rect = el.getBoundingClientRect();
       const dur = dragStartWindow.current.end - dragStartWindow.current.start;
-      const dtMs = -(dx / rect.width) * dur;
+      const dtMs = (dx / rect.width) * dur;
       const c = clampWindowRef.current(
         dragStartWindow.current.start + dtMs,
         dragStartWindow.current.end + dtMs
