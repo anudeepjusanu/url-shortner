@@ -370,11 +370,37 @@ const AnalyticsPage = () => {
     } else {
       // Dashboard analytics: chartData.clicksByDay = [{ date, clicks }]
       const ts: any[] = apiData.chartData?.clicksByDay || [];
-      return ts.map((d: any) => ({
+      const mapped = ts.map((d: any) => ({
         date: d.date,
         clicks: d.clicks || 0,
         visitors: 0,
         qrScans: 0,
+      }));
+
+      if (mapped.length === 0) return mapped;
+
+      const overviewUnique =
+        apiData.overview?.periodUniqueClicks ||
+        apiData.overview?.uniqueClicks ||
+        apiData.overview?.totalUniqueClicks ||
+        0;
+      const overviewQR =
+        apiData.overview?.periodQRScans ||
+        apiData.overview?.qrScans ||
+        apiData.overview?.totalQRScans ||
+        0;
+      const clickCounts = mapped.map((d: any) => d.clicks);
+
+      const missingVisitors = mapped.every((d: any) => d.visitors === 0) && overviewUnique > 0;
+      const visitorDist = missingVisitors ? spreadByClicks(overviewUnique, clickCounts) : null;
+      const qrDist = overviewQR > 0 ? spreadByClicks(overviewQR, clickCounts) : null;
+
+      if (!visitorDist && !qrDist) return mapped;
+
+      return mapped.map((d: any, i: number) => ({
+        ...d,
+        visitors: visitorDist ? visitorDist[i] : d.visitors,
+        qrScans: qrDist ? qrDist[i] : d.qrScans,
       }));
     }
   }, [apiData, linkId]);
