@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Link2, MousePointer, CalendarDays, Users, Search,
-  Eye, Trash2, ExternalLink, Power, Loader2, BarChart3,
+  Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { adminService } from "@/services/jwtService";
@@ -63,6 +63,7 @@ const UrlManagement = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   const [urls, setUrls] = useState<AdminUrl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,17 +118,28 @@ const UrlManagement = () => {
     ).entries()
   );
 
-  const filtered = urls.filter((u) => {
-    const code = u.customCode || u.shortCode;
-    const matchSearch =
-      code.toLowerCase().includes(search.toLowerCase()) ||
-      (u.originalUrl || "").toLowerCase().includes(search.toLowerCase()) ||
-      (u.title || "").toLowerCase().includes(search.toLowerCase()) ||
-      (u.creator ? `${u.creator.firstName} ${u.creator.lastName}`.toLowerCase().includes(search.toLowerCase()) : false);
-    const creatorName = u.creator ? `${u.creator.firstName} ${u.creator.lastName}` : "";
-    const matchCreator = creatorFilter === "all" || creatorName === creatorFilter;
-    return matchSearch && matchCreator;
-  });
+  const filtered = urls
+    .filter((u) => {
+      const code = u.customCode || u.shortCode;
+      const matchSearch =
+        code.toLowerCase().includes(search.toLowerCase()) ||
+        (u.originalUrl || "").toLowerCase().includes(search.toLowerCase()) ||
+        (u.title || "").toLowerCase().includes(search.toLowerCase()) ||
+        (u.creator ? `${u.creator.firstName} ${u.creator.lastName}`.toLowerCase().includes(search.toLowerCase()) : false);
+      const creatorName = u.creator ? `${u.creator.firstName} ${u.creator.lastName}` : "";
+      const matchCreator = creatorFilter === "all" || creatorName === creatorFilter;
+      return matchSearch && matchCreator;
+    })
+    .sort((a, b) => {
+      if (sortBy === "most-clicked") return (b.clickCount || 0) - (a.clickCount || 0);
+      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === "user-az") {
+        const nameA = a.creator ? `${a.creator.firstName} ${a.creator.lastName}` : "zzz";
+        const nameB = b.creator ? `${b.creator.firstName} ${b.creator.lastName}` : "zzz";
+        return nameA.localeCompare(nameB);
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const handleToggleStatus = async (url: AdminUrl) => {
     setTogglingId(url._id);
@@ -232,14 +244,28 @@ const UrlManagement = () => {
           />
         </div>
         <Select value={creatorFilter} onValueChange={setCreatorFilter}>
-          <SelectTrigger className="w-full sm:w-56">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder={t("Filter by user", "فلتر بالمستخدم")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("All Users", "جميع المستخدمين")}</SelectItem>
-            {creators.map(([email, name]) => (
-              <SelectItem key={email} value={name}>{name}</SelectItem>
-            ))}
+            {creators
+              .sort(([, a], [, b]) => a.localeCompare(b))
+              .map(([email, name]) => (
+                <SelectItem key={email} value={name}>{name}</SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-52">
+            <ArrowUpDown className="w-4 h-4 text-muted-foreground me-2 shrink-0" />
+            <SelectValue placeholder={t("Sort by", "ترتيب حسب")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{t("Newest first", "الأحدث أولاً")}</SelectItem>
+            <SelectItem value="oldest">{t("Oldest first", "الأقدم أولاً")}</SelectItem>
+            <SelectItem value="most-clicked">{t("Most clicked", "الأكثر ضغطاً")}</SelectItem>
+            <SelectItem value="user-az">{t("User A → Z", "المستخدم أ ← ي")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

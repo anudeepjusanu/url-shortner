@@ -30,6 +30,7 @@ interface DomainEntry {
   _id: string;
   domain: string;
   status: DomainStatus;
+  verificationStatus: 'pending' | 'verified' | 'failed';
   createdAt: string;
   isDefault?: boolean;
 }
@@ -192,13 +193,13 @@ const CustomDomains = () => {
             <div key={d._id} className="bg-background border border-border rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${d.status === "verified" ? "bg-primary/10" : "bg-muted"}`}>
-                    <Globe className={`w-4 h-4 sm:w-5 sm:h-5 ${d.status === "verified" ? "text-primary" : "text-muted-foreground"}`} />
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${d.verificationStatus === "verified" ? "bg-primary/10" : "bg-muted"}`}>
+                    <Globe className={`w-4 h-4 sm:w-5 sm:h-5 ${d.verificationStatus === "verified" ? "text-primary" : "text-muted-foreground"}`} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-display font-semibold text-foreground text-sm sm:text-base">{d.domain}</h3>
-                      {d.status === "verified" ? (
+                      {d.verificationStatus === "verified" ? (
                         <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] px-2 py-0.5">
                           <CheckCircle className="w-3 h-3 me-1" />
                           {t("Verified", "مُثبت")}
@@ -223,7 +224,7 @@ const CustomDomains = () => {
                 <div className="flex items-center gap-2 ms-12 sm:ms-0">
                   <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setDnsDialog(d)}>
                     <Eye className="w-3 h-3 me-1" />
-                    {d.status === "pending"
+                    {d.verificationStatus !== "verified"
                       ? t("Verify & View DNS", "تحقق وعرض DNS")
                       : t("View DNS", "عرض DNS")}
                   </Button>
