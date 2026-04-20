@@ -41,6 +41,7 @@ async function authRequest<T = any>(
 
   const config: RequestInit = {
     ...options,
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),

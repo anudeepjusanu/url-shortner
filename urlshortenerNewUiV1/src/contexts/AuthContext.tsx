@@ -47,11 +47,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         try {
           const response = await authAPI.getProfile();
-          if (response.success && response.data) {
-            setUser(response.data);
-            amplitudeService.setUser(response.data.id, {
-              email: response.data.email,
-              role: response.data.role,
+          if (response.success) {
+            // Profile endpoint returns user fields at root level; data.user has the full object
+            const userData = response.data?.user || response.data || response;
+            setUser(userData);
+            amplitudeService.setUser(userData.id || userData._id, {
+              email: userData.email,
+              role: userData.role,
             });
           }
         } catch (error) {
@@ -156,8 +158,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUser = async () => {
     try {
       const response = await authAPI.getProfile();
-      if (response.success && response.data) {
-        setUser(response.data);
+      if (response.success) {
+        const userData = response.data?.user || response.data || response;
+        setUser(userData);
       }
     } catch (error) {
       console.error('Failed to refresh user:', error);
