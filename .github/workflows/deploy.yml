@@ -112,7 +112,7 @@ jobs:
 
           # Restart frontend serve
           pm2 delete url-shortener-ui || true
-          pm2 serve frontend/build 3016 --name url-shortener-ui --spa
+          pm2 serve frontend/dist 3016 --name url-shortener-ui --spa
 
           # Save PM2 state
           pm2 save --force
