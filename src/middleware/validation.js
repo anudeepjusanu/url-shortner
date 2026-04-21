@@ -23,17 +23,13 @@ const validateRegistration = [
     .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('phone')
-    .optional()
+    .notEmpty()
+    .withMessage('Phone number is required')
     .custom((value) => {
-      if (!value) return true;
       const normalized = String(value).trim().replace(/\s+/g, '');
-      // Allow empty
-      if (normalized === '') return true;
-      // Allow +countrycode or just digits
       if (normalized.startsWith('+')) {
         return /^\+\d{7,15}$/.test(normalized);
       }
-      // Allow digits only (will be normalized later with +966 default)
       return /^\d{7,15}$/.test(normalized);
     })
     .withMessage('Please enter a valid phone number (e.g., +9665XXXXXXXX or 05XXXXXXXX)'),
@@ -42,14 +38,10 @@ const validateRegistration = [
     .withMessage('Password must be at least 8 characters')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
-  body('firstName')
+  body('fullName')
     .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('First name must be between 2 and 50 characters'),
-  body('lastName')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Last name must be between 2 and 50 characters'),
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Full name must be between 2 and 100 characters'),
   handleValidationErrors
 ];
 
@@ -104,8 +96,8 @@ const validateResetPasswordWithOTP = [
   body('otp')
     .notEmpty()
     .withMessage('Verification code is required')
-    .isLength({ min: 6, max: 6 })
-    .withMessage('Verification code must be 6 digits'),
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Verification code must be 4 digits'),
   body('newPassword')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters'),
@@ -164,6 +156,31 @@ const validateUrlCreation = [
     .optional()
     .isIn([301, 302, 307])
     .withMessage('Redirect type must be 301, 302, or 307'),
+  body('utm.source')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM source cannot exceed 100 characters'),
+  body('utm.medium')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM medium cannot exceed 100 characters'),
+  body('utm.campaign')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM campaign cannot exceed 200 characters'),
+  body('utm.term')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM term cannot exceed 200 characters'),
+  body('utm.content')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM content cannot exceed 200 characters'),
   handleValidationErrors
 ];
 
@@ -256,8 +273,8 @@ const validatePagination = [
     .withMessage('Page must be a positive integer'),
   query('limit')
     .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('Limit must be between 1 and 100'),
+    .isInt({ min: 1, max: 500 })
+    .withMessage('Limit must be between 1 and 500'),
   query('sortBy')
     .optional()
     .isIn(['createdAt', 'updatedAt', 'clickCount', 'title'])
@@ -396,10 +413,23 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
+const validatePhoneLogin = [
+  body('phoneNumber')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .custom((value) => {
+      const normalized = String(value).trim().replace(/\s+/g, '');
+      return /^\+\d{7,15}$/.test(normalized);
+    })
+    .withMessage('Please enter a valid phone number in international format (e.g., +919876543210)'),
+  handleValidationErrors
+];
+
 module.exports = {
   handleValidationErrors,
   validateRegistration,
   validateLogin,
+  validatePhoneLogin,
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,

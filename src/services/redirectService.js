@@ -341,11 +341,21 @@ class RedirectService {
   
   processRedirectUrl(url) {
     try {
-      if (url.utm && Object.keys(url.utm).length > 0) {
-        return url.addUTMParameters();
+      const utm = url.utm;
+      if (!utm || (!utm.source && !utm.medium && !utm.campaign && !utm.term && !utm.content)) {
+        return url.originalUrl;
       }
-      
-      return url.originalUrl;
+
+      const parsedUrl = new URL(url.originalUrl);
+      const params = parsedUrl.searchParams;
+
+      if (utm.source) params.set('utm_source', utm.source);
+      if (utm.medium) params.set('utm_medium', utm.medium);
+      if (utm.campaign) params.set('utm_campaign', utm.campaign);
+      if (utm.term) params.set('utm_term', utm.term);
+      if (utm.content) params.set('utm_content', utm.content);
+
+      return parsedUrl.toString();
     } catch (error) {
       console.error('Error processing redirect URL:', error);
       return url.originalUrl;

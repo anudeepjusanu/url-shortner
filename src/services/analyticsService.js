@@ -2,7 +2,7 @@ const { Click, DailySummary, MonthlySummary } = require('../models/Analytics');
 const Url = require('../models/Url');
 const QRCodeModel = require('../models/QRCode');
 const crypto = require('crypto');
-const geoip = require('geoip-lite');
+const axios = require('axios');
 const useragent = require('user-agent-parser');
 const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
@@ -73,7 +73,7 @@ class AnalyticsService {
       }
       
       const ipHash = this.hashIP(ipAddress);
-      const location = this.getLocationFromIP(ipAddress);
+      const location = await this.getLocationFromIP(ipAddress);
       const device = this.parseUserAgent(userAgent);
       const isBot = this.detectBot(userAgent);
       const isUnique = await this.isUniqueClick(url._id, ipHash);
@@ -154,42 +154,58 @@ class AnalyticsService {
     return crypto.createHash('sha256').update(ipAddress + config.JWT_SECRET).digest('hex');
   }
   
-  getLocationFromIP(ipAddress) {
+  async getLocationFromIP(ipAddress) {
     try {
       if (!config.ANALYTICS.TRACK_GEOLOCATION) {
         console.warn('⚠️ Geolocation tracking is disabled');
         return {};
       }
-      
+
+      // Clean IPv4-mapped IPv6 addresses (e.g. ::ffff:1.2.3.4 → 1.2.3.4)
+      const cleanIP = ipAddress ? ipAddress.replace(/^::ffff:/, '') : null;
+
       // Skip localhost/private IPs
-      if (!ipAddress || ipAddress === '127.0.0.1' || ipAddress === '::1' || ipAddress.startsWith('192.168.') || ipAddress.startsWith('10.')) {
-        console.warn('⚠️ Cannot geolocate private/localhost IP:', ipAddress);
+      const privateRanges = [
+        /^127\./,
+        /^192\.168\./,
+        /^10\./,
+        /^172\.(1[6-9]|2[0-9]|3[01])\./,
+        /^::1$/,
+        /^fc00::/,
+        /^fe80::/
+      ];
+      if (!cleanIP || privateRanges.some(r => r.test(cleanIP))) {
+        console.warn('⚠️ Cannot geolocate private/localhost IP:', cleanIP);
         return {};
       }
-      
-      const geo = geoip.lookup(ipAddress);
-      
-      if (!geo) {
-        console.warn('⚠️ No geolocation data found for IP:', ipAddress);
+
+      // Use ip-api.com (free, no key needed, 45 req/min)
+      const apiUrl = `http://ip-api.com/json/${cleanIP}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,query`;
+      const response = await axios.get(apiUrl, { timeout: 5000 });
+      const data = response.data;
+
+      if (data.status === 'fail') {
+        console.warn('⚠️ Geolocation lookup failed:', data.message, 'for IP:', cleanIP);
         return {};
       }
-      
+
       console.log('✅ Geolocation found:', {
-        ip: ipAddress,
-        country: geo.country,
-        region: geo.region,
-        city: geo.city
+        ip: cleanIP,
+        country: data.countryCode,
+        countryName: data.country,
+        region: data.regionName,
+        city: data.city
       });
-      
+
       return {
-        country: geo.country,
-        countryName: geo.country,
-        region: geo.region,
-        city: geo.city,
-        timezone: geo.timezone,
+        country: data.countryCode,
+        countryName: data.country,
+        region: data.regionName || data.region,
+        city: data.city,
+        timezone: data.timezone,
         coordinates: {
-          latitude: geo.ll[0],
-          longitude: geo.ll[1]
+          latitude: data.lat,
+          longitude: data.lon
         }
       };
     } catch (error) {
@@ -445,10 +461,10 @@ class AnalyticsService {
         $facet: {
           countries: [
             {
-              $match: { 
+              $match: {
                 $or: [
-                  { 'location.country': { $exists: true, $ne: null, $ne: '' } },
-                  { 'location.countryName': { $exists: true, $ne: null, $ne: '' } }
+                  { 'location.country': { $exists: true, $nin: [null, ''] } },
+                  { 'location.countryName': { $exists: true, $nin: [null, ''] } }
                 ]
               }
             },
@@ -466,9 +482,9 @@ class AnalyticsService {
           ],
           cities: [
             {
-              $match: { 
-                'location.city': { $ne: null, $ne: '' },
-                'location.country': { $ne: null, $ne: '' }
+              $match: {
+                'location.city': { $nin: [null, ''] },
+                'location.country': { $nin: [null, ''] }
               }
             },
             {
@@ -791,7 +807,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'location.country': { $ne: null, $ne: '' }
+          'location.country': { $nin: [null, ''] }
         }
       },
       {
@@ -821,7 +837,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'location.city': { $ne: null, $ne: '' }
+          'location.city': { $nin: [null, ''] }
         }
       },
       {

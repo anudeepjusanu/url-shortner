@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Url = require('../models/Url');
 const User = require('../models/User');
 const Domain = require('../models/Domain');
@@ -832,17 +833,38 @@ const getUrlStats = async (req, res) => {
   try {
     const userId = req.user.id;
     const organizationId = req.user.organization;
-    
+
+    // Convert to ObjectId for aggregate pipeline (Mongoose does NOT auto-cast in aggregate)
+    let userObjectId;
+    try {
+      userObjectId = new mongoose.Types.ObjectId(userId);
+    } catch (err) {
+      return res.status(400).json({ success: false, message: 'Invalid user ID format' });
+    }
+    let orgObjectId = null;
+    if (organizationId) {
+      try { orgObjectId = new mongoose.Types.ObjectId(organizationId); } catch (_) {}
+    }
+
+    // filter for find/countDocuments (Mongoose auto-casts strings)
     const filter = {
       $or: [
         { creator: userId },
         ...(organizationId ? [{ organization: organizationId }] : [])
       ]
     };
-    
+
+    // filter for aggregate pipeline (must use ObjectId)
+    const aggregateFilter = {
+      $or: [
+        { creator: userObjectId },
+        ...(orgObjectId ? [{ organization: orgObjectId }] : [])
+      ]
+    };
+
     // Get user for plan and account age
     const user = await User.findById(userId);
-    
+
     // Get custom domains count
     const customDomainsCount = await Domain.countDocuments({
       $or: [
@@ -851,7 +873,7 @@ const getUrlStats = async (req, res) => {
       ],
       isActive: true
     });
-    
+
     const [
       totalUrls,
       activeUrls,
@@ -861,8 +883,8 @@ const getUrlStats = async (req, res) => {
       Url.countDocuments(filter),
       Url.countDocuments({ ...filter, isActive: true }),
       Url.aggregate([
-        { $match: filter },
-        { $group: { _id: null, total: { $sum: '$clickCount' } } }
+        { $match: aggregateFilter },
+        { $group: { _id: null, total: { $sum: '$clickCount' }, qrScans: { $sum: '$qrScanCount' } } }
       ]),
       Url.find(filter)
         .sort({ clickCount: -1 })
@@ -897,11 +919,15 @@ const getUrlStats = async (req, res) => {
     };
     const plan = planNames[user?.plan] || 'Professional';
     
+    const totalClicksValue = totalClicks[0]?.total || 0;
+    const totalQRScansValue = totalClicks[0]?.qrScans || 0;
+
     // Return data in format expected by frontend Profile page
     res.json({
       success: true,
       totalLinks: totalUrls,
-      totalClicks: totalClicks[0]?.total || 0,
+      totalClicks: totalClicksValue,
+      totalQRScans: totalQRScansValue,
       customDomains: customDomainsCount,
       accountAge: accountAge,
       plan: plan,
@@ -909,7 +935,8 @@ const getUrlStats = async (req, res) => {
         stats: {
           totalUrls,
           activeUrls,
-          totalClicks: totalClicks[0]?.total || 0,
+          totalClicks: totalClicksValue,
+          totalQRScans: totalQRScansValue,
           topUrls
         }
       }

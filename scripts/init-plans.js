@@ -107,9 +107,23 @@ async function initializePlans() {
   }
 }
 
+// Seed plans without managing the DB connection (called from server.js on startup)
+async function seedPlans() {
+  try {
+    const existingPlans = await Plan.countDocuments();
+    if (existingPlans > 0) return;
+    await Plan.insertMany(plans);
+    console.log(`✅ Seeded ${plans.length} default plans`);
+  } catch (error) {
+    console.error('Plan seeding error:', error);
+    throw error;
+  }
+}
+
 // Run the initialization
 if (require.main === module) {
   initializePlans();
 }
 
 module.exports = initializePlans;
+module.exports.seedPlans = seedPlans;
