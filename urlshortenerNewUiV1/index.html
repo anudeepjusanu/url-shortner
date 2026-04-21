@@ -70,8 +70,8 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     <div id="root">
-    <!-- Static SEO content: hidden from browsers (no flash), readable by crawlers. React replaces this. -->
-    <div hidden aria-hidden="true">
+    <!-- Static SEO content: visually hidden from users, readable by crawlers. React replaces this on mount. -->
+    <div id="seo-static" style="clip:rect(0 0 0 0);clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;white-space:nowrap;width:1px;">
       <header>
         <nav>
           <a href="/">snip.sa</a>
@@ -142,6 +142,17 @@
         </section>
 
         <section>
+          <h2>How snip.sa compares to Bitly and other URL shorteners</h2>
+          <p>
+            Unlike Bitly, TinyURL, or other global URL shorteners, snip.sa is purpose-built for the Saudi
+            market. Our servers are physically hosted inside the Kingdom of Saudi Arabia, ensuring redirects
+            from Saudi Arabia complete in under 30 milliseconds. We are fully compliant with the Personal
+            Data Protection Law (PDPL), which means your audience data never leaves the Kingdom. We support
+            Arabic interfaces, Saudi domain extensions (.sa), WhatsApp sharing, and our pricing is in SAR.
+          </p>
+        </section>
+
+        <section>
           <h2>Frequently Asked Questions</h2>
           <article>
             <h3>Is my data stored in Saudi Arabia?</h3>
@@ -155,6 +166,26 @@
             <h3>Is snip.sa free to use?</h3>
             <p>Yes. The Free plan includes 1,000 short links per month. Paid plans unlock more links, custom domains, and advanced analytics.</p>
           </article>
+          <article>
+            <h3>How fast are redirects from Saudi Arabia?</h3>
+            <p>Redirects from Saudi Arabia take between 10 and 30 milliseconds on average. From other GCC countries the average is 30 to 50 milliseconds. From anywhere else in the world it is under 150 milliseconds. This makes snip.sa the fastest URL shortener available for Saudi audiences.</p>
+          </article>
+          <article>
+            <h3>Can I export my analytics data?</h3>
+            <p>Yes. You own your data. Export all links, click analytics, and settings as a CSV file at any time from your dashboard. There is no lock-in. If you decide to leave, everything comes with you.</p>
+          </article>
+        </section>
+
+        <section>
+          <h2>Start using the smartest URL shortener for Saudi Arabia</h2>
+          <p>
+            Join thousands of Saudi marketers, agencies, and developers who use snip.sa every day to manage
+            their short links and QR codes. Whether you are running a paid social campaign, a print flyer,
+            a WhatsApp broadcast, or an email newsletter, snip.sa gives you the tracking and branding tools
+            you need. Get started for free — no credit card required. Upgrade when you need more links,
+            custom domains, or API access.
+          </p>
+          <a href="/signup">Create your free account on snip.sa</a>
         </section>
       </main>
       <footer>
