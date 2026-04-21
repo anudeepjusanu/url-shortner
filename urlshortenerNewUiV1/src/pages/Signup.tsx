@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle } from "lucide-react";
+import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle, Globe } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
@@ -14,7 +14,7 @@ import amplitudeService from "@/services/amplitude";
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9,  placeholder: "5XXXXXXXX"  },
-  { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+  // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
 ];
 
 // Password strength rules matching backend validateRegistration
@@ -26,7 +26,7 @@ const passwordRules = [
 ];
 
 const Signup = () => {
-  const { t, isAr } = useLanguage();
+  const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
   const { register } = useAuth();
   const { toast } = useToast();
@@ -197,7 +197,15 @@ const Signup = () => {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-background">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-background relative">
+        <button
+          onClick={() => setLang(lang === "en" ? "ar" : "en")}
+          className="absolute top-4 end-4 flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-sm px-3 py-1.5 rounded-md hover:bg-muted"
+        >
+          <Globe size={14} />
+          {lang === "en" ? "العربية" : "English"}
+        </button>
+
         <div className="w-full max-w-md space-y-6">
           <div className="lg:hidden flex items-center justify-center mb-2">
             <img src={logoIcon} alt="snip.sa" className="h-12" />
@@ -438,6 +446,13 @@ const Signup = () => {
                   t("Create Account", "إنشاء حساب")
                 )}
               </Button>
+
+              <p className="text-center text-xs text-muted-foreground font-body">
+                {t(
+                  "By creating an account, you agree to our Terms & Conditions and Privacy Policy.",
+                  "بإنشاء حساب، فإنك توافق على الشروط والأحكام وسياسة الخصوصية."
+                )}
+              </p>
             </form>
           )}
 

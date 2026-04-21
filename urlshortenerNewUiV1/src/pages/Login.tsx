@@ -6,18 +6,18 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff } from "lucide-react";
+import { Zap, BarChart3, QrCode, Smartphone, Mail, Loader2, Eye, EyeOff, Globe } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
 
 const COUNTRY_OPTIONS = [
   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
-  { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+  // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
 ];
 
 const Login = () => {
-  const { t, isAr } = useLanguage();
+  const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
   const { login, loginWithPhone } = useAuth();
   const { toast } = useToast();
@@ -168,7 +168,15 @@ const Login = () => {
       </div>
 
       {/* Right side - form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+      <div className="flex-1 flex items-center justify-center p-8 bg-background relative">
+        <button
+          onClick={() => setLang(lang === "en" ? "ar" : "en")}
+          className="absolute top-4 end-4 flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-sm px-3 py-1.5 rounded-md hover:bg-muted"
+        >
+          <Globe size={14} />
+          {lang === "en" ? "العربية" : "English"}
+        </button>
+
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center justify-center mb-4">
             <img src={logoIcon} alt="snip.sa" className="h-14" />
