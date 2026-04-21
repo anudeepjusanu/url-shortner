@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   // Don't cache POST, PUT, DELETE or list endpoints that need fresh data
   if (req.path.startsWith('/api/') && req.method === 'GET') {
     // Don't cache dynamic list endpoints that need fresh data
-    const noCachePaths = ['/api/urls', '/api/analytics', '/api/admin'];
+    const noCachePaths = ['/api/urls', '/api/analytics', '/api/admin', '/api/auth'];
     const shouldNotCache = noCachePaths.some(path => req.path.startsWith(path));
     
     if (shouldNotCache) {

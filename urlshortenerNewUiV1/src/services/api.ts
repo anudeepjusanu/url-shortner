@@ -119,11 +119,12 @@ class ApiClient {
     const token = this.getToken();
 
     const config: RequestInit = {
+      ...options,
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      ...options,
     };
 
     // Add authorization header if token exists

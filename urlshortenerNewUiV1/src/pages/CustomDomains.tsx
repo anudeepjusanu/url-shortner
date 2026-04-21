@@ -33,6 +33,9 @@ interface DomainEntry {
   verificationStatus: 'pending' | 'verified' | 'failed';
   createdAt: string;
   isDefault?: boolean;
+  cnameTarget?: string;
+  verificationRecord?: { type: string; name: string; value: string; verified: boolean };
+  setupInstructions?: { type: string; name: string; value: string; description: string };
 }
 
 const CustomDomains = () => {
@@ -105,9 +108,16 @@ const CustomDomains = () => {
     }
   };
 
-  const getDnsRecords = (domain: string) => [
-    { type: "CNAME", name: domain, value: "proxy.lovable.app", description: t("Domain pointer", "توجيه الدومين") },
-  ];
+  const getDnsRecords = (domainEntry: DomainEntry) => {
+    const cnameValue =
+      domainEntry.verificationRecord?.value ||
+      domainEntry.setupInstructions?.value ||
+      domainEntry.cnameTarget ||
+      "proxy.lovable.app";
+    return [
+      { type: "CNAME", name: domainEntry.domain, value: cnameValue, description: t("Domain pointer", "توجيه الدومين") },
+    ];
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -272,7 +282,7 @@ const CustomDomains = () => {
                   : t("Add these records at your domain registrar. DNS propagation can take up to 72 hours.", "أضف هذه السجلات عند مزود الدومين. قد يستغرق التحديث حتى 72 ساعة.")}
               </p>
               <div className="space-y-2">
-                {getDnsRecords(dnsDialog.domain).map((record) => (
+                {getDnsRecords(dnsDialog).map((record) => (
                   <div
                     key={record.name + record.type}
                     className="border border-border rounded-lg p-3 bg-muted/30"
