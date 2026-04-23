@@ -68,6 +68,8 @@ const UserManagement = () => {
     newUsersLast30Days: 0,
     totalUrls: 0,
     activeUsers: 0,
+    usersWithLinks: 0,
+    avgLinksPerUser: 0,
   });
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; name: string }>({
@@ -92,6 +94,8 @@ const UserManagement = () => {
         newUsersLast30Days: growth.newUsersLast30Days ?? 0,
         totalUrls: overview.totalUrls ?? 0,
         activeUsers: overview.activeUsers ?? 0,
+        usersWithLinks: overview.usersWithLinks ?? 0,
+        avgLinksPerUser: overview.avgLinksPerUser ?? 0,
       });
     } catch {
       setIsError(true);
@@ -156,8 +160,8 @@ const UserManagement = () => {
 
   const statCards = [
     { label: t("Number of Signups", "عدد المُسجّلين"), value: stats.totalUsers, icon: Users },
-    { label: t("Users With Links", "مستخدمون لديهم روابط"), value: stats.activeUsers, icon: Link2 },
-    { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: stats.totalUrls, icon: BarChart3 },
+    { label: t("Users With Links", "مستخدمون لديهم روابط"), value: stats.usersWithLinks, icon: Link2 },
+    { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: stats.avgLinksPerUser, icon: BarChart3 },
     { label: t("New Users (30d)", "مستخدمون جدد (30 يوم)"), value: stats.newUsersLast30Days, icon: UserPlus },
   ];
 

@@ -17,7 +17,7 @@ const BlogSection = () => {
             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--navy))] mb-3 tracking-tight">
               {t("From the blog", "من المدونة")}
             </h2>
-            <p className="text-[hsl(var(--navy))]/60 font-body text-lg max-w-md">
+            <p className="text-[hsl(var(--navy))]/75 font-body text-lg max-w-md">
               {t(
                 "Tips, guides, and insights to help you get the most out of your short links and campaigns.",
                 "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك."
@@ -47,7 +47,14 @@ const BlogSection = () => {
             >
               <div className="h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center relative overflow-hidden">
                 {featured.image ? (
-                  <img src={featured.image} alt={lang === "ar" ? featured.title.ar : featured.title.en} className="w-full h-full object-cover" loading="lazy" />
+                  <img
+                    src={featured.image}
+                    alt={lang === "ar" ? featured.title.ar : featured.title.en}
+                    width="1200"
+                    height="672"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 ) : (
                   <span className="text-white/10 font-display text-[10rem] font-black">01</span>
                 )}
@@ -57,19 +64,19 @@ const BlogSection = () => {
               </div>
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="flex items-center gap-1 text-[hsl(var(--navy))]/50 text-xs font-body">
+                  <span className="flex items-center gap-1 text-[hsl(var(--navy))]/70 text-xs font-body">
                     <Clock size={12} />
                     {lang === "ar" ? featured.readTime.ar : featured.readTime.en}
                   </span>
-                  <span className="text-[hsl(var(--navy))]/30 text-xs">·</span>
-                  <span className="text-[hsl(var(--navy))]/40 font-body text-xs">
+                  <span className="text-[hsl(var(--navy))]/50 text-xs">·</span>
+                  <span className="text-[hsl(var(--navy))]/70 font-body text-xs">
                     {lang === "ar" ? featured.date.ar : featured.date.en}
                   </span>
                 </div>
                 <h3 className="font-display text-2xl font-bold text-[hsl(var(--navy))] mb-3 leading-snug group-hover:text-[hsl(var(--sky))] transition-colors">
                   {lang === "ar" ? featured.title.ar : featured.title.en}
                 </h3>
-                <p className="text-[hsl(var(--navy))]/60 font-body text-sm leading-relaxed line-clamp-3">
+                <p className="text-[hsl(var(--navy))]/75 font-body text-sm leading-relaxed line-clamp-3">
                   {lang === "ar" ? featured.excerpt.ar : featured.excerpt.en}
                 </p>
               </div>
@@ -92,7 +99,14 @@ const BlogSection = () => {
                 >
                   <div className={`h-28 ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"} flex items-center justify-center overflow-hidden`}>
                     {post.image ? (
-                      <img src={post.image} alt={lang === "ar" ? post.title.ar : post.title.en} className="w-full h-full object-cover" loading="lazy" />
+                      <img
+                        src={post.image}
+                        alt={lang === "ar" ? post.title.ar : post.title.en}
+                        width="1200"
+                        height="672"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     ) : (
                       <span className="text-white/10 font-display text-7xl font-black">
                         {String(i + 2).padStart(2, "0")}
@@ -104,7 +118,7 @@ const BlogSection = () => {
                       <span className="text-xs font-body font-bold text-white bg-[hsl(var(--sky))] px-3 py-1 rounded-full">
                         {lang === "ar" ? post.category.ar : post.category.en}
                       </span>
-                      <span className="flex items-center gap-1 text-[hsl(var(--navy))]/50 text-xs font-body">
+                      <span className="flex items-center gap-1 text-[hsl(var(--navy))]/70 text-xs font-body">
                         <Clock size={12} />
                         {lang === "ar" ? post.readTime.ar : post.readTime.en}
                       </span>
@@ -112,7 +126,7 @@ const BlogSection = () => {
                     <h3 className="font-display text-base font-bold text-[hsl(var(--navy))] leading-snug group-hover:text-[hsl(var(--sky))] transition-colors">
                       {lang === "ar" ? post.title.ar : post.title.en}
                     </h3>
-                    <p className="text-[hsl(var(--navy))]/40 font-body text-xs mt-3">
+                    <p className="text-[hsl(var(--navy))]/70 font-body text-xs mt-3">
                       {lang === "ar" ? post.date.ar : post.date.en}
                     </p>
                   </div>
