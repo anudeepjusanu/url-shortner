@@ -27,6 +27,8 @@ jobs:
 
     - name: Build frontend
       run: cd urlshortenerNewUiV1 && npm run build
+      env:
+        VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
 
     - name: Run backend tests (if available)
       run: npm test || echo "No tests configured"
@@ -55,13 +57,14 @@ jobs:
       env:
         VITE_API_URL: https://snip.sa/api
         REACT_APP_DEFAULT_DOMAIN: snip.sa
+        VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
 
     - name: Create deployment package
       run: |
         mkdir -p deploy-temp/frontend
         cp -r src deploy-temp/
         cp -r scripts deploy-temp/
-        cp -r urlshortenerNewUiV1/build deploy-temp/frontend/
+        cp -r urlshortenerNewUiV1/dist deploy-temp/frontend/
         cp package*.json deploy-temp/
         mkdir -p deploy-temp/logs
         # Copy GA credentials if present
@@ -112,7 +115,7 @@ jobs:
 
           # Restart frontend serve
           pm2 delete url-shortener-ui || true
-          pm2 serve frontend/build 3016 --name url-shortener-ui --spa
+          pm2 serve frontend/dist 3016 --name url-shortener-ui --spa
 
           # Save PM2 state
           pm2 save --force

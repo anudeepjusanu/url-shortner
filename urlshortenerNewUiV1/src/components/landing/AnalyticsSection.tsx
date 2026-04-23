@@ -28,7 +28,7 @@ const AnalyticsSection = () => {
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-5 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
             {t("See exactly where your clicks are coming from", "شوف بالضبط من وين عملائك جايين")}
           </h2>
-          <p className="font-body text-lg leading-relaxed text-[hsl(var(--navy))]/65 max-w-xl mx-auto mb-8">
+          <p className="font-body text-lg leading-relaxed text-[hsl(var(--navy))]/75 max-w-xl mx-auto mb-8">
             {t(
               "Every link you shorten becomes a data source. Track clicks by country, city, device, browser, and platform.",
               "كل رابط تختصره يصير مصدر بيانات. تتبع الضغطات حسب الدولة، المدينة، الجهاز، المتصفح، والمصدر."

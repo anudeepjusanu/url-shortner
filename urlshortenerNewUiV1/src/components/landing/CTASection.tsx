@@ -36,6 +36,7 @@ const CTASection = () => {
               <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
               <input
                 type="url"
+                aria-label={t("Enter URL to shorten", "أدخل الرابط للاختصار")}
                 placeholder="snip.sa/"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}

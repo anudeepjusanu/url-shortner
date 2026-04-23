@@ -90,9 +90,11 @@ const HeroSection = () => {
             >
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 flex items-center gap-2 px-5 bg-white rounded-full shadow-soft border-none">
-                  <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
+                  <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" aria-hidden="true" />
                   <input
+                    id="hero-url-input"
                     type="url"
+                    aria-label={t("Enter URL to shorten", "أدخل الرابط للاختصار")}
                     placeholder={t("Paste your campaign link here...", "الصق رابط الحملة هنا...")}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
@@ -105,7 +107,7 @@ const HeroSection = () => {
                   onClick={handleShorten}
                   className="bg-[hsl(var(--navy))] text-white font-body font-bold px-8 shrink-0 rounded-full hover:opacity-90 transition-all text-base"
                 >
-                  {t("Shorten Link", "اختصر الرابط")}
+                  {t("Shorten Link for Free", "اختصر الرابط مجاناً")}
                   {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
                 </Button>
               </div>
@@ -127,7 +129,7 @@ const HeroSection = () => {
                 </motion.div>
               )}
 
-              <p className="mt-5 text-sm font-body text-[hsl(var(--navy))]/50">
+              <p className="mt-5 text-sm font-body text-[hsl(var(--navy))]/75">
                 {t(
                   "Free to try · No credit card · Hosted in Saudi Arabia",
                   "مجاني للتجربة · بدون بطاقة ائتمانية · مستضاف في السعودية"
@@ -256,7 +258,7 @@ const QRScreen = () => (
         className="p-3 sm:p-5 rounded-2xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5 text-center"
       >
         <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 rounded-xl bg-white border border-[hsl(var(--navy))]/10 p-1.5 sm:p-2">
-          <img src={qrImage} alt="QR Code" className="w-full h-full object-contain" loading="lazy" />
+          <img src={qrImage} alt="QR Code" width="512" height="512" className="w-full h-full object-contain" loading="lazy" />
         </div>
         <p className="font-display font-bold text-xs sm:text-sm text-[hsl(var(--navy))]">{qr.name}</p>
         <p className="text-[10px] sm:text-xs text-[hsl(var(--navy))]/50 mt-1 flex items-center justify-center gap-1 font-body">

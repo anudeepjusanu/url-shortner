@@ -12,6 +12,7 @@ const getSystemStats = async (req, res) => {
       totalClicks,
       totalOrganizations,
       activeUsers,
+      creatorsWithLinks,
       recentUsers,
       topUrls
     ] = await Promise.all([
@@ -19,14 +20,20 @@ const getSystemStats = async (req, res) => {
       Url.countDocuments(),
       Click.countDocuments({ isBot: { $ne: true } }),
       Organization.countDocuments(),
-      User.countDocuments({ 
+      User.countDocuments({
         lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
       }),
+      Url.distinct('creator'),
       User.find().sort({ createdAt: -1 }).limit(10).select('firstName lastName email createdAt'),
       Url.find().sort({ clickCount: -1 }).limit(10)
         .populate('creator', 'firstName lastName email')
         .select('title shortCode clickCount createdAt')
     ]);
+
+    const usersWithLinks = creatorsWithLinks.length;
+    const avgLinksPerUser = totalUsers > 0
+      ? Math.round((totalUrls / totalUsers) * 10) / 10
+      : 0;
     
     const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
@@ -51,7 +58,9 @@ const getSystemStats = async (req, res) => {
           totalUrls,
           totalClicks,
           totalOrganizations,
-          activeUsers
+          activeUsers,
+          usersWithLinks,
+          avgLinksPerUser
         },
         growth: {
           newUsersLast30Days,

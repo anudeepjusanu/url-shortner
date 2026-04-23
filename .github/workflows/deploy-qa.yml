@@ -29,6 +29,7 @@ jobs:
         env:
           VITE_API_URL: https://qa.snip.sa/api
           REACT_APP_DEFAULT_DOMAIN: qa.snip.sa
+          VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
 
       - name: Create deployment package
         run: |

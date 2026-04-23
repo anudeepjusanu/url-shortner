@@ -21,24 +21,24 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <div className="mb-3 flex items-center gap-2">
-            <img src={logo} alt="snip.sa" className="h-16" />
+            <img src={logo} alt="snip.sa" width="512" height="503" className="h-16 w-auto" />
           </div>
-          <p className="text-[hsl(var(--cream))]/40 text-sm font-body max-w-sm">
+          <p className="text-[hsl(var(--cream))]/70 text-sm font-body max-w-sm">
             {t("Shorten your links. Track your campaigns.", "اختصار روابطك، تتبع حملاتك.")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Product", "المنتج")}</h4>
-            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
+            <h3 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Product", "المنتج")}</h3>
+            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/70">
               <li>
-                <button onClick={() => scrollToSection("features")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                <button onClick={() => scrollToSection("features")} className="hover:text-[hsl(var(--cream))]/90 transition-colors text-start">
                   {t("Features", "الميزات")}
                 </button>
               </li>
               <li>
-                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/90 transition-colors">
                   {t("API Documentation", "وثائق الـ API")}
                 </a>
               </li>
@@ -46,51 +46,20 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("For Developers", "للمطورين")}</h4>
-            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
+            <h3 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("For Developers", "للمطورين")}</h3>
+            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/70">
               <li>
-                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/90 transition-colors">
                   {t("API Documentation", "وثائق الـ API")}
                 </a>
               </li>
-              {/* <li>
-                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
-                  {t("Code Examples", "أمثلة بالأكواد")}
-                </button>
-              </li>
               <li>
-                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
-                  SDKs (Node, Python, PHP)
-                </button>
-              </li>
-              <li>
-                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
-                  Webhooks
-                </button>
-              </li>
-              <li>
-                <button onClick={() => scrollToSection("developers")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
-                  {t("API Status", "حالة النظام")}
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Resources", "الموارد")}</h4>
-            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li>
-                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
-                  {t("Help Center", "مركز المساعدة")}
-                </button>
-              </li> */}
-              <li>
-                <Link to="/blog" className="hover:text-[hsl(var(--cream))]/80 transition-colors">
+                <Link to="/blog" className="hover:text-[hsl(var(--cream))]/90 transition-colors">
                   {t("Blog", "المدونة")}
                 </Link>
               </li>
               <li>
-                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/80 transition-colors text-start">
+                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/90 transition-colors text-start">
                   {t("FAQ", "أسئلة شائعة")}
                 </button>
               </li>
@@ -98,11 +67,27 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Company", "الشركة")}</h4>
-            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><Link to="/privacy-policy" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Privacy Policy", "الخصوصية")}</Link></li>
-              <li><Link to="/terms" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</Link></li>
-              <li><a href="mailto:support@snip.sa" className="hover:text-[hsl(var(--cream))]/80 transition-colors">support@snip.sa</a></li>
+            <h3 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Resources", "الموارد")}</h3>
+            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/70">
+              <li>
+                <Link to="/blog" className="hover:text-[hsl(var(--cream))]/90 transition-colors">
+                  {t("Blog", "المدونة")}
+                </Link>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("faq")} className="hover:text-[hsl(var(--cream))]/90 transition-colors text-start">
+                  {t("FAQ", "أسئلة شائعة")}
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Company", "الشركة")}</h3>
+            <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/70">
+              <li><Link to="/privacy-policy" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("Privacy Policy", "الخصوصية")}</Link></li>
+              <li><Link to="/terms" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</Link></li>
+              <li><a href="mailto:support@snip.sa" className="hover:text-[hsl(var(--cream))]/90 transition-colors">support@snip.sa</a></li>
             </ul>
           </div>
         </div>
@@ -117,7 +102,7 @@ const Footer = () => {
             </Button>
           </div>
 
-          <p className="text-[hsl(var(--cream))]/30 text-sm font-body mt:order-2">
+          <p className="text-[hsl(var(--cream))]/70 text-sm font-body mt:order-2">
             {t("© 2026 snip.sa · All rights reserved", "© 2026 snip.sa · جميع الحقوق محفوظة")}
           </p>
         </div>
