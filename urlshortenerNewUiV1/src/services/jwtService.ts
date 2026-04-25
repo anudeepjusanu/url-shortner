@@ -77,9 +77,15 @@ async function authRequest<T = any>(
     : await response.text();
 
   if (!response.ok) {
-    throw new Error(
-      (data as any)?.message || (data as any)?.error || `HTTP ${response.status}`
-    );
+    const errData = data as any;
+    const validationErrors: Array<{ field: string; message: string; value?: unknown }> | undefined =
+      errData?.errors?.length ? errData.errors : undefined;
+    const message = validationErrors
+      ? validationErrors.map((e) => e.message).join('; ')
+      : errData?.message || errData?.error || `HTTP ${response.status}`;
+    const err = new Error(message) as Error & { validationErrors?: typeof validationErrors };
+    if (validationErrors) err.validationErrors = validationErrors;
+    throw err;
   }
 
   return data as T;

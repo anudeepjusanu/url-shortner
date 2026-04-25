@@ -1000,6 +1000,14 @@ const bulkCreate = async (req, res) => {
         let shortCode;
         const rawAlias = entry.customCode ? entry.customCode.trim() : null;
         if (rawAlias) {
+          if (rawAlias.length < 3 || rawAlias.length > 50) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Custom alias must be between 3 and 50 characters' });
+            continue;
+          }
+          if (!/^[\p{L}\p{N}_-]+$/u.test(rawAlias)) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Custom alias can only contain letters, numbers, hyphens, and underscores' });
+            continue;
+          }
           if (isReservedAlias(rawAlias)) {
             failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Alias is reserved for system use' });
             continue;

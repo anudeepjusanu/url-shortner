@@ -43,17 +43,6 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3015/api";
 
 // ─── CSV / XLSX parser ────────────────────────────────────────────────────────
 
-const EXPECTED_HEADERS = [
-  "destination url",
-  "custom alias",
-  "title",
-  "tags",
-  "utm source",
-  "utm medium",
-  "utm campaign",
-  "utm term",
-  "utm content",
-];
 
 function normalizeHeader(h: string) {
   return h.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
@@ -280,16 +269,46 @@ const BulkCreate = () => {
         if (data?.successful) allSuccessful.push(...data.successful);
         if (data?.failed) allFailed.push(...data.failed);
       } catch (err: any) {
-        // Mark entire chunk as failed
-        chunks[c].forEach((entry, idx) => {
-          allFailed.push({
-            row: validRows[c * CHUNK_SIZE + idx]._rowNum,
-            originalUrl: entry.originalUrl,
-            customCode: entry.customCode || "",
-            title: entry.title || "",
-            error: err.message || "Request failed",
+        const vErrors: Array<{ field: string; message: string }> = err.validationErrors || [];
+
+        if (vErrors.length) {
+          // Map each validation error back to the specific row using the field path e.g. "urls[2].customCode"
+          const rowErrMap = new Map<number, string[]>();
+          vErrors.forEach((ve) => {
+            const match = ve.field?.match(/^urls\[(\d+)\]/);
+            if (match) {
+              const globalIdx = c * CHUNK_SIZE + parseInt(match[1]);
+              const row = validRows[globalIdx];
+              if (row) {
+                const msgs = rowErrMap.get(row._rowNum) ?? [];
+                msgs.push(ve.message);
+                rowErrMap.set(row._rowNum, msgs);
+              }
+            }
           });
-        });
+
+          chunks[c].forEach((entry, idx) => {
+            const row = validRows[c * CHUNK_SIZE + idx];
+            const msgs = rowErrMap.get(row._rowNum);
+            allFailed.push({
+              row: row._rowNum,
+              originalUrl: entry.originalUrl,
+              customCode: entry.customCode || "",
+              title: entry.title || "",
+              error: msgs ? msgs.join('; ') : err.message || "Request failed",
+            });
+          });
+        } else {
+          chunks[c].forEach((entry, idx) => {
+            allFailed.push({
+              row: validRows[c * CHUNK_SIZE + idx]._rowNum,
+              originalUrl: entry.originalUrl,
+              customCode: entry.customCode || "",
+              title: entry.title || "",
+              error: err.message || "Request failed",
+            });
+          });
+        }
       }
 
       const pct = Math.round(((c + 1) / chunks.length) * 100);
