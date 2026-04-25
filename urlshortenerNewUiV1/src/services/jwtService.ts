@@ -117,6 +117,20 @@ async function authFetch(endpoint: string, options: RequestInit = {}): Promise<R
 
 // ─── My Links Service  (GET /urls, POST /urls, …) ────────────────────────────
 
+export interface BulkCreateEntry {
+  originalUrl: string;
+  customCode?: string;
+  title?: string;
+  tags?: string[];
+  utm?: {
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    term?: string;
+    content?: string;
+  };
+}
+
 export interface GetUrlsParams {
   page?: number;
   limit?: number;
@@ -174,6 +188,10 @@ export const myLinksService = {
   /** POST /urls/bulk-delete — delete multiple links at once */
   bulkDelete: (ids: string[]) =>
     authRequest('/urls/bulk-delete', { method: 'POST', body: { ids } as any }),
+
+  /** POST /urls/bulk-create — create multiple links from parsed file data */
+  bulkCreate: (urls: BulkCreateEntry[]) =>
+    authRequest('/urls/bulk-create', { method: 'POST', body: { urls } as any }),
 
   /** GET /urls/stats — aggregated stats (total clicks, top URLs, etc.) */
   getStats: () => authRequest('/urls/stats'),

@@ -233,6 +233,66 @@ const validateBulkDelete = [
   handleValidationErrors
 ];
 
+const validateBulkCreate = [
+  body('urls')
+    .isArray({ min: 1, max: 1000 })
+    .withMessage('URLs array is required and must contain 1 to 1000 entries'),
+  body('urls.*.originalUrl')
+    .notEmpty()
+    .withMessage('Destination URL is required for each entry')
+    .custom((value) => {
+      if (!value || typeof value !== 'string') throw new Error('Destination URL must be a string');
+      if (!/^https?:\/\//i.test(value.trim())) throw new Error('URL must start with http:// or https://');
+      return true;
+    }),
+  body('urls.*.customCode')
+    .optional({ nullable: true, checkFalsy: true })
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Custom alias must be between 3 and 50 characters')
+    .matches(/^[\p{L}\p{N}_-]+$/u)
+    .withMessage('Custom alias can only contain letters, numbers, hyphens, and underscores'),
+  body('urls.*.title')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Title cannot exceed 200 characters'),
+  body('urls.*.tags')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('Tags must be an array'),
+  body('urls.*.tags.*')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Each tag must be between 1 and 30 characters'),
+  body('urls.*.utm.source')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM source cannot exceed 100 characters'),
+  body('urls.*.utm.medium')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('UTM medium cannot exceed 100 characters'),
+  body('urls.*.utm.campaign')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM campaign cannot exceed 200 characters'),
+  body('urls.*.utm.term')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM term cannot exceed 200 characters'),
+  body('urls.*.utm.content')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('UTM content cannot exceed 200 characters'),
+  handleValidationErrors
+];
+
 const validateProfileUpdate = [
   body('firstName')
     .optional()
@@ -445,5 +505,6 @@ module.exports = {
   validateAdminUserUpdate,
   validateDomain,
   validateDomainUpdate,
+  validateBulkCreate,
   sanitizeInput
 };
