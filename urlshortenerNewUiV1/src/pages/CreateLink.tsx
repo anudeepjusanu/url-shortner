@@ -36,10 +36,15 @@ const CreateLink = () => {
   const { data: domainsData, isLoading: domainsLoading, isError: domainsError } = useAvailableDomains();
   const createUrl = useCreateUrl();
 
-  // Extract domains array from response
-  const availableDomains = Array.isArray(domainsData?.data?.domains)
-    ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
-    : [];
+  // Extract domains array from response — memoized so the reference stays stable
+  // between renders, preventing the domain-reset useEffect from firing on every render.
+  const availableDomains = useMemo(
+    () =>
+      Array.isArray(domainsData?.data?.domains)
+        ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
+        : [],
+    [domainsData]
+  );
 
   // Set default domain when domains are loaded
   useEffect(() => {

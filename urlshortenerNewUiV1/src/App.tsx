@@ -44,6 +44,7 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
 import PublicBioPage from "./pages/PublicBioPage";
+import BulkCreate from "./pages/BulkCreate";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="/dashboard/bio-pages" element={<ProtectedRoute><BioPages /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
