@@ -176,7 +176,7 @@ const checkFeatureAccess = (feature) => {
     const featurePermissions = {
       'custom_domains': ['premium', 'admin'],
       'analytics_export': ['premium', 'admin'],
-      'bulk_operations': ['premium', 'admin'],
+      'bulk_operations': ['user', 'admin', 'super_admin'],
       'api_access': ['premium', 'admin'],
       'password_protection': ['premium', 'admin'],
       'utm_parameters': ['premium', 'admin'],
