@@ -27,6 +27,8 @@ jobs:
 
     - name: Build frontend
       run: cd urlshortenerNewUiV1 && npm run build
+      env:
+        VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
 
     - name: Run backend tests (if available)
       run: npm test || echo "No tests configured"
@@ -55,6 +57,7 @@ jobs:
       env:
         VITE_API_URL: https://snip.sa/api
         REACT_APP_DEFAULT_DOMAIN: snip.sa
+        VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
 
     - name: Create deployment package
       run: |

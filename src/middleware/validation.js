@@ -233,6 +233,13 @@ const validateBulkDelete = [
   handleValidationErrors
 ];
 
+const validateBulkCreate = [
+  body('urls')
+    .isArray({ min: 1, max: 1000 })
+    .withMessage('URLs array is required and must contain 1 to 1000 entries'),
+  handleValidationErrors
+];
+
 const validateProfileUpdate = [
   body('firstName')
     .optional()
@@ -445,5 +452,6 @@ module.exports = {
   validateAdminUserUpdate,
   validateDomain,
   validateDomainUpdate,
+  validateBulkCreate,
   sanitizeInput
 };

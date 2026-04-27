@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -38,6 +38,7 @@ import {
 import {
   Link2, MousePointer, CalendarDays, Users, Search,
   Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { adminService } from "@/services/jwtService";
@@ -54,18 +55,33 @@ interface AdminUrl {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  creator?: { firstName: string; lastName: string; email: string };
+  creator?: { _id: string; firstName: string; lastName: string; email: string };
 }
+
+const PAGE_SIZE = 20;
+
+const getSortParams = (sort: string): Record<string, string> => {
+  switch (sort) {
+    case "oldest":      return { sortBy: "createdAt", sortOrder: "asc" };
+    case "most-clicked": return { sortBy: "clickCount", sortOrder: "desc" };
+    default:            return { sortBy: "createdAt", sortOrder: "desc" };
+  }
+};
 
 const UrlManagement = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [urls, setUrls] = useState<AdminUrl[]>([]);
+  const [filteredTotal, setFilteredTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
@@ -76,6 +92,9 @@ const UrlManagement = () => {
     totalUsers: 0,
   });
 
+  // Cumulative creator list built from pages fetched — id → name
+  const [allCreators, setAllCreators] = useState<Map<string, string>>(new Map());
+
   const [viewUrl, setViewUrl] = useState<AdminUrl | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; code: string }>({
     open: false, id: null, code: "",
@@ -83,15 +102,20 @@ const UrlManagement = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setIsError(false);
+  // Debounce search input — only fire API after 400 ms of no typing
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 400);
+  };
+
+  // Reset to page 1 whenever filters or sort change
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, sortBy]);
+
+  const fetchStats = useCallback(async () => {
     try {
-      const [urlsRes, statsRes] = await Promise.all([
-        adminService.getUrls({ limit: 100 }),
-        adminService.getStats(),
-      ]);
-      setUrls(urlsRes?.data?.urls ?? []);
+      const statsRes = await adminService.getStats();
       const overview = statsRes?.data?.overview ?? {};
       const growth = statsRes?.data?.growth ?? {};
       setStats({
@@ -100,46 +124,50 @@ const UrlManagement = () => {
         newUrlsLast30Days: growth.newUrlsLast30Days ?? 0,
         totalUsers: overview.totalUsers ?? 0,
       });
+    } catch {}
+  }, []);
+
+  const fetchUrls = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const params: Record<string, string | number> = {
+        page: currentPage,
+        limit: PAGE_SIZE,
+        ...getSortParams(sortBy),
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (creatorFilter !== "all") params.creator = creatorFilter;
+
+      const urlsRes = await adminService.getUrls(params);
+      const fetchedUrls: AdminUrl[] = urlsRes?.data?.urls ?? [];
+      const pagination = urlsRes?.data?.pagination ?? {};
+
+      setUrls(fetchedUrls);
+      setFilteredTotal(pagination.total ?? 0);
+      setTotalPages(pagination.pages ?? 1);
+
+      // Accumulate unique creators seen so far for the filter dropdown
+      setAllCreators((prev) => {
+        const updated = new Map(prev);
+        fetchedUrls.forEach((u) => {
+          if (u.creator?._id) {
+            updated.set(u.creator._id, `${u.creator.firstName} ${u.creator.lastName}`);
+          }
+        });
+        return updated;
+      });
     } catch {
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentPage, debouncedSearch, creatorFilter, sortBy]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchUrls(); }, [fetchUrls]);
 
-  // Unique creators for filter dropdown
-  const creators = Array.from(
-    new Map(
-      urls
-        .filter((u) => u.creator)
-        .map((u) => [u.creator!.email, `${u.creator!.firstName} ${u.creator!.lastName}`])
-    ).entries()
-  );
-
-  const filtered = urls
-    .filter((u) => {
-      const code = u.customCode || u.shortCode;
-      const matchSearch =
-        code.toLowerCase().includes(search.toLowerCase()) ||
-        (u.originalUrl || "").toLowerCase().includes(search.toLowerCase()) ||
-        (u.title || "").toLowerCase().includes(search.toLowerCase()) ||
-        (u.creator ? `${u.creator.firstName} ${u.creator.lastName}`.toLowerCase().includes(search.toLowerCase()) : false);
-      const creatorName = u.creator ? `${u.creator.firstName} ${u.creator.lastName}` : "";
-      const matchCreator = creatorFilter === "all" || creatorName === creatorFilter;
-      return matchSearch && matchCreator;
-    })
-    .sort((a, b) => {
-      if (sortBy === "most-clicked") return (b.clickCount || 0) - (a.clickCount || 0);
-      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === "user-az") {
-        const nameA = a.creator ? `${a.creator.firstName} ${a.creator.lastName}` : "zzz";
-        const nameB = b.creator ? `${b.creator.firstName} ${b.creator.lastName}` : "zzz";
-        return nameA.localeCompare(nameB);
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
+  const creators = Array.from(allCreators.entries()).sort(([, a], [, b]) => a.localeCompare(b));
 
   const handleToggleStatus = async (url: AdminUrl) => {
     setTogglingId(url._id);
@@ -163,6 +191,7 @@ const UrlManagement = () => {
     try {
       await adminService.deleteUrl(deleteDialog.id);
       setUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
+      setFilteredTotal((n) => Math.max(0, n - 1));
       toast({ title: t("URL deleted", "تم حذف الرابط") });
     } catch (err: any) {
       toast({ title: t("Delete failed", "فشل الحذف"), description: err.message, variant: "destructive" });
@@ -174,8 +203,7 @@ const UrlManagement = () => {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const getShortDisplay = (url: AdminUrl) =>
-    url.customCode || url.shortCode;
+  const getShortDisplay = (url: AdminUrl) => url.customCode || url.shortCode;
 
   const statCards = [
     { label: t("Total URLs", "إجمالي الروابط"), value: stats.totalUrls, icon: Link2 },
@@ -183,6 +211,16 @@ const UrlManagement = () => {
     { label: t("New URLs (30d)", "روابط جديدة (30 يوم)"), value: stats.newUrlsLast30Days, icon: CalendarDays },
     { label: t("Total Users", "إجمالي المستخدمين"), value: stats.totalUsers, icon: Users },
   ];
+
+  const getPageNumbers = (current: number, total: number): (number | "...")[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+    if (current >= total - 3) return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+    return [1, "...", current - 1, current, current + 1, "...", total];
+  };
+
+  const startItem = filteredTotal === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const endItem = Math.min(currentPage * PAGE_SIZE, filteredTotal);
 
   return (
     <DashboardLayout>
@@ -239,7 +277,7 @@ const UrlManagement = () => {
           <Input
             placeholder={t("Search by short code, URL, title, or creator...", "ابحث بالرمز أو الرابط أو العنوان...")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="ps-9 text-sm"
           />
         </div>
@@ -249,11 +287,9 @@ const UrlManagement = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("All Users", "جميع المستخدمين")}</SelectItem>
-            {creators
-              .sort(([, a], [, b]) => a.localeCompare(b))
-              .map(([email, name]) => (
-                <SelectItem key={email} value={name}>{name}</SelectItem>
-              ))}
+            {creators.map(([id, name]) => (
+              <SelectItem key={id} value={id}>{name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={setSortBy}>
@@ -265,7 +301,6 @@ const UrlManagement = () => {
             <SelectItem value="newest">{t("Newest first", "الأحدث أولاً")}</SelectItem>
             <SelectItem value="oldest">{t("Oldest first", "الأقدم أولاً")}</SelectItem>
             <SelectItem value="most-clicked">{t("Most clicked", "الأكثر ضغطاً")}</SelectItem>
-            <SelectItem value="user-az">{t("User A → Z", "المستخدم أ ← ي")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -290,7 +325,7 @@ const UrlManagement = () => {
         <>
           {/* Mobile cards */}
           <div className="sm:hidden space-y-3">
-            {filtered.map((url) => (
+            {urls.map((url) => (
               <div key={url._id} className="bg-background border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0 flex-1">
@@ -360,7 +395,7 @@ const UrlManagement = () => {
                 </div>
               </div>
             ))}
-            {filtered.length === 0 && (
+            {urls.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
                 {t("No URLs found.", "لا توجد روابط.")}
               </div>
@@ -382,7 +417,7 @@ const UrlManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((url) => (
+                {urls.map((url) => (
                   <TableRow key={url._id}>
                     <TableCell>
                       <span className="font-display font-semibold text-primary text-sm flex items-center gap-1">
@@ -457,12 +492,59 @@ const UrlManagement = () => {
                 ))}
               </TableBody>
             </Table>
-            {filtered.length === 0 && (
+            {urls.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
                 {t("No URLs found.", "لا توجد روابط.")}
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+              <p className="text-xs text-muted-foreground font-body order-2 sm:order-1">
+                {t(
+                  `Showing ${startItem}–${endItem} of ${filteredTotal} URLs`,
+                  `عرض ${startItem}–${endItem} من ${filteredTotal} رابط`
+                )}
+              </p>
+              <div className="flex items-center gap-1 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+                  page === "..." ? (
+                    <span key={`ellipsis-${idx}`} className="w-8 text-center text-xs text-muted-foreground">…</span>
+                  ) : (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="icon"
+                      className="h-8 w-8 text-xs font-body"
+                      onClick={() => setCurrentPage(page as number)}
+                    >
+                      {page}
+                    </Button>
+                  )
+                )}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
 

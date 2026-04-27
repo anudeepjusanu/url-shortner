@@ -28,7 +28,7 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="bg-white rounded-full px-6 py-2 flex items-center justify-between shadow-card">
           <a href="/" className="flex items-center gap-1 -ms-3">
-            <img src={logoFull} alt="snip" className="h-8 md:h-10" />
+            <img src={logoFull} alt="" width="512" height="410" className="h-8 md:h-10 w-auto" />
             <span className="font-display font-bold text-lg md:text-xl text-foreground">SNIP</span>
           </a>
 
@@ -54,7 +54,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-2">
             <button
               onClick={toggleLang}
-              className="flex items-center gap-1.5 text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors font-body text-sm px-3 py-1.5"
+              className="flex items-center gap-1.5 text-[hsl(var(--navy))]/75 hover:text-[hsl(var(--navy))] transition-colors font-body text-sm px-3 py-1.5"
             >
               <Globe size={14} />
               {lang === "en" ? "العربية" : "English"}
@@ -89,18 +89,28 @@ const Navbar = () => {
                 </Button>
               )
             )}
-            <button onClick={toggleLang} className="text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors p-1.5">
-              <Globe size={18} />
+            <button
+              onClick={toggleLang}
+              aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
+              className="text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors p-1.5"
+            >
+              <Globe size={18} aria-hidden="true" />
             </button>
-            <button onClick={() => setIsOpen(!isOpen)} className="text-[hsl(var(--navy))]">
-              {isOpen ? <X size={22} /> : <Menu size={22} />}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isOpen}
+              aria-controls="mobile-nav"
+              className="text-[hsl(var(--navy))]"
+            >
+              {isOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
             </button>
           </div>
         </div>
       </div>
 
       {isOpen && (
-        <div className="md:hidden mx-4 mt-2 bg-white rounded-3xl shadow-card px-5 pb-4">
+        <div id="mobile-nav" className="md:hidden mx-4 mt-2 bg-white rounded-3xl shadow-card px-5 pb-4">
           <div className="flex flex-col gap-1 pt-3 font-body text-sm">
             <button onClick={() => { scrollToSection("features"); setIsOpen(false); }} className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl text-start">{t("Features", "الميزات")}</button>
             <button onClick={() => { scrollToSection("analytics"); setIsOpen(false); }} className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl text-start">{t("Analytics", "التحليلات")}</button>

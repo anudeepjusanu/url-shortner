@@ -950,6 +950,152 @@ const getUrlStats = async (req, res) => {
   }
 };
 
+const bulkCreate = async (req, res) => {
+  try {
+    const { urls } = req.body;
+
+    if (!Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ success: false, message: 'URLs array is required' });
+    }
+    if (urls.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Maximum 1000 URLs per batch' });
+    }
+
+    const today = new Date();
+    const bulkTag = `bulk upload ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`.toLowerCase();
+    const bulkImportId = `bulk_${today.toISOString().split('T')[0]}_${Date.now()}`;
+    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
+    const baseUrl = process.env.BASE_URL || `https://${baseDomain}`;
+
+    const successful = [];
+    const failed = [];
+
+    for (let i = 0; i < urls.length; i++) {
+      const entry = urls[i];
+      try {
+        // Validate URL format
+        const urlValidation = validateUrl(entry.originalUrl);
+        if (!urlValidation.isValid) {
+          failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: urlValidation.message });
+          continue;
+        }
+
+        // Build final URL with UTM params appended if provided
+        let finalUrl = urlValidation.cleanUrl;
+        const utm = entry.utm || {};
+        const hasUtm = utm.source || utm.medium || utm.campaign || utm.term || utm.content;
+        if (hasUtm) {
+          try {
+            const urlObj = new URL(finalUrl);
+            if (utm.source) urlObj.searchParams.set('utm_source', utm.source);
+            if (utm.medium) urlObj.searchParams.set('utm_medium', utm.medium);
+            if (utm.campaign) urlObj.searchParams.set('utm_campaign', utm.campaign);
+            if (utm.term) urlObj.searchParams.set('utm_term', utm.term);
+            if (utm.content) urlObj.searchParams.set('utm_content', utm.content);
+            finalUrl = urlObj.toString();
+          } catch (_) { /* keep original if URL construction fails */ }
+        }
+
+        // Handle custom alias
+        let shortCode;
+        const rawAlias = entry.customCode ? entry.customCode.trim() : null;
+        if (rawAlias) {
+          if (rawAlias.length < 3 || rawAlias.length > 50) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Custom alias must be between 3 and 50 characters' });
+            continue;
+          }
+          if (!/^[\p{L}\p{N}_-]+$/u.test(rawAlias)) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Custom alias can only contain letters, numbers, hyphens, and underscores' });
+            continue;
+          }
+          if (isReservedAlias(rawAlias)) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Alias is reserved for system use' });
+            continue;
+          }
+          const existing = await Url.findOne({
+            $or: [
+              { shortCode: { $regex: new RegExp(`^${rawAlias}$`, 'i') } },
+              { customCode: { $regex: new RegExp(`^${rawAlias}$`, 'i') } }
+            ]
+          });
+          if (existing) {
+            failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: rawAlias, title: entry.title || '', error: 'Alias already taken' });
+            continue;
+          }
+          shortCode = rawAlias;
+        } else {
+          let attempts = 0;
+          do {
+            shortCode = generateShortCode();
+            attempts++;
+            if (attempts > 10) throw new Error('Failed to generate unique short code');
+          } while (await Url.findOne({ shortCode }));
+        }
+
+        // Merge user-provided tags with auto bulk tag
+        const userTags = Array.isArray(entry.tags) ? entry.tags.map(t => String(t).toLowerCase().trim()).filter(Boolean) : [];
+        const tags = [...new Set([...userTags, bulkTag])];
+
+        const urlDoc = new Url({
+          originalUrl: finalUrl,
+          shortCode,
+          customCode: rawAlias || undefined,
+          title: entry.title || '',
+          creator: req.user.id,
+          organization: req.user.organization,
+          tags,
+          utm: hasUtm ? utm : {},
+          bulkImportId,
+          redirectType: 302
+        });
+
+        await urlDoc.save();
+        await UsageTracker.trackUsage(req.user.id, 'createUrl');
+        await cacheSet(`url:${shortCode.toLowerCase()}`, urlDoc, config.CACHE_TTL.URL_CACHE);
+
+        successful.push({
+          row: i + 1,
+          originalUrl: entry.originalUrl,
+          shortUrl: `${baseUrl}/${shortCode}`,
+          shortCode,
+          customCode: rawAlias || null,
+          title: entry.title || ''
+        });
+      } catch (err) {
+        failed.push({ row: i + 1, originalUrl: entry.originalUrl || '', customCode: entry.customCode || '', title: entry.title || '', error: err.message });
+      }
+    }
+
+    res.status(207).json({
+      success: true,
+      message: `Processed ${urls.length} URL(s): ${successful.length} created, ${failed.length} failed`,
+      data: {
+        successful,
+        failed,
+        totalProcessed: urls.length,
+        successCount: successful.length,
+        errorCount: failed.length,
+        bulkImportId
+      }
+    });
+  } catch (error) {
+    console.error('Bulk create error:', error);
+    res.status(500).json({ success: false, message: 'Failed to process bulk creation' });
+  }
+};
+
+const bulkCreateTemplate = (req, res) => {
+  const rows = [
+    ['Destination URL', 'Custom Alias', 'Title', 'Tags', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'UTM Term', 'UTM Content'],
+    ['https://example.com/page', 'my-alias', 'My Page Title', 'marketing,social', 'google', 'cpc', 'summer-sale', '', ''],
+    ['https://example.com/another', '', 'Another Page', 'newsletter', 'email', 'newsletter', 'weekly', '', '']
+  ];
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="bulk-links-template.csv"');
+  res.send(csv);
+};
+
 const getAvailableDomains = async (req, res) => {
   try {
     const domains = await Domain.getUserDomains(req.user.id, req.user.organization);
@@ -1006,6 +1152,8 @@ module.exports = {
   updateUrl,
   deleteUrl,
   bulkDelete,
+  bulkCreate,
+  bulkCreateTemplate,
   getUrlStats,
   getAvailableDomains
 };

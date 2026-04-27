@@ -47,7 +47,7 @@ const FAQSection = () => {
             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--navy))] mb-4">
               {t("Questions? Answered", "أسئلة شائعة")}
             </h2>
-            <p className="font-body text-base text-[hsl(var(--navy))]/60 leading-relaxed">
+            <p className="font-body text-base text-[hsl(var(--navy))]/75 leading-relaxed">
               {t(
                 "Everything you need to know about snip.sa. Can't find an answer? Chat with us on WhatsApp.",
                 "كل اللي تحتاج تعرفه عن snip.sa. ما لقيت جوابك؟ كلمنا على واتساب."
@@ -69,7 +69,7 @@ const FAQSection = () => {
                     <AccordionTrigger className="font-body text-sm font-bold text-start hover:no-underline py-5 text-[hsl(var(--navy))]">
                       {faq.q}
                     </AccordionTrigger>
-                    <AccordionContent className="font-body text-sm leading-relaxed pb-5 text-[hsl(var(--navy))]/65">
+                    <AccordionContent className="font-body text-sm leading-relaxed pb-5 text-[hsl(var(--navy))]/75">
                       {faq.a}
                     </AccordionContent>
                   </AccordionItem>

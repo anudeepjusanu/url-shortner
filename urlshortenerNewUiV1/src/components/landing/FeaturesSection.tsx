@@ -59,7 +59,7 @@ const FeaturesSection = () => {
                   <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-5 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
                     {feature.title}
                   </h2>
-                  <p className="font-body text-lg leading-relaxed mb-8 max-w-md text-[hsl(var(--navy))]/65">
+                  <p className="font-body text-lg leading-relaxed mb-8 max-w-md text-[hsl(var(--navy))]/75">
                     {feature.description}
                   </p>
                   <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>

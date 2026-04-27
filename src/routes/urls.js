@@ -9,6 +9,7 @@ const {
   validateUrlCreation,
   validateUrlUpdate,
   validateBulkDelete,
+  validateBulkCreate,
   validateObjectId,
   validatePagination,
   sanitizeInput
@@ -73,12 +74,24 @@ router.delete('/:id',
 );
 
 // Bulk delete - accepts both Bearer token and API key
-router.post('/bulk-delete', 
+router.post('/bulk-delete',
   authenticateAny,
   apiLimiter,
   checkFeatureAccess('bulk_operations'),
-  validateBulkDelete, 
+  validateBulkDelete,
   urlController.bulkDelete
+);
+
+// Bulk create template download (no auth required — public template file)
+router.get('/bulk-create/template', urlController.bulkCreateTemplate);
+
+// Bulk create — accepts both Bearer token and API key
+router.post('/bulk-create',
+  authenticateAny,
+  apiLimiter,
+  checkFeatureAccess('bulk_operations'),
+  validateBulkCreate,
+  urlController.bulkCreate
 );
 
 module.exports = router;
