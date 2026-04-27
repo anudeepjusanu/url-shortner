@@ -51,9 +51,9 @@ router.post('/reset-password', validateResetPassword, authController.resetPasswo
 
 router.post('/send-password-reset-otp', passwordResetLimiter, validateForgotPassword, authController.sendPasswordResetOTP);
 
-router.post('/verify-password-reset-otp', authController.verifyPasswordResetOTP);
+router.post('/verify-password-reset-otp', validateForgotPassword, authController.verifyPasswordResetOTP);
 
-router.post('/reset-password-with-otp', authController.resetPasswordWithOTP);
+router.post('/reset-password-with-otp', validateForgotPassword, authController.resetPasswordWithOTP);
 
 router.get('/me', authenticate, authController.getProfile);
 

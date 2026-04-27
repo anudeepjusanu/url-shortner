@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const dns = require('dns').promises;
 const Url = require('../models/Url');
 const User = require('../models/User');
 const Domain = require('../models/Domain');
@@ -964,8 +965,49 @@ const bulkCreate = async (req, res) => {
     const today = new Date();
     const bulkTag = `bulk upload ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`.toLowerCase();
     const bulkImportId = `bulk_${today.toISOString().split('T')[0]}_${Date.now()}`;
-    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
+    const baseDomain = process.env.BASE_DOMAIN || 'snip.sa';
     const baseUrl = process.env.BASE_URL || `https://${baseDomain}`;
+
+    // Pre-check quota for the entire batch before processing any rows
+    const usageCheck = await UsageTracker.canPerformAction(req.user.id, 'createUrl', urls.length);
+    if (!usageCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: usageCheck.reason,
+        code: 'USAGE_LIMIT_EXCEEDED',
+        data: { limit: usageCheck.limit, current: usageCheck.current, requested: urls.length }
+      });
+    }
+
+    // --- Pre-flight checks (run before the main loop for efficiency) ---
+
+    // 1. Collect all original URLs for batch Safe Browsing check
+    const allOriginalUrls = urls
+      .map(e => { const v = validateUrl(e.originalUrl); return v.isValid ? v.cleanUrl : null; })
+      .filter(Boolean);
+
+    // 2. Batch Safe Browsing check — ONE API call for all URLs
+    const safeBrowsingResults = await safeBrowsingService.checkUrlsBatch(allOriginalUrls);
+
+    // 3. Parallel DNS resolution check — same as individual URL creation
+    const dnsResults = await Promise.allSettled(
+      urls.map(async (entry) => {
+        try {
+          const { hostname } = new URL(entry.originalUrl);
+          await dns.lookup(hostname);
+          return { originalUrl: entry.originalUrl, resolvable: true };
+        } catch {
+          return { originalUrl: entry.originalUrl, resolvable: false };
+        }
+      })
+    );
+    const unresolvableUrls = new Set(
+      dnsResults
+        .filter(r => r.status === 'fulfilled' && !r.value.resolvable)
+        .map(r => r.value.originalUrl)
+    );
+
+    // --- End pre-flight ---
 
     const successful = [];
     const failed = [];
@@ -977,6 +1019,12 @@ const bulkCreate = async (req, res) => {
         const urlValidation = validateUrl(entry.originalUrl);
         if (!urlValidation.isValid) {
           failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: urlValidation.message });
+          continue;
+        }
+
+        // Check DNS resolvability (same guard as individual URL creation)
+        if (unresolvableUrls.has(entry.originalUrl)) {
+          failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: 'URL domain does not exist or cannot be resolved' });
           continue;
         }
 
@@ -994,6 +1042,13 @@ const bulkCreate = async (req, res) => {
             if (utm.content) urlObj.searchParams.set('utm_content', utm.content);
             finalUrl = urlObj.toString();
           } catch (_) { /* keep original if URL construction fails */ }
+        }
+
+        // Check pre-computed Safe Browsing result for this URL
+        const safetyCheck = safeBrowsingResults.get(urlValidation.cleanUrl) || { isSafe: true };
+        if (!safetyCheck.isSafe) {
+          failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: safetyCheck.message || 'URL flagged as unsafe by Safe Browsing' });
+          continue;
         }
 
         // Handle custom alias

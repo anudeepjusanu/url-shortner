@@ -90,6 +90,7 @@ router.post('/bulk-create',
   authenticateAny,
   apiLimiter,
   checkFeatureAccess('bulk_operations'),
+  checkResourceLimits('urls'),
   validateBulkCreate,
   urlController.bulkCreate
 );

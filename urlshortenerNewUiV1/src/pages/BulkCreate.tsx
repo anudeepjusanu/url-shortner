@@ -39,6 +39,7 @@ type ProcessState = "idle" | "parsed" | "processing" | "done";
 
 const CHUNK_SIZE = 50;
 const MAX_ROWS = 1000;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB — limits ReDoS / prototype-pollution attack surface
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3015/api";
 
 // ─── CSV / XLSX parser ────────────────────────────────────────────────────────
@@ -111,7 +112,13 @@ async function parseFile(file: File): Promise<ParsedRow[]> {
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
-        const wb = XLSX.read(data, { type: "array" });
+        // Disable formula parsing and HTML to reduce prototype-pollution / ReDoS attack surface (xlsx CVEs)
+        const wb = XLSX.read(data, {
+          type: "array",
+          cellFormula: false,
+          cellHTML: false,
+          sheetRows: MAX_ROWS + 1, // parse only as many rows as we need
+        });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
         resolve(parseSheetRows(rows));
@@ -169,6 +176,10 @@ const BulkCreate = () => {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext !== "csv" && ext !== "xlsx" && ext !== "xls") {
       toast({ variant: "destructive", title: "Unsupported file", description: "Please upload a .csv or .xlsx file." });
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({ variant: "destructive", title: "File too large", description: "Maximum file size is 5 MB." });
       return;
     }
     try {
@@ -376,12 +387,16 @@ const BulkCreate = () => {
         {state === "idle" && (
           <div
             ref={dropRef}
+            role="button"
+            tabIndex={0}
+            aria-label="Upload CSV or XLSX file — drag and drop or press Enter to browse"
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
             className={cn(
-              "border-2 border-dashed rounded-xl p-12 flex flex-col items-center gap-4 cursor-pointer transition-colors",
+              "border-2 border-dashed rounded-xl p-12 flex flex-col items-center gap-4 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
               dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/60 hover:bg-muted/40"
             )}
           >
@@ -394,8 +409,16 @@ const BulkCreate = () => {
                 Supports <strong>.csv</strong> and <strong>.xlsx</strong> — up to {MAX_ROWS.toLocaleString()} rows
               </p>
             </div>
-            <Button variant="secondary" size="sm" className="pointer-events-none">Browse files</Button>
-            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={onFileChange} />
+            <Button variant="secondary" size="sm" className="pointer-events-none" aria-hidden="true">Browse files</Button>
+            {/* Visually hidden but focusable — allows assistive technologies to also reach the input directly */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={onFileChange}
+              aria-label="Upload file"
+              style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}
+            />
           </div>
         )}
 
