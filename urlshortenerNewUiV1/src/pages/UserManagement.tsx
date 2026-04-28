@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2 } from "lucide-react";
+import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2, MapPin } from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,6 +36,13 @@ interface AdminUser {
   createdAt: string;
   lastLogin?: string;
   urlCount?: number;
+  registrationLocation?: {
+    country?: string;
+    city?: string;
+  };
+  usage?: {
+    urlsCreatedTotal?: number;
+  };
 }
 
 const roleLabels: Record<string, string> = {
@@ -301,6 +308,24 @@ const UserManagement = () => {
                         <CalendarDays className="w-3 h-3" /> {t("Last Login", "آخر دخول")}
                       </span>
                       <span className="text-foreground">{formatDate(user.lastLogin)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3" /> {t("Location", "الموقع")}
+                      </span>
+                      <span className="text-foreground">
+                        {user.registrationLocation?.city && user.registrationLocation?.country
+                          ? `${user.registrationLocation.city}, ${user.registrationLocation.country}`
+                          : user.registrationLocation?.country || user.registrationLocation?.city || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Link2 className="w-3 h-3" /> {t("Total Links", "إجمالي الروابط")}
+                      </span>
+                      <span className="text-foreground">
+                        {user.usage?.urlsCreatedTotal ?? user.urlCount ?? 0}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>{t("Status", "الحالة")}</span>

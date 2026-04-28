@@ -382,10 +382,24 @@ const login = async (req, res) => {
     
     await user.resetLoginAttempts();
     user.lastLogin = new Date();
+
+    // Capture location on first login for users who registered before location tracking was added
+    if (!user.registrationLocation || !user.registrationLocation.country) {
+      try {
+        const clientIP = getClientIP(req);
+        const location = await getLocationFromIP(clientIP);
+        if (location && location.country) {
+          user.registrationLocation = location;
+        }
+      } catch (locError) {
+        console.error('Failed to capture login location:', locError.message);
+      }
+    }
+
     await user.save();
-    
+
     const { accessToken, refreshToken } = generateTokens(user._id);
-    
+
     await cacheSet(`user:${user._id}`, {
       id: user._id,
       email: user.email,
@@ -895,6 +909,20 @@ const loginWithPhoneOtp = async (req, res) => {
 
     await user.resetLoginAttempts();
     user.lastLogin = new Date();
+
+    // Capture location on first login for users who registered before location tracking was added
+    if (!user.registrationLocation || !user.registrationLocation.country) {
+      try {
+        const clientIP = getClientIP(req);
+        const location = await getLocationFromIP(clientIP);
+        if (location && location.country) {
+          user.registrationLocation = location;
+        }
+      } catch (locError) {
+        console.error('Failed to capture login location:', locError.message);
+      }
+    }
+
     await user.save();
 
     const { accessToken, refreshToken } = generateTokens(user._id);
