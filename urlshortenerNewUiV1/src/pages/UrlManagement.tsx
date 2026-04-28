@@ -131,10 +131,19 @@ const UrlManagement = () => {
   // regardless of which URL page is currently loaded
   const fetchAllCreators = useCallback(async () => {
     try {
-      const res = await adminService.getUsers({ limit: 500 });
-      const users: Array<{ _id: string; firstName: string; lastName: string }> = res?.data?.users ?? [];
+      const PAGE_LIMIT = 500;
+      let page = 1;
       const map = new Map<string, string>();
-      users.forEach((u) => { if (u._id) map.set(u._id, `${u.firstName} ${u.lastName}`); });
+      while (true) {
+        const res = await adminService.getUsers({ limit: PAGE_LIMIT, page });
+        const users: Array<{ _id: string; firstName: string; lastName?: string }> = res?.data?.users ?? [];
+        users.forEach((u) => {
+          if (u._id) map.set(u._id, [u.firstName, u.lastName].filter(Boolean).join(' '));
+        });
+        const pagination = res?.data?.pagination ?? {};
+        if (!pagination.pages || page >= pagination.pages) break;
+        page++;
+      }
       setAllCreators(map);
     } catch {}
   }, []);

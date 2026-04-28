@@ -311,7 +311,7 @@ const createUrl = async (req, res) => {
         const { domainToASCII } = require('../utils/punycode');
         
         // Build the short URL with QR tracking parameter
-        const urlDomain = populatedUrl.domain || process.env.SHORT_DOMAIN || process.env.BASE_DOMAIN || 'laghhu.link';
+        const urlDomain = populatedUrl.domain || process.env.SHORT_DOMAIN || process.env.BASE_DOMAIN || 'snip.sa';
         const asciiDomain = domainToASCII(urlDomain);
         const protocol = asciiDomain.includes('localhost') ? 'http://' : 'https://';
         const urlCode = populatedUrl.customCode || populatedUrl.shortCode;
@@ -355,9 +355,9 @@ const createUrl = async (req, res) => {
     }
 
     // Prepare domain info for response
-    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
-    const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
-    
+    const baseDomain = process.env.BASE_DOMAIN || 'snip.sa';
+    const baseUrl = process.env.BASE_URL || 'https://snip.sa';
+
     const domainInfo = useBaseDomain ? {
       id: 'base',
       fullDomain: baseDomain,
@@ -992,19 +992,23 @@ const bulkCreate = async (req, res) => {
     // 3. Parallel DNS resolution check — same as individual URL creation
     const dnsResults = await Promise.allSettled(
       urls.map(async (entry) => {
+        const urlValidation = validateUrl(entry.originalUrl);
+        if (!urlValidation.isValid) {
+          return { cleanUrl: null, resolvable: false };
+        }
         try {
-          const { hostname } = new URL(entry.originalUrl);
+          const { hostname } = new URL(urlValidation.cleanUrl);
           await dns.lookup(hostname);
-          return { originalUrl: entry.originalUrl, resolvable: true };
+          return { cleanUrl: urlValidation.cleanUrl, resolvable: true };
         } catch {
-          return { originalUrl: entry.originalUrl, resolvable: false };
+          return { cleanUrl: urlValidation.cleanUrl, resolvable: false };
         }
       })
     );
     const unresolvableUrls = new Set(
       dnsResults
-        .filter(r => r.status === 'fulfilled' && !r.value.resolvable)
-        .map(r => r.value.originalUrl)
+        .filter(r => r.status === 'fulfilled' && r.value.cleanUrl && !r.value.resolvable)
+        .map(r => r.value.cleanUrl)
     );
 
     // --- End pre-flight ---
@@ -1023,7 +1027,7 @@ const bulkCreate = async (req, res) => {
         }
 
         // Check DNS resolvability (same guard as individual URL creation)
-        if (unresolvableUrls.has(entry.originalUrl)) {
+        if (unresolvableUrls.has(urlValidation.cleanUrl)) {
           failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: 'URL domain does not exist or cannot be resolved' });
           continue;
         }

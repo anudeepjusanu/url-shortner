@@ -729,7 +729,7 @@ const sendPasswordResetOTP = async (req, res) => {
     };
     
     // Include OTP in response for development testing
-    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+    if (process.env.NODE_ENV === 'development') {
       responseData.otp = otp;
       responseData.debug = true;
       console.log('\n🔐 ===== PASSWORD RESET OTP =====');
