@@ -9,6 +9,7 @@ import { Zap, BarChart3, QrCode, Mail, Loader2, Eye, EyeOff, ArrowLeft, Globe } 
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { passwordResetService } from "@/services/jwtService";
+import amplitudeService from "@/services/amplitude";
 
 type Step = "email" | "otp" | "password";
 
@@ -107,6 +108,7 @@ const ForgotPassword = () => {
         setDevOtp(null);
       }
 
+      amplitudeService.trackPasswordResetRequested(normalized);
       setEmail(normalized); // keep email state in sync
       setResendTimer(60);
       setStep("otp");
@@ -235,6 +237,7 @@ const ForgotPassword = () => {
         throw new Error(res?.message || t("Reset failed.", "فشل إعادة التعيين."));
       }
 
+      amplitudeService.trackPasswordResetCompleted();
       toast({
         title: t("Password reset", "تم تغيير كلمة المرور"),
         description: t(

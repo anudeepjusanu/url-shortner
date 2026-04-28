@@ -31,7 +31,7 @@ const applyMeta = (lang: Language) => {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLangState] = useState<Language>("en");
+  const [lang, setLangState] = useState<Language>("ar");
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);

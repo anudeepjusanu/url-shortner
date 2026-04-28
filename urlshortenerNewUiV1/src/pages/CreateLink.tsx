@@ -148,7 +148,13 @@ const CreateLink = () => {
       const response = await createUrl.mutateAsync(payload);
 
       if (response.success) {
-        amplitudeService.track('Link Creation');
+        amplitudeService.trackLinkCreated({
+          customAlias: customAlias.trim() || undefined,
+          hasPassword: false,
+          hasExpiry: false,
+          hasUtmParams: utmEnabled && !!payload.utm,
+          linkType: generateQR ? 'qr' : 'standard',
+        });
         toast({
           title: t("Success", "نجح"),
           description: t("Link created successfully", "تم إنشاء الرابط بنجاح"),

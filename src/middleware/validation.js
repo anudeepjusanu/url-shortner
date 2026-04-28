@@ -106,11 +106,6 @@ const validateResetPasswordWithOTP = [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please enter a valid email'),
-  body('otp')
-    .notEmpty()
-    .withMessage('Verification code is required')
-    .isLength({ min: 4, max: 4 })
-    .withMessage('Verification code must be 4 digits'),
   body('newPassword')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')

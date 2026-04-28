@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDomains, useDeleteDomain, useVerifyDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import amplitudeService from "@/services/amplitude";
 
 type DomainStatus = "verified" | "pending";
 
@@ -65,6 +66,7 @@ const CustomDomains = () => {
   const handleDelete = async () => {
     try {
       await deleteDomain.mutateAsync(deleteDialog.id);
+      amplitudeService.trackCustomDomainDeleted(deleteDialog.domain);
       setDeleteDialog({ open: false, id: "", domain: "" });
       toast({
         title: t("Domain deleted", "تم حذف الدومين"),
@@ -84,6 +86,8 @@ const CustomDomains = () => {
       const response = await verifyDomain.mutateAsync(id);
       // Check if verification was successful
       if (response?.success && response?.data?.verified) {
+        const verifiedDomain = domains.find((d) => d._id === id)?.domain || id;
+        amplitudeService.trackCustomDomainVerified(verifiedDomain);
         setShowVerified(true);
         toast({
           title: t("Success", "نجح"),

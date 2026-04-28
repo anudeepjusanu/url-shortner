@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { myLinksService, BulkCreateEntry } from "@/services/jwtService";
+import amplitudeService from "@/services/amplitude";
 import {
   Upload, Download, FileText, CheckCircle2, XCircle,
   AlertCircle, Loader2, X, Eye, EyeOff, RotateCcw,
@@ -329,6 +330,7 @@ const BulkCreate = () => {
     setSuccessful(allSuccessful);
     setFailed(allFailed);
     setState("done");
+    if (allSuccessful.length > 0) amplitudeService.trackBulkLinksCreated(allSuccessful.length);
 
     if (cancelRef.current) {
       toast({ title: "Cancelled", description: `${allSuccessful.length} links were saved before cancellation.` });
