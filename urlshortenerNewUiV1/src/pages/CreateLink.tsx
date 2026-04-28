@@ -148,13 +148,17 @@ const CreateLink = () => {
       const response = await createUrl.mutateAsync(payload);
 
       if (response.success) {
-        amplitudeService.trackLinkCreated({
-          customAlias: customAlias.trim() || undefined,
-          hasPassword: false,
-          hasExpiry: false,
-          hasUtmParams: utmEnabled && !!payload.utm,
-          linkType: generateQR ? 'qr' : 'standard',
-        });
+        try {
+          amplitudeService.trackLinkCreated({
+            customAlias: customAlias.trim() || undefined,
+            hasPassword: false,
+            hasExpiry: false,
+            hasUtmParams: utmEnabled && !!payload.utm,
+            linkType: generateQR ? 'qr' : 'standard',
+          });
+        } catch (trackError) {
+          console.error('Analytics error:', trackError);
+        }
         toast({
           title: t("Success", "نجح"),
           description: t("Link created successfully", "تم إنشاء الرابط بنجاح"),

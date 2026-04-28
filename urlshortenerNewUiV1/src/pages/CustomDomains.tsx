@@ -66,7 +66,11 @@ const CustomDomains = () => {
   const handleDelete = async () => {
     try {
       await deleteDomain.mutateAsync(deleteDialog.id);
-      amplitudeService.trackCustomDomainDeleted(deleteDialog.domain);
+      try {
+        amplitudeService.trackCustomDomainDeleted(deleteDialog.domain);
+      } catch (trackError) {
+        console.error('Analytics error:', trackError);
+      }
       setDeleteDialog({ open: false, id: "", domain: "" });
       toast({
         title: t("Domain deleted", "تم حذف الدومين"),
@@ -87,7 +91,11 @@ const CustomDomains = () => {
       // Check if verification was successful
       if (response?.success && response?.data?.verified) {
         const verifiedDomain = domains.find((d) => d._id === id)?.domain || id;
-        amplitudeService.trackCustomDomainVerified(verifiedDomain);
+        try {
+          amplitudeService.trackCustomDomainVerified(verifiedDomain);
+        } catch (trackError) {
+          console.error('Analytics error:', trackError);
+        }
         setShowVerified(true);
         toast({
           title: t("Success", "نجح"),

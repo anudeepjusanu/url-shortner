@@ -246,7 +246,11 @@ const QRCodes = () => {
         );
       }
 
-      amplitudeService.trackQRCodeGenerated(selectedLink._id, { format: qrOptions.format, customStyle: true });
+      try {
+        amplitudeService.trackQRCodeGenerated(selectedLink._id, { format: qrOptions.format, customStyle: true });
+      } catch (trackError) {
+        console.error('Analytics error:', trackError);
+      }
       setShowModal(false);
       setSelectedLink(null);
       toast({
@@ -277,7 +281,11 @@ const QRCodes = () => {
       a.download = `qr-${url.shortCode || url._id}.${qrOptions.format || "png"}`;
       a.click();
       URL.revokeObjectURL(blobUrl);
-      amplitudeService.trackQRCodeDownloaded(url._id, qrOptions.format || "png");
+      try {
+        amplitudeService.trackQRCodeDownloaded(url._id, qrOptions.format || "png");
+      } catch (trackError) {
+        console.error('Analytics error:', trackError);
+      }
     } catch (err: any) {
       toast({
         title: t("Download Failed", "فشل التحميل"),
