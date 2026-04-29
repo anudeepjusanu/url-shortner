@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authController = require('../controllers/authController');
 const { authenticate, optionalAuth } = require('../middleware/auth');
-const { authLimiter, strictAuthLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
+const { authLimiter, strictAuthLimiter, passwordResetLimiter, otpVerificationLimiter } = require('../middleware/rateLimiter');
 const {
   validateRegistration,
   validateLogin,
@@ -11,6 +11,7 @@ const {
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,
+  validateVerifyPasswordResetOTP,
   validateResetPasswordWithOTP,
   validateProfileUpdate,
   sanitizeInput
@@ -51,9 +52,9 @@ router.post('/reset-password', validateResetPassword, authController.resetPasswo
 
 router.post('/send-password-reset-otp', passwordResetLimiter, validateForgotPassword, authController.sendPasswordResetOTP);
 
-router.post('/verify-password-reset-otp', authController.verifyPasswordResetOTP);
+router.post('/verify-password-reset-otp', otpVerificationLimiter, validateVerifyPasswordResetOTP, authController.verifyPasswordResetOTP);
 
-router.post('/reset-password-with-otp', authController.resetPasswordWithOTP);
+router.post('/reset-password-with-otp', passwordResetLimiter, validateResetPasswordWithOTP, authController.resetPasswordWithOTP);
 
 router.get('/me', authenticate, authController.getProfile);
 

@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2 } from "lucide-react";
+import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2, MapPin } from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,13 +29,20 @@ type Role = "super_admin" | "admin" | "user" | "viewer";
 interface AdminUser {
   _id: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   email: string;
   role: Role;
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
   urlCount?: number;
+  registrationLocation?: {
+    country?: string;
+    city?: string;
+  };
+  usage?: {
+    urlsCreatedTotal?: number;
+  };
 }
 
 const roleLabels: Record<string, string> = {
@@ -107,7 +114,7 @@ const UserManagement = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const filtered = users.filter((u) => {
-    const name = `${u.firstName} ${u.lastName}`;
+    const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
     const matchSearch =
       name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
@@ -259,7 +266,7 @@ const UserManagement = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((user) => {
-              const fullName = `${user.firstName} ${user.lastName}`;
+              const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
               return (
                 <div
                   key={user._id}
@@ -301,6 +308,24 @@ const UserManagement = () => {
                         <CalendarDays className="w-3 h-3" /> {t("Last Login", "آخر دخول")}
                       </span>
                       <span className="text-foreground">{formatDate(user.lastLogin)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3" /> {t("Location", "الموقع")}
+                      </span>
+                      <span className="text-foreground">
+                        {user.registrationLocation?.city && user.registrationLocation?.country
+                          ? `${user.registrationLocation.city}, ${user.registrationLocation.country}`
+                          : user.registrationLocation?.country || user.registrationLocation?.city || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Link2 className="w-3 h-3" /> {t("Total Links", "إجمالي الروابط")}
+                      </span>
+                      <span className="text-foreground">
+                        {user.usage?.urlsCreatedTotal ?? user.urlCount ?? 0}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>{t("Status", "الحالة")}</span>

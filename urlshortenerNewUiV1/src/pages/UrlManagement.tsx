@@ -92,7 +92,7 @@ const UrlManagement = () => {
     totalUsers: 0,
   });
 
-  // Cumulative creator list built from pages fetched — id → name
+  // Full creator list fetched once on mount — id → name
   const [allCreators, setAllCreators] = useState<Map<string, string>>(new Map());
 
   const [viewUrl, setViewUrl] = useState<AdminUrl | null>(null);
@@ -127,6 +127,27 @@ const UrlManagement = () => {
     } catch {}
   }, []);
 
+  // Fetch full user list once on mount so the creator filter dropdown is always complete,
+  // regardless of which URL page is currently loaded
+  const fetchAllCreators = useCallback(async () => {
+    try {
+      const PAGE_LIMIT = 500;
+      let page = 1;
+      const map = new Map<string, string>();
+      while (true) {
+        const res = await adminService.getUsers({ limit: PAGE_LIMIT, page });
+        const users: Array<{ _id: string; firstName: string; lastName?: string }> = res?.data?.users ?? [];
+        users.forEach((u) => {
+          if (u._id) map.set(u._id, [u.firstName, u.lastName].filter(Boolean).join(' '));
+        });
+        const pagination = res?.data?.pagination ?? {};
+        if (!pagination.pages || page >= pagination.pages) break;
+        page++;
+      }
+      setAllCreators(map);
+    } catch {}
+  }, []);
+
   const fetchUrls = useCallback(async () => {
     setIsLoading(true);
     setIsError(false);
@@ -146,17 +167,6 @@ const UrlManagement = () => {
       setUrls(fetchedUrls);
       setFilteredTotal(pagination.total ?? 0);
       setTotalPages(pagination.pages ?? 1);
-
-      // Accumulate unique creators seen so far for the filter dropdown
-      setAllCreators((prev) => {
-        const updated = new Map(prev);
-        fetchedUrls.forEach((u) => {
-          if (u.creator?._id) {
-            updated.set(u.creator._id, `${u.creator.firstName} ${u.creator.lastName}`);
-          }
-        });
-        return updated;
-      });
     } catch {
       setIsError(true);
     } finally {
@@ -165,6 +175,7 @@ const UrlManagement = () => {
   }, [currentPage, debouncedSearch, creatorFilter, sortBy]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchAllCreators(); }, [fetchAllCreators]);
   useEffect(() => { fetchUrls(); }, [fetchUrls]);
 
   const creators = Array.from(allCreators.entries()).sort(([, a], [, b]) => a.localeCompare(b));

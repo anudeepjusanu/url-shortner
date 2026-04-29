@@ -457,8 +457,8 @@ const Profile = () => {
                       }}
                     >
                       {showPasswords[field === "currentPassword" ? "current" : field === "newPassword" ? "new" : "confirm"]
-                        ? <EyeOff className="w-4 h-4" />
-                        : <Eye className="w-4 h-4" />}
+                        ? <Eye className="w-4 h-4" />
+                        : <EyeOff className="w-4 h-4" />}
                     </button>
                   </div>
                   {passwordErrors[field] && (

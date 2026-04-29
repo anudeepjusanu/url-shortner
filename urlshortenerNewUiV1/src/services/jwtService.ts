@@ -320,6 +320,34 @@ export const adminService = {
     authRequest(`/admin/urls/${id}`, { method: 'DELETE' }),
 };
 
+// ─── Password Reset Service (unauthenticated) ─────────────────────────────────
+
+async function publicRequest<T = any>(endpoint: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || 'Request failed');
+  return data;
+}
+
+export const passwordResetService = {
+  /** POST /auth/send-password-reset-otp — sends a 6-digit OTP to the email */
+  sendOtp: (email: string) =>
+    publicRequest('/auth/send-password-reset-otp', { email }),
+
+  /** POST /auth/verify-password-reset-otp — verifies the OTP */
+  verifyOtp: (email: string, otp: string) =>
+    publicRequest('/auth/verify-password-reset-otp', { email, otp }),
+
+  /** POST /auth/reset-password-with-otp — sets the new password (requires prior OTP verification) */
+  resetPassword: (email: string, newPassword: string) =>
+    publicRequest('/auth/reset-password-with-otp', { email, newPassword }),
+};
+
 // ─── Profile / Auth Service ───────────────────────────────────────────────────
 
 export const profileService = {
