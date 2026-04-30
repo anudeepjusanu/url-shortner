@@ -90,7 +90,7 @@ const UserManagement = () => {
     setIsError(false);
     try {
       const [usersRes, statsRes] = await Promise.all([
-        adminService.getUsers({ limit: 100 }),
+        adminService.getUsers({ limit: 500 }),
         adminService.getStats(),
       ]);
       setUsers(usersRes?.data?.users ?? []);

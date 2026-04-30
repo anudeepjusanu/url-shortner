@@ -534,37 +534,61 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone, company, jobTitle, preferences } = req.body;
-    
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
+
+    const setOps = {};
+    const unsetOps = {};
+
+    if (firstName) setOps.firstName = firstName.trim();
+
+    if (lastName !== undefined) {
+      const trimmed = (lastName || '').trim();
+      if (trimmed) {
+        setOps.lastName = trimmed;
+      } else {
+        unsetOps.lastName = '';
+      }
+    }
+
+    if (phone !== undefined) {
+      const normalized = normalizePhone(phone);
+      if (normalized === undefined) {
+        unsetOps.phone = '';
+      } else if (/^\+?[1-9]\d{6,14}$/.test(normalized)) {
+        setOps.phone = normalized;
+      }
+    }
+
+    if (preferences) {
+      Object.entries(preferences).forEach(([key, value]) => {
+        setOps[`preferences.${key}`] = value;
       });
     }
-    
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (phone !== undefined) user.phone = normalizePhone(phone);
-    if (preferences) {
-      user.preferences = { ...user.preferences, ...preferences };
+
+    const updateQuery = {};
+    if (Object.keys(setOps).length > 0) updateQuery.$set = setOps;
+    if (Object.keys(unsetOps).length > 0) updateQuery.$unset = unsetOps;
+
+    const updatedUser = Object.keys(updateQuery).length > 0
+      ? await User.findByIdAndUpdate(req.user.id, updateQuery, { new: true })
+          .populate('organization', 'name slug')
+      : await User.findById(req.user.id).populate('organization', 'name slug');
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
-    await user.save();
-    
-    await cacheDel(`user:${user._id}`);
-    
-    // Return updated user data directly for frontend compatibility
+
+    await cacheDel(`user:${updatedUser._id}`);
+
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone || '',
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName || null,
+      email: updatedUser.email,
+      phone: updatedUser.phone || '',
       company: company || '',
-      jobTitle: jobTitle || user.role,
-      data: { user }
+      jobTitle: jobTitle || updatedUser.role,
+      data: { user: updatedUser }
     });
   } catch (error) {
     console.error('Update profile error:', error);

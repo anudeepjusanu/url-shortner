@@ -210,7 +210,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.virtual('fullName').get(function() {
-  return `${this.firstName} ${this.lastName}`;
+  return [this.firstName, this.lastName].filter(Boolean).join(' ');
 });
 
 userSchema.virtual('isLocked').get(function() {
