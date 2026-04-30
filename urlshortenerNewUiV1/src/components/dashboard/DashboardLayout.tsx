@@ -61,7 +61,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("Bulk Create", "إنشاء مجمّع"), icon: Layers, path: "/dashboard/bulk-create" },
     { label: t("Analytics", "التحليلات"), icon: BarChart3, path: "/dashboard/analytics" },
     { label: t("QR Codes", "أكواد QR"), icon: QrCode, path: "/dashboard/qr-codes" },
-    { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
+    // { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
     // { label: t("Link in Bio", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
   ];
 

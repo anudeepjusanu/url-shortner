@@ -4,7 +4,7 @@ const Plan = require('../models/Plan');
 // Fallback plan used when the plans collection hasn't been seeded yet
 const DEFAULT_FREE_PLAN = {
   features: {
-    urlsPerMonth: 100,
+    urlsPerMonth: 500,
     customDomains: 0,
     analytics: 'basic',
     apiAccess: false,
