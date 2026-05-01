@@ -155,11 +155,17 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      await profileService.updateProfile({
+      const res = await profileService.updateProfile({
         firstName: profile.firstName,
         lastName: profile.lastName,
         phone: profile.phone,
       });
+      setProfile(prev => ({
+        ...prev,
+        firstName: res?.firstName || prev.firstName,
+        lastName: res?.lastName ?? "",
+        phone: res?.phone ?? prev.phone,
+      }));
       toast({ title: t("Profile updated", "تم تحديث الملف الشخصي") });
     } catch (err: any) {
       toast({ title: t("Update failed", "فشل التحديث"), description: err.message, variant: "destructive" });
@@ -335,7 +341,7 @@ const Profile = () => {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm sm:text-lg font-display font-semibold text-foreground">
-                  {profile.firstName} {profile.lastName}
+                  {[profile.firstName, profile.lastName].filter(Boolean).join(' ')}
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground font-body truncate">{profile.email}</p>
                 <p className="text-[10px] text-muted-foreground font-body capitalize">{profile.role}</p>

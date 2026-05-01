@@ -10,7 +10,7 @@ const plans = [
       yearly: 0
     },
     features: {
-      urlsPerMonth: 100,
+      urlsPerMonth: 500,
       customDomains: 0,
       analytics: 'basic',
       passwordProtection: false,

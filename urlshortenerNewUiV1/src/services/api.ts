@@ -552,4 +552,39 @@ export const bioPageAPI = {
   checkUsername: (username: string) => apiClient.get(`/bio-pages/check-username/${username}`),
 };
 
+// Dynamic QR Code API methods
+export const dynamicQRCodeAPI = {
+  list: (params?: { page?: number; limit?: number; search?: string }) =>
+    apiClient.get('/dynamic-qr', params),
+  get: (id: string) => apiClient.get(`/dynamic-qr/${id}`),
+  create: (data: {
+    name: string;
+    destinationUrl: string;
+    customization?: Record<string, unknown>;
+  }) => apiClient.post('/dynamic-qr', data),
+  update: (
+    id: string,
+    data: { name?: string; isActive?: boolean; customization?: Record<string, unknown> }
+  ) => apiClient.put(`/dynamic-qr/${id}`, data),
+  updateDestination: (id: string, destinationUrl: string) =>
+    apiClient.put(`/dynamic-qr/${id}/destination`, { destinationUrl }),
+  remove: (id: string) => apiClient.delete(`/dynamic-qr/${id}`),
+  getAnalytics: (id: string) => apiClient.get(`/dynamic-qr/${id}/analytics`),
+  download: async (id: string, name: string, format = 'png') => {
+    const url = `${apiClient['baseURL']}/dynamic-qr/${id}/download?format=${format}`;
+    const token = apiClient.getToken();
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!response.ok) throw new Error('Download failed');
+    const blob = await response.blob();
+    const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `dynamic-qr-${safeName}.${format}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+};
+
 export default apiClient;

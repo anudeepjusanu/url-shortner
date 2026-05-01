@@ -360,7 +360,7 @@ const UrlManagement = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-body">
                     {url.creator && (
-                      <span>{url.creator.firstName} {url.creator.lastName}</span>
+                      <span>{[url.creator.firstName, url.creator.lastName].filter(Boolean).join(' ')}</span>
                     )}
                     <span>{url.clickCount} {t("clicks", "ضغطات")}</span>
                   </div>
@@ -442,7 +442,7 @@ const UrlManagement = () => {
                     </TableCell>
                     <TableCell>
                       <span className="text-sm font-body text-foreground">
-                        {url.creator ? `${url.creator.firstName} ${url.creator.lastName}` : "—"}
+                        {url.creator ? [url.creator.firstName, url.creator.lastName].filter(Boolean).join(' ') : "—"}
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
@@ -575,7 +575,7 @@ const UrlManagement = () => {
               </Section>
               {viewUrl.creator && (
                 <Section label={t("Creator", "المنشئ")}>
-                  <Row label={t("Name", "الاسم")} value={`${viewUrl.creator.firstName} ${viewUrl.creator.lastName}`} />
+                  <Row label={t("Name", "الاسم")} value={[viewUrl.creator.firstName, viewUrl.creator.lastName].filter(Boolean).join(' ')} />
                   <Row label={t("Email", "البريد")} value={viewUrl.creator.email} />
                 </Section>
               )}

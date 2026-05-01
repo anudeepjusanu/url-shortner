@@ -46,6 +46,9 @@ import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
 import PublicBioPage from "./pages/PublicBioPage";
 import BulkCreate from "./pages/BulkCreate";
+import DynamicQRCodes from "./pages/DynamicQRCodes";
+import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
+import QRErrorPage from "./pages/QRErrorPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -86,7 +89,11 @@ const App = () => (
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
+            <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
+            <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
+            {/* Public error page for failed dynamic QR scans — no auth required */}
+            <Route path="/qr-error" element={<QRErrorPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
