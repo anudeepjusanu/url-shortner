@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const config = require("../config/environment");
 const { cacheSet, cacheDel, cacheGet } = require("../config/redis");
@@ -142,10 +143,13 @@ const register = async (req, res) => {
         const otpKey = `registration_otp:${email}`;
         const dataKey = `registration_data:${email}`;
 
+        // Hash the password before caching so plaintext is never persisted in Redis
+        const hashedPassword = await bcrypt.hash(password, 12);
+
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
         await cacheSet(
           dataKey,
-          JSON.stringify({ email, password, fullName, phone: normalizedPhone }),
+          JSON.stringify({ email, hashedPassword, fullName, phone: normalizedPhone }),
           5 * 60,
         );
 
@@ -230,12 +234,11 @@ const register = async (req, res) => {
       console.log("Creating user with email:", registrationData.email);
       const user = new User({
         email: registrationData.email,
-        password: registrationData.password,
+        password: registrationData.hashedPassword,
         firstName,
         lastName,
         phone: registrationData.phone,
         isEmailVerified: true,
-        role: "admin",
         registrationLocation: registrationLocation,
       });
 
@@ -587,6 +590,9 @@ const updateProfile = async (req, res) => {
       }
     }
 
+    if (company !== undefined) setOps.company = company.trim();
+    if (jobTitle !== undefined) setOps.jobTitle = jobTitle.trim();
+
     if (preferences) {
       Object.entries(preferences).forEach(([key, value]) => {
         setOps[`preferences.${key}`] = value;
@@ -623,8 +629,8 @@ const updateProfile = async (req, res) => {
       lastName: updatedUser.lastName || null,
       email: updatedUser.email,
       phone: updatedUser.phone || "",
-      company: company || "",
-      jobTitle: jobTitle || updatedUser.role,
+      company: updatedUser.company || "",
+      jobTitle: updatedUser.jobTitle || "",
       data: { user: updatedUser },
     });
   } catch (error) {
@@ -751,11 +757,12 @@ const sendPasswordResetOTP = async (req, res) => {
   try {
     const { email } = req.body;
 
-    console.log("📧 Password reset OTP requested for:", email);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 Password reset OTP requested for:", email);
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.log("⚠️ User not found for email:", email);
       // Return success even if user doesn't exist (security best practice)
       return res.json({
         success: true,
@@ -763,18 +770,17 @@ const sendPasswordResetOTP = async (req, res) => {
       });
     }
 
-    console.log("✅ User found:", user.email);
-
     // Generate 6-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
-    console.log("🔢 Generated OTP:", otp);
 
     // Store OTP in cache with email as key for 10 minutes
     const otpKey = `password_reset_otp:${email}`;
     await cacheSet(otpKey, otp, 10 * 60); // 10 minutes TTL
 
-    console.log("💾 OTP stored in cache with key:", otpKey);
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔢 Generated OTP:", otp);
+      console.log("💾 OTP stored in cache with key:", otpKey);
+    }
 
     // Send OTP via email
     try {

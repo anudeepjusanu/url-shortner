@@ -330,7 +330,13 @@ const BulkCreate = () => {
     setSuccessful(allSuccessful);
     setFailed(allFailed);
     setState("done");
-    if (allSuccessful.length > 0) amplitudeService.trackBulkLinksCreated(allSuccessful.length);
+    if (allSuccessful.length > 0) {
+      try {
+        amplitudeService.trackBulkLinksCreated(allSuccessful.length);
+      } catch (analyticsErr) {
+        console.error("Analytics tracking error:", analyticsErr);
+      }
+    }
 
     if (cancelRef.current) {
       toast({ title: "Cancelled", description: `${allSuccessful.length} links were saved before cancellation.` });

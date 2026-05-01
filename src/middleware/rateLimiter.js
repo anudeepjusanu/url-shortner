@@ -113,7 +113,14 @@ const otpVerificationLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: 'Too many OTP verification attempts, please try again later',
-  keyGenerator: (req) => `otp_verify:${req.body.email || ipKeyGenerator(req)}`
+  keyGenerator: (req) => {
+    const normalizedEmail = req.body.email
+      ? req.body.email.trim().toLowerCase()
+      : null;
+    return normalizedEmail
+      ? `otp_verify:${normalizedEmail}`
+      : `otp_verify:${ipKeyGenerator(req)}`;
+  }
 });
 
 // QR Code download limiter - more lenient for downloads
