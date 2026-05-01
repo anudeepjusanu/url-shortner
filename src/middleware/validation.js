@@ -257,7 +257,7 @@ const validateProfileUpdate = [
     .isLength({ min: 2, max: 50 })
     .withMessage('First name must be between 2 and 50 characters'),
   body('lastName')
-    .optional({ checkFalsy: true })
+    .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('Last name must be between 2 and 50 characters'),
