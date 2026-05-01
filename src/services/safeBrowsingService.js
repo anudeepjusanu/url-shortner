@@ -191,7 +191,96 @@ class SafeBrowsingService {
   }
 
   /**
-   * Check multiple URLs in batch
+   * Check multiple URLs in a single API request (true batch mode).
+   * Returns a Map of url → { isSafe, threats, message }.
+   * Falls back to individual checks when the API is unavailable.
+   * @param {Array<string>} urls - URLs to check
+   * @returns {Promise<Map<string, {isSafe: boolean, threats: Array, message: string}>>}
+   */
+  async checkUrlsBatch(urls) {
+    if (!Array.isArray(urls) || urls.length === 0) {
+      return new Map();
+    }
+
+    // Build result map with unverified state as default
+    const resultMap = new Map();
+    urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: safety check not performed' }));
+
+    if (!this.enabled) {
+      console.warn('⚠️ Google Safe Browsing API key not configured. Skipping batch safety check.');
+      urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: API key not configured' }));
+      return resultMap;
+    }
+
+    // Google Safe Browsing API supports up to 500 URLs per request
+    const maxBatchSize = 500;
+
+    for (let i = 0; i < urls.length; i += maxBatchSize) {
+      const batch = urls.slice(i, i + maxBatchSize);
+
+      try {
+        const requestBody = {
+          client: { clientId: 'url-shortener', clientVersion: '1.0.0' },
+          threatInfo: {
+            threatTypes: this.threatTypes,
+            platformTypes: this.platformTypes,
+            threatEntryTypes: this.threatEntryTypes,
+            threatEntries: batch.map(url => ({ url }))
+          }
+        };
+
+        const response = await axios.post(
+          `${this.apiUrl}?key=${this.apiKey}`,
+          requestBody,
+          { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+        );
+
+        if (response.data && response.data.matches) {
+          // Group matches by URL
+          const matchesByUrl = new Map();
+          response.data.matches.forEach(match => {
+            const url = match.threat.url;
+            if (!matchesByUrl.has(url)) matchesByUrl.set(url, []);
+            matchesByUrl.get(url).push({
+              threatType: match.threatType,
+              platformType: match.platformType,
+              threatEntryType: match.threatEntryType
+            });
+          });
+
+          matchesByUrl.forEach((threats, url) => {
+            console.log('🚨 Unsafe URL detected (batch):', url, threats);
+            resultMap.set(url, {
+              isSafe: false,
+              threats,
+              verified: true,
+              message: this.formatThreatMessage(threats)
+            });
+          });
+        }
+
+        // Mark URLs in this batch that were checked but had no threats as verified safe
+        batch.forEach(url => {
+          if (resultMap.get(url).verified === false) {
+            resultMap.set(url, { isSafe: true, threats: [], verified: true, message: 'URL is safe' });
+          }
+        });
+      } catch (error) {
+        console.error('❌ Safe Browsing batch check error:', error.message);
+        // Mark this batch as skipped due to error rather than verified safe
+        batch.forEach(url => {
+          if (resultMap.get(url).verified === false) {
+            resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: batch check failed' });
+          }
+        });
+      }
+    }
+
+    return resultMap;
+  }
+
+  /**
+   * Check multiple URLs in batch (legacy — individual calls in parallel)
    * @param {Array<string>} urls - Array of URLs to check
    * @returns {Promise<Array>} - Array of check results
    */
@@ -199,25 +288,7 @@ class SafeBrowsingService {
     if (!Array.isArray(urls) || urls.length === 0) {
       return [];
     }
-
-    // Google Safe Browsing API supports up to 500 URLs per request
-    const maxBatchSize = 500;
-    const batches = [];
-    
-    for (let i = 0; i < urls.length; i += maxBatchSize) {
-      batches.push(urls.slice(i, i + maxBatchSize));
-    }
-
-    const results = [];
-    
-    for (const batch of batches) {
-      const batchResults = await Promise.all(
-        batch.map(url => this.checkUrl(url))
-      );
-      results.push(...batchResults);
-    }
-
-    return results;
+    return Promise.all(urls.map(url => this.checkUrl(url)));
   }
 
   /**

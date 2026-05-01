@@ -16,6 +16,9 @@ const PageViewTracker = () => {
   useEffect(() => {
     const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
     amplitudeService.trackPageView(pageName, location.pathname);
+    if (typeof window !== "undefined" && (window as any).ttq) {
+      (window as any).ttq.page();
+    }
   }, [location]);
   return null;
 };
@@ -24,6 +27,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import MyLinks from "./pages/MyLinks";
@@ -45,6 +49,9 @@ import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
 import PublicBioPage from "./pages/PublicBioPage";
 import BulkCreate from "./pages/BulkCreate";
+import DynamicQRCodes from "./pages/DynamicQRCodes";
+import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
+import QRErrorPage from "./pages/QRErrorPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -62,6 +69,7 @@ const App = () => (
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
@@ -84,7 +92,11 @@ const App = () => (
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
+            <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
+            <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
+            {/* Public error page for failed dynamic QR scans — no auth required */}
+            <Route path="/qr-error" element={<QRErrorPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

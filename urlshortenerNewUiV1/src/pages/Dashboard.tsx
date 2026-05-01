@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import amplitudeService from "@/services/amplitude";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -126,6 +127,7 @@ const Dashboard = () => {
         const domain = response.data.domain?.fullDomain || urlData.domain || "snip.sa";
         setShortened(`${domain}/${shortCode}`);
         setLongUrl("");
+        amplitudeService.trackLinkCreated({ linkType: 'standard' });
       }
     } catch (error: any) {
       toast({

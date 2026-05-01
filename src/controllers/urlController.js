@@ -9,6 +9,62 @@ const { UsageTracker } = require('../middleware/usageTracker');
 const config = require('../config/environment');
 const safeBrowsingService = require('../services/safeBrowsingService');
 
+// Single source of truth for the public short-link base URL.
+// BASE_URL takes precedence; otherwise it is derived from BASE_DOMAIN so that
+// both the QR path and response always reference the same host.
+const getPublicBaseUrl = () =>
+  process.env.BASE_URL || `https://${process.env.BASE_DOMAIN || 'snip.sa'}`;
+
+// Derives the bare hostname from the canonical base URL so that both
+// fullDomain and shortUrl in responses are always consistent with each other.
+const getPublicBaseDomain = () => {
+  if (process.env.BASE_DOMAIN) return process.env.BASE_DOMAIN;
+  if (process.env.BASE_URL) {
+    try { return new URL(process.env.BASE_URL).hostname; } catch {}
+  }
+  return 'snip.sa';
+};
+
+// Shared URL reachability check used by createUrl, updateUrl, and bulkCreate.
+// Returns { allowed: true } when the URL should be accepted, or
+// { allowed: false, message: '...' } when it must be rejected.
+const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
+  const result = await checkUrlAccessibility(cleanUrl, timeout);
+  if (result.accessible) return { allowed: true };
+
+  const errorMsg = result.error || '';
+  const status = result.status;
+
+  if (errorMsg.includes('ENOTFOUND') || errorMsg.includes('getaddrinfo') || errorMsg.includes('EAI_AGAIN')) {
+    return { allowed: false, message: 'URL does not exist. The domain could not be found. Please check the URL and try again.' };
+  }
+  if (errorMsg.includes('ECONNREFUSED')) {
+    return { allowed: false, message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.' };
+  }
+  if (status && status >= 400) {
+    if (status === 401 || status === 403 || status === 405) return { allowed: true };
+    if (status === 404) return { allowed: false, message: 'URL not found (HTTP 404). The page does not exist. Please check the URL.' };
+    if (status >= 500) return { allowed: true };
+    return { allowed: false, message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.` };
+  }
+  // Timeout / abort / ECONNRESET / ETIMEDOUT / ERR_BAD_RESPONSE — allow
+  return { allowed: true };
+};
+
+// Run an array of async task functions with a bounded concurrency limit.
+const runWithConcurrency = async (tasks, limit) => {
+  const results = new Array(tasks.length);
+  let index = 0;
+  const runNext = async () => {
+    while (index < tasks.length) {
+      const i = index++;
+      results[i] = await tasks[i]();
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, runNext));
+  return results;
+};
+
 // Reserved aliases that cannot be used for shortened URLs
 const RESERVED_ALIASES = [
   // Frontend routes
@@ -117,64 +173,10 @@ const createUrl = async (req, res) => {
     }
 
     // Check if the URL actually exists and is accessible
-    const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
-    console.log('Accessibility check result:', accessibilityCheck);
-    
-    if (!accessibilityCheck.accessible) {
-      // Check for specific error types
-      const errorMsg = accessibilityCheck.error || '';
-      const status = accessibilityCheck.status;
-      
-      // DNS failures - domain doesn't exist (these are critical)
-      if (errorMsg.includes('ENOTFOUND') || 
-          errorMsg.includes('getaddrinfo') ||
-          errorMsg.includes('EAI_AGAIN')) {
-        return res.status(400).json({
-          success: false,
-          message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
-        });
-      }
-      
-      // Connection refused - server not running (critical)
-      if (errorMsg.includes('ECONNREFUSED')) {
-        return res.status(400).json({
-          success: false,
-          message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
-        });
-      }
-      
-      // HTTP 4xx/5xx errors - but be lenient with some codes
-      if (status && status >= 400) {
-        // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
-        if (status === 401 || status === 403 || status === 405) {
-          console.log(`URL returned ${status}, but allowing it as the server exists`);
-        } else if (status === 404) {
-          return res.status(400).json({
-            success: false,
-            message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
-          });
-        } else if (status >= 500) {
-          // Server errors - allow with warning as the URL might work later
-          console.log(`URL returned server error ${status}, but allowing it`);
-        } else {
-          return res.status(400).json({
-            success: false,
-            message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
-          });
-        }
-      }
-      
-      // Timeout, abort, or bad response - could be slow server or firewall, allow with warning
-      if (errorMsg.includes('abort') || 
-          errorMsg.includes('timeout') || 
-          errorMsg.includes('ETIMEDOUT') ||
-          errorMsg.includes('ERR_BAD_RESPONSE') ||
-          errorMsg.includes('ECONNRESET')) {
-        console.log(`URL accessibility check had issues (${errorMsg}) for: ${urlValidation.cleanUrl}, but allowing it`);
-      } else if (errorMsg) {
-        // Other errors - log but allow (be lenient)
-        console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
-      }
+    const reachabilityCheck = await checkUrlReachability(urlValidation.cleanUrl);
+    console.log('Accessibility check result:', reachabilityCheck);
+    if (!reachabilityCheck.allowed) {
+      return res.status(400).json({ success: false, message: reachabilityCheck.message });
     }
 
     // Handle custom domain
@@ -310,11 +312,15 @@ const createUrl = async (req, res) => {
         const { domainToASCII } = require('../utils/punycode');
         
         // Build the short URL with QR tracking parameter
-        const urlDomain = populatedUrl.domain || process.env.SHORT_DOMAIN || process.env.BASE_DOMAIN || 'laghhu.link';
-        const asciiDomain = domainToASCII(urlDomain);
-        const protocol = asciiDomain.includes('localhost') ? 'http://' : 'https://';
         const urlCode = populatedUrl.customCode || populatedUrl.shortCode;
-        const shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
+        let shortUrl;
+        if (populatedUrl.domain) {
+          const asciiDomain = domainToASCII(populatedUrl.domain);
+          const protocol = asciiDomain.includes('localhost') ? 'http://' : 'https://';
+          shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
+        } else {
+          shortUrl = `${getPublicBaseUrl()}/${urlCode}?qr=1`;
+        }
         
         // Generate QR code
         const qrOptions = {
@@ -353,10 +359,10 @@ const createUrl = async (req, res) => {
       }
     }
 
-    // Prepare domain info for response
-    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
-    const baseUrl = process.env.BASE_URL || 'https://laghhu.link';
-    
+    // Prepare domain info for response — both values derived from the same source
+    const baseUrl = getPublicBaseUrl();
+    const baseDomain = getPublicBaseDomain();
+
     const domainInfo = useBaseDomain ? {
       id: 'base',
       fullDomain: baseDomain,
@@ -562,63 +568,10 @@ const updateUrl = async (req, res) => {
       }
 
       // Check if the URL actually exists and is accessible
-      const accessibilityCheck = await checkUrlAccessibility(urlValidation.cleanUrl, 10000);
-      console.log('Update URL accessibility check result:', accessibilityCheck);
-      
-      if (!accessibilityCheck.accessible) {
-        const errorMsg = accessibilityCheck.error || '';
-        const status = accessibilityCheck.status;
-        
-        // DNS failures - domain doesn't exist (critical)
-        if (errorMsg.includes('ENOTFOUND') || 
-            errorMsg.includes('getaddrinfo') ||
-            errorMsg.includes('EAI_AGAIN')) {
-          return res.status(400).json({
-            success: false,
-            message: 'URL does not exist. The domain could not be found. Please check the URL and try again.'
-          });
-        }
-        
-        // Connection refused - server not running (critical)
-        if (errorMsg.includes('ECONNREFUSED')) {
-          return res.status(400).json({
-            success: false,
-            message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.'
-          });
-        }
-        
-        // HTTP 4xx/5xx errors - but be lenient with some codes
-        if (status && status >= 400) {
-          // Allow 401, 403, 405 - these mean the server exists but requires auth or blocks the method
-          if (status === 401 || status === 403 || status === 405) {
-            console.log(`URL returned ${status}, but allowing it as the server exists`);
-          } else if (status === 404) {
-            return res.status(400).json({
-              success: false,
-              message: `URL not found (HTTP 404). The page does not exist. Please check the URL.`
-            });
-          } else if (status >= 500) {
-            // Server errors - allow with warning as the URL might work later
-            console.log(`URL returned server error ${status}, but allowing it`);
-          } else {
-            return res.status(400).json({
-              success: false,
-              message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.`
-            });
-          }
-        }
-        
-        // Timeout, abort, or bad response - allow with warning
-        if (errorMsg.includes('abort') || 
-            errorMsg.includes('timeout') || 
-            errorMsg.includes('ETIMEDOUT') ||
-            errorMsg.includes('ERR_BAD_RESPONSE') ||
-            errorMsg.includes('ECONNRESET')) {
-          console.log(`URL accessibility check had issues (${errorMsg}), but allowing it`);
-        } else if (errorMsg) {
-          // Other errors - log but allow (be lenient)
-          console.log(`URL accessibility check failed with: ${errorMsg}, but allowing it`);
-        }
+      const reachabilityCheck = await checkUrlReachability(urlValidation.cleanUrl);
+      console.log('Update URL accessibility check result:', reachabilityCheck);
+      if (!reachabilityCheck.allowed) {
+        return res.status(400).json({ success: false, message: reachabilityCheck.message });
       }
     }
     
@@ -964,8 +917,48 @@ const bulkCreate = async (req, res) => {
     const today = new Date();
     const bulkTag = `bulk upload ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`.toLowerCase();
     const bulkImportId = `bulk_${today.toISOString().split('T')[0]}_${Date.now()}`;
-    const baseDomain = process.env.BASE_DOMAIN || 'laghhu.link';
-    const baseUrl = process.env.BASE_URL || `https://${baseDomain}`;
+    const baseUrl = getPublicBaseUrl();
+
+    // Pre-check quota for the entire batch before processing any rows
+    const usageCheck = await UsageTracker.canPerformAction(req.user.id, 'createUrl', urls.length);
+    if (!usageCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: usageCheck.reason,
+        code: 'USAGE_LIMIT_EXCEEDED',
+        data: { limit: usageCheck.limit, current: usageCheck.current, requested: urls.length }
+      });
+    }
+
+    // --- Pre-flight checks (run before the main loop for efficiency) ---
+
+    // 1. Collect all original URLs for batch Safe Browsing check
+    const allOriginalUrls = urls
+      .map(e => { const v = validateUrl(e.originalUrl); return v.isValid ? v.cleanUrl : null; })
+      .filter(Boolean);
+
+    // 2. Batch Safe Browsing check — ONE API call for all URLs
+    const safeBrowsingResults = await safeBrowsingService.checkUrlsBatch(allOriginalUrls);
+
+    // 3. Reachability check — same policy as createUrl/updateUrl, with bounded concurrency.
+    //    Deduplicate by cleanUrl so each unique destination is only checked once.
+    const reachabilityMap = new Map(); // cleanUrl → { allowed, message }
+    const uniqueUrlsToCheck = [];
+    for (const entry of urls) {
+      const v = validateUrl(entry.originalUrl);
+      if (v.isValid && !reachabilityMap.has(v.cleanUrl)) {
+        reachabilityMap.set(v.cleanUrl, null); // reserve slot
+        uniqueUrlsToCheck.push(v.cleanUrl);
+      }
+    }
+    const reachabilityTasks = uniqueUrlsToCheck.map((cleanUrl) => async () => {
+      // Use a shorter timeout (5 s) for bulk to keep total request time bounded.
+      const result = await checkUrlReachability(cleanUrl, 5000);
+      reachabilityMap.set(cleanUrl, result);
+    });
+    await runWithConcurrency(reachabilityTasks, 5);
+
+    // --- End pre-flight ---
 
     const successful = [];
     const failed = [];
@@ -977,6 +970,13 @@ const bulkCreate = async (req, res) => {
         const urlValidation = validateUrl(entry.originalUrl);
         if (!urlValidation.isValid) {
           failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: urlValidation.message });
+          continue;
+        }
+
+        // Reachability check — same policy as createUrl/updateUrl
+        const reachability = reachabilityMap.get(urlValidation.cleanUrl) || { allowed: true };
+        if (!reachability.allowed) {
+          failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: reachability.message || 'URL is not reachable' });
           continue;
         }
 
@@ -994,6 +994,13 @@ const bulkCreate = async (req, res) => {
             if (utm.content) urlObj.searchParams.set('utm_content', utm.content);
             finalUrl = urlObj.toString();
           } catch (_) { /* keep original if URL construction fails */ }
+        }
+
+        // Check pre-computed Safe Browsing result for this URL
+        const safetyCheck = safeBrowsingResults.get(urlValidation.cleanUrl) || { isSafe: true };
+        if (!safetyCheck.isSafe) {
+          failed.push({ row: i + 1, originalUrl: entry.originalUrl, customCode: entry.customCode || '', title: entry.title || '', error: safetyCheck.message || 'URL flagged as unsafe by Safe Browsing' });
+          continue;
         }
 
         // Handle custom alias
@@ -1102,8 +1109,8 @@ const getAvailableDomains = async (req, res) => {
     const activeDomains = domains.filter(domain => domain.isActive);
 
     // Always include the base/default system domain
-    const baseDomain = process.env.BASE_DOMAIN || 'snip.sa';
-    const baseUrl = process.env.BASE_URL || 'https://snip.sa';
+    const baseUrl = getPublicBaseUrl();
+    const baseDomain = getPublicBaseDomain();
     
     const domainList = [
       // Base domain (always first and default if user has no custom domains)

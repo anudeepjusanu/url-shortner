@@ -57,7 +57,7 @@ const redirectToOriginalUrl = async (req, res) => {
     };
 
     try {
-      const locationData = geoLocation.getLocationData(requestData.ipAddress);
+      const locationData = geoLocation.getLocationFromIP(requestData.ipAddress);
       requestData.country = locationData?.country || 'US';
     } catch (err) {
       requestData.country = 'US';
@@ -127,7 +127,7 @@ const getPreview = async (req, res) => {
       language: req.get('Accept-Language') || ''
     };
 
-    const locationData = geoLocation.getLocationData(requestData.ipAddress);
+    const locationData = geoLocation.getLocationFromIP(requestData.ipAddress);
     requestData.country = locationData.country;
 
     const previewData = await redirectService.generatePreviewPage(shortCode, requestData);
@@ -377,7 +377,7 @@ const redirectFromQRCode = async (req, res) => {
     };
 
     try {
-      const locationData = geoLocation.getLocationData(requestData.ipAddress);
+      const locationData = geoLocation.getLocationFromIP(requestData.ipAddress);
       requestData.country = locationData?.country || 'US';
     } catch (err) {
       requestData.country = 'US';

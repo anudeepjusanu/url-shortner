@@ -88,7 +88,7 @@ const validateResetPassword = [
   handleValidationErrors
 ];
 
-const validateResetPasswordWithOTP = [
+const validateVerifyPasswordResetOTP = [
   body('email')
     .isEmail()
     .normalizeEmail()
@@ -98,9 +98,19 @@ const validateResetPasswordWithOTP = [
     .withMessage('Verification code is required')
     .isLength({ min: 4, max: 4 })
     .withMessage('Verification code must be 4 digits'),
+  handleValidationErrors
+];
+
+const validateResetPasswordWithOTP = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please enter a valid email'),
   body('newPassword')
     .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters'),
+    .withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
   handleValidationErrors
 ];
 
@@ -242,7 +252,7 @@ const validateBulkCreate = [
 
 const validateProfileUpdate = [
   body('firstName')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('First name must be between 2 and 50 characters'),
@@ -440,6 +450,7 @@ module.exports = {
   validatePasswordChange,
   validateForgotPassword,
   validateResetPassword,
+  validateVerifyPasswordResetOTP,
   validateResetPasswordWithOTP,
   validateUrlCreation,
   validateUrlUpdate,

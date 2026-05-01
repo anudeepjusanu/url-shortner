@@ -10,7 +10,7 @@ const plans = [
       yearly: 0
     },
     features: {
-      urlsPerMonth: 100,
+      urlsPerMonth: 500,
       customDomains: 0,
       analytics: 'basic',
       passwordProtection: false,
@@ -74,10 +74,28 @@ const plans = [
   }
 ];
 
+async function migrateFreePlanQuota() {
+  try {
+    const result = await Plan.updateOne(
+      { name: 'free' },
+      { $set: { 'features.urlsPerMonth': 500 } }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`✅ Migrated free plan quota: ${result.modifiedCount} document(s) updated`);
+    }
+  } catch (error) {
+    console.error('Free plan quota migration error:', error);
+    throw error;
+  }
+}
+
 async function seedPlans() {
   try {
     const existingPlans = await Plan.countDocuments();
-    if (existingPlans > 0) return;
+    if (existingPlans > 0) {
+      await migrateFreePlanQuota();
+      return;
+    }
     await Plan.insertMany(plans);
     console.log(`✅ Seeded ${plans.length} default plans`);
   } catch (error) {

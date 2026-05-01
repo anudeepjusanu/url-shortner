@@ -19,7 +19,7 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleShorten = () => {
-    navigate("/login");
+    navigate("/signup");
   };
 
   const handleCopy = () => {

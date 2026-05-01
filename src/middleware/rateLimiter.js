@@ -107,6 +107,22 @@ const passwordResetLimiter = createRateLimiter({
   keyGenerator: (req) => `password_reset:${req.body.email || ipKeyGenerator(req)}`
 });
 
+// Stricter limiter for OTP verification to prevent brute-force on 4-digit codes.
+// Allows 5 attempts per 15 minutes per email (or IP if email absent).
+const otpVerificationLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many OTP verification attempts, please try again later',
+  keyGenerator: (req) => {
+    const normalizedEmail = req.body.email
+      ? req.body.email.trim().toLowerCase()
+      : null;
+    return normalizedEmail
+      ? `otp_verify:${normalizedEmail}`
+      : `otp_verify:${ipKeyGenerator(req)}`;
+  }
+});
+
 // QR Code download limiter - more lenient for downloads
 const qrDownloadLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour window
@@ -162,6 +178,7 @@ module.exports = {
   redirectLimiter,
   strictAuthLimiter,
   passwordResetLimiter,
+  otpVerificationLimiter,
   qrDownloadLimiter,
   dynamicLimiter,
   bypassLimiter

@@ -160,6 +160,7 @@ app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 app.use('/api/bio-pages', require('./routes/bioPages'));
+app.use('/api/dynamic-qr', require('./routes/dynamicQRCodes'));
 
 // SEO routes - sitemap.xml and robots.txt
 app.use('/', require('./routes/sitemapRoutes'));
@@ -173,6 +174,10 @@ app.get('/bio/:username', (req, res) => {
 // Redirect route - must be after API routes but before 404 handler
 const redirectController = require('./controllers/redirectController');
 const { redirectLimiter } = require('./middleware/rateLimiter');
+
+// Dynamic QR scan redirect — must come before the regular /:shortCode catch-all
+const dynamicQRCodeController = require('./controllers/dynamicQRCodeController');
+app.get('/dqr/:code', redirectLimiter, dynamicQRCodeController.handleScan);
 
 // QR Code generation endpoint (e.g., /qr/mbtw7f) - for generating QR code images
 app.get('/qr/:shortCode', redirectController.generateQRCode);

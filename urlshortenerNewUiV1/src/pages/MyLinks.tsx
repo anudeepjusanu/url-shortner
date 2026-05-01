@@ -21,6 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { myLinksService } from "@/services/jwtService";
+import amplitudeService from "@/services/amplitude";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -117,6 +118,11 @@ const MyLinks = () => {
     navigator.clipboard.writeText(shortUrl);
     setCopiedId(url.customCode || url.shortCode || "");
     setTimeout(() => setCopiedId(null), 2000);
+    try {
+      amplitudeService.trackLinkCopied(url._id);
+    } catch (trackError) {
+      console.error('Analytics error:', trackError);
+    }
   };
 
   const openDeleteDialog = (url: any) => {
@@ -130,6 +136,11 @@ const MyLinks = () => {
     try {
       await myLinksService.delete(deleteDialog.id);
       setUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
+      try {
+        amplitudeService.trackLinkDeleted(deleteDialog.id);
+      } catch (trackError) {
+        console.error('Analytics error:', trackError);
+      }
       toast({ title: t("Link deleted", "تم حذف الرابط") });
     } catch (err: any) {
       toast({
