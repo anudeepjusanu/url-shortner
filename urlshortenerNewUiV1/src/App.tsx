@@ -16,6 +16,9 @@ const PageViewTracker = () => {
   useEffect(() => {
     const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
     amplitudeService.trackPageView(pageName, location.pathname);
+    if (typeof window !== "undefined" && (window as any).ttq) {
+      (window as any).ttq.page();
+    }
   }, [location]);
   return null;
 };

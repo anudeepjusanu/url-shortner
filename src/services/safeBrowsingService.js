@@ -202,12 +202,13 @@ class SafeBrowsingService {
       return new Map();
     }
 
-    // Build a safe result map (all safe) as the default
+    // Build result map with unverified state as default
     const resultMap = new Map();
-    urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], message: 'URL is safe' }));
+    urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: safety check not performed' }));
 
     if (!this.enabled) {
       console.warn('⚠️ Google Safe Browsing API key not configured. Skipping batch safety check.');
+      urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: API key not configured' }));
       return resultMap;
     }
 
@@ -252,13 +253,26 @@ class SafeBrowsingService {
             resultMap.set(url, {
               isSafe: false,
               threats,
+              verified: true,
               message: this.formatThreatMessage(threats)
             });
           });
         }
+
+        // Mark URLs in this batch that were checked but had no threats as verified safe
+        batch.forEach(url => {
+          if (resultMap.get(url).verified === false) {
+            resultMap.set(url, { isSafe: true, threats: [], verified: true, message: 'URL is safe' });
+          }
+        });
       } catch (error) {
         console.error('❌ Safe Browsing batch check error:', error.message);
-        // Fail open — keep defaults (isSafe: true) for this batch on API error
+        // Mark this batch as skipped due to error rather than verified safe
+        batch.forEach(url => {
+          if (resultMap.get(url).verified === false) {
+            resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: batch check failed' });
+          }
+        });
       }
     }
 

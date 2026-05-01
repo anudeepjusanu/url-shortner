@@ -186,6 +186,16 @@ const userSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
+  company: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Company name cannot exceed 100 characters']
+  },
+  jobTitle: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Job title cannot exceed 100 characters']
+  },
   registrationLocation: {
     ip: String,
     country: String,
@@ -219,7 +229,9 @@ userSchema.virtual('isLocked').get(function() {
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
+  // Skip re-hashing if the value is already a bcrypt hash (e.g. pre-hashed before caching)
+  if (this.password.startsWith('$2b$') || this.password.startsWith('$2a$')) return next();
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
