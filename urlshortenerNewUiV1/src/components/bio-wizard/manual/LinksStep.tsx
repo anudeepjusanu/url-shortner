@@ -757,13 +757,14 @@ const ButtonStylePanel = ({
   );
 };
 
-const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefaults }: {
+const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefaults, showUrlErrors }: {
   link: DraftLink;
   onChange: (l: DraftLink) => void;
   onDelete: () => void;
   isAr: boolean;
   isOpen: boolean;
   onToggle: () => void;
+  showUrlErrors: boolean;
   designDefaults: {
     buttonStyle: "solid" | "glass" | "outline";
     cornerRadius: "square" | "round" | "rounder" | "full";
@@ -1228,7 +1229,7 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
               <label className="text-[11px] font-semibold text-muted-foreground block">
                 {isAr ? `اسم المستخدم في ${socialLabel}` : `${socialLabel} username`}
               </label>
-              <div dir="ltr" className="flex items-stretch border border-border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary bg-background">
+              <div dir="ltr" className={`flex items-stretch border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary bg-background ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}>
                 <span className="px-3 flex items-center text-sm text-muted-foreground bg-muted font-mono">@</span>
                 <input
                   value={link.url.replace(/^@/, "")}
@@ -1236,24 +1237,45 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
                   placeholder="yourname"
                   dir="ltr"
                   className="flex-1 px-3 py-2 bg-background text-sm focus:outline-none font-mono"
+                  aria-invalid={showUrlErrors && !link.url.trim()}
                 />
               </div>
+              {showUrlErrors && !link.url.trim() && (
+                <p className="text-xs text-destructive font-medium" role="alert">
+                  {isAr ? "اسم المستخدم مطلوب" : "Username is required"}
+                </p>
+              )}
             </>
           ) : (
-            <input
-              value={link.url}
-              onChange={(e) => {
-                const raw = e.target.value;
-                const next = isWhatsApp
-                  ? (raw.startsWith("+") ? "+" : "") + raw.replace(/[^\d]/g, "")
-                  : raw;
-                onChange({ ...link, url: next });
-              }}
-              inputMode={isWhatsApp ? "tel" : "url"}
-              placeholder={isWhatsApp ? "+9665XXXXXXXX" : "https://..."}
-              dir="ltr"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
+            <>
+              <input
+                value={link.url}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const next = isWhatsApp
+                    ? (raw.startsWith("+") ? "+" : "") + raw.replace(/[^\d]/g, "")
+                    : raw;
+                  onChange({ ...link, url: next });
+                }}
+                inputMode={isWhatsApp ? "tel" : "url"}
+                placeholder={isWhatsApp ? "+9665XXXXXXXX" : "https://..."}
+                dir="ltr"
+                className={`w-full px-3 py-2 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}
+                aria-invalid={showUrlErrors && !link.url.trim()}
+              />
+              {showUrlErrors && !link.url.trim() && (
+                <p className="text-xs text-destructive font-medium" role="alert">
+                  {isWhatsApp
+                    ? (isAr ? "رقم الهاتف مطلوب" : "Phone number is required")
+                    : (isAr ? "الرابط مطلوب" : "URL is required")}
+                </p>
+              )}
+              {showUrlErrors && isWhatsApp && link.url.trim() && link.url.replace(/\D/g, "").length < 8 && (
+                <p className="text-xs text-destructive font-medium" role="alert">
+                  {isAr ? "رقم الهاتف غير صحيح" : "Invalid phone number"}
+                </p>
+              )}
+            </>
           )}
           {isWhatsApp && (
             <input
@@ -1323,6 +1345,18 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
   const [aiOpen, setAiOpen] = useState(false);
   const [openLinkId, setOpenLinkId] = useState<string | null>(null);
   const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
+  const [showUrlErrors, setShowUrlErrors] = useState(false);
+
+  const handleNext = () => {
+    const emptyLinks = draft.links.filter((l) => l.type !== "header" && !l.url.trim());
+    if (emptyLinks.length > 0) {
+      setShowUrlErrors(true);
+      setOpenLinkId(emptyLinks[0].id);
+      return;
+    }
+    setShowUrlErrors(false);
+    onContinue();
+  };
 
   const updateLinks = (links: DraftLink[]) => onUpdate({ links });
 
@@ -1486,6 +1520,7 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
                     onDelete={() => updateLinks(draft.links.filter((x) => x.id !== link.id))}
                     isOpen={openLinkId === link.id}
                     onToggle={() => setOpenLinkId((cur) => (cur === link.id ? null : link.id))}
+                    showUrlErrors={showUrlErrors}
                     designDefaults={{
                       buttonStyle: draft.design.buttonStyle,
                       cornerRadius: draft.design.cornerRadius,
@@ -1543,8 +1578,9 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
             </button>
           </div>
           <button
-            onClick={onContinue}
-            disabled={draft.links.length === 0}
+            type="button"
+            onClick={handleNext}
+            disabled={draft.links.filter((l) => l.type !== "header").length === 0}
             className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {t("Next", "التالي")} →

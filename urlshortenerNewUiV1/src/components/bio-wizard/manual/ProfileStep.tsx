@@ -20,6 +20,7 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
   const fileRef = useRef<HTMLInputElement>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [ackedUsernameChange, setAckedUsernameChange] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
   const handleFile = (file?: File) => {
     if (!file) return;
@@ -36,6 +37,27 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
   );
   const needsAck = usernameChanged && !ackedUsernameChange;
   const canContinue = draft.profile.displayName.trim() && usernameValid && !needsAck;
+
+  const handleNext = () => {
+    if (!canContinue) {
+      setShowErrors(true);
+      return;
+    }
+    onContinue();
+  };
+
+  const usernameErrorMsg = (() => {
+    if (!showErrors) return null;
+    if (!draft.settings.username) return t("Username is required", "اسم المستخدم مطلوب");
+    if (draft.settings.username.length < 3) return t("Must be at least 3 characters", "يجب أن يكون 3 أحرف على الأقل");
+    if (!usernameValid) return t("This username is not available", "اسم المستخدم هذا غير متاح");
+    return null;
+  })();
+
+  const displayNameError =
+    showErrors && !draft.profile.displayName.trim()
+      ? t("Display name is required", "الاسم المعروض مطلوب")
+      : null;
 
   const enhanceBio = () => {
     const text = draft.profile.bio.trim();
@@ -123,7 +145,7 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
         <label className="text-sm font-semibold text-foreground block mb-2">
           {t("Username", "اسم المستخدم")} <span className="text-destructive">*</span>
         </label>
-        <div dir="ltr" className="flex items-stretch border border-border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary">
+        <div dir="ltr" className={`flex items-stretch border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary ${usernameErrorMsg ? "border-destructive" : "border-border"}`}>
           <span className="px-3 flex items-center text-sm text-muted-foreground bg-muted font-mono">bio/</span>
           <input
             type="text"
@@ -143,6 +165,9 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
             </span>
           )}
         </div>
+        {usernameErrorMsg && (
+          <p className="mt-1.5 text-xs text-destructive font-medium" role="alert">{usernameErrorMsg}</p>
+        )}
         {usernameChanged && (
           <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-3 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
@@ -199,8 +224,12 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
             value={draft.profile.displayName}
             onChange={(e) => onUpdate({ profile: { ...draft.profile, displayName: e.target.value } })}
             placeholder={t("Your name or brand", "اسمك أو اسم البراند")}
-            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            className={`w-full px-4 py-3 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${displayNameError ? "border-destructive" : "border-border"}`}
+            aria-invalid={!!displayNameError}
           />
+          {displayNameError && (
+            <p className="mt-1.5 text-xs text-destructive font-medium" role="alert">{displayNameError}</p>
+          )}
         </div>
         <div>
           <label className="text-sm font-semibold text-foreground block mb-2">
@@ -252,17 +281,15 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
 
       <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border px-6 py-4 z-20">
         <div className="max-w-2xl mx-auto flex items-center justify-end gap-3" dir="ltr">
-          {!canContinue && (
+          {needsAck && (
             <span className="text-xs text-muted-foreground">
-              {needsAck
-                ? t("Confirm the URL change to continue", "أكّد تغيير الرابط للمتابعة")
-                : t("Name and valid username required", "الاسم واسم المستخدم مطلوبين")}
+              {t("Confirm the URL change to continue", "أكّد تغيير الرابط للمتابعة")}
             </span>
           )}
           <button
-            onClick={onContinue}
-            disabled={!canContinue}
-            className="bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-xl hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed"
+            type="button"
+            onClick={handleNext}
+            className={`bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-xl hover:opacity-90 shadow-elevated transition-opacity ${!canContinue ? "opacity-40" : ""}`}
           >
             {t("Next", "التالي")} →
           </button>

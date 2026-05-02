@@ -225,7 +225,7 @@ const BioPages = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1 gap-1.5 text-xs"
-                    onClick={() => navigate(`/dashboard/bio-builder/${page._id}`)}
+                    onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                     {t("Edit", "تعديل")}

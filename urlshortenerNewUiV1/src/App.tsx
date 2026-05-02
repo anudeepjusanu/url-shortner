@@ -94,6 +94,7 @@ const App = () => (
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-wizard" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-wizard/:id/edit" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
             <Route path="/dashboard/bio-builder/:id" element={<ProtectedRoute><BioBuilder /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />

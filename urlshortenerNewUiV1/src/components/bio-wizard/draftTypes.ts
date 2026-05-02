@@ -4,6 +4,24 @@ import { bioThemes } from "@/data/bioThemes";
 export type CreationMethod = "ai" | "manual";
 export type LanguageMode = "ar" | "en" | "bilingual";
 
+export type Purpose = "personal" | "business" | "creator" | "portfolio" | "other";
+export type Industry =
+  | "fashion"
+  | "entertainment"
+  | "business"
+  | "education"
+  | "food"
+  | "health"
+  | "tech"
+  | "art"
+  | "other";
+
+export interface QuizResult {
+  purpose: Purpose | null;
+  industry: Industry | null;
+  skipped: boolean;
+}
+
 export interface DraftLink {
   id: string;
   type: "link" | "social" | "whatsapp" | "header" | "divider";
@@ -67,6 +85,7 @@ export interface DraftSettings {
 
 export interface BioDraft {
   method: CreationMethod | null;
+  quiz: QuizResult | null;
   profile: {
     displayName: string;
     bio: string;
@@ -108,6 +127,7 @@ export const DEFAULT_PROFILE_PHOTO = `data:image/svg+xml;utf8,${encodeURICompone
 
 export const emptyDraft: BioDraft = {
   method: null,
+  quiz: null,
   profile: { displayName: "", bio: "", photo: DEFAULT_PROFILE_PHOTO, location: "" },
   links: [],
   design: {
@@ -438,3 +458,153 @@ export const buildBlocksFromDraft = (
 };
 
 export const uid = () => `l${Math.random().toString(36).slice(2, 9)}`;
+
+// ── Edit-flow hydration ──────────────────────────────────────────────────────
+// Converts a saved BioPage from the API back into a BioDraft so the wizard
+// can pre-fill every step for editing.
+
+export const hydrateDraftFromBioPage = (bioPage: any): BioDraft => {
+  const links: DraftLink[] = [];
+
+  const blocks: BioBlock[] = bioPage.blocks || [];
+  blocks.forEach((block: BioBlock) => {
+    if (block.type === "profile") return; // handled separately as profile fields
+
+    if (block.type === "social") {
+      const platforms = (block.data as any)?.platforms || [];
+      platforms.forEach((p: any) => {
+        const isWhatsApp = p.platform === "whatsapp";
+        links.push({
+          id: uid(),
+          type: isWhatsApp ? "whatsapp" : "social",
+          platform: p.platform,
+          title: p.label || p.platform,
+          titleEn: p.label || p.platform,
+          url: isWhatsApp ? p.username || "" : p.username || "",
+          icon: p.platform,
+          iconImage: p.iconImage,
+          iconColor: p.iconColor,
+          displayType: p.displayType || "tag",
+          buttonStyle: p.buttonStyle,
+          cornerRadius: p.cornerRadius,
+          shadow: p.shadow,
+          buttonColor: p.buttonColor,
+          buttonTextColor: p.buttonTextColor,
+          shake: p.shake,
+          useBrandColors: p.useBrandColors !== false,
+          direction: p.direction,
+          iconAlign: p.iconAlign,
+          iconMatchText: p.iconMatchText,
+          textColor: p.textColor,
+          fontSize: p.fontSize,
+          fontFamily: p.fontFamily,
+          textAlign: p.textAlign,
+          bold: p.bold,
+          italic: p.italic,
+          underline: p.underline,
+        });
+      });
+      return;
+    }
+
+    if (block.type === "text" && (block.data as any)?.variant === "section") {
+      const d = block.data as any;
+      links.push({
+        id: uid(),
+        type: "header",
+        title: d.text || d.textEn || "",
+        titleEn: d.textEn || d.text || "",
+        url: "",
+        sectionStyle: d.sectionStyle || "text",
+        lineColor: d.lineColor,
+        textColor: d.textColor,
+        fontSize: d.fontSize,
+        fontFamily: d.fontFamily,
+        textAlign: d.textAlign,
+        bold: d.bold,
+        italic: d.italic,
+        underline: d.underline,
+      });
+      return;
+    }
+
+    if (block.type === "divider") {
+      links.push({ id: uid(), type: "divider", title: "", url: "" });
+      return;
+    }
+
+    if (block.type === "link") {
+      const d = block.data as any;
+      links.push({
+        id: uid(),
+        type: "link",
+        title: d.title || d.titleEn || "Link",
+        titleEn: d.titleEn || d.title || "Link",
+        url: d.url || "",
+        icon: d.icon,
+        iconImage: d.iconImage,
+        iconColor: d.iconColor,
+        displayType: d.displayType || "button",
+        buttonStyle: d.buttonStyle,
+        cornerRadius: d.cornerRadius,
+        shadow: d.shadow,
+        buttonColor: d.buttonColor,
+        buttonTextColor: d.buttonTextColor,
+        shake: d.shake,
+        direction: d.direction,
+        iconAlign: d.iconAlign,
+        iconMatchText: d.iconMatchText,
+        textColor: d.textColor,
+        fontSize: d.fontSize,
+        fontFamily: d.fontFamily,
+        textAlign: d.textAlign,
+        bold: d.bold,
+        italic: d.italic,
+        underline: d.underline,
+      });
+    }
+  });
+
+  const savedDesign = bioPage.design || {};
+  const design: BioDraft["design"] = {
+    themeId: savedDesign.themeId ?? "minimal-light",
+    customColor: savedDesign.customColor ?? null,
+    backgroundImage: savedDesign.backgroundImage ?? "",
+    buttonStyle: savedDesign.buttonStyle ?? "solid",
+    cornerRadius: savedDesign.cornerRadius ?? "round",
+    shadow: savedDesign.shadow ?? "soft",
+    buttonColor: savedDesign.buttonColor ?? "#1a1a1a",
+    buttonTextColor: savedDesign.buttonTextColor ?? "#ffffff",
+    fontEn: savedDesign.fontEn ?? "Inter",
+    fontAr: savedDesign.fontAr ?? "Tajawal",
+    direction: savedDesign.direction ?? "ltr",
+    textColor: savedDesign.textColor,
+    fontSize: savedDesign.fontSize ?? 14,
+    fontFamily: savedDesign.fontFamily,
+    textAlign: savedDesign.textAlign ?? "center",
+    bold: savedDesign.bold ?? false,
+    italic: savedDesign.italic ?? false,
+    underline: savedDesign.underline ?? false,
+    wallpaperStyle: savedDesign.wallpaperStyle ?? null,
+    wallpaperBackground: savedDesign.wallpaperBackground ?? null,
+  };
+
+  return {
+    method: "manual",
+    quiz: bioPage.quizPurpose
+      ? { purpose: bioPage.quizPurpose as Purpose, industry: bioPage.quizIndustry as Industry | null, skipped: false }
+      : null,
+    profile: {
+      displayName: bioPage.title || "",
+      bio: bioPage.description || "",
+      photo: bioPage.avatarUrl || DEFAULT_PROFILE_PHOTO,
+      location: "",
+    },
+    links,
+    design,
+    settings: {
+      ...emptyDraft.settings,
+      username: bioPage.username || "",
+    },
+  };
+};

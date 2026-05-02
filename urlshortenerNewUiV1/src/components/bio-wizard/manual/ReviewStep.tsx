@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
-import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BioDraft } from "../draftTypes";
 import MiniPreview from "../MiniPreview";
@@ -15,14 +14,6 @@ const ReviewStep = ({ draft, onPublish, onSaveDraft }: Props) => {
   const { t, lang } = useLanguage();
   const isAr = lang === "ar";
   const link = `${window.location.host}/bio/${draft.settings.username || "yourname"}`;
-
-  const handleSaveDraft = () => {
-    try {
-      localStorage.setItem("bio_draft", JSON.stringify(draft));
-    } catch {}
-    toast.success(t("Draft saved", "تم حفظ المسودة"));
-    onSaveDraft?.();
-  };
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 pb-32 text-center" dir={isAr ? "rtl" : "ltr"}>
@@ -39,10 +30,9 @@ const ReviewStep = ({ draft, onPublish, onSaveDraft }: Props) => {
             )}
           </span>
         </div>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-muted-foreground mb-4">
           {t("Your page will be live at:", "صفحتك راح تكون مباشرة على:")}
         </p>
-
         <div className="bg-card border border-border rounded-2xl p-4 shadow-soft inline-block mb-8">
           <code className="text-lg font-mono font-bold text-primary">{link}</code>
         </div>
@@ -55,14 +45,17 @@ const ReviewStep = ({ draft, onPublish, onSaveDraft }: Props) => {
       <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border px-6 py-4 z-20">
         <div className="max-w-3xl mx-auto flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-3">
           <button
-            onClick={handleSaveDraft}
+            type="button"
+            onClick={onSaveDraft}
             className="inline-flex items-center justify-center gap-2 border border-border bg-card text-foreground font-semibold px-6 py-3 rounded-xl hover:bg-muted transition-colors"
           >
-            <Save className="w-4 h-4" /> {t("Save as draft", "حفظ كمسودة")}
+            <Save className="w-4 h-4" />
+            {t("Save as draft", "حفظ كمسودة")}
           </button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            type="button"
             onClick={onPublish}
             className="bg-primary text-primary-foreground font-bold px-8 py-3 rounded-xl hover:opacity-90 shadow-elevated"
           >

@@ -1,4 +1,5 @@
 const BioPage = require('../models/BioPage');
+const https = require('https');
 
 const RESERVED_USERNAMES = [
   'admin', 'api', 'login', 'register', 'blog', 'bio', 'about',
@@ -36,7 +37,7 @@ const bioPageService = {
   },
 
   async createBioPage(userId, data) {
-    const { username, title, description, avatarUrl, blocks, design, bioTheme, isPublished } = data;
+    const { username, title, description, avatarUrl, blocks, design, bioTheme, isPublished, quizPurpose, quizIndustry } = data;
 
     if (!username) throw makeError('Username is required', 400);
     if (!title) throw makeError('Title is required', 400);
@@ -54,6 +55,8 @@ const bioPageService = {
       design: design || null,
       bioTheme: bioTheme || null,
       isPublished: isPublished !== undefined ? isPublished : true,
+      quizPurpose: quizPurpose || null,
+      quizIndustry: quizIndustry || null,
     });
 
     await bioPage.save();
@@ -82,7 +85,7 @@ const bioPageService = {
       bioPage.username = data.username.toLowerCase().trim();
     }
 
-    const updatableFields = ['title', 'description', 'avatarUrl', 'blocks', 'design', 'bioTheme', 'isPublished'];
+    const updatableFields = ['title', 'description', 'avatarUrl', 'blocks', 'design', 'bioTheme', 'isPublished', 'quizPurpose', 'quizIndustry'];
     for (const field of updatableFields) {
       if (data[field] !== undefined) {
         bioPage[field] = data[field];
@@ -164,6 +167,59 @@ const bioPageService = {
     }
 
     return { url };
+  },
+
+  async generateBgImage(prompt) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw makeError('AI image generation is not configured. Set OPENAI_API_KEY in your environment.', 503);
+    }
+
+    const sanitizedPrompt = prompt.replace(/[^\w\s,.\-!?()]/g, '').slice(0, 400);
+    if (!sanitizedPrompt.trim()) {
+      throw makeError('Prompt must not be empty', 400);
+    }
+
+    const body = JSON.stringify({
+      model: 'dall-e-3',
+      prompt: sanitizedPrompt,
+      n: 1,
+      size: '1024x1024',
+      response_format: 'url',
+    });
+
+    return new Promise((resolve, reject) => {
+      const req = https.request(
+        {
+          hostname: 'api.openai.com',
+          path: '/v1/images/generations',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Length': Buffer.byteLength(body),
+          },
+        },
+        (res) => {
+          let raw = '';
+          res.on('data', (chunk) => { raw += chunk; });
+          res.on('end', () => {
+            let parsed;
+            try { parsed = JSON.parse(raw); } catch { return reject(makeError('Invalid response from AI service', 502)); }
+            if (res.statusCode !== 200) {
+              const msg = parsed?.error?.message || `AI service error: ${res.statusCode}`;
+              return reject(makeError(msg, 502));
+            }
+            const url = parsed?.data?.[0]?.url;
+            if (!url) return reject(makeError('No image URL returned by AI service', 502));
+            resolve({ url });
+          });
+        },
+      );
+      req.on('error', (err) => reject(makeError(`Network error: ${err.message}`, 502)));
+      req.write(body);
+      req.end();
+    });
   },
 
   async getBioPageAnalytics(bioPageId, userId) {

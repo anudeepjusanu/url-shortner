@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { BioDraft } from "../draftTypes";
+import { BioDraft, QuizResult } from "../draftTypes";
 import ManualHeader from "./ManualHeader";
 import ProfileStep from "./ProfileStep";
 import LinksStep from "./LinksStep";
 import DesignStep from "./DesignStep";
-import StyleQuizStep, { Purpose, Industry } from "./StyleQuizStep";
+import StyleQuizStep from "./StyleQuizStep";
 import ReviewStep from "./ReviewStep";
 import MiniPreview from "../MiniPreview";
 
@@ -20,12 +20,18 @@ interface Props {
 }
 
 const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, originalUsername, isEdit }: Props) => {
+  // Use step index: 0=Profile, 1=StyleQuiz (skipped on edit), 2=Design, 3=Links, 4=Review
   const [step, setStep] = useState(0);
-  const [quizResult, setQuizResult] = useState<{ purpose: Purpose | null; industry: Industry | null; skipped: boolean } | null>(null);
+
+  // Derive quiz result directly from the draft so it stays in sync when the
+  // user navigates back and forth.  Do NOT keep a separate copy here.
+  const quizResult: QuizResult | null = draft.quiz ?? null;
+
   const [hasReachedLinks, setHasReachedLinks] = useState(isEdit ?? false);
 
   const goToStep = (s: number) => {
     if (s >= 3) setHasReachedLinks(true);
+    // In edit mode jump from Profile (0) straight to Design (2), skipping quiz
     if (isEdit && s === 1) {
       setStep(2);
       return;
@@ -34,9 +40,14 @@ const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, origina
   };
 
   const goBack = () => {
-    if (step === 0) onBack();
-    else if (isEdit && step === 2) setStep(0);
-    else setStep(step - 1);
+    if (step === 0) {
+      onBack();
+    } else if (isEdit && step === 2) {
+      // In edit mode, back from Design goes to Profile (not quiz)
+      setStep(0);
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const showPreview = step >= 2 && step < 4;
@@ -67,7 +78,7 @@ const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, origina
                   draft={draft}
                   onUpdate={onUpdate}
                   onContinue={(result) => {
-                    setQuizResult(result);
+                    // quiz already written to draft inside StyleQuizStep via onUpdate
                     goToStep(2);
                   }}
                 />
@@ -87,7 +98,13 @@ const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, origina
                   onContinue={() => goToStep(4)}
                 />
               )}
-              {step === 4 && <ReviewStep draft={draft} onPublish={onPublish} onSaveDraft={onSaveDraft} />}
+              {step === 4 && (
+                <ReviewStep
+                  draft={draft}
+                  onPublish={onPublish}
+                  onSaveDraft={onSaveDraft}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

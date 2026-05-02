@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import {
-  SkipForward,
   ChevronLeft,
+  ChevronRight,
+  SkipForward,
   User,
   Briefcase,
   Video,
@@ -17,20 +18,11 @@ import {
   Shirt,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { BioDraft } from "../draftTypes";
+import { BioDraft, QuizResult, Purpose, Industry } from "../draftTypes";
 import { bioThemes } from "@/data/bioThemes";
 
-export type Purpose = "personal" | "business" | "creator" | "portfolio" | "other";
-export type Industry =
-  | "fashion"
-  | "entertainment"
-  | "business"
-  | "education"
-  | "food"
-  | "health"
-  | "tech"
-  | "art"
-  | "other";
+// Re-export for consumers that import from this file (e.g. DesignStep)
+export type { Purpose, Industry };
 
 export const scoreThemeFor = (
   theme: typeof bioThemes[number],
@@ -66,7 +58,7 @@ export const rankThemes = (purpose: Purpose | null, industry: Industry | null) =
 interface Props {
   draft: BioDraft;
   onUpdate: (patch: Partial<BioDraft>) => void;
-  onContinue: (result: { purpose: Purpose | null; industry: Industry | null; skipped: boolean }) => void;
+  onContinue: (result: QuizResult) => void;
 }
 
 type IconOption<T extends string> = {
@@ -94,12 +86,14 @@ const IconOptionGrid = <T extends string>({
       return (
         <button
           key={o.id}
+          type="button"
           onClick={() => onChange(o.id)}
-          className={`group flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all text-center ${
+          className={`group flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
             sel
               ? "border-primary bg-primary/5 shadow-elevated"
               : "border-border hover:border-primary/40 hover:bg-muted/40"
           }`}
+          aria-pressed={sel}
         >
           <span
             className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${o.tone}`}
@@ -117,8 +111,8 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
   const { t, lang } = useLanguage();
   const isAr = lang === "ar";
   const [page, setPage] = useState<0 | 1>(0);
-  const [purpose, setPurpose] = useState<Purpose | null>(null);
-  const [industry, setIndustry] = useState<Industry | null>(null);
+  const [purpose, setPurpose] = useState<Purpose | null>(draft.quiz?.purpose ?? null);
+  const [industry, setIndustry] = useState<Industry | null>(draft.quiz?.industry ?? null);
 
   const applyTopMatch = (p: Purpose | null, i: Industry | null) => {
     const ranked = rankThemes(p, i);
@@ -141,10 +135,26 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
         },
       });
     }
-    onContinue({ purpose: p, industry: i, skipped: false });
   };
 
-  const skip = () => onContinue({ purpose: null, industry: null, skipped: true });
+  const handleContinuePage1 = () => {
+    if (!purpose) return;
+    setPage(1);
+  };
+
+  const handleContinuePage2 = () => {
+    if (!industry) return;
+    const result: QuizResult = { purpose, industry, skipped: false };
+    onUpdate({ quiz: result });
+    applyTopMatch(purpose, industry);
+    onContinue(result);
+  };
+
+  const handleSkip = () => {
+    const result: QuizResult = { purpose: null, industry: null, skipped: true };
+    onUpdate({ quiz: result });
+    onContinue(result);
+  };
 
   const purposeOptions: IconOption<Purpose>[] = [
     { id: "personal", label: t("Personal Brand", "علامة شخصية"), Icon: User, tone: "bg-rose-100 text-rose-700" },
@@ -170,13 +180,16 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 pb-32" dir={isAr ? "rtl" : "ltr"}>
+      {/* Top bar: back (page 2 only) + question counter */}
       <div className="flex items-center justify-between mb-6 text-sm">
         {page === 1 ? (
           <button
+            type="button"
             onClick={() => setPage(0)}
             className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            <ChevronLeft className="w-4 h-4" /> {t("Previous", "السابق")}
+            <ChevronLeft className="w-4 h-4" />
+            {t("Back", "السابق")}
           </button>
         ) : (
           <span />
@@ -186,6 +199,7 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
         </span>
       </div>
 
+      {/* Progress dots */}
       <div className="flex gap-1.5 mb-8">
         {Array.from({ length: totalPages }).map((_, i) => (
           <div
@@ -215,10 +229,7 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
             <IconOptionGrid
               options={purposeOptions}
               value={purpose}
-              onChange={(v) => {
-                setPurpose(v);
-                setTimeout(() => setPage(1), 200);
-              }}
+              onChange={setPurpose}
               cols="grid-cols-2 sm:grid-cols-3"
             />
           </motion.div>
@@ -241,23 +252,58 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
             <IconOptionGrid
               options={industryOptions}
               value={industry}
-              onChange={(v) => {
-                setIndustry(v);
-                setTimeout(() => applyTopMatch(purpose, v), 250);
-              }}
+              onChange={setIndustry}
               cols="grid-cols-2 sm:grid-cols-3"
             />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-center mt-10">
-        <button
-          onClick={skip}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <SkipForward className="w-4 h-4" /> {t("Skip — show all themes", "تخطي — اعرض كل التيمات")}
-        </button>
+      {/* Fixed action bar */}
+      <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border px-6 py-3 z-20">
+        <div className="max-w-2xl mx-auto" dir="ltr">
+          {page === 0 ? (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <SkipForward className="w-4 h-4" />
+                {t("Skip quiz", "تخطي الأسئلة")}
+              </button>
+              <button
+                type="button"
+                onClick={handleContinuePage1}
+                disabled={!purpose}
+                className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              >
+                {t("Continue", "التالي")}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <SkipForward className="w-4 h-4" />
+                {t("Skip industry", "تخطي المجال")}
+              </button>
+              <button
+                type="button"
+                onClick={handleContinuePage2}
+                disabled={!industry}
+                className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              >
+                {t("Continue", "التالي")}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

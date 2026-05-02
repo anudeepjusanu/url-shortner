@@ -69,6 +69,17 @@ const BioPageSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Style quiz answers — used for theme suggestions
+    quizPurpose: {
+      type: String,
+      enum: ['personal', 'business', 'creator', 'portfolio', 'other', null],
+      default: null,
+    },
+    quizIndustry: {
+      type: String,
+      enum: ['fashion', 'entertainment', 'business', 'education', 'food', 'health', 'tech', 'art', 'other', null],
+      default: null,
+    },
   },
   { timestamps: true }
 );
