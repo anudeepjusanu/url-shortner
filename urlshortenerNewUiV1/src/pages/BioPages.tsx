@@ -121,7 +121,7 @@ const BioPages = () => {
               {t("Create beautiful landing pages with all your links", "أنشئ صفحات جميلة بجميع روابطك")}
             </p>
           </div>
-          <Button onClick={() => navigate("/dashboard/bio-pages/create")} className="gap-2">
+          <Button onClick={() => navigate("/dashboard/bio-wizard")} className="gap-2">
             <Plus className="w-4 h-4" />
             {t("Create Page", "إنشاء صفحة")}
           </Button>
@@ -149,7 +149,7 @@ const BioPages = () => {
                 "أنشئ صفحة بايو الأولى وشارك جميع روابطك المهمة في مكان واحد."
               )}
             </p>
-            <Button onClick={() => navigate("/dashboard/bio-pages/create")} className="gap-2">
+            <Button onClick={() => navigate("/dashboard/bio-wizard")} className="gap-2">
               <Plus className="w-4 h-4" />
               {t("Create Your First Page", "إنشاء أول صفحة")}
             </Button>
@@ -225,7 +225,7 @@ const BioPages = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1 gap-1.5 text-xs"
-                    onClick={() => navigate(`/dashboard/bio-pages/${page._id}/edit`)}
+                    onClick={() => navigate(`/dashboard/bio-builder/${page._id}`)}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                     {t("Edit", "تعديل")}

@@ -1,80 +1,5 @@
 const mongoose = require('mongoose');
 
-const LinkSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Link title is required'],
-    trim: true,
-    maxlength: [100, 'Title must be at most 100 characters'],
-  },
-  url: {
-    type: String,
-    required: [true, 'Link URL is required'],
-    trim: true,
-  },
-  icon: {
-    type: String,
-    default: '',
-    maxlength: [10, 'Icon must be at most 10 characters'],
-  },
-  order: {
-    type: Number,
-    default: 0,
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  isFeatured: {
-    type: Boolean,
-    default: false,
-  },
-  clickCount: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const ThemeSchema = new mongoose.Schema(
-  {
-    backgroundColor: { type: String, default: '#ffffff' },
-    backgroundGradient: { type: String, default: '' },
-    buttonColor: { type: String, default: '#3b82f6' },
-    buttonTextColor: { type: String, default: '#ffffff' },
-    buttonStyle: {
-      type: String,
-      enum: ['rounded', 'square', 'pill'],
-      default: 'pill',
-    },
-    buttonVariant: {
-      type: String,
-      enum: ['solid', 'outline', 'ghost'],
-      default: 'solid',
-    },
-    backgroundImage: { type: String, default: '' },
-    backgroundImageOpacity: { type: Number, default: 0.15, min: 0, max: 1 },
-    textColor: { type: String, default: '#111827' },
-    secondaryTextColor: { type: String, default: '#6b7280' },
-    fontFamily: { type: String, default: 'Inter' },
-    preset: { type: String, default: 'default' },
-  },
-  { _id: false }
-);
-
-const SocialLinksSchema = new mongoose.Schema(
-  {
-    instagram: { type: String, default: '' },
-    twitter: { type: String, default: '' },
-    tiktok: { type: String, default: '' },
-    youtube: { type: String, default: '' },
-    linkedin: { type: String, default: '' },
-    github: { type: String, default: '' },
-    facebook: { type: String, default: '' },
-    website: { type: String, default: '' },
-  },
-  { _id: false }
-);
-
 const BioPageSchema = new mongoose.Schema(
   {
     username: {
@@ -111,25 +36,25 @@ const BioPageSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    theme: {
-      type: ThemeSchema,
-      default: () => ({}),
-    },
-    links: {
-      type: [LinkSchema],
+    // New blocks-based content (array of BioBlock objects from the enhanced editor)
+    blocks: {
+      type: mongoose.Schema.Types.Mixed,
       default: [],
-      validate: {
-        validator: (links) => links.length <= 50,
-        message: 'A bio page can have a maximum of 50 links',
-      },
     },
-    socialLinks: {
-      type: SocialLinksSchema,
-      default: () => ({}),
+    // Design settings from the wizard (draft design preferences)
+    design: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
     },
-    socialLinkImages: {
+    // Enhanced theme object (BioTheme from bioThemes.ts)
+    bioTheme: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    // Per-block click counts: blockId -> count
+    blockClickCounts: {
       type: Map,
-      of: String,
+      of: Number,
       default: () => ({}),
     },
     totalViews: {
@@ -150,13 +75,9 @@ const BioPageSchema = new mongoose.Schema(
 
 BioPageSchema.index({ owner: 1, isActive: 1 });
 
-BioPageSchema.virtual('totalLinkClicks').get(function () {
-  return this.links.reduce((sum, link) => sum + (link.clickCount || 0), 0);
-});
-
 BioPageSchema.virtual('publicUrl').get(function () {
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  return `${baseUrl}/#/bio/${this.username}`;
+  return `${baseUrl}/bio/${this.username}`;
 });
 
 BioPageSchema.set('toJSON', { virtuals: true });

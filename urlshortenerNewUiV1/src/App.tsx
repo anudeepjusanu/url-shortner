@@ -47,6 +47,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
+import BioWizard from "./pages/BioWizard";
+import BioBuilder from "./pages/BioBuilder";
 import PublicBioPage from "./pages/PublicBioPage";
 import BulkCreate from "./pages/BulkCreate";
 import DynamicQRCodes from "./pages/DynamicQRCodes";
@@ -91,6 +93,8 @@ const App = () => (
             <Route path="/dashboard/bio-pages" element={<ProtectedRoute><BioPages /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-wizard" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-builder/:id" element={<ProtectedRoute><BioBuilder /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />

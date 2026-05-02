@@ -2,129 +2,22 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { bioPageAPI } from "@/services/api";
-import { Loader2, Link2, ExternalLink } from "lucide-react";
+import { Loader2, Link2, Share2, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-interface BioTheme {
-  backgroundColor: string;
-  backgroundGradient: string;
-  backgroundImage?: string;
-  backgroundImageOpacity?: number;
-  buttonColor: string;
-  buttonTextColor: string;
-  buttonStyle: "pill" | "rounded" | "square";
-  buttonVariant?: "solid" | "outline" | "ghost";
-  textColor: string;
-  secondaryTextColor: string;
-  fontFamily: string;
-}
-
-interface BioLink {
-  _id: string;
-  title: string;
-  url: string;
-  icon: string;
-  isFeatured?: boolean;
-}
-
-interface BioSocialLinks {
-  instagram?: string;
-  twitter?: string;
-  tiktok?: string;
-  youtube?: string;
-  linkedin?: string;
-  github?: string;
-  facebook?: string;
-  website?: string;
-}
+import { BioBlock, BioTheme } from "@/types/bio";
+import { bioThemes } from "@/data/bioThemes";
+import BlockRenderer from "@/components/bio-builder/BlockRenderer";
+import logoIcon from "@/assets/logo-icon.png";
 
 interface PublicPage {
   username: string;
   title: string;
   description: string;
   avatarUrl: string;
-  theme: BioTheme;
-  links: BioLink[];
-  socialLinks: BioSocialLinks;
-  socialLinkImages?: Record<string, string>;
+  blocks: BioBlock[];
+  bioTheme: BioTheme | null;
+  totalViews: number;
 }
-
-// ─── Social platform map ────────────────────────────────────────────────────
-
-const SOCIAL_CONFIG: Record<string, { label: string }> = {
-  instagram: { label: "Instagram" },
-  twitter:   { label: "Twitter / X" },
-  youtube:   { label: "YouTube"   },
-  linkedin:  { label: "LinkedIn"  },
-  github:    { label: "GitHub"    },
-  tiktok:    { label: "TikTok"    },
-  facebook:  { label: "Facebook"  },
-  website:   { label: "Website"   },
-};
-
-const SOCIAL_DOMAINS: Record<string, string> = {
-  instagram: "instagram.com",
-  twitter:   "twitter.com",
-  youtube:   "youtube.com",
-  linkedin:  "linkedin.com",
-  github:    "github.com",
-  tiktok:    "tiktok.com",
-  facebook:  "facebook.com",
-};
-
-function extractDomain(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; }
-}
-
-// Small component that renders a platform favicon with a Link2 fallback
-const PlatformFavicon = ({ domain, label, color }: { domain: string; label: string; color: string }) => {
-  const [err, setErr] = useState(false);
-  if (!domain || err) return <Link2 className="w-5 h-5" style={{ color }} />;
-  return (
-    <img
-      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-      alt={label}
-      className="w-5 h-5 object-contain"
-      onError={() => setErr(true)}
-    />
-  );
-};
-
-// ─── Animation variants ─────────────────────────────────────────────────────
-
-const avatarVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  show:   { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] } },
-};
-
-const titleVariants = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut", delay: 0.15 } },
-};
-
-const staggerContainer = {
-  hidden: {},
-  show:   { transition: { staggerChildren: 0.07, delayChildren: 0.28 } },
-};
-
-const staggerItem = {
-  hidden: { opacity: 0, y: 18 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
-};
-
-const socialStagger = {
-  hidden: {},
-  show:   { transition: { staggerChildren: 0.06, delayChildren: 0.35 } },
-};
-
-const socialItem = {
-  hidden: { opacity: 0, scale: 0.6 },
-  show:   { opacity: 1, scale: 1, transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] } },
-};
-
-// ─── SEO helper ─────────────────────────────────────────────────────────────
 
 function useBioPageSEO(page: PublicPage | null) {
   const originalTitle = useRef(document.title);
@@ -146,50 +39,33 @@ function useBioPageSEO(page: PublicPage | null) {
     };
 
     const desc = page.description || `${page.title}'s link-in-bio page`;
-
     document.title = `${page.title} — Bio Page`;
-
-    setMeta("property", "og:title",       page.title);
+    setMeta("property", "og:title", page.title);
     setMeta("property", "og:description", desc);
-    setMeta("property", "og:type",        "profile");
+    setMeta("property", "og:type", "profile");
     if (page.avatarUrl && !page.avatarUrl.startsWith("data:")) {
       setMeta("property", "og:image", page.avatarUrl);
     }
-    setMeta("name", "description",        desc);
-    setMeta("name", "twitter:card",       "summary");
-    setMeta("name", "twitter:title",      page.title);
+    setMeta("name", "description", desc);
+    setMeta("name", "twitter:card", "summary");
+    setMeta("name", "twitter:title", page.title);
     setMeta("name", "twitter:description", desc);
-    if (page.avatarUrl && !page.avatarUrl.startsWith("data:")) {
-      setMeta("name", "twitter:image", page.avatarUrl);
-    }
 
     return () => {
       document.title = originalTitle.current;
-      // Remove metas we created; restore ones we overwrote to site defaults
       injectedMetas.current.forEach((el) => el.remove());
       injectedMetas.current = [];
-      const restore = [
-        ["property", "og:title",       "snip.sa — Smart URL Shortener for Saudi Arabia"],
-        ["property", "og:description", "Shorten links, generate QR codes, and track real-time analytics."],
-        ["name",     "description",    "The smartest URL shortener built for Saudi marketers and developers."],
-      ] as const;
-      restore.forEach(([attr, key, val]) => {
-        const el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
-        if (el) el.setAttribute("content", val);
-      });
     };
   }, [page]);
 }
 
-// ─── Component ──────────────────────────────────────────────────────────────
-
 const PublicBioPage = () => {
   const { username } = useParams<{ username: string }>();
   const { t } = useLanguage();
-
-  const [page, setPage]       = useState<PublicPage | null>(null);
+  const [page, setPage] = useState<PublicPage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound]   = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   useEffect(() => {
     if (!username) return;
@@ -197,6 +73,8 @@ const PublicBioPage = () => {
       try {
         const res = await bioPageAPI.getPublic(username) as any;
         setPage(res.data);
+        // Track view
+        bioPageAPI.trackClick(username, "view").catch(() => {});
       } catch {
         setNotFound(true);
       } finally {
@@ -206,12 +84,6 @@ const PublicBioPage = () => {
   }, [username]);
 
   useBioPageSEO(page);
-
-  const handleLinkClick = async (link: BioLink, e: React.MouseEvent) => {
-    e.preventDefault();
-    bioPageAPI.trackClick(username!, link._id).catch(() => {});
-    window.open(link.url, "_blank", "noopener,noreferrer");
-  };
 
   if (isLoading) {
     return (
@@ -246,230 +118,129 @@ const PublicBioPage = () => {
     );
   }
 
-  const { theme, links, socialLinks } = page;
+  // Resolve the theme: use bioTheme from API, fallback to minimal-light preset
+  const theme: BioTheme = page.bioTheme ||
+    bioThemes.find((t) => t.id === "minimal-light") ||
+    bioThemes[0];
 
-  const bgStyle: React.CSSProperties = theme.backgroundGradient
-    ? { background: theme.backgroundGradient }
-    : { backgroundColor: theme.backgroundColor };
+  const bgStyle: React.CSSProperties =
+    theme.backgroundType === "gradient"
+      ? { background: theme.background }
+      : { backgroundColor: theme.background };
 
-  const btnRadius =
-    theme.buttonStyle === "pill"
-      ? "9999px"
-      : theme.buttonStyle === "rounded"
-      ? "14px"
-      : "6px";
+  const hasWhatsApp = page.blocks.some(
+    (b) => b.type === "whatsapp" && b.visible !== false
+  );
+  const whatsAppBlock = page.blocks.find(
+    (b) => b.type === "whatsapp" && b.visible !== false
+  );
 
-  const variant = theme.buttonVariant ?? "solid";
-  const getBtnStyle = (featured = false): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      borderRadius: btnRadius,
-      fontFamily: theme.fontFamily,
-      transition: "opacity 0.15s, transform 0.15s",
-    };
-    if (variant === "outline") {
-      return {
-        ...base,
-        backgroundColor: "transparent",
-        color: theme.buttonColor,
-        border: `2px solid ${theme.buttonColor}`,
-        boxShadow: featured ? `0 4px 20px ${theme.buttonColor}33` : undefined,
-      };
-    }
-    if (variant === "ghost") {
-      return {
-        ...base,
-        backgroundColor: "transparent",
-        color: theme.buttonColor,
-        textDecoration: "underline",
-        textUnderlineOffset: "3px",
-      };
-    }
-    // solid (default)
-    return {
-      ...base,
-      backgroundColor: theme.buttonColor,
-      color: theme.buttonTextColor,
-      boxShadow: featured ? `0 4px 20px ${theme.buttonColor}55` : undefined,
-    };
+  const handleLinkClick = (blockId: string) => {
+    bioPageAPI.trackClick(username!, blockId).catch(() => {});
   };
 
-  const activeSocials = Object.entries(socialLinks ?? {}).filter(([, v]) => !!v);
-  const socialLinkImages = page.socialLinkImages ?? {};
+  const visibleBlocks = page.blocks.filter((b) => b.visible !== false);
 
   return (
-    <div className="min-h-screen w-full relative" style={bgStyle}>
-      {/* Optional background image overlay */}
-      {theme.backgroundImage && (
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-          style={{
-            backgroundImage: `url(${theme.backgroundImage})`,
-            opacity: theme.backgroundImageOpacity ?? 0.4,
-          }}
-        />
-      )}
-      <div className="relative z-10 max-w-sm mx-auto px-4 py-12 flex flex-col items-center gap-5">
-
-        {/* Avatar */}
-        <motion.div
-          variants={avatarVariants}
-          initial="hidden"
-          animate="show"
-          className="flex-shrink-0"
-        >
-          {page.avatarUrl ? (
-            <img
-              src={page.avatarUrl}
-              alt={page.title}
-              className="w-24 h-24 rounded-full object-cover shadow-md ring-4 ring-white/20"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = "none";
-                const sibling = target.nextElementSibling as HTMLElement | null;
-                if (sibling) sibling.style.display = "flex";
-              }}
-            />
-          ) : null}
-          <div
-            className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold shadow-md ring-4 ring-white/20"
-            style={{
-              backgroundColor: theme.buttonColor,
-              color: theme.buttonTextColor,
-              display: page.avatarUrl ? "none" : "flex",
-            }}
-          >
-            {page.title.slice(0, 2).toUpperCase()}
-          </div>
-        </motion.div>
-
-        {/* Title + bio */}
-        <motion.div
-          variants={titleVariants}
-          initial="hidden"
-          animate="show"
-          className="text-center space-y-1.5"
-        >
-          <h1
-            className="text-2xl font-bold leading-tight"
-            style={{ color: theme.textColor, fontFamily: theme.fontFamily }}
-          >
-            {page.title}
-          </h1>
-          {page.description && (
-            <p
-              className="text-sm leading-relaxed opacity-80"
-              style={{ color: theme.textColor, fontFamily: theme.fontFamily }}
+    <div
+      className="min-h-screen w-full relative"
+      style={{ ...bgStyle, fontFamily: theme.fontEn }}
+    >
+      <div className="relative z-10 w-full max-w-[480px] mx-auto px-4 py-8 flex flex-col min-h-screen">
+        {/* Blocks */}
+        <div className="space-y-2 flex-1">
+          {visibleBlocks.map((block, i) => (
+            <motion.div
+              key={block.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.07, duration: 0.35, ease: "easeOut" }}
+              onClick={() => handleLinkClick(block.id)}
             >
-              {page.description}
-            </p>
-          )}
-        </motion.div>
-
-        {/* Social icons */}
-        {activeSocials.length > 0 && (
-          <motion.div
-            variants={socialStagger}
-            initial="hidden"
-            animate="show"
-            className="flex items-center gap-3 flex-wrap justify-center"
-          >
-            {activeSocials.map(([key, url]) => {
-              const cfg = SOCIAL_CONFIG[key];
-              const label = cfg?.label ?? key;
-              const customImg = socialLinkImages[key];
-              const domain = SOCIAL_DOMAINS[key] || extractDomain(url as string);
-              return (
-                <motion.a
-                  key={key}
-                  variants={socialItem}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.92 }}
-                  href={url as string}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={label}
-                  className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-                  style={{
-                    backgroundColor: theme.buttonColor + "20",
-                    border: `1.5px solid ${theme.buttonColor}40`,
-                  }}
-                >
-                  {customImg ? (
-                    <img src={customImg} alt={label} className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    <PlatformFavicon domain={domain} label={label} color={theme.buttonColor} />
-                  )}
-                </motion.a>
-              );
-            })}
-          </motion.div>
-        )}
-
-        {/* Links */}
-        {links.length > 0 && (
-          <motion.div
-            className="w-full space-y-3 mt-1"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-          >
-            {[...links].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)).map((link) => (
-              <motion.a
-                key={link._id}
-                variants={staggerItem}
-                whileHover={{ scale: 1.02, opacity: 0.93 }}
-                whileTap={{ scale: 0.97 }}
-                href={link.url}
-                onClick={(e) => handleLinkClick(link, e)}
-                className="flex items-center justify-center gap-2 w-full font-medium relative"
-                style={{
-                  ...getBtnStyle(link.isFeatured),
-                  padding: link.isFeatured ? "16px 24px" : "14px 24px",
-                  fontSize: link.isFeatured ? "1rem" : "0.875rem",
-                }}
-              >
-                {link.isFeatured && (
-                  <span className="absolute top-1.5 end-2.5 text-[10px] font-semibold opacity-70 tracking-wide uppercase">
-                    ★
-                  </span>
-                )}
-                {link.icon && <span className={link.isFeatured ? "text-lg" : "text-base"}>{link.icon}</span>}
-                <span>{link.title}</span>
-                <ExternalLink className="w-3.5 h-3.5 opacity-60 ms-auto" />
-              </motion.a>
-            ))}
-          </motion.div>
-        )}
-
-        {links.length === 0 && (
-          <p
-            className="text-sm opacity-50 text-center py-6"
-            style={{ color: theme.textColor }}
-          >
-            {t("No links added yet.", "لم تتم إضافة روابط بعد.")}
-          </p>
-        )}
+              <BlockRenderer block={block} theme={theme} />
+            </motion.div>
+          ))}
+        </div>
 
         {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 0.9, duration: 0.4 }}
-          className="mt-8 flex items-center gap-1.5"
-        >
-          <div className="text-xs" style={{ color: theme.textColor }}>
-            {t("Powered by", "مدعوم من")}
-          </div>
-          <Link
-            to="/"
-            className="text-xs font-semibold hover:opacity-80 transition-opacity"
+        <div className="mt-8 flex flex-col items-center gap-3 shrink-0">
+          <button
+            onClick={() => setShowShare(true)}
+            className="flex items-center gap-1.5 text-xs opacity-50 hover:opacity-80 transition-opacity"
             style={{ color: theme.textColor }}
           >
-            SNIP
+            <Share2 className="w-3.5 h-3.5" />
+            {t("Share", "مشاركة")}
+          </button>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-sm font-semibold transition-all hover:scale-105 shadow-sm"
+            style={{ color: theme.textColor }}
+          >
+            <img src={logoIcon} alt="logo" className="w-5 h-5 object-contain" />
+            {t("Create your page", "أنشئ صفحتك")}
           </Link>
-        </motion.div>
-
+        </div>
       </div>
+
+      {/* Floating WhatsApp */}
+      {hasWhatsApp && whatsAppBlock && (
+        <a
+          href={`https://wa.me/${(whatsAppBlock.data?.phone || "").replace(/\D/g, "")}${whatsAppBlock.data?.message ? `?text=${encodeURIComponent(whatsAppBlock.data.message)}` : ""}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 end-6 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-50"
+          aria-label="WhatsApp"
+          onClick={() => handleLinkClick(whatsAppBlock.id)}
+        >
+          <MessageCircle className="w-7 h-7 text-white" />
+        </a>
+      )}
+
+      {/* Share modal */}
+      {showShare && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center"
+          onClick={() => setShowShare(false)}
+        >
+          <div
+            className="w-full max-w-[480px] rounded-t-2xl p-6"
+            style={{ backgroundColor: theme.backgroundType === "gradient" ? "#fff" : theme.background }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-foreground mb-4">
+              {t("Share this page", "شارك هذه الصفحة")}
+            </h3>
+            <div className="flex gap-3 justify-center mb-4">
+              {[
+                { label: "WhatsApp", action: () => window.open(`https://wa.me/?text=${encodeURIComponent(window.location.href)}`, "_blank") },
+                { label: "Twitter", action: () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`, "_blank") },
+                {
+                  label: t("Copy Link", "نسخ الرابط"),
+                  action: () => {
+                    navigator.clipboard.writeText(window.location.href).catch(() => {});
+                    setShowShare(false);
+                  }
+                },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="px-4 py-2 rounded-lg bg-muted text-sm text-foreground hover:bg-muted/80 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowShare(false)}
+              className="w-full py-2.5 text-sm text-muted-foreground"
+            >
+              {t("Close", "إغلاق")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
