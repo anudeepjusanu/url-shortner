@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import {
   Check, Palette, ImagePlus, X, Grid3x3, Wallpaper,
   AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Type, ArrowLeftRight, Minus, Plus,
-  Sparkles, Loader2, AlertCircle, RefreshCw,
+  Sparkles, Loader2, Wand2,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -10,6 +10,14 @@ import { BioDraft } from "../draftTypes";
 import { bioThemes } from "@/data/bioThemes";
 import { Purpose, Industry, rankThemes, scoreThemeFor } from "./StyleQuizStep";
 import { bioPageAPI } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Props {
   draft: BioDraft;
@@ -64,47 +72,34 @@ const buildWallpaper = (style: string, baseColor: string): string => {
       return `linear-gradient(180deg, ${shade(baseColor, 0.75)} 0%, ${baseColor} 40%, ${shade(baseColor, -0.85)} 100%)`;
     case "mesh":
       return `radial-gradient(at 20% 20%, ${withAlpha(shade(baseColor, 0.4), 0.85)} 0px, transparent 50%), radial-gradient(at 80% 0%, ${withAlpha(shade(baseColor, 0.6), 0.7)} 0px, transparent 50%), radial-gradient(at 0% 80%, ${withAlpha(shade(baseColor, -0.3), 0.7)} 0px, transparent 50%), radial-gradient(at 80% 80%, ${withAlpha(shade(baseColor, -0.5), 0.7)} 0px, transparent 50%), ${baseColor}`;
+    case "pattern":
+      return `repeating-linear-gradient(45deg, rgba(0,0,0,0.10) 0 8px, transparent 8px 16px), ${baseColor}`;
+    case "noise":
+      return `radial-gradient(rgba(0,0,0,0.18) 1px, transparent 1px) 0 0/4px 4px, ${baseColor}`;
     default:
       return baseColor;
   }
 };
 
-type WallpaperStyleOption = "solid" | "gradient" | "mesh" | "image";
-
-const WALLPAPER_STYLES: { id: WallpaperStyleOption; labelEn: string; labelAr: string }[] = [
-  { id: "solid", labelEn: "Solid", labelAr: "لون ثابت" },
-  { id: "gradient", labelEn: "Gradient", labelAr: "تدرج" },
-  { id: "mesh", labelEn: "Mesh", labelAr: "شبكي" },
-  { id: "image", labelEn: "Image", labelAr: "صورة" },
-];
-
 const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
   const { t, lang } = useLanguage();
   const isAr = lang === "ar";
   const bgRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const hasQuiz = !!(quizResult && !quizResult.skipped && (quizResult.purpose || quizResult.industry));
   const ranked = hasQuiz ? rankThemes(quizResult!.purpose, quizResult!.industry) : bioThemes;
-  const suggestedIds = hasQuiz ? new Set(ranked.slice(0, 6).map((t) => t.id)) : new Set<string>();
+  const suggestedIds = hasQuiz ? new Set(ranked.slice(0, 6).map((th) => th.id)) : new Set<string>();
   const [showAll, setShowAll] = useState(!hasQuiz);
   const themesToShow = showAll ? bioThemes : ranked.slice(0, 6);
 
-  // Derive active wallpaper style from draft state
-  const activeWallpaperStyle: WallpaperStyleOption = draft.design.backgroundImage
-    ? "image"
-    : draft.design.wallpaperStyle === "gradient"
-    ? "gradient"
-    : draft.design.wallpaperStyle === "mesh"
-    ? "mesh"
-    : "solid";
-
-  // AI image generation state
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  // AI background image dialog state
+  const [bgAiOpen, setBgAiOpen] = useState(false);
+  const [bgAiPrompt, setBgAiPrompt] = useState("");
+  const [bgAiLoading, setBgAiLoading] = useState(false);
 
   const setTheme = (id: string) => {
-    const theme = bioThemes.find((t) => t.id === id);
+    const theme = bioThemes.find((th) => th.id === id);
     const themeStyle = theme?.buttonStyle;
     const fillFromTheme: BioDraft["design"]["buttonStyle"] | undefined =
       themeStyle === "outline" ? "outline" : themeStyle ? "solid" : undefined;
@@ -148,72 +143,65 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
     onUpdate({ design: { ...draft.design, buttonColor: color, buttonTextColor: luma > 0.6 ? "#1a1a1a" : "#ffffff" } });
   };
 
-  const setWallpaperStyle = (style: WallpaperStyleOption) => {
-    if (style === "image") {
-      // Clear color-based wallpaper; leave backgroundImage as-is or trigger upload
+  const setBackground = (bg: string) =>
+    onUpdate({ design: { ...draft.design, backgroundImage: bg, themeId: null, wallpaperStyle: null, wallpaperBackground: null } });
+
+  const setWallpaperStyle = (style: "solid" | "gradient" | "mesh" | "pattern" | "noise") => {
+    const baseColor = draft.design.customColor || "#FFFBF5";
+    if (style === "solid") {
       onUpdate({
         design: {
           ...draft.design,
           themeId: null,
+          backgroundImage: "",
+          customColor: baseColor,
           wallpaperStyle: null,
           wallpaperBackground: null,
         },
       });
     } else {
-      const baseColor = draft.design.customColor || "#FFFBF5";
-      if (style === "solid") {
-        onUpdate({
-          design: {
-            ...draft.design,
-            themeId: null,
-            backgroundImage: "",
-            customColor: baseColor,
-            wallpaperStyle: null,
-            wallpaperBackground: null,
-          },
-        });
-      } else {
-        onUpdate({
-          design: {
-            ...draft.design,
-            themeId: null,
-            backgroundImage: "",
-            customColor: baseColor,
-            wallpaperStyle: style,
-            wallpaperBackground: buildWallpaper(style, baseColor),
-          },
-        });
-      }
+      onUpdate({
+        design: {
+          ...draft.design,
+          themeId: null,
+          backgroundImage: "",
+          customColor: baseColor,
+          wallpaperStyle: style,
+          wallpaperBackground: buildWallpaper(style, baseColor),
+        },
+      });
     }
   };
 
   const handleBgFile = (file?: File) => {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return; // 5 MB max
+    if (file.size > 5 * 1024 * 1024) return;
     const reader = new FileReader();
-    reader.onload = () =>
-      onUpdate({ design: { ...draft.design, backgroundImage: reader.result as string, themeId: null, wallpaperStyle: null, wallpaperBackground: null } });
+    reader.onload = () => setBackground(reader.result as string);
     reader.readAsDataURL(file);
   };
 
-  const handleAiGenerate = async () => {
-    const prompt = aiPrompt.trim();
-    if (!prompt || aiLoading) return;
-    setAiLoading(true);
-    setAiError(null);
+  const generateBgImage = async () => {
+    if (bgAiLoading) return;
+    setBgAiLoading(true);
     try {
-      const res = await (bioPageAPI as any).generateBgImage(prompt) as any;
+      const res = await (bioPageAPI as any).generateBgImage(bgAiPrompt.trim() || "abstract artistic background") as any;
       const url = res?.data?.url;
       if (!url) throw new Error(t("No image returned", "لم يتم إرجاع صورة"));
-      onUpdate({ design: { ...draft.design, backgroundImage: url, themeId: null, wallpaperStyle: null, wallpaperBackground: null } });
-    } catch (err: any) {
-      setAiError(err?.message || t("Generation failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+      setBackground(url);
+      setBgAiOpen(false);
+      setBgAiPrompt("");
+      toast({ title: t("Background generated", "تم إنشاء الخلفية") });
+    } catch (e: any) {
+      toast({
+        title: t("Couldn't generate image", "تعذر إنشاء الصورة"),
+        description: e?.message || String(e),
+        variant: "destructive",
+      });
     } finally {
-      setAiLoading(false);
+      setBgAiLoading(false);
     }
   };
-
-  const isColorStyle = activeWallpaperStyle === "solid" || activeWallpaperStyle === "gradient" || activeWallpaperStyle === "mesh";
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 pb-32" dir={isAr ? "rtl" : "ltr"}>
@@ -223,7 +211,10 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
             <h1 className="text-3xl font-bold text-foreground mb-2">{t("Design your page", "صمم صفحتك")}</h1>
             <p className="text-muted-foreground">
               {hasQuiz
-                ? t("We've suggested themes for you. Tweak anything below.", "اقترحنا تيمات لك. عدّل ما تشاء.")
+                ? t(
+                    "We've designed your page. Tweak anything below or pick another suggestion.",
+                    "صممنا صفحتك. عدّل ما تشاء أو اختر اقتراحاً آخر.",
+                  )
                 : t("Pick a theme and customize your colors.", "اختر تيمة وخصّص الألوان.")}
             </p>
           </div>
@@ -287,25 +278,122 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
         })}
       </div>
 
-      {/* ── Wallpaper Style + Background ───────────────────────────────────── */}
+      {/* ── Background image ───────────────────────────────────────────────── */}
+      <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+        <ImagePlus className="w-4 h-4" /> {t("Background image", "صورة الخلفية")}
+      </h3>
+      <div className="bg-card border border-border rounded-2xl p-5 shadow-soft mb-8">
+        {draft.design.backgroundImage ? (
+          <div className="relative rounded-xl overflow-hidden h-40 group">
+            <img src={draft.design.backgroundImage} alt="background" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => setBackground("")}
+              className="absolute top-2 end-2 w-8 h-8 rounded-full bg-background/90 backdrop-blur flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => bgRef.current?.click()}
+              className="absolute bottom-2 end-2 bg-background/90 backdrop-blur text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-background"
+            >
+              {t("Replace", "استبدال")}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => bgRef.current?.click()}
+              className="h-32 rounded-xl border-2 border-dashed border-border hover:border-primary bg-muted/30 flex flex-col items-center justify-center transition-colors"
+            >
+              <ImagePlus className="w-7 h-7 text-muted-foreground mb-1.5" />
+              <span className="text-sm font-medium text-foreground">{t("Upload background image", "رفع صورة خلفية")}</span>
+              <span className="text-xs text-muted-foreground mt-0.5">{t("PNG, JPG up to 5MB", "PNG أو JPG حتى 5 ميجا")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBgAiOpen(true)}
+              className="h-32 rounded-xl border-2 border-dashed border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 flex flex-col items-center justify-center transition-colors"
+            >
+              <Sparkles className="w-7 h-7 text-primary mb-1.5" />
+              <span className="text-sm font-medium text-foreground">{t("Generate with AI", "أنشئ بالذكاء الاصطناعي")}</span>
+              <span className="text-xs text-muted-foreground mt-0.5">{t("Describe your vibe", "صف الأجواء التي تريدها")}</span>
+            </button>
+          </div>
+        )}
+        <input
+          ref={bgRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            handleBgFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+      </div>
+
+      {/* ── Or pick a color ────────────────────────────────────────────────── */}
+      <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+        <Palette className="w-4 h-4" /> {t("Or pick a color", "أو اختر لون")}
+      </h3>
+      <div className="bg-card border border-border rounded-2xl p-5 shadow-soft mb-8">
+        <div className="grid grid-cols-6 md:grid-cols-12 gap-2 mb-4">
+          {PRESET_COLORS.map((c) => {
+            const sel = draft.design.customColor === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className={`aspect-square rounded-lg border-2 ${sel ? "border-primary scale-110" : "border-border"} transition-transform`}
+                style={{ background: c }}
+              >
+                {sel && <Check className="w-4 h-4 m-auto text-white drop-shadow" strokeWidth={3} />}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={draft.design.customColor || "#7a253a"}
+            onChange={(e) => setColor(e.target.value)}
+            className="w-14 h-14 rounded-lg border border-border cursor-pointer"
+          />
+          <input
+            type="text"
+            value={draft.design.customColor || ""}
+            onChange={(e) => setColor(e.target.value)}
+            placeholder="#7a253a"
+            className="flex-1 px-3 py-3 rounded-xl border border-border bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            dir="ltr"
+            maxLength={7}
+          />
+        </div>
+      </div>
+
+      {/* ── Wallpaper style ────────────────────────────────────────────────── */}
       <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
-        <Wallpaper className="w-4 h-4" />
-        {t("Wallpaper Style & Background", "نمط الخلفية والألوان")}
+        <Wallpaper className="w-4 h-4" /> {t("Wallpaper style", "نمط الخلفية")}
       </h3>
       <p className="text-xs text-muted-foreground mb-3">
-        {t("Choose a style, then set color or image.", "اختر نمطاً ثم اضبط اللون أو الصورة.")}
+        {t("Layered on top of your background color.", "يُطبَّق فوق لون الخلفية الذي اخترته.")}
       </p>
-      <div className="bg-card border border-border rounded-2xl p-5 shadow-soft mb-8 space-y-5">
-        {/* Style selector */}
-        <div className="grid grid-cols-4 gap-2">
-          {WALLPAPER_STYLES.map((ws) => {
-            const sel = activeWallpaperStyle === ws.id;
+      <div className="bg-card border border-border rounded-2xl p-4 shadow-soft mb-8">
+        <div className="grid grid-cols-5 gap-2">
+          {([
+            { id: "solid", label: t("Fill", "لون") },
+            { id: "gradient", label: t("Gradient", "تدرج") },
+            { id: "mesh", label: t("Mesh", "شبكي") },
+            { id: "pattern", label: t("Pattern", "نمط") },
+            { id: "noise", label: t("Noise", "تشويش") },
+          ] as const).map((ws) => {
+            const sel = (draft.design.wallpaperStyle || "solid") === ws.id;
             const baseColor = draft.design.customColor || "#FFFBF5";
-            let previewBg = baseColor;
-            if (ws.id === "gradient") previewBg = buildWallpaper("gradient", baseColor);
-            else if (ws.id === "mesh") previewBg = buildWallpaper("mesh", baseColor);
-            else if (ws.id === "image") previewBg = draft.design.backgroundImage || "#e2e8f0";
-
+            const previewBg = ws.id === "solid" ? baseColor : buildWallpaper(ws.id, baseColor);
             return (
               <button
                 key={ws.id}
@@ -319,155 +407,14 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
               >
                 <div
                   className="w-full aspect-[3/4] rounded-md border border-border/60 overflow-hidden"
-                  style={ws.id === "image" && draft.design.backgroundImage
-                    ? { backgroundImage: `url(${draft.design.backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { background: previewBg }}
+                  style={ws.id === "solid" ? { backgroundColor: previewBg } : { background: previewBg }}
                   aria-hidden
                 />
-                <span>{isAr ? ws.labelAr : ws.labelEn}</span>
+                <span>{ws.label}</span>
               </button>
             );
           })}
         </div>
-
-        {/* Color picker — shown for Solid, Gradient, Mesh */}
-        {isColorStyle && (
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5" />
-              {t("Background color", "لون الخلفية")}
-            </p>
-            <div className="grid grid-cols-6 md:grid-cols-12 gap-2 mb-3">
-              {PRESET_COLORS.map((c) => {
-                const sel = draft.design.customColor === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={`aspect-square rounded-lg border-2 ${sel ? "border-primary scale-110" : "border-border"} transition-transform`}
-                    style={{ background: c }}
-                  >
-                    {sel && <Check className="w-4 h-4 m-auto text-white drop-shadow" strokeWidth={3} />}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={draft.design.customColor || "#7a253a"}
-                onChange={(e) => setColor(e.target.value)}
-                className="w-14 h-14 rounded-lg border border-border cursor-pointer"
-              />
-              <input
-                type="text"
-                value={draft.design.customColor || ""}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="#7a253a"
-                className="flex-1 px-3 py-3 rounded-xl border border-border bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                dir="ltr"
-                maxLength={7}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Image panel — shown only when Image style is selected */}
-        {activeWallpaperStyle === "image" && (
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <ImagePlus className="w-3.5 h-3.5" />
-              {t("Background image", "صورة الخلفية")}
-            </p>
-
-            {draft.design.backgroundImage ? (
-              <div className="relative rounded-xl overflow-hidden h-40 group mb-3">
-                <img src={draft.design.backgroundImage} alt="background" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => onUpdate({ design: { ...draft.design, backgroundImage: "" } })}
-                  className="absolute top-2 end-2 w-8 h-8 rounded-full bg-background/90 backdrop-blur flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => bgRef.current?.click()}
-                  className="absolute bottom-2 end-2 bg-background/90 backdrop-blur text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-background"
-                >
-                  {t("Replace", "استبدال")}
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => bgRef.current?.click()}
-                className="w-full h-28 rounded-xl border-2 border-dashed border-border hover:border-primary bg-muted/30 flex flex-col items-center justify-center transition-colors mb-3"
-              >
-                <ImagePlus className="w-7 h-7 text-muted-foreground mb-1.5" />
-                <span className="text-sm font-medium text-foreground">{t("Upload background image", "رفع صورة خلفية")}</span>
-                <span className="text-xs text-muted-foreground mt-0.5">{t("PNG, JPG up to 5 MB", "PNG أو JPG حتى 5 ميجا")}</span>
-              </button>
-            )}
-            <input
-              ref={bgRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => { handleBgFile(e.target.files?.[0]); e.target.value = ""; }}
-            />
-
-            {/* AI generation */}
-            <div className="mt-3 pt-4 border-t border-border space-y-2">
-              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                {t("Generate with AI", "إنشاء بالذكاء الاصطناعي")}
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                {t("Describe the background you want. AI will create a unique image.", "صف الخلفية التي تريدها. سيصنع الذكاء الاصطناعي صورة فريدة.")}
-              </p>
-              <div className="flex items-stretch gap-2">
-                <input
-                  type="text"
-                  value={aiPrompt}
-                  onChange={(e) => { setAiPrompt(e.target.value); setAiError(null); }}
-                  onKeyDown={(e) => e.key === "Enter" && handleAiGenerate()}
-                  placeholder={t("e.g. soft pink bokeh with gold glitter", "مثال: خلفية وردية ناعمة مع بريق ذهبي")}
-                  disabled={aiLoading}
-                  className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
-                  dir={isAr ? "rtl" : "ltr"}
-                  maxLength={400}
-                />
-                <button
-                  type="button"
-                  onClick={handleAiGenerate}
-                  disabled={aiLoading || !aiPrompt.trim()}
-                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1.5 shrink-0"
-                >
-                  {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  {aiLoading ? t("Generating…", "جاري الإنشاء…") : t("Generate", "أنشئ")}
-                </button>
-              </div>
-              {aiError && (
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-destructive font-medium">{aiError}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAiGenerate}
-                    className="text-xs font-semibold text-destructive hover:underline inline-flex items-center gap-1 shrink-0"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    {t("Retry", "إعادة المحاولة")}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Default Button Style ────────────────────────────────────────────── */}
@@ -608,7 +555,7 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
         </div>
       </div>
 
-      {/* ── Text Style ─────────────────────────────────────────────────────── */}
+      {/* ── Default Text Style ─────────────────────────────────────────────── */}
       <h3 className="text-sm font-bold text-foreground mt-8 mb-3 flex items-center gap-2">
         <Type className="w-4 h-4" /> {t("Default Text Style", "النمط الافتراضي للنص")}
       </h3>
@@ -654,6 +601,7 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
               type="button"
               onClick={() => onUpdate({ design: { ...draft.design, fontSize: Math.max(10, (draft.design.fontSize ?? 14) - 1) } })}
               className="w-8 h-8 rounded-md hover:bg-muted text-foreground inline-flex items-center justify-center"
+              aria-label={t("Decrease", "تصغير")}
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -664,6 +612,7 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
               type="button"
               onClick={() => onUpdate({ design: { ...draft.design, fontSize: Math.min(28, (draft.design.fontSize ?? 14) + 1) } })}
               className="w-8 h-8 rounded-md hover:bg-muted text-foreground inline-flex items-center justify-center"
+              aria-label={t("Increase", "تكبير")}
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -754,6 +703,66 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
           </button>
         </div>
       </div>
+
+      {/* ── AI background image dialog ─────────────────────────────────────── */}
+      <Dialog open={bgAiOpen} onOpenChange={(o) => !bgAiLoading && setBgAiOpen(o)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              {t("Generate background with AI", "أنشئ خلفية بالذكاء الاصطناعي")}
+            </DialogTitle>
+            <DialogDescription>
+              {t(
+                "Describe the mood, colors, or scene you want. Leave blank for a tasteful default.",
+                "صف الأجواء أو الألوان أو المشهد. اتركها فارغة لتصميم افتراضي أنيق.",
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <textarea
+              value={bgAiPrompt}
+              onChange={(e) => setBgAiPrompt(e.target.value)}
+              placeholder={t(
+                "e.g. soft pastel sunset with gentle clouds",
+                "مثال: غروب باستيل ناعم مع غيوم خفيفة",
+              )}
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+              dir={isAr ? "rtl" : "ltr"}
+              disabled={bgAiLoading}
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setBgAiOpen(false)}
+                disabled={bgAiLoading}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50"
+              >
+                {t("Cancel", "إلغاء")}
+              </button>
+              <button
+                type="button"
+                onClick={generateBgImage}
+                disabled={bgAiLoading}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60 inline-flex items-center gap-2"
+              >
+                {bgAiLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t("Generating…", "جارٍ الإنشاء…")}
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4" />
+                    {t("Generate", "إنشاء")}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
