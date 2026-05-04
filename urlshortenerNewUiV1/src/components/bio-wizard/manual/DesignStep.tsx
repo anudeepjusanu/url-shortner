@@ -188,6 +188,8 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
       const res = await (bioPageAPI as any).generateBgImage(bgAiPrompt.trim() || "abstract artistic background") as any;
       const url = res?.data?.url;
       if (!url) throw new Error(t("No image returned", "لم يتم إرجاع صورة"));
+
+      // Backend proxies Pollinations and returns a data URL — no preload needed.
       setBackground(url);
       setBgAiOpen(false);
       setBgAiPrompt("");

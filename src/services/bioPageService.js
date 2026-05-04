@@ -170,56 +170,43 @@ const bioPageService = {
   },
 
   async generateBgImage(prompt) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw makeError('AI image generation is not configured. Set OPENAI_API_KEY in your environment.', 503);
-    }
-
-    const sanitizedPrompt = prompt.replace(/[^\w\s,.\-!?()]/g, '').slice(0, 400);
-    if (!sanitizedPrompt.trim()) {
+    const sanitizedPrompt = (prompt || '').replace(/[<>"'`\\]/g, '').trim().slice(0, 300);
+    if (!sanitizedPrompt) {
       throw makeError('Prompt must not be empty', 400);
     }
 
-    const body = JSON.stringify({
-      model: 'dall-e-3',
-      prompt: sanitizedPrompt,
-      n: 1,
-      size: '1024x1024',
-      response_format: 'url',
+    // Pollinations.AI — free, no API key required.
+    // Use model=turbo (faster, more stable than flux) at 512×512.
+    const seed = Math.floor(Math.random() * 9999999);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(sanitizedPrompt)}?width=512&height=512&nologo=true&seed=${seed}&model=turbo`;
+
+    // Proxy the image server-side so the frontend never hits Pollinations directly.
+    // Returns a base64 data URL that is stored in MongoDB alongside the bio page.
+    const fetchImage = (url, redirectCount = 0) => new Promise((resolve, reject) => {
+      if (redirectCount > 5) return reject(makeError('Too many redirects from image service', 502));
+      const req = https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return resolve(fetchImage(res.headers.location, redirectCount + 1));
+        }
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(makeError(`AI image service returned ${res.statusCode}. Please try again.`, 502));
+        }
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          const contentType = res.headers['content-type'] || 'image/jpeg';
+          resolve(`data:${contentType};base64,${buffer.toString('base64')}`);
+        });
+        res.on('error', (err) => reject(makeError(`Error reading response: ${err.message}`, 502)));
+      });
+      req.setTimeout(90000, () => { req.destroy(); reject(makeError('Image generation timed out. Please try again.', 504)); });
+      req.on('error', (err) => reject(makeError(`Could not reach image service: ${err.message}`, 502)));
     });
 
-    return new Promise((resolve, reject) => {
-      const req = https.request(
-        {
-          hostname: 'api.openai.com',
-          path: '/v1/images/generations',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Length': Buffer.byteLength(body),
-          },
-        },
-        (res) => {
-          let raw = '';
-          res.on('data', (chunk) => { raw += chunk; });
-          res.on('end', () => {
-            let parsed;
-            try { parsed = JSON.parse(raw); } catch { return reject(makeError('Invalid response from AI service', 502)); }
-            if (res.statusCode !== 200) {
-              const msg = parsed?.error?.message || `AI service error: ${res.statusCode}`;
-              return reject(makeError(msg, 502));
-            }
-            const url = parsed?.data?.[0]?.url;
-            if (!url) return reject(makeError('No image URL returned by AI service', 502));
-            resolve({ url });
-          });
-        },
-      );
-      req.on('error', (err) => reject(makeError(`Network error: ${err.message}`, 502)));
-      req.write(body);
-      req.end();
-    });
+    const dataUrl = await fetchImage(imageUrl);
+    return { url: dataUrl };
   },
 
   async getBioPageAnalytics(bioPageId, userId) {

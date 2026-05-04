@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { BioBlock, BioTheme } from "@/types/bio";
 import { bioThemes } from "@/data/bioThemes";
 import BlockRenderer from "@/components/bio-builder/BlockRenderer";
+import { getImageStyle } from "@/components/bio-builder/ImageCropControl";
 import logoIcon from "@/assets/logo-icon.png";
 
 interface PublicPage {
@@ -123,10 +124,22 @@ const PublicBioPage = () => {
     bioThemes.find((t) => t.id === "minimal-light") ||
     bioThemes[0];
 
-  const bgStyle: React.CSSProperties =
-    theme.backgroundType === "gradient"
-      ? { background: theme.background }
-      : { backgroundColor: theme.background };
+  const isImageBg = theme.backgroundType === "image" && theme.background.startsWith("url(");
+  const imageBgUrl = isImageBg
+    ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
+    : "";
+
+  const bgStyle: React.CSSProperties = isImageBg
+    ? { backgroundColor: "#000" }
+    : theme.backgroundType === "gradient" ||
+      theme.backgroundType === "mesh" ||
+      theme.backgroundType === "pattern" ||
+      theme.backgroundType === "noise" ||
+      theme.background.includes("gradient")
+    ? { background: theme.background }
+    : theme.background.startsWith("#") || theme.background.startsWith("rgb") || theme.background.startsWith("hsl")
+    ? { backgroundColor: theme.background }
+    : { backgroundColor: "#ffffff" };
 
   const hasWhatsApp = page.blocks.some(
     (b) => b.type === "whatsapp" && b.visible !== false
@@ -146,6 +159,15 @@ const PublicBioPage = () => {
       className="min-h-screen w-full relative"
       style={{ ...bgStyle, fontFamily: theme.fontEn }}
     >
+      {isImageBg && (
+        <img
+          src={imageBgUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full"
+          style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
+        />
+      )}
       <div className="relative z-10 w-full max-w-[480px] mx-auto px-4 py-8 flex flex-col min-h-screen">
         {/* Blocks */}
         <div className="space-y-2 flex-1">
@@ -205,7 +227,7 @@ const PublicBioPage = () => {
         >
           <div
             className="w-full max-w-[480px] rounded-t-2xl p-6"
-            style={{ backgroundColor: theme.backgroundType === "gradient" ? "#fff" : theme.background }}
+            style={{ backgroundColor: isImageBg || theme.backgroundType === "gradient" ? "#fff" : theme.background }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-foreground mb-4">

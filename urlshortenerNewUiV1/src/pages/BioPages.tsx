@@ -5,6 +5,13 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -15,19 +22,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, Pencil, Trash2, Copy, ExternalLink, Eye, MousePointer,
-  Loader2, Link2, Globe, Check,
+  Plus, Pencil, Trash2, Copy, ExternalLink, Eye,
+  Loader2, Link2, MoreHorizontal, Check,
 } from "lucide-react";
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
-
-interface BioLink {
-  _id: string;
-  title: string;
-  url: string;
-  clickCount: number;
-  isActive: boolean;
-}
+import BioThumbnail from "@/components/bio-builder/BioThumbnail";
+import { BioTheme, BioBlock } from "@/types/bio";
+import { bioThemes } from "@/data/bioThemes";
 
 interface BioPage {
   _id: string;
@@ -37,13 +39,15 @@ interface BioPage {
   avatarUrl: string;
   totalViews: number;
   isPublished: boolean;
-  links: BioLink[];
   createdAt: string;
-  publicUrl?: string;
+  blocks?: BioBlock[];
+  bioTheme?: BioTheme | null;
 }
 
+const fallbackTheme: BioTheme = bioThemes.find((t) => t.id === "minimal-light") || bioThemes[0];
+
 const BioPages = () => {
-  const { t, isAr } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -69,16 +73,13 @@ const BioPages = () => {
 
   useEffect(() => { fetchPages(); }, [fetchPages]);
 
-  const getPublicUrl = (page: BioPage) => {
-    const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3015';
-    const frontendBase = base.replace(':3015', ':5173');
-    return `${frontendBase}/#/bio/${page.username}`;
-  };
+  const getPublicUrl = (page: BioPage) => `${window.location.origin}/bio/${page.username}`;
+
+  const getDisplayUrl = (page: BioPage) => `${window.location.host}/bio/${page.username}`;
 
   const handleCopy = async (page: BioPage) => {
-    const url = getPublicUrl(page);
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(getPublicUrl(page));
       setCopiedId(page._id);
       setTimeout(() => setCopiedId(null), 2000);
       toast({ title: t("Copied!", "تم النسخ!"), description: t("Public URL copied to clipboard", "تم نسخ الرابط العام") });
@@ -102,12 +103,6 @@ const BioPages = () => {
     }
   };
 
-  const totalClicks = (page: BioPage) =>
-    page.links?.reduce((sum, l) => sum + (l.clickCount || 0), 0) ?? 0;
-
-  const getInitials = (title: string) =>
-    title.slice(0, 2).toUpperCase();
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -115,10 +110,10 @@ const BioPages = () => {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-foreground font-display">
-              {t("Link in Bio", "صفحات البايو")}
+              {t("Bio Pages", "صفحات البايو")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {t("Create beautiful landing pages with all your links", "أنشئ صفحات جميلة بجميع روابطك")}
+              {t("Create and manage your link-in-bio pages", "أنشئ وأدر صفحات البايو")}
             </p>
           </div>
           <Button onClick={() => navigate("/dashboard/bio-wizard")} className="gap-2">
@@ -156,113 +151,85 @@ const BioPages = () => {
           </div>
         )}
 
-        {/* Pages grid */}
+        {/* Pages list */}
         {!isLoading && pages.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {pages.map((page) => (
-              <div
-                key={page._id}
-                className="bg-background border border-border rounded-2xl p-5 flex flex-col gap-4 hover:shadow-md transition-shadow"
-              >
-                {/* Card header */}
-                <div className="flex items-start gap-3">
-                  {page.avatarUrl ? (
-                    <img
-                      src={page.avatarUrl}
-                      alt={page.title}
-                      className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary font-bold text-sm">
-                      {getInitials(page.title)}
-                    </div>
-                  )}
+          <div className="flex flex-col gap-3">
+            {pages.map((page) => {
+              const theme = page.bioTheme || fallbackTheme;
+              const blocks = page.blocks || [];
+              return (
+                <div
+                  key={page._id}
+                  className="bg-background border border-border rounded-2xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}
+                >
+                  {/* Thumbnail */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <BioThumbnail blocks={blocks} theme={theme} />
+                  </div>
+
+                  {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground truncate">{page.title}</h3>
-                      <Badge variant={page.isPublished ? "default" : "secondary"} className="text-xs">
+                    <h3 className="font-semibold text-foreground truncate">{page.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{getDisplayUrl(page)}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Eye className="w-3.5 h-3.5" />
+                        {page.totalViews ?? 0}
+                      </span>
+                      <Badge
+                        variant={page.isPublished ? "default" : "secondary"}
+                        className="text-xs"
+                      >
                         {page.isPublished ? t("Published", "منشور") : t("Draft", "مسودة")}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      @{page.username}
-                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <a
+                      href={getPublicUrl(page)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={t("Open public page", "فتح الصفحة العامة")}
+                    >
+                      <Button variant="ghost" size="icon" className="w-8 h-8">
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </a>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="w-8 h-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}>
+                          <Pencil className="w-4 h-4 me-2" />
+                          {t("Edit", "تعديل")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCopy(page)}>
+                          {copiedId === page._id
+                            ? <Check className="w-4 h-4 me-2 text-green-500" />
+                            : <Copy className="w-4 h-4 me-2" />}
+                          {copiedId === page._id ? t("Copied!", "تم النسخ!") : t("Copy URL", "نسخ الرابط")}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteDialog({ open: true, id: page._id, title: page.title })}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 me-2" />
+                          {t("Delete", "حذف")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-
-                {/* Description */}
-                {page.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{page.description}</p>
-                )}
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 bg-muted/40 rounded-xl p-3">
-                  <div className="text-center">
-                    <p className="text-base font-bold text-foreground">{page.links?.length ?? 0}</p>
-                    <p className="text-[10px] text-muted-foreground">{t("Links", "روابط")}</p>
-                  </div>
-                  <div className="text-center border-x border-border">
-                    <div className="flex items-center justify-center gap-1">
-                      <Eye className="w-3 h-3 text-muted-foreground" />
-                      <p className="text-base font-bold text-foreground">{page.totalViews ?? 0}</p>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{t("Views", "مشاهدات")}</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <MousePointer className="w-3 h-3 text-muted-foreground" />
-                      <p className="text-base font-bold text-foreground">{totalClicks(page)}</p>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{t("Clicks", "نقرات")}</p>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-1.5 text-xs"
-                    onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    {t("Edit", "تعديل")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-1.5 text-xs"
-                    onClick={() => handleCopy(page)}
-                  >
-                    {copiedId === page._id
-                      ? <Check className="w-3.5 h-3.5 text-green-500" />
-                      : <Copy className="w-3.5 h-3.5" />
-                    }
-                    {copiedId === page._id ? t("Copied!", "تم النسخ!") : t("Copy URL", "نسخ الرابط")}
-                  </Button>
-                  <a
-                    href={getPublicUrl(page)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={t("Open public page", "فتح الصفحة العامة")}
-                  >
-                    <Button variant="outline" size="icon" className="w-8 h-8">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </Button>
-                  </a>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-8 h-8 text-destructive hover:bg-destructive/10 hover:border-destructive"
-                    onClick={() => setDeleteDialog({ open: true, id: page._id, title: page.title })}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

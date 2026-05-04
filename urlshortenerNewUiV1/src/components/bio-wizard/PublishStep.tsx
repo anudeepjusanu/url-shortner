@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
-import { Copy, Check, Instagram, Music2, MessageCircle, QrCode, BarChart3, Globe, ImageDown, ArrowRight } from "lucide-react";
+import { Copy, Check, Instagram, Music2, MessageCircle, QrCode, BarChart3, Globe, ImageDown, ArrowRight, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
@@ -80,21 +80,39 @@ const PublishStep = ({ username }: Props) => {
           transition={{ delay: 0.4, type: "spring", stiffness: 250, damping: 18 }}
           className="w-full bg-gradient-to-br from-primary to-secondary rounded-3xl p-6 mb-8 shadow-elevated"
         >
-          <p className="text-2xl font-bold text-primary-foreground font-mono mb-4">{link}</p>
-          <button
-            onClick={copy}
-            className="w-full bg-primary-foreground text-primary font-semibold py-3 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          <a
+            href={`${window.location.origin}/bio/${username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-2xl font-bold text-primary-foreground font-mono mb-4 underline underline-offset-2 hover:opacity-80 transition-opacity break-all"
           >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4" /> {t("Copied!", "تم النسخ!")}
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" /> {t("Copy Link", "نسخ الرابط")}
-              </>
-            )}
-          </button>
+            {link}
+          </a>
+          <div className="flex gap-2">
+            <button
+              onClick={copy}
+              className="flex-1 bg-primary-foreground text-primary font-semibold py-3 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" /> {t("Copied!", "تم النسخ!")}
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" /> {t("Copy Link", "نسخ الرابط")}
+                </>
+              )}
+            </button>
+            <a
+              href={`${window.location.origin}/bio/${username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-primary-foreground/20 text-primary-foreground font-semibold px-4 py-3 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center"
+              title={t("View page", "عرض الصفحة")}
+            >
+              <ExternalLink className="w-5 h-5" />
+            </a>
+          </div>
         </motion.div>
 
         <motion.p
