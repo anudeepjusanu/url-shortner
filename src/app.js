@@ -166,7 +166,7 @@ app.use('/api/dynamic-qr', require('./routes/dynamicQRCodes'));
 app.use('/', require('./routes/sitemapRoutes'));
 
 // Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
 app.get('/bio/:username', (req, res) => {
   res.redirect(`${frontendUrl}/bio/${req.params.username}`);
 });

@@ -17,7 +17,7 @@ const getScanUrl = (code) => {
 };
 
 const getFrontendUrl = () =>
-  process.env.FRONTEND_URL || 'http://localhost:5173';
+  process.env.BASE_URL || 'http://localhost:5173';
 
 const isValidUrl = (url) => {
   try {

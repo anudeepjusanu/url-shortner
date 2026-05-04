@@ -92,6 +92,19 @@ const getBioPageAnalytics = async (req, res) => {
   }
 };
 
+const generateBgImage = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+      return res.status(400).json({ success: false, message: 'Prompt is required' });
+    }
+    const result = await bioPageService.generateBgImage(prompt.trim());
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createBioPage,
   getUserBioPages,
@@ -102,4 +115,5 @@ module.exports = {
   trackLinkClick,
   checkUsernameAvailability,
   getBioPageAnalytics,
+  generateBgImage,
 };

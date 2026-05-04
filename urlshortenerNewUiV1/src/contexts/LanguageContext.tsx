@@ -30,10 +30,16 @@ const applyMeta = (lang: Language) => {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const STORAGE_KEY = "preferred_lang";
+
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLangState] = useState<Language>("ar");
+  const [lang, setLangState] = useState<Language>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return (saved === "en" || saved === "ar") ? saved : "ar";
+  });
 
   const setLang = (newLang: Language) => {
+    localStorage.setItem(STORAGE_KEY, newLang);
     setLangState(newLang);
     document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = newLang;

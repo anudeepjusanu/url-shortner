@@ -545,6 +545,9 @@ export const bioPageAPI = {
   delete: (id: string) => apiClient.delete(`/bio-pages/${id}`),
   getAnalytics: (id: string) => apiClient.get(`/bio-pages/${id}/analytics`),
 
+  // AI background image generation (authenticated)
+  generateBgImage: (prompt: string) => apiClient.post('/bio-pages/generate-bg-image', { prompt }),
+
   // Public (no auth)
   getPublic: (username: string) => apiClient.get(`/bio-pages/public/${username}`),
   trackClick: (username: string, linkId: string) =>
