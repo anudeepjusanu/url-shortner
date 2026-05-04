@@ -87,7 +87,7 @@ const BioPageSchema = new mongoose.Schema(
 BioPageSchema.index({ owner: 1, isActive: 1 });
 
 BioPageSchema.virtual('publicUrl').get(function () {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   return `${baseUrl}/bio/${this.username}`;
 });
 
