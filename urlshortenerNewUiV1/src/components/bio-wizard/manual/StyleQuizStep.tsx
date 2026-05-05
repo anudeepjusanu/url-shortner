@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import {
   ChevronLeft,
-  ChevronRight,
   SkipForward,
   User,
   Briefcase,
@@ -137,16 +136,16 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
     }
   };
 
-  const handleContinuePage1 = () => {
-    if (!purpose) return;
+  const handleContinuePage1 = (p: Purpose) => {
+    setPurpose(p);
     setPage(1);
   };
 
-  const handleContinuePage2 = () => {
-    if (!industry) return;
-    const result: QuizResult = { purpose, industry, skipped: false };
+  const handleContinuePage2 = (ind: Industry) => {
+    setIndustry(ind);
+    const result: QuizResult = { purpose, industry: ind, skipped: false };
     onUpdate({ quiz: result });
-    applyTopMatch(purpose, industry);
+    applyTopMatch(purpose, ind);
     onContinue(result);
   };
 
@@ -229,7 +228,7 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
             <IconOptionGrid
               options={purposeOptions}
               value={purpose}
-              onChange={setPurpose}
+              onChange={handleContinuePage1}
               cols="grid-cols-2 sm:grid-cols-3"
             />
           </motion.div>
@@ -252,7 +251,7 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
             <IconOptionGrid
               options={industryOptions}
               value={industry}
-              onChange={setIndustry}
+              onChange={handleContinuePage2}
               cols="grid-cols-2 sm:grid-cols-3"
             />
           </motion.div>
@@ -261,48 +260,15 @@ const StyleQuizStep = ({ draft, onUpdate, onContinue }: Props) => {
 
       {/* Fixed action bar */}
       <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border px-6 py-3 z-20">
-        <div className="max-w-2xl mx-auto" dir="ltr">
-          {page === 0 ? (
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <SkipForward className="w-4 h-4" />
-                {t("Skip quiz", "تخطي الأسئلة")}
-              </button>
-              <button
-                type="button"
-                onClick={handleContinuePage1}
-                disabled={!purpose}
-                className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
-              >
-                {t("Continue", "التالي")}
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <SkipForward className="w-4 h-4" />
-                {t("Skip industry", "تخطي المجال")}
-              </button>
-              <button
-                type="button"
-                onClick={handleContinuePage2}
-                disabled={!industry}
-                className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
-              >
-                {t("Continue", "التالي")}
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+        <div className="max-w-2xl mx-auto flex justify-end" dir="ltr">
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <SkipForward className="w-4 h-4" />
+            {page === 0 ? t("Skip quiz", "تخطي الأسئلة") : t("Skip industry", "تخطي المجال")}
+          </button>
         </div>
       </div>
     </div>

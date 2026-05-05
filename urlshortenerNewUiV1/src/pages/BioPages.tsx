@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Pencil, Trash2, Copy, ExternalLink, Eye,
-  Loader2, Link2, MoreHorizontal, Check,
+  Loader2, Link2, MoreHorizontal, Check, Globe, EyeOff,
 } from "lucide-react";
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
@@ -58,6 +58,7 @@ const BioPages = () => {
     open: false, id: null, title: "",
   });
   const [deleting, setDeleting] = useState(false);
+  const [togglingPublish, setTogglingPublish] = useState<string | null>(null);
 
   const fetchPages = useCallback(async () => {
     setIsLoading(true);
@@ -85,6 +86,24 @@ const BioPages = () => {
       toast({ title: t("Copied!", "تم النسخ!"), description: t("Public URL copied to clipboard", "تم نسخ الرابط العام") });
     } catch {
       toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Could not copy URL", "تعذر نسخ الرابط") });
+    }
+  };
+
+  const handleTogglePublish = async (page: BioPage) => {
+    setTogglingPublish(page._id);
+    try {
+      await bioPageAPI.update(page._id, { isPublished: !page.isPublished });
+      setPages((prev) => prev.map((p) => p._id === page._id ? { ...p, isPublished: !page.isPublished } : p));
+      toast({
+        title: page.isPublished ? t("Unpublished", "تم إلغاء النشر") : t("Published!", "تم النشر!"),
+        description: page.isPublished
+          ? t("Your page is now hidden from the public.", "صفحتك مخفية عن الجمهور الآن.")
+          : t("Your page is now live.", "صفحتك نشطة الآن."),
+      });
+    } catch {
+      toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Could not update publish status", "تعذر تحديث حالة النشر") });
+    } finally {
+      setTogglingPublish(null);
     }
   };
 
@@ -215,6 +234,17 @@ const BioPages = () => {
                             ? <Check className="w-4 h-4 me-2 text-green-500" />
                             : <Copy className="w-4 h-4 me-2" />}
                           {copiedId === page._id ? t("Copied!", "تم النسخ!") : t("Copy URL", "نسخ الرابط")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleTogglePublish(page)}
+                          disabled={togglingPublish === page._id}
+                        >
+                          {togglingPublish === page._id
+                            ? <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                            : page.isPublished
+                            ? <EyeOff className="w-4 h-4 me-2" />
+                            : <Globe className="w-4 h-4 me-2" />}
+                          {page.isPublished ? t("Unpublish", "إلغاء النشر") : t("Publish", "نشر")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

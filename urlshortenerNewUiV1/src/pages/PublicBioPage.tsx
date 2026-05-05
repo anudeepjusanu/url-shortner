@@ -155,20 +155,25 @@ const PublicBioPage = () => {
   const visibleBlocks = page.blocks.filter((b) => b.visible !== false);
 
   return (
-    <div
-      className="min-h-screen w-full relative"
-      style={{ ...bgStyle, fontFamily: theme.fontEn }}
-    >
-      {isImageBg && (
-        <img
-          src={imageBgUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full"
-          style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
-        />
-      )}
-      <div className="relative z-10 w-full max-w-[480px] mx-auto px-4 py-8 flex flex-col min-h-screen">
+    <>
+      {/* Fixed background layer — stays in place while content scrolls */}
+      <div className="fixed inset-0 -z-10" style={bgStyle}>
+        {isImageBg && (
+          <img
+            src={imageBgUrl}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full"
+            style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
+          />
+        )}
+      </div>
+
+      <div
+        className="min-h-[100dvh] w-full"
+        style={{ fontFamily: theme.fontEn }}
+      >
+      <div className="w-full max-w-[480px] mx-auto px-4 py-8 flex flex-col min-h-[100dvh]">
         {/* Blocks */}
         <div className="space-y-2 flex-1">
           {visibleBlocks.map((block, i) => (
@@ -263,7 +268,8 @@ const PublicBioPage = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

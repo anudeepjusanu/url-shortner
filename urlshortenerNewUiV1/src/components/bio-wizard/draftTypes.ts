@@ -301,12 +301,26 @@ export const buildBlocksFromDraft = (
       visible: true,
       animation: "fade",
       data: {
-        platforms: run.map((s) => ({
+        platforms: run.map((s) => {
+          const waDigits = s.type === "whatsapp"
+            ? (s.phone ? (s.phone + (s.url || "")) : (s.url || "")).replace(/[^\d]/g, "")
+            : "";
+          const waUrl = s.type === "whatsapp" && s.message
+            ? `https://wa.me/${waDigits}?text=${encodeURIComponent(s.message)}`
+            : "";
+          return ({
           platform: s.type === "whatsapp" ? "whatsapp" : (s.platform || "instagram"),
           username:
             s.type === "whatsapp"
-              ? (s.phone || s.url || "").replace(/[^\d]/g, "")
+              ? waDigits
+              : s.platform === "linkedin"
+              ? (s.url.replace(/^@/, "").trim() || "linkedin")
               : s.url.replace(/^@/, "").trim(),
+          url: s.type === "whatsapp" && s.message
+            ? waUrl
+            : s.platform === "linkedin" && s.url
+            ? (s.url.startsWith("http") ? s.url : `https://${s.url}`)
+            : undefined,
           displayType: s.displayType || "tag",
           iconImage: s.iconImage,
           iconColor: s.iconColor,
@@ -328,7 +342,8 @@ export const buildBlocksFromDraft = (
           bold: s.bold ?? def.bold,
           italic: s.italic ?? def.italic,
           underline: s.underline ?? def.underline,
-        })),
+        });
+        }),
       },
     });
   };

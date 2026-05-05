@@ -121,6 +121,12 @@ const SHADOW_TO_KEY: Record<NonNullable<LinkBlockData["shadow"]>, string> = {
   strong: "md",
   hard: "lg",
 };
+const SHADOW_CSS_MAP: Record<string, string> = {
+  none: "none",
+  sm: "0 2px 6px rgba(0,0,0,0.08)",
+  md: "0 8px 20px rgba(0,0,0,0.18)",
+  lg: "4px 4px 0 rgba(0,0,0,0.9)",
+};
 
 const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor, borderRadius = 12, shadow, fontScale = 1 }: Props) => {
   const { lang } = useLanguage();
@@ -152,7 +158,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
 
   const isOutline = effectiveButtonStyle === "outline";
   const isGlass = effectiveButtonStyle === "glass";
-  const shadowClass = effectiveShadow === "lg" ? "shadow-lg" : effectiveShadow === "md" ? "shadow-md" : effectiveShadow === "sm" ? "shadow-sm" : "";
+  const shadowClass = "";
   const shakeClass = data.shake ? "animate-bio-shake" : "";
   const textColor = data.textColor;
   const TEXT_MIN = 11;
@@ -235,11 +241,11 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
 
   const ArrowNode = (
     <ArrowRight
-      className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity ${isRtl ? "left-5 rotate-180" : "right-5"}`}
+      className={`absolute top-1/2 -translate-y-1/2 w-6 h-6 opacity-50 group-hover:opacity-100 transition-opacity ${isRtl ? "left-5 rotate-180" : "right-5"}`}
     />
   );
 
-  const anchorClass = `group relative flex items-center px-5 w-full transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${shadowClass} ${isGlass ? "backdrop-blur-md" : ""} ${shakeClass}`;
+  const anchorClass = `group relative flex items-center px-5 w-full transition-all duration-200 hover:scale-[1.02] ${isGlass ? "backdrop-blur-md" : ""} ${shakeClass}`;
   const anchorStyle: React.CSSProperties = {
     height: 48,
     borderRadius: radiusMap[effectiveButtonStyle],
@@ -248,6 +254,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
     border: isOutline ? `2px solid ${effectiveButtonColor}` : isGlass ? `1px solid ${effectiveButtonColor}55` : "none",
     fontSize: 14 * fontScale,
     overflow: "hidden",
+    boxShadow: SHADOW_CSS_MAP[effectiveShadow ?? "none"] || "none",
   };
   const arrowReserve = 44;
   const iconReserve = 32;
