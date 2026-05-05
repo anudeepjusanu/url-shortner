@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -35,6 +36,27 @@ const BlogPost = () => {
   const category = lang === "ar" ? post.category.ar : post.category.en;
   const readTime = lang === "ar" ? post.readTime.ar : post.readTime.en;
   const date = lang === "ar" ? post.date.ar : post.date.en;
+
+  const seoTitle = post.seoTitle
+    ? lang === "ar" ? post.seoTitle.ar : post.seoTitle.en
+    : title;
+  const seoDescription = post.seoDescription
+    ? lang === "ar" ? post.seoDescription.ar : post.seoDescription.en
+    : lang === "ar" ? post.excerpt.ar : post.excerpt.en;
+
+  useEffect(() => {
+    document.title = seoTitle;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", seoDescription);
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", seoTitle);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", seoDescription);
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute("content", seoTitle);
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDesc) twitterDesc.setAttribute("content", seoDescription);
+  }, [seoTitle, seoDescription]);
 
   // Simple markdown-like rendering
   const renderContent = (text: string) => {
