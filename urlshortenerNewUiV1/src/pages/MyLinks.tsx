@@ -15,8 +15,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Copy, BarChart3, Trash2, Link2, ExternalLink,
-  Search, Check, QrCode, Loader2, Tag,
+  Search, Check, QrCode, Loader2, Tag, Edit2, AlertTriangle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -56,6 +64,13 @@ const MyLinks = () => {
     shortUrl: string;
   }>({ open: false, id: null, shortUrl: "" });
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Edit destination dialog
+  const [editDestTarget, setEditDestTarget] = useState<any | null>(null);
+  const [editDestUrl, setEditDestUrl] = useState("");
+  const [editDestError, setEditDestError] = useState("");
+  const [editDestAcknowledged, setEditDestAcknowledged] = useState(false);
+  const [editDestSaving, setEditDestSaving] = useState(false);
 
   const fetchUrls = useCallback(async () => {
     setIsLoading(true);
@@ -150,6 +165,49 @@ const MyLinks = () => {
       });
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const validateDestUrl = (url: string) => {
+    try {
+      const p = new URL(url);
+      return p.protocol === "http:" || p.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  const handleOpenEditDest = (url: any) => {
+    setEditDestTarget(url);
+    setEditDestUrl(url.originalUrl || "");
+    setEditDestError("");
+    setEditDestAcknowledged(false);
+  };
+
+  const handleSaveEditDest = async () => {
+    const trimmed = editDestUrl.trim();
+    if (!validateDestUrl(trimmed)) {
+      setEditDestError(
+        t("Enter a valid http/https URL", "أدخل رابطاً صحيحاً يبدأ بـ http أو https")
+      );
+      return;
+    }
+    setEditDestSaving(true);
+    try {
+      await myLinksService.update(editDestTarget._id, { originalUrl: trimmed });
+      setUrls((prev) =>
+        prev.map((u) => (u._id === editDestTarget._id ? { ...u, originalUrl: trimmed } : u))
+      );
+      setEditDestTarget(null);
+      toast({ title: t("Destination updated", "تم تحديث الوجهة") });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: t("Update failed", "فشل التحديث"),
+        description: err.message,
+      });
+    } finally {
+      setEditDestSaving(false);
     }
   };
 
@@ -416,6 +474,15 @@ const MyLinks = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2.5"
+                            onClick={() => handleOpenEditDest(url)}
+                            title={t("Change Destination URL", "تغيير رابط الوجهة")}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
                           <div className="relative">
                             <Button
                               variant="outline"
@@ -492,6 +559,77 @@ const MyLinks = () => {
           </p>
         </div>
       )}
+
+      {/* Edit Destination Dialog */}
+      <Dialog open={!!editDestTarget} onOpenChange={(open) => !open && setEditDestTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("Change Destination URL", "تغيير رابط الوجهة")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {/* Conditional warning — only when a QR code is associated */}
+            {editDestTarget?.qrCodeGenerated && (
+              <div className="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  {t(
+                    "This short link has an associated QR code. Both the short link and its QR code will point to the new destination immediately — anyone visiting the short link directly or scanning the QR code will be redirected to the new URL.",
+                    "يرتبط بهذا الرابط المختصر كود QR. سيشير كلٌّ من الرابط المختصر وكود QR إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يزور الرابط مباشرةً أو يمسح الكود إلى الرابط الجديد."
+                  )}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <Input
+                value={editDestUrl}
+                onChange={(e) => {
+                  setEditDestUrl(e.target.value);
+                  setEditDestError("");
+                }}
+                placeholder="https://example.com/new-page"
+                dir="ltr"
+              />
+              {editDestError && (
+                <p className="text-xs text-destructive">{editDestError}</p>
+              )}
+            </div>
+
+            {/* Acknowledgment — only required when a QR code is associated */}
+            {editDestTarget?.qrCodeGenerated && (
+              <label className="flex items-start gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={editDestAcknowledged}
+                  onChange={(e) => setEditDestAcknowledged(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
+                />
+                <span className="text-sm text-foreground">
+                  {t(
+                    "I understand that both the short link and its QR code will redirect to the new destination immediately",
+                    "أفهم أن كلاً من الرابط المختصر وكود QR سيُوجَّهان إلى الوجهة الجديدة فوراً"
+                  )}
+                </span>
+              </label>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditDestTarget(null)}>
+              {t("Cancel", "إلغاء")}
+            </Button>
+            <Button
+              onClick={handleSaveEditDest}
+              disabled={
+                editDestSaving ||
+                (editDestTarget?.qrCodeGenerated && !editDestAcknowledged)
+              }
+            >
+              {editDestSaving && <Loader2 className="w-4 h-4 animate-spin me-2" />}
+              {t("Save", "حفظ")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

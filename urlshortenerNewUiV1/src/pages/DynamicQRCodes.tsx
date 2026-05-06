@@ -42,6 +42,7 @@ import {
   RefreshCw,
   Copy,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { dynamicQRCodeAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -103,6 +104,9 @@ export default function DynamicQRCodes() {
 
   // Copied code
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Destination change acknowledgment
+  const [destAcknowledged, setDestAcknowledged] = useState(false);
 
   // ── Debounced search ─────────────────────────────────────────────────────
   const handleSearchChange = useCallback(
@@ -187,6 +191,7 @@ export default function DynamicQRCodes() {
     setEditTarget(item);
     setNewDestination(item.destinationUrl);
     setDestinationError("");
+    setDestAcknowledged(false);
   };
 
   const handleSaveDest = () => {
@@ -483,12 +488,17 @@ export default function DynamicQRCodes() {
             <DialogTitle>{t("Update Destination URL", "تحديث رابط الوجهة")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">
-              {t(
-                "All future scans of this QR code will redirect to the new URL instantly.",
-                "ستتوجه جميع عمليات المسح القادمة لهذا الكود نحو الرابط الجديد فوراً."
-              )}
-            </p>
+            {/* Prominent warning */}
+            <div className="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                {t(
+                  "Changing the destination will immediately redirect all future scans to the new URL. Anyone who scans this QR code — including from already-printed materials — will be sent to the new destination.",
+                  "تغيير الوجهة سيعيد توجيه جميع عمليات المسح القادمة فوراً إلى الرابط الجديد. سيُوجَّه أي شخص يمسح هذا الكود — بما في ذلك من المواد المطبوعة مسبقاً — إلى الوجهة الجديدة."
+                )}
+              </p>
+            </div>
+
             <div className="space-y-1">
               <Input
                 value={newDestination}
@@ -503,6 +513,22 @@ export default function DynamicQRCodes() {
                 <p className="text-xs text-destructive">{destinationError}</p>
               )}
             </div>
+
+            {/* Explicit acknowledgment */}
+            <label className="flex items-start gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={destAcknowledged}
+                onChange={(e) => setDestAcknowledged(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
+              />
+              <span className="text-sm text-foreground">
+                {t(
+                  "I understand that this change takes effect immediately for all future scans",
+                  "أفهم أن هذا التغيير يسري فوراً على جميع عمليات المسح القادمة"
+                )}
+              </span>
+            </label>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEditTarget(null)}>
@@ -510,7 +536,7 @@ export default function DynamicQRCodes() {
             </Button>
             <Button
               onClick={handleSaveDest}
-              disabled={updateDestMutation.isPending}
+              disabled={updateDestMutation.isPending || !destAcknowledged}
             >
               {updateDestMutation.isPending && (
                 <Loader2 className="w-4 h-4 animate-spin me-2" />
