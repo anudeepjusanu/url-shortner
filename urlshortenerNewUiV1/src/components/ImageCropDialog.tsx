@@ -204,12 +204,37 @@ export const ImageCropDialog = ({
       const sw = cropBox.w / s * r;
       const sh = cropBox.h / s * r;
 
+      if (sw <= 0 || sh <= 0) return;
+
+      // Clamp source rect to actual image bounds so we never sample outside the
+      // image — out-of-bounds pixels render as transparent black in Canvas, which
+      // JPEG then bakes in as solid black strips.
+      const clampedSx = Math.max(0, sx);
+      const clampedSy = Math.max(0, sy);
+      const clampedEx = Math.min(img.naturalWidth,  sx + sw);
+      const clampedEy = Math.min(img.naturalHeight, sy + sh);
+      const clampedSw = clampedEx - clampedSx;
+      const clampedSh = clampedEy - clampedSy;
+
+      // Crop selection is entirely outside the image — nothing to draw
+      if (clampedSw <= 0 || clampedSh <= 0) return;
+
+      // Map the clamped source region proportionally back onto the output canvas
       const outW = 800;
       const outH = Math.round(outW * sh / sw);
+      const dx   = ((clampedSx - sx) / sw) * outW;
+      const dy   = ((clampedSy - sy) / sh) * outH;
+      const dw   = (clampedSw / sw) * outW;
+      const dh   = (clampedSh / sh) * outH;
+
       const canvas = document.createElement("canvas");
       canvas.width  = outW;
       canvas.height = outH;
-      canvas.getContext("2d")!.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+      const ctx = canvas.getContext("2d")!;
+      // Fill white so any out-of-bounds margin is white rather than black in JPEG
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, outW, outH);
+      ctx.drawImage(img, clampedSx, clampedSy, clampedSw, clampedSh, dx, dy, dw, dh);
 
       onConfirm(canvas.toDataURL("image/jpeg", 0.85));
       onOpenChange(false);

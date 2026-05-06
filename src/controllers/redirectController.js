@@ -69,7 +69,7 @@ const redirectToOriginalUrl = async (req, res) => {
     const redirectResult = await redirectService.handleRedirect(shortCode, requestData);
     
     if (!redirectResult.success) {
-      const frontendUrl = process.env.BASE_URL || 'http://localhost:8080';
+      const frontendUrl = process.env.BASE_URL || 'https://snip.sa';
       return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
 
