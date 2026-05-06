@@ -237,6 +237,14 @@ export const buildThemeFromDraft = (draft: BioDraft): BioTheme => {
     base = bioThemes[0];
   }
 
+  // User text-style overrides always win over preset/custom defaults
+  if (draft.design.textColor !== undefined) {
+    base = { ...base, textColor: draft.design.textColor };
+  }
+  if (draft.design.fontFamily) {
+    base = { ...base, fontEn: draft.design.fontFamily, fontAr: draft.design.fontFamily };
+  }
+
   if (draft.design.backgroundImage) {
     return {
       ...base,
@@ -481,6 +489,23 @@ export const uid = () => `l${Math.random().toString(36).slice(2, 9)}`;
 export const hydrateDraftFromBioPage = (bioPage: any): BioDraft => {
   const links: DraftLink[] = [];
 
+  // Extract design defaults first so block hydration can distinguish per-link overrides
+  // from values that were simply baked-in design defaults when the page was built.
+  const sd = bioPage.design || {};
+  const defTextColor    = sd.textColor;
+  const defFontSize     = sd.fontSize !== undefined ? sd.fontSize : 14;
+  const defFontFamily   = sd.fontFamily;
+  const defTextAlign    = sd.textAlign !== undefined ? sd.textAlign : "center";
+  const defBold         = sd.bold !== undefined ? sd.bold : false;
+  const defItalic       = sd.italic !== undefined ? sd.italic : false;
+  const defUnderline    = sd.underline !== undefined ? sd.underline : false;
+  const defDirection    = sd.direction !== undefined ? sd.direction : "ltr";
+
+  // Returns undefined when the value matches the saved design default (meaning it was
+  // a page-level default, not a true per-link override). Only real overrides survive.
+  const perLink = <T>(val: T, def: T): T | undefined =>
+    val !== undefined && val !== def ? val : undefined;
+
   const blocks: BioBlock[] = bioPage.blocks || [];
   blocks.forEach((block: BioBlock) => {
     if (block.type === "profile") return; // handled separately as profile fields
@@ -507,16 +532,16 @@ export const hydrateDraftFromBioPage = (bioPage: any): BioDraft => {
           buttonTextColor: p.buttonTextColor,
           shake: p.shake,
           useBrandColors: p.useBrandColors !== false,
-          direction: p.direction,
+          direction: perLink(p.direction, defDirection),
           iconAlign: p.iconAlign,
           iconMatchText: p.iconMatchText,
-          textColor: p.textColor,
-          fontSize: p.fontSize,
-          fontFamily: p.fontFamily,
-          textAlign: p.textAlign,
-          bold: p.bold,
-          italic: p.italic,
-          underline: p.underline,
+          textColor:  perLink(p.textColor,  defTextColor),
+          fontSize:   perLink(p.fontSize,   defFontSize),
+          fontFamily: perLink(p.fontFamily, defFontFamily),
+          textAlign:  perLink(p.textAlign,  defTextAlign),
+          bold:       perLink(p.bold,       defBold),
+          italic:     perLink(p.italic,     defItalic),
+          underline:  perLink(p.underline,  defUnderline),
         });
       });
       return;
@@ -532,13 +557,13 @@ export const hydrateDraftFromBioPage = (bioPage: any): BioDraft => {
         url: "",
         sectionStyle: d.sectionStyle || "text",
         lineColor: d.lineColor,
-        textColor: d.textColor,
-        fontSize: d.fontSize,
-        fontFamily: d.fontFamily,
-        textAlign: d.textAlign,
-        bold: d.bold,
-        italic: d.italic,
-        underline: d.underline,
+        textColor:  perLink(d.textColor,  defTextColor),
+        fontSize:   perLink(d.fontSize,   defFontSize),
+        fontFamily: perLink(d.fontFamily, defFontFamily),
+        textAlign:  perLink(d.textAlign,  defTextAlign),
+        bold:       perLink(d.bold,       defBold),
+        italic:     perLink(d.italic,     defItalic),
+        underline:  perLink(d.underline,  defUnderline),
       });
       return;
     }
@@ -566,42 +591,41 @@ export const hydrateDraftFromBioPage = (bioPage: any): BioDraft => {
         buttonColor: d.buttonColor,
         buttonTextColor: d.buttonTextColor,
         shake: d.shake,
-        direction: d.direction,
+        direction: perLink(d.direction, defDirection),
         iconAlign: d.iconAlign,
         iconMatchText: d.iconMatchText,
-        textColor: d.textColor,
-        fontSize: d.fontSize,
-        fontFamily: d.fontFamily,
-        textAlign: d.textAlign,
-        bold: d.bold,
-        italic: d.italic,
-        underline: d.underline,
+        textColor:  perLink(d.textColor,  defTextColor),
+        fontSize:   perLink(d.fontSize,   defFontSize),
+        fontFamily: perLink(d.fontFamily, defFontFamily),
+        textAlign:  perLink(d.textAlign,  defTextAlign),
+        bold:       perLink(d.bold,       defBold),
+        italic:     perLink(d.italic,     defItalic),
+        underline:  perLink(d.underline,  defUnderline),
       });
     }
   });
 
-  const savedDesign = bioPage.design || {};
   const design: BioDraft["design"] = {
-    themeId: savedDesign.themeId ?? "minimal-light",
-    customColor: savedDesign.customColor ?? null,
-    backgroundImage: savedDesign.backgroundImage ?? "",
-    buttonStyle: savedDesign.buttonStyle ?? "solid",
-    cornerRadius: savedDesign.cornerRadius ?? "round",
-    shadow: savedDesign.shadow ?? "soft",
-    buttonColor: savedDesign.buttonColor ?? "#1a1a1a",
-    buttonTextColor: savedDesign.buttonTextColor ?? "#ffffff",
-    fontEn: savedDesign.fontEn ?? "Inter",
-    fontAr: savedDesign.fontAr ?? "Tajawal",
-    direction: savedDesign.direction ?? "ltr",
-    textColor: savedDesign.textColor,
-    fontSize: savedDesign.fontSize ?? 14,
-    fontFamily: savedDesign.fontFamily,
-    textAlign: savedDesign.textAlign ?? "center",
-    bold: savedDesign.bold ?? false,
-    italic: savedDesign.italic ?? false,
-    underline: savedDesign.underline ?? false,
-    wallpaperStyle: savedDesign.wallpaperStyle ?? null,
-    wallpaperBackground: savedDesign.wallpaperBackground ?? null,
+    themeId: sd.themeId !== undefined ? sd.themeId : "minimal-light",
+    customColor: sd.customColor ?? null,
+    backgroundImage: sd.backgroundImage ?? "",
+    buttonStyle: sd.buttonStyle ?? "solid",
+    cornerRadius: sd.cornerRadius ?? "round",
+    shadow: sd.shadow ?? "soft",
+    buttonColor: sd.buttonColor ?? "#1a1a1a",
+    buttonTextColor: sd.buttonTextColor ?? "#ffffff",
+    fontEn: sd.fontEn ?? "Inter",
+    fontAr: sd.fontAr ?? "Tajawal",
+    direction: sd.direction ?? "ltr",
+    textColor: sd.textColor,
+    fontSize: sd.fontSize ?? 14,
+    fontFamily: sd.fontFamily,
+    textAlign: sd.textAlign ?? "center",
+    bold: sd.bold ?? false,
+    italic: sd.italic ?? false,
+    underline: sd.underline ?? false,
+    wallpaperStyle: sd.wallpaperStyle ?? null,
+    wallpaperBackground: sd.wallpaperBackground ?? null,
   };
 
   return {
