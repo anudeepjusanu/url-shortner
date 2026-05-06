@@ -2,9 +2,9 @@ const redirectService = require('../services/redirectService');
 const geoLocation = require('../utils/geoLocation');
 
 const redirectToOriginalUrl = async (req, res) => {
+  let shortCode = req.params.shortCode || '';
   try {
     // URL-decode the shortCode to handle international characters (Arabic, Chinese, etc.)
-    let { shortCode } = req.params;
     shortCode = decodeURIComponent(shortCode);
 
     const requestDomain = req.get('host');
@@ -69,10 +69,8 @@ const redirectToOriginalUrl = async (req, res) => {
     const redirectResult = await redirectService.handleRedirect(shortCode, requestData);
     
     if (!redirectResult.success) {
-      return res.status(404).json({
-        success: false,
-        message: 'URL not found or access denied'
-      });
+      const frontendUrl = process.env.BASE_URL || 'https://snip.sa';
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
 
     // Perform the redirect
@@ -81,23 +79,16 @@ const redirectToOriginalUrl = async (req, res) => {
 
   } catch (error) {
     console.error('Redirect error:', error);
-    
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:8080';
+
     if (error.message === 'URL not found') {
-      return res.status(404).json({
-        success: false,
-        message: 'The requested URL was not found',
-        error: 'URL_NOT_FOUND'
-      });
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
-    
+
     if (error.message.includes('blocked') || error.message.includes('restricted')) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access to this URL is restricted',
-        error: 'ACCESS_RESTRICTED'
-      });
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
-    
+
     if (error.message === 'Password required') {
       return res.status(401).json({
         success: false,
@@ -105,12 +96,8 @@ const redirectToOriginalUrl = async (req, res) => {
         error: 'PASSWORD_REQUIRED'
       });
     }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during redirect',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'INTERNAL_ERROR'
-    });
+
+    res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
   }
 };
 
@@ -329,9 +316,9 @@ const detectClickSource = (req) => {
 
 // New function specifically for QR code redirects
 const redirectFromQRCode = async (req, res) => {
+  let shortCode = req.params.shortCode || '';
   try {
     // URL-decode the shortCode to handle international characters
-    let { shortCode } = req.params;
     shortCode = decodeURIComponent(shortCode);
 
     const requestDomain = req.get('host');
@@ -390,10 +377,8 @@ const redirectFromQRCode = async (req, res) => {
     const redirectResult = await redirectService.handleRedirect(shortCode, requestData);
 
     if (!redirectResult.success) {
-      return res.status(404).json({
-        success: false,
-        message: 'URL not found or access denied'
-      });
+      const frontendUrl = process.env.BASE_URL || 'http://localhost:8080';
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
 
     // Perform the redirect
@@ -402,21 +387,14 @@ const redirectFromQRCode = async (req, res) => {
 
   } catch (error) {
     console.error('QR Code redirect error:', error);
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:8080';
 
     if (error.message === 'URL not found') {
-      return res.status(404).json({
-        success: false,
-        message: 'The requested URL was not found',
-        error: 'URL_NOT_FOUND'
-      });
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
 
     if (error.message.includes('blocked') || error.message.includes('restricted')) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access to this URL is restricted',
-        error: 'ACCESS_RESTRICTED'
-      });
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
     }
 
     if (error.message === 'Password required') {
@@ -427,11 +405,7 @@ const redirectFromQRCode = async (req, res) => {
       });
     }
 
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during redirect',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'INTERNAL_ERROR'
-    });
+    res.redirect(`${process.env.BASE_URL || 'http://localhost:8080'}/link-not-found?code=${encodeURIComponent(shortCode)}`);
   }
 };
 

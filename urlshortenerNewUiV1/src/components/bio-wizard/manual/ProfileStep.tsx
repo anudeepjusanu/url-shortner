@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Camera, Sparkles, Check, X, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BioDraft, DEFAULT_PROFILE_PHOTO } from "../draftTypes";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 interface Props {
   draft: BioDraft;
@@ -21,14 +22,18 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
   const [enhancing, setEnhancing] = useState(false);
   const [ackedUsernameChange, setAckedUsernameChange] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [avatarCropFile, setAvatarCropFile] = useState<File | null>(null);
+  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
 
   const handleFile = (file?: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return;
-    const reader = new FileReader();
-    reader.onload = () =>
-      onUpdate({ profile: { ...draft.profile, photo: reader.result as string } });
-    reader.readAsDataURL(file);
+    setAvatarCropFile(file);
+    setShowAvatarCrop(true);
+  };
+
+  const handleAvatarCropConfirm = (croppedDataUrl: string) => {
+    onUpdate({ profile: { ...draft.profile, photo: croppedDataUrl } });
   };
 
   const usernameValid = isAvailable(draft.settings.username);
@@ -295,6 +300,15 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
           </button>
         </div>
       </div>
+
+      <ImageCropDialog
+        open={showAvatarCrop}
+        onOpenChange={setShowAvatarCrop}
+        file={avatarCropFile}
+        onConfirm={handleAvatarCropConfirm}
+        aspectRatio={1}
+        title={t("Crop Profile Photo", "اقتصاص صورة البروفايل")}
+      />
     </div>
   );
 };

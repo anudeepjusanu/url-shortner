@@ -139,6 +139,30 @@ const FONT_FAMILIES = [
 
 const clampFontSize = (n: number) => Math.max(11, Math.min(18, Math.round(n)));
 
+const COUNTRY_CODES = [
+  { code: "+966", labelEn: "🇸🇦 +966", labelAr: "🇸🇦 +966" },
+  { code: "+971", labelEn: "🇦🇪 +971", labelAr: "🇦🇪 +971" },
+  { code: "+974", labelEn: "🇶🇦 +974", labelAr: "🇶🇦 +974" },
+  { code: "+965", labelEn: "🇰🇼 +965", labelAr: "🇰🇼 +965" },
+  { code: "+973", labelEn: "🇧🇭 +973", labelAr: "🇧🇭 +973" },
+  { code: "+968", labelEn: "🇴🇲 +968", labelAr: "🇴🇲 +968" },
+  { code: "+20",  labelEn: "🇪🇬 +20",  labelAr: "🇪🇬 +20" },
+  { code: "+962", labelEn: "🇯🇴 +962", labelAr: "🇯🇴 +962" },
+  { code: "+961", labelEn: "🇱🇧 +961", labelAr: "🇱🇧 +961" },
+  { code: "+964", labelEn: "🇮🇶 +964", labelAr: "🇮🇶 +964" },
+  { code: "+1",   labelEn: "🇺🇸 +1",   labelAr: "🇺🇸 +1" },
+  { code: "+44",  labelEn: "🇬🇧 +44",  labelAr: "🇬🇧 +44" },
+  {code: "+91",   labelEn: "🇮🇳 +91",   labelAr: "🇮🇳 +91" },
+] as const;
+
+const detectCountryCode = (phone: string): string => {
+  const sorted = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
+  for (const cc of sorted) {
+    if (phone.startsWith(cc.code)) return cc.code;
+  }
+  return "+966";
+};
+
 const DirectionToggle = ({
   value,
   onChange,
@@ -265,11 +289,8 @@ const TextStylePanel = ({
           {isAr ? "محاذاة النص" : "Text alignment"}
         </p>
         <div className="inline-flex rounded-lg border border-border bg-background p-1 gap-0.5">
-          {([
-            { id: "left" as const, Icon: AlignLeft },
-            { id: "center" as const, Icon: AlignCenter },
-            { id: "right" as const, Icon: AlignRight },
-          ]).map(({ id, Icon }) => {
+          {(["left", "center", "right"] as const).map((id) => {
+            const Icon = id === "center" ? AlignCenter : isAr ? (id === "left" ? AlignRight : AlignLeft) : (id === "left" ? AlignLeft : AlignRight);
             const sel = (value.textAlign || "center") === id;
             return (
               <button
@@ -298,7 +319,7 @@ const TextStylePanel = ({
         >
           {FONT_FAMILIES.map((f) => (
             <option key={f.id} value={f.id} style={{ fontFamily: f.id || undefined }}>
-              {isAr ? f.labelAr : f.labelEn}
+              {f.labelEn}
             </option>
           ))}
         </select>
@@ -348,6 +369,7 @@ const ButtonStylePanel = ({
     shadow: "none" | "soft" | "strong" | "hard";
     buttonColor: string;
     buttonTextColor: string;
+    defaultDirection: "ltr" | "rtl";
   };
   isBrandPlatform?: boolean;
   brandColor?: string;
@@ -559,7 +581,7 @@ const ButtonStylePanel = ({
               {isAr ? "محاذاة الأيقونة" : "Icon alignment"}
             </p>
             {(() => {
-              const linkIsRtl = link.direction === "rtl";
+              const linkIsRtl = (link.direction ?? defaults.defaultDirection) === "rtl";
               const normalizeToPhysical = (
                 v: typeof link.iconAlign | undefined,
               ): "left" | "right" | "edge-left" | "edge-right" => {
@@ -640,7 +662,7 @@ const ButtonStylePanel = ({
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => onChange({ ...link, buttonStyle: s.id })}
+                    onClick={() => onChange({ ...link, buttonStyle: s.id, ...(brandActive ? { buttonColor } : {}) })}
                     className={`flex flex-col items-center gap-1.5 p-1.5 rounded-lg border-2 text-[10px] font-medium transition-colors ${sel ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground hover:border-primary/40"}`}
                   >
                     <span className="w-full text-center px-2 py-1 rounded text-[10px] font-semibold" style={previewStyle}>
@@ -771,11 +793,15 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
     shadow: "none" | "soft" | "strong" | "hard";
     buttonColor: string;
     buttonTextColor: string;
+    defaultDirection: "ltr" | "rtl";
   };
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: link.id });
   const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : 1 };
   const [stylePanelOpen, setStylePanelOpen] = useState(false);
+  const [waCountry, setWaCountry] = useState(() =>
+    link.type === "whatsapp" ? detectCountryCode(link.url || "") : "+966"
+  );
 
   if (link.type === "header") {
     const sectionStyle = link.sectionStyle || "text";
@@ -970,7 +996,7 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
                   >
                     {FONT_FAMILIES.map((f) => (
                       <option key={f.id} value={f.id} style={{ fontFamily: f.id || undefined }}>
-                        {isAr ? f.labelAr : f.labelEn}
+                        {f.labelEn}
                       </option>
                     ))}
                   </select>
@@ -1004,11 +1030,8 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
                       {isAr ? "محاذاة النص" : "Text alignment"}
                     </p>
                     <div className="inline-flex rounded-lg border border-border bg-background p-1 gap-0.5">
-                      {([
-                        { id: "left" as const, Icon: AlignLeft },
-                        { id: "center" as const, Icon: AlignCenter },
-                        { id: "right" as const, Icon: AlignRight },
-                      ]).map(({ id, Icon }) => {
+                      {(["left", "center", "right"] as const).map((id) => {
+                        const Icon = id === "center" ? AlignCenter : isAr ? (id === "left" ? AlignRight : AlignLeft) : (id === "left" ? AlignLeft : AlignRight);
                         const sel = (link.textAlign || "center") === id;
                         return (
                           <button
@@ -1226,15 +1249,72 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
           />
           {isSocial ? (
             <>
-              <label className="text-[11px] font-semibold text-muted-foreground block">
-                {isAr ? `اسم المستخدم في ${socialLabel}` : `${socialLabel} username`}
-              </label>
+              {link.platform === "linkedin" ? (
+                <>
+                  <label className="text-[11px] font-semibold text-muted-foreground block">
+                    {isAr ? "رابط ملف LinkedIn" : "LinkedIn profile URL"}
+                  </label>
+                  <input
+                    value={link.url}
+                    onChange={(e) => onChange({ ...link, url: e.target.value.trim() })}
+                    placeholder="linkedin.com/in/yourname-123456789"
+                    dir="ltr"
+                    inputMode="url"
+                    className={`w-full px-3 py-2 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}
+                    aria-invalid={showUrlErrors && !link.url.trim()}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="text-[11px] font-semibold text-muted-foreground block">
+                    {isAr ? `اسم المستخدم في ${socialLabel}` : `${socialLabel} username`}
+                  </label>
+                  <div dir="ltr" className={`flex items-stretch border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary bg-background ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}>
+                    <span className="px-3 flex items-center text-sm text-muted-foreground bg-muted font-mono">@</span>
+                    <input
+                      value={link.url.replace(/^@/, "")}
+                      onChange={(e) => onChange({ ...link, url: e.target.value.replace(/^@/, "").trim() })}
+                      placeholder="yourname"
+                      dir="ltr"
+                      className="flex-1 px-3 py-2 bg-background text-sm focus:outline-none font-mono"
+                      aria-invalid={showUrlErrors && !link.url.trim()}
+                    />
+                  </div>
+                </>
+              )}
+              {showUrlErrors && !link.url.trim() && (
+                <p className="text-xs text-destructive font-medium" role="alert">
+                  {isAr ? "هذا الحقل مطلوب" : "This field is required"}
+                </p>
+              )}
+            </>
+          ) : isWhatsApp ? (
+            <>
               <div dir="ltr" className={`flex items-stretch border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary bg-background ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}>
-                <span className="px-3 flex items-center text-sm text-muted-foreground bg-muted font-mono">@</span>
+                <select
+                  value={waCountry}
+                  onChange={(e) => {
+                    const cc = e.target.value;
+                    setWaCountry(cc);
+                    const local = link.url.startsWith(waCountry)
+                      ? link.url.slice(waCountry.length)
+                      : link.url.replace(/[^\d]/g, "");
+                    onChange({ ...link, url: cc + local });
+                  }}
+                  className="px-2 py-2 bg-muted border-e border-border text-sm focus:outline-none shrink-0"
+                >
+                  {COUNTRY_CODES.map((cc) => (
+                    <option key={cc.code} value={cc.code}>{isAr ? cc.labelAr : cc.labelEn}</option>
+                  ))}
+                </select>
                 <input
-                  value={link.url.replace(/^@/, "")}
-                  onChange={(e) => onChange({ ...link, url: e.target.value.replace(/^@/, "").trim() })}
-                  placeholder="yourname"
+                  value={link.url.startsWith(waCountry) ? link.url.slice(waCountry.length) : link.url.replace(/[^\d]/g, "")}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/[^\d]/g, "");
+                    onChange({ ...link, url: waCountry + digits });
+                  }}
+                  inputMode="tel"
+                  placeholder={waCountry === "+966" ? "5XXXXXXXX" : "XXXXXXXXX"}
                   dir="ltr"
                   className="flex-1 px-3 py-2 bg-background text-sm focus:outline-none font-mono"
                   aria-invalid={showUrlErrors && !link.url.trim()}
@@ -1242,7 +1322,12 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
               </div>
               {showUrlErrors && !link.url.trim() && (
                 <p className="text-xs text-destructive font-medium" role="alert">
-                  {isAr ? "اسم المستخدم مطلوب" : "Username is required"}
+                  {isAr ? "رقم الهاتف مطلوب" : "Phone number is required"}
+                </p>
+              )}
+              {showUrlErrors && link.url.trim() && link.url.replace(/\D/g, "").length < 7 && (
+                <p className="text-xs text-destructive font-medium" role="alert">
+                  {isAr ? "رقم الهاتف غير صحيح" : "Invalid phone number"}
                 </p>
               )}
             </>
@@ -1250,29 +1335,16 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
             <>
               <input
                 value={link.url}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  const next = isWhatsApp
-                    ? (raw.startsWith("+") ? "+" : "") + raw.replace(/[^\d]/g, "")
-                    : raw;
-                  onChange({ ...link, url: next });
-                }}
-                inputMode={isWhatsApp ? "tel" : "url"}
-                placeholder={isWhatsApp ? "+9665XXXXXXXX" : "https://..."}
+                onChange={(e) => onChange({ ...link, url: e.target.value })}
+                inputMode="url"
+                placeholder="https://..."
                 dir="ltr"
                 className={`w-full px-3 py-2 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${showUrlErrors && !link.url.trim() ? "border-destructive" : "border-border"}`}
                 aria-invalid={showUrlErrors && !link.url.trim()}
               />
               {showUrlErrors && !link.url.trim() && (
                 <p className="text-xs text-destructive font-medium" role="alert">
-                  {isWhatsApp
-                    ? (isAr ? "رقم الهاتف مطلوب" : "Phone number is required")
-                    : (isAr ? "الرابط مطلوب" : "URL is required")}
-                </p>
-              )}
-              {showUrlErrors && isWhatsApp && link.url.trim() && link.url.replace(/\D/g, "").length < 8 && (
-                <p className="text-xs text-destructive font-medium" role="alert">
-                  {isAr ? "رقم الهاتف غير صحيح" : "Invalid phone number"}
+                  {isAr ? "الرابط مطلوب" : "URL is required"}
                 </p>
               )}
             </>
@@ -1527,6 +1599,7 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
                       shadow: draft.design.shadow,
                       buttonColor: draft.design.buttonColor,
                       buttonTextColor: draft.design.buttonTextColor,
+                      defaultDirection: draft.design.direction || "ltr",
                     }}
                   />
                 </motion.div>
@@ -1565,18 +1638,9 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
 
       <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border px-6 py-2 z-20">
         <div className="max-w-3xl mx-auto flex items-center justify-between" dir="ltr">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">
-              {t(`${draft.links.length} link${draft.links.length === 1 ? "" : "s"}`, `${draft.links.length} رابط`)}
-            </span>
-            <button
-              onClick={() => setAiOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {t("Suggest links", "اقترح روابط")}
-            </button>
-          </div>
+          <span className="text-xs text-muted-foreground">
+            {t(`${draft.links.length} link${draft.links.length === 1 ? "" : "s"}`, `${draft.links.length} رابط`)}
+          </span>
           <button
             type="button"
             onClick={handleNext}

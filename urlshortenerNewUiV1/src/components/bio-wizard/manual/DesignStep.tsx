@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 interface Props {
   draft: BioDraft;
@@ -86,10 +87,11 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
   const isAr = lang === "ar";
   const bgRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [bgCropFile, setBgCropFile] = useState<File | null>(null);
+  const [showBgCrop, setShowBgCrop] = useState(false);
 
   const hasQuiz = !!(quizResult && !quizResult.skipped && (quizResult.purpose || quizResult.industry));
   const ranked = hasQuiz ? rankThemes(quizResult!.purpose, quizResult!.industry) : bioThemes;
-  const suggestedIds = hasQuiz ? new Set(ranked.slice(0, 6).map((th) => th.id)) : new Set<string>();
   const [showAll, setShowAll] = useState(!hasQuiz);
   const themesToShow = showAll ? bioThemes : ranked.slice(0, 6);
 
@@ -176,9 +178,12 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
   const handleBgFile = (file?: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return;
-    const reader = new FileReader();
-    reader.onload = () => setBackground(reader.result as string);
-    reader.readAsDataURL(file);
+    setBgCropFile(file);
+    setShowBgCrop(true);
+  };
+
+  const handleBgCropConfirm = (croppedDataUrl: string) => {
+    setBackground(croppedDataUrl);
   };
 
   const generateBgImage = async () => {
@@ -242,20 +247,16 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
       <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mb-8">
         {themesToShow.map((theme) => {
           const sel = draft.design.themeId === theme.id;
-          const isSuggested = hasQuiz && suggestedIds.has(theme.id);
-          const isDimmed = showAll && hasQuiz && !isSuggested;
           const score = hasQuiz ? scoreThemeFor(theme, quizResult!.purpose, quizResult!.industry) : 0;
           return (
             <motion.button
               key={theme.id}
-              whileHover={{ scale: isDimmed ? 1.02 : 1.04, y: -2 }}
+              whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setTheme(theme.id)}
               className={`relative rounded-xl overflow-hidden border-2 transition-all ${
                 sel
-                  ? "border-primary shadow-elevated opacity-100"
-                  : isDimmed
-                  ? "border-border opacity-40 hover:opacity-70"
+                  ? "border-primary shadow-elevated"
                   : "border-border hover:border-primary/40"
               }`}
             >
@@ -624,11 +625,8 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5">{t("Text alignment", "محاذاة النص")}</p>
           <div className="inline-flex rounded-lg border border-border bg-background p-1 gap-0.5">
-            {([
-              { id: "left" as const, Icon: AlignLeft },
-              { id: "center" as const, Icon: AlignCenter },
-              { id: "right" as const, Icon: AlignRight },
-            ]).map(({ id, Icon }) => {
+            {(["left", "center", "right"] as const).map((id) => {
+              const Icon = id === "center" ? AlignCenter : isAr ? (id === "left" ? AlignRight : AlignLeft) : (id === "left" ? AlignLeft : AlignRight);
               const sel = (draft.design.textAlign || "center") === id;
               return (
                 <button
@@ -664,7 +662,7 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
               { id: "'Noto Kufi Arabic', sans-serif", labelEn: "Noto Kufi", labelAr: "نوتو كوفي" },
             ].map((f) => (
               <option key={f.id} value={f.id} style={{ fontFamily: f.id || undefined }}>
-                {isAr ? f.labelAr : f.labelEn}
+                {f.labelEn}
               </option>
             ))}
           </select>
@@ -765,6 +763,15 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ImageCropDialog
+        open={showBgCrop}
+        onOpenChange={setShowBgCrop}
+        file={bgCropFile}
+        onConfirm={handleBgCropConfirm}
+        aspectRatio={9 / 16}
+        title={t("Crop Background Image", "اقتصاص صورة الخلفية")}
+      />
     </div>
   );
 };
