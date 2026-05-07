@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useMetaTags } from "@/hooks/useMetaTags";
 import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle, Globe } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,35 @@ const Signup = () => {
   useEffect(() => {
     amplitudeService.trackRegistrationStarted('direct');
   }, []);
+
+  // Set meta tags based on language
+  useMetaTags({
+    title: lang === "ar"
+      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
+      : "Short Link Generator | Create Free Snip Account Today",
+    titleAr: "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم",
+    description: lang === "ar"
+      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
+      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
+    descriptionAr: "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.",
+    keywords: "short link generator, create account, free signup, URL shortener, UTM links, QR codes, link analytics, snip.sa, تقصير الروابط, إنشاء حساب مجاني, اختصار الروابط",
+    ogTitle: lang === "ar"
+      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
+      : "Short Link Generator | Create Free Snip Account Today",
+    ogDescription: lang === "ar"
+      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
+      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
+    ogUrl: "https://snip.sa/signup",
+    ogImage: "https://snip.sa/og-image.png",
+    twitterTitle: lang === "ar"
+      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
+      : "Short Link Generator | Create Free Snip Account Today",
+    twitterDescription: lang === "ar"
+      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
+      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
+    twitterImage: "https://snip.sa/og-image.png",
+    canonical: "https://snip.sa/signup",
+  });
 
   // ── Derived ──
   const pwRulesMet = passwordRules.map((r) => r.test(password));

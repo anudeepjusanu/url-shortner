@@ -8,7 +8,7 @@ import { BioBlock, BioTheme } from "@/types/bio";
 import { bioThemes } from "@/data/bioThemes";
 import BlockRenderer from "@/components/bio-builder/BlockRenderer";
 import { getImageStyle } from "@/components/bio-builder/ImageCropControl";
-import logoIcon from "@/assets/logo-icon.png";
+import logo from "@/assets/logo.png";
 
 interface PublicPage {
   username: string;
@@ -156,14 +156,23 @@ const PublicBioPage = () => {
 
   return (
     <>
-      {/* Fixed background layer — stays in place while content scrolls */}
-      <div className="fixed inset-0 -z-10" style={bgStyle}>
+      {/* Fixed background layer — extends into safe areas on notched mobile devices */}
+      <div
+        className="fixed -z-10"
+        style={{
+          ...bgStyle,
+          top: `calc(-1 * env(safe-area-inset-top, 0px))`,
+          left: `calc(-1 * env(safe-area-inset-left, 0px))`,
+          right: `calc(-1 * env(safe-area-inset-right, 0px))`,
+          bottom: `calc(-1 * env(safe-area-inset-bottom, 0px))`,
+        }}
+      >
         {isImageBg && (
           <img
             src={imageBgUrl}
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full"
+            className="absolute top-0 left-0 right-0 bottom-0"
             style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
           />
         )}
@@ -171,7 +180,13 @@ const PublicBioPage = () => {
 
       <div
         className="min-h-[100dvh] w-full"
-        style={{ fontFamily: theme.fontEn }}
+        style={{
+          fontFamily: theme.fontEn,
+          paddingTop: `env(safe-area-inset-top, 0px)`,
+          paddingBottom: `env(safe-area-inset-bottom, 0px)`,
+          paddingLeft: `env(safe-area-inset-left, 0px)`,
+          paddingRight: `env(safe-area-inset-right, 0px)`,
+        }}
       >
       <div className="w-full max-w-[480px] mx-auto px-4 py-8 flex flex-col min-h-[100dvh]">
         {/* Blocks */}
@@ -201,11 +216,10 @@ const PublicBioPage = () => {
           </button>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-sm font-semibold transition-all hover:scale-105 shadow-sm"
-            style={{ color: theme.textColor }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/20 text-sm font-semibold transition-all hover:scale-105 hover:bg-black/50 shadow-sm"
           >
-            <img src={logoIcon} alt="logo" className="w-5 h-5 object-contain" />
-            {t("Create your page", "أنشئ صفحتك")}
+            <span>{t("Build your page at", "ابني صفحتك مع")}</span>
+            <img src={logo} alt="logo" className="w-5 h-5 object-contain brightness-0 invert" />
           </Link>
         </div>
       </div>

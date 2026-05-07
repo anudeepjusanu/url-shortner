@@ -253,7 +253,7 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
             </span>
           </div>
           <div className="flex items-center justify-end mt-2">
-            <button
+            {/* <button
               onClick={enhanceBio}
               type="button"
               disabled={!draft.profile.bio.trim() || enhancing}
@@ -267,7 +267,7 @@ const ProfileStep = ({ draft, onUpdate, onContinue, originalUsername }: Props) =
               {enhancing
                 ? t("Enhancing…", "جاري التحسين…")
                 : t("Enhance", "تحسين")}
-            </button>
+            </button> */}
           </div>
         </div>
         <div>

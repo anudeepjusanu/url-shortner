@@ -247,6 +247,7 @@ const BioBuilder = () => {
           onBack={() => navigate("/dashboard/bio-pages")}
           onPublish={handleSave}
           onSaveDraft={handleSaveDraft}
+          onApplyChanges={handleSave}
           originalUsername={originalUsername}
           isEdit
         />

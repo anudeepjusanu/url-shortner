@@ -15,12 +15,13 @@ interface Props {
   onBack: () => void;
   onPublish: () => void;
   onSaveDraft?: () => void;
+  onApplyChanges?: () => void;
   originalUsername?: string;
   isEdit?: boolean;
 }
 
-const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, originalUsername, isEdit }: Props) => {
-  // Use step index: 0=Profile, 1=StyleQuiz (skipped on edit), 2=Design, 3=Links, 4=Review
+const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, onApplyChanges, originalUsername, isEdit }: Props) => {
+  // Use step index: 0=Profile, 1=StyleQuiz (skipped on edit), 2=Design, 3=Links, 4=Review (create only)
   const [step, setStep] = useState(0);
 
   // Derive quiz result directly from the draft so it stays in sync when the
@@ -95,7 +96,8 @@ const ManualWizard = ({ draft, onUpdate, onBack, onPublish, onSaveDraft, origina
                 <LinksStep
                   draft={draft}
                   onUpdate={onUpdate}
-                  onContinue={() => goToStep(4)}
+                  onContinue={isEdit && onApplyChanges ? onApplyChanges : () => goToStep(4)}
+                  isEdit={isEdit}
                 />
               )}
               {step === 4 && (
