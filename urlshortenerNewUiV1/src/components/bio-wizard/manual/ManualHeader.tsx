@@ -17,19 +17,17 @@ const labelsCreate = [
 ];
 const labelsEdit = [
   { en: "Profile", ar: "البروفايل" },
-  { en: "Style", ar: "الأسلوب" },
   { en: "Design", ar: "التصميم" },
   { en: "Links", ar: "الروابط" },
-  { en: "Save", ar: "حفظ" },
 ];
 
 const ManualHeader = ({ step, onBack, isEdit }: Props) => {
   const { t, lang } = useLanguage();
   const isAr = lang === "ar";
   const labels = isEdit ? labelsEdit : labelsCreate;
-  const lbl = labels[step];
-  const total = isEdit ? 4 : 5;
+  const total = isEdit ? 3 : 5;
   const displayedStep = isEdit && step >= 2 ? step - 1 : step;
+  const lbl = labels[displayedStep] || labels[labels.length - 1];
   return (
     <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-6 py-3" dir="ltr">
       <div className="max-w-3xl mx-auto flex items-center justify-between">

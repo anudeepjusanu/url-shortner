@@ -41,8 +41,8 @@ const CORNER_OPTIONS = [
 ] as const;
 const SHADOW_OPTIONS = [
   { id: "none", label: { en: "None", ar: "بدون" }, css: "none" },
-  { id: "soft", label: { en: "Soft", ar: "خفيف" }, css: "0 2px 6px rgba(0,0,0,0.08)" },
-  { id: "strong", label: { en: "Strong", ar: "قوي" }, css: "0 8px 20px rgba(0,0,0,0.18)" },
+  { id: "soft", label: { en: "Soft", ar: "خفيف" }, css: "0 10px 28px rgba(0,0,0,0.32)" },
+  { id: "strong", label: { en: "Strong", ar: "قوي" }, css: "0 18px 45px rgba(0,0,0,0.50)" },
   { id: "hard", label: { en: "Hard", ar: "حاد" }, css: "4px 4px 0 rgba(0,0,0,0.9)" },
 ] as const;
 const BUTTON_COLOR_PRESETS = ["#1a1a1a", "#FFFFFF", "#7a253a", "#a83244", "#006C35", "#D4AF37", "#0077B6", "#7C3AED", "#FF6B6B", "#0D9488"];
@@ -474,7 +474,7 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
                   onClick={() => setShadow(s.id)}
                   className={`flex flex-col items-center gap-2 p-2 rounded-xl border-2 text-xs font-medium transition-colors ${sel ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground hover:border-primary/40"}`}
                 >
-                  <span className="w-full h-6 rounded-md" style={{ background: baseColor, boxShadow: s.css }} />
+                  <span className="w-full h-8 rounded-md mb-1" style={{ background: baseColor, boxShadow: s.css }} />
                   {isAr ? s.label.ar : s.label.en}
                 </button>
               );

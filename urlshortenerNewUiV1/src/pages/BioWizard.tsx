@@ -111,6 +111,23 @@ const BioWizard = () => {
     }
   };
 
+  const handleApplyChanges = async () => {
+    setStage("publishing");
+    try {
+      const payload = buildPayload(true);
+      await bioPageAPI.update(bioPageId!, payload);
+      toast({ title: t("Changes saved", "تم حفظ التغييرات") });
+      navigate("/dashboard/bio-pages");
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: t("Save failed", "فشل الحفظ"),
+        description: err?.message || t("Something went wrong", "حدث خطأ"),
+      });
+      setStage("manual");
+    }
+  };
+
   if (stage === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -158,6 +175,7 @@ const BioWizard = () => {
               onBack={() => navigate("/dashboard/bio-pages")}
               onPublish={handlePublish}
               onSaveDraft={handleSaveDraft}
+              onApplyChanges={handleApplyChanges}
               originalUsername={originalUsername}
               isEdit={isEdit}
             />

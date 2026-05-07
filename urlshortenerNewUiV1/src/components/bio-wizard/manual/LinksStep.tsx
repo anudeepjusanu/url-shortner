@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   GripVertical, Trash2, Plus, Instagram, Youtube, Linkedin, Facebook,
   Globe, Heading, Link as LinkIcon, ShoppingBag, Calendar, MapPin, FileText, Mail, Phone, Music, Video,
@@ -25,6 +25,7 @@ interface Props {
   draft: BioDraft;
   onUpdate: (patch: Partial<BioDraft>) => void;
   onContinue: () => void;
+  isEdit?: boolean;
 }
 
 const SnapchatIcon = ({ className }: { className?: string }) => (
@@ -120,8 +121,8 @@ const CORNER_OPTIONS = [
 ] as const;
 const SHADOW_OPTIONS = [
   { id: "none", labelEn: "None", labelAr: "بدون", css: "none" },
-  { id: "soft", labelEn: "Soft", labelAr: "خفيف", css: "0 2px 6px rgba(0,0,0,0.08)" },
-  { id: "strong", labelEn: "Strong", labelAr: "قوي", css: "0 8px 20px rgba(0,0,0,0.18)" },
+  { id: "soft", labelEn: "Soft", labelAr: "خفيف", css: "0 10px 28px rgba(0,0,0,0.32)" },
+  { id: "strong", labelEn: "Strong", labelAr: "قوي", css: "0 18px 45px rgba(0,0,0,0.50)" },
   { id: "hard", labelEn: "Hard", labelAr: "حاد", css: "4px 4px 0 rgba(0,0,0,0.9)" },
 ] as const;
 
@@ -711,7 +712,7 @@ const ButtonStylePanel = ({
                     onClick={() => onChange({ ...link, shadow: s.id })}
                     className={`flex flex-col items-center gap-1.5 p-1.5 rounded-lg border-2 text-[10px] font-medium transition-colors ${sel ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground hover:border-primary/40"}`}
                   >
-                    <span className="w-full h-4 rounded-sm" style={{ background: buttonColor, boxShadow: s.css }} />
+                    <span className="w-full h-6 rounded-sm mb-0.5" style={{ background: buttonColor, boxShadow: s.css }} />
                     {isAr ? s.labelAr : s.labelEn}
                   </button>
                 );
@@ -802,6 +803,10 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
   const [waCountry, setWaCountry] = useState(() =>
     link.type === "whatsapp" ? detectCountryCode(link.url || "") : "+966"
   );
+
+  useEffect(() => {
+    if (!isOpen) setStylePanelOpen(false);
+  }, [isOpen]);
 
   if (link.type === "header") {
     const sectionStyle = link.sectionStyle || "text";
@@ -1410,7 +1415,7 @@ const LinkRow = ({ link, onChange, onDelete, isAr, isOpen, onToggle, designDefau
   );
 };
 
-const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
+const LinksStep = ({ draft, onUpdate, onContinue, isEdit }: Props) => {
   const { t, lang } = useLanguage();
   const isAr = lang === "ar";
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -1647,7 +1652,7 @@ const LinksStep = ({ draft, onUpdate, onContinue }: Props) => {
             disabled={draft.links.filter((l) => l.type !== "header").length === 0}
             className="bg-primary text-primary-foreground font-semibold text-sm px-6 py-2 rounded-lg hover:opacity-90 shadow-elevated disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {t("Next", "التالي")} →
+            {isEdit ? t("Apply Changes", "حفظ التغييرات") : <>{t("Next", "التالي")} →</>}
           </button>
         </div>
       </div>

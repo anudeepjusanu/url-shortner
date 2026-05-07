@@ -123,8 +123,8 @@ const SHADOW_TO_KEY: Record<NonNullable<LinkBlockData["shadow"]>, string> = {
 };
 const SHADOW_CSS_MAP: Record<string, string> = {
   none: "none",
-  sm: "0 2px 6px rgba(0,0,0,0.08)",
-  md: "0 8px 20px rgba(0,0,0,0.18)",
+  sm: "0 10px 28px rgba(0,0,0,0.32)",
+  md: "0 18px 45px rgba(0,0,0,0.50)",
   lg: "4px 4px 0 rgba(0,0,0,0.9)",
 };
 

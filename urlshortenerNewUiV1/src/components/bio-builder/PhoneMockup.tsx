@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import BlockRenderer from "./BlockRenderer";
 import { getImageStyle } from "./ImageCropControl";
 import { allSocialPlatforms } from "./blocks/SocialIconsBlock";
-import logoIcon from "@/assets/logo-icon.png";
+import logo from "@/assets/logo.png";
 
 interface Props {
   blocks: BioBlock[];
@@ -233,11 +233,10 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                 <div className="mt-auto pt-3 flex items-center justify-center">
                   <a
                     href="#"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-xs font-semibold transition-all hover:scale-105"
-                    style={{ color: theme.textColor }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/20 text-xs font-semibold transition-all hover:scale-105 hover:bg-black/50"
                   >
-                    <img src={logoIcon} alt="logo" className="w-4 h-4 object-contain" />
-                    <span>{t("Create your page", "أنشئ صفحتك")}</span>
+                    <span>{t("Build your page at", "ابني صفحتك مع")}</span>
+                    <img src={logo} alt="logo" className="w-4 h-4 object-contain brightness-0 invert" />
                   </a>
                 </div>
               </div>
