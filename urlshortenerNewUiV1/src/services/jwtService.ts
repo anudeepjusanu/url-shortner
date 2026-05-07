@@ -168,7 +168,7 @@ export const myLinksService = {
     description?: string;
     tags?: string[];
     expiresAt?: string;
-    domain?: string;
+    domainId?: string;
     password?: string;
     utmParams?: Record<string, string>;
   }) =>

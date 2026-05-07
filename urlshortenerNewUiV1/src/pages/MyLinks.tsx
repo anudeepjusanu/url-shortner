@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Copy, BarChart3, Trash2, Link2, ExternalLink,
-  Search, Check, QrCode, Loader2, Tag, Edit2, AlertTriangle,
+  Search, Check, QrCode, Loader2, Tag, Edit2, AlertTriangle, Layers,
 } from "lucide-react";
 import {
   Dialog,
@@ -281,13 +281,24 @@ const MyLinks = () => {
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t("My Links", "روابطي")}
         </h1>
-        <Button
-          className="bg-primary text-primary-foreground"
-          onClick={() => navigate("/dashboard/create-link")}
-          type="button"
-        >
-          + {t("New Link", "رابط جديد")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/dashboard/bulk-shorten")}
+            type="button"
+            className="gap-2"
+          >
+            <Layers className="w-4 h-4" />
+            {t("Bulk Shorten", "اختصار مجمّع")}
+          </Button>
+          <Button
+            className="bg-primary text-primary-foreground"
+            onClick={() => navigate("/dashboard/create-link")}
+            type="button"
+          >
+            + {t("New Link", "رابط جديد")}
+          </Button>
+        </div>
       </div>
 
       {/* Search + Total */}

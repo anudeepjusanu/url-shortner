@@ -305,26 +305,15 @@ const DesignStep = ({ draft, onUpdate, onContinue, quizResult }: Props) => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => bgRef.current?.click()}
-              className="h-32 rounded-xl border-2 border-dashed border-border hover:border-primary bg-muted/30 flex flex-col items-center justify-center transition-colors"
-            >
-              <ImagePlus className="w-7 h-7 text-muted-foreground mb-1.5" />
-              <span className="text-sm font-medium text-foreground">{t("Upload background image", "رفع صورة خلفية")}</span>
-              <span className="text-xs text-muted-foreground mt-0.5">{t("PNG, JPG up to 5MB", "PNG أو JPG حتى 5 ميجا")}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setBgAiOpen(true)}
-              className="h-32 rounded-xl border-2 border-dashed border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 flex flex-col items-center justify-center transition-colors"
-            >
-              <Sparkles className="w-7 h-7 text-primary mb-1.5" />
-              <span className="text-sm font-medium text-foreground">{t("Generate with AI", "أنشئ بالذكاء الاصطناعي")}</span>
-              <span className="text-xs text-muted-foreground mt-0.5">{t("Describe your vibe", "صف الأجواء التي تريدها")}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => bgRef.current?.click()}
+            className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary bg-muted/30 flex flex-col items-center justify-center transition-colors"
+          >
+            <ImagePlus className="w-7 h-7 text-muted-foreground mb-1.5" />
+            <span className="text-sm font-medium text-foreground">{t("Upload background image", "رفع صورة خلفية")}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">{t("PNG, JPG up to 5MB", "PNG أو JPG حتى 5 ميجا")}</span>
+          </button>
         )}
         <input
           ref={bgRef}

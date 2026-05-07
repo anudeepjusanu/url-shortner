@@ -51,6 +51,7 @@ import BioWizard from "./pages/BioWizard";
 import BioBuilder from "./pages/BioBuilder";
 import PublicBioPage from "./pages/PublicBioPage";
 import BulkCreate from "./pages/BulkCreate";
+import BulkShorten from "./pages/BulkShorten";
 import DynamicQRCodes from "./pages/DynamicQRCodes";
 import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
 import QRErrorPage from "./pages/QRErrorPage";
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="/dashboard/bio-wizard/:id/edit" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
             <Route path="/dashboard/bio-builder/:id" element={<ProtectedRoute><BioBuilder /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
+            <Route path="/dashboard/bulk-shorten" element={<ProtectedRoute><BulkShorten /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
