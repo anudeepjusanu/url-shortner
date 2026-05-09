@@ -237,6 +237,7 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                   >
                     <span>{t("Build your page at", "ابني صفحتك مع")}</span>
                     <img src={logo} alt="logo" className="w-4 h-4 object-contain brightness-0 invert" />
+                    <span className="text-xs">SNIP</span>
                   </a>
                 </div>
               </div>
