@@ -71,6 +71,7 @@ const BlockRenderer = ({ block, theme, isSelected, onClick }: Props) => {
             buttonColor={theme.buttonColor}
             buttonTextColor={theme.buttonTextColor}
             borderRadius={theme.borderRadius}
+            data={block.data as any}
           />
         );
       case "qrcode":

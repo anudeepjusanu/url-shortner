@@ -88,6 +88,12 @@ const socialUrlPatterns: { pattern: RegExp; icon: any; label: string }[] = [
 
 export function detectSocialFromUrl(url: string): SocialDetection | null {
   if (!url) return null;
+  try {
+    const urlObj = new URL(url);
+    if (!["http:", "https:"].includes(urlObj.protocol)) return null;
+  } catch {
+    return null;
+  }
   for (const s of socialUrlPatterns) {
     if (s.pattern.test(url)) return { icon: s.icon, label: s.label };
   }
@@ -128,6 +134,17 @@ const SHADOW_CSS_MAP: Record<string, string> = {
   lg: "4px 4px 0 rgba(0,0,0,0.9)",
 };
 
+function sanitizeUrl(url: string): string {
+  if (!url) return "#";
+  try {
+    const urlObj = new URL(url);
+    if (!["http:", "https:", "mailto:", "tel:"].includes(urlObj.protocol)) return "#";
+    return url;
+  } catch {
+    return "#";
+  }
+}
+
 const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor, borderRadius = 12, shadow, fontScale = 1 }: Props) => {
   const { lang } = useLanguage();
   const title = lang === "ar" ? data.title : data.titleEn;
@@ -143,6 +160,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
   const effectiveButtonTextColor = data.buttonTextColor || buttonTextColor;
 
   const social = detectSocialFromUrl(data.url);
+  const safeUrl = sanitizeUrl(data.url);
   const Icon = social ? social.icon : (data.icon ? iconMap[data.icon] || ExternalLink : ExternalLink);
   const hasCustomImage = !!data.iconImage;
   const displayType = data.displayType || "button";
@@ -212,7 +230,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
   if (displayType === "tag") {
     return (
       <a
-        href={data.url}
+        href={safeUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={title}
@@ -283,7 +301,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
     const reservedRight = reserved.right + (resolvedTextAlign === "center" || !iconOnLeft ? iconReserve : 0);
     return (
       <a
-        href={data.url}
+        href={safeUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={`${anchorClass} relative`}
@@ -315,7 +333,7 @@ const LinkBlock = ({ data, buttonStyle = "rounded", buttonColor, buttonTextColor
     const reserved = arrowReserves();
     return (
       <a
-        href={data.url}
+        href={safeUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={anchorClass}

@@ -33,10 +33,12 @@ export const useMetaTags = (config: MetaTagsConfig) => {
       if (element) {
         element.setAttribute('content', content);
       } else {
-        // Create new meta tag if it doesn't exist
         const meta = document.createElement('meta');
-        const [attr, value] = selector.replace(/[\[\]]/g, '').split('=');
-        meta.setAttribute(attr, value.replace(/['"]/g, ''));
+        const attrRegex = /\[(\w+)=["']([^"']*)["']\]/g;
+        let match;
+        while ((match = attrRegex.exec(selector)) !== null) {
+          meta.setAttribute(match[1], match[2]);
+        }
         meta.setAttribute('content', content);
         document.head.appendChild(meta);
       }
