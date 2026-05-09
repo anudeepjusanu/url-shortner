@@ -222,6 +222,11 @@ const AnalyticsPage = () => {
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
   const dragStartWindow = useRef({ start: 0, end: 0 });
+  const dragButton = useRef(0);
+  const prevDragX = useRef(0);
+  const prevDragTime = useRef(0);
+  const dragVelocity = useRef(0);
+  const animFrame = useRef(0);
   const lastPinchDist = useRef(0);
   const pinchAnchor = useRef(0.5);
   // Always-fresh refs for event handlers — avoids stale closure bugs
@@ -631,7 +636,7 @@ const AnalyticsPage = () => {
         const dur = we - ws;
         // Use deltaX for horizontal panning, deltaY for vertical trackpad movement
         const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        const dtMs = (delta / rect.width) * dur;
+        const dtMs = -(delta / rect.width) * dur;
         const c = clampWindowRef.current(ws + dtMs, we + dtMs);
         setWindowStart(c.start);
         setWindowEnd(c.end);
@@ -721,22 +726,63 @@ const AnalyticsPage = () => {
   useEffect(() => {
     const el = chartEl;
     if (!el) return;
+
+    const startVelocityPan = () => {
+      const friction = 0.92;
+      const minVelocity = 0.05;
+      const frameMs = 16;
+      const animate = () => {
+        const vel = dragVelocity.current;
+        if (Math.abs(vel) < minVelocity) {
+          dragVelocity.current = 0;
+          return;
+        }
+        const rect = el.getBoundingClientRect();
+        if (rect.width === 0) return;
+        const ws = windowStartRef.current;
+        const we = windowEndRef.current;
+        const dur = we - ws;
+        const dtMs = -(vel * frameMs / rect.width) * dur;
+        const c = clampWindowRef.current(ws + dtMs, we + dtMs);
+        setWindowStart(c.start);
+        setWindowEnd(c.end);
+        dragVelocity.current = vel * friction;
+        animFrame.current = requestAnimationFrame(animate);
+      };
+      animFrame.current = requestAnimationFrame(animate);
+    };
+
     const onDown = (e: PointerEvent) => {
-      // Only handle left mouse button (0) and middle mouse button (1)
       if (e.button !== 0 && e.button !== 1) return;
       e.preventDefault();
+      cancelAnimationFrame(animFrame.current);
       isDragging.current = true;
+      dragButton.current = e.button;
       dragStartX.current = e.clientX;
       dragStartWindow.current = { start: windowStartRef.current, end: windowEndRef.current };
+      prevDragX.current = e.clientX;
+      prevDragTime.current = Date.now();
+      dragVelocity.current = 0;
       el.setPointerCapture(e.pointerId);
       el.style.cursor = "grabbing";
     };
+
     const onMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
-      const dx = e.clientX - dragStartX.current;
+      const now = Date.now();
+      const frameDx = e.clientX - prevDragX.current;
+      const frameDt = now - prevDragTime.current;
+      if (frameDt > 0) {
+        const rawVel = frameDx / frameDt;
+        dragVelocity.current = dragVelocity.current * 0.5 + rawVel * 0.5;
+      }
+      prevDragX.current = e.clientX;
+      prevDragTime.current = now;
+
+      const totalDx = e.clientX - dragStartX.current;
       const rect = el.getBoundingClientRect();
       const dur = dragStartWindow.current.end - dragStartWindow.current.start;
-      const dtMs = (dx / rect.width) * dur;
+      const dtMs = -(totalDx / rect.width) * dur;
       const c = clampWindowRef.current(
         dragStartWindow.current.start + dtMs,
         dragStartWindow.current.end + dtMs
@@ -744,22 +790,28 @@ const AnalyticsPage = () => {
       setWindowStart(c.start);
       setWindowEnd(c.end);
     };
+
     const onUp = () => {
       isDragging.current = false;
       el.style.cursor = "grab";
+      if (dragButton.current === 1 && Math.abs(dragVelocity.current) > 0.05) {
+        startVelocityPan();
+      }
     };
-    // Add auxclick handler for middle mouse button
+
     const onAuxClick = (e: MouseEvent) => {
       if (e.button === 1) {
         e.preventDefault();
       }
     };
+
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
     el.addEventListener("pointercancel", onUp);
     el.addEventListener("auxclick", onAuxClick);
     return () => {
+      cancelAnimationFrame(animFrame.current);
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);

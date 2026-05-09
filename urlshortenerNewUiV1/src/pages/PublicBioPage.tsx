@@ -154,6 +154,43 @@ const PublicBioPage = () => {
 
   const visibleBlocks = page.blocks.filter((b) => b.visible !== false);
 
+  // Force html & body backgrounds to the bio page theme so no cream/white peeks
+  // through at screen edges or behind browser chrome on mobile.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prevHtmlBg = html.style.background;
+    const prevHtmlBgColor = html.style.backgroundColor;
+    const prevBodyBg = body.style.background;
+    const prevBodyBgColor = body.style.backgroundColor;
+    const prevBodyMinH = body.style.minHeight;
+
+    const bgValue = isImageBg
+      ? "#000"
+      : theme.backgroundType === "gradient" ||
+        theme.backgroundType === "mesh" ||
+        theme.backgroundType === "pattern" ||
+        theme.backgroundType === "noise" ||
+        theme.background.includes("gradient")
+      ? theme.background
+      : theme.background;
+
+    html.style.background = bgValue;
+    html.style.backgroundColor = "";
+    body.style.background = bgValue;
+    body.style.backgroundColor = "";
+    body.style.minHeight = "100dvh";
+
+    return () => {
+      html.style.background = prevHtmlBg;
+      html.style.backgroundColor = prevHtmlBgColor;
+      body.style.background = prevBodyBg;
+      body.style.backgroundColor = prevBodyBgColor;
+      body.style.minHeight = prevBodyMinH;
+    };
+  }, [theme, isImageBg]);
+
   return (
     <div
       className="min-h-[100dvh] w-full relative"
