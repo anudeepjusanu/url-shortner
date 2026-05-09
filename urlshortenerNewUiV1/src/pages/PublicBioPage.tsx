@@ -72,11 +72,16 @@ const PublicBioPage = () => {
     if (!username) return;
     (async () => {
       try {
+        console.log('[PublicBioPage] Fetching bio page for username:', username);
         const res = await bioPageAPI.getPublic(username) as any;
+        console.log('[PublicBioPage] Bio page data received:', res);
         setPage(res.data);
         // Track view
-        bioPageAPI.trackClick(username, "view").catch(() => {});
-      } catch {
+        bioPageAPI.trackClick(username, "view").catch((err) => {
+          console.warn('[PublicBioPage] Failed to track view:', err);
+        });
+      } catch (error) {
+        console.error('[PublicBioPage] Error fetching bio page:', error);
         setNotFound(true);
       } finally {
         setIsLoading(false);
@@ -85,6 +90,55 @@ const PublicBioPage = () => {
   }, [username]);
 
   useBioPageSEO(page);
+
+  // Resolve the theme: use bioTheme from API, fallback to minimal-light preset
+  const theme: BioTheme = page?.bioTheme
+    ? page.bioTheme
+    : bioThemes.find((t) => t.id === "minimal-light") || bioThemes[0];
+  const isImageBg = page
+    ? theme.backgroundType === "image" && theme.background.startsWith("url(")
+    : false;
+  const imageBgUrl = isImageBg && page
+    ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
+    : "";
+
+  // Force html & body backgrounds to the bio page theme so no cream/white peeks
+  // through at screen edges or behind browser chrome on mobile.
+  useEffect(() => {
+    if (!page) return;
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prevHtmlBg = html.style.background;
+    const prevHtmlBgColor = html.style.backgroundColor;
+    const prevBodyBg = body.style.background;
+    const prevBodyBgColor = body.style.backgroundColor;
+    const prevBodyMinH = body.style.minHeight;
+
+    const bgValue = isImageBg
+      ? "#000"
+      : theme.backgroundType === "gradient" ||
+        theme.backgroundType === "mesh" ||
+        theme.backgroundType === "pattern" ||
+        theme.backgroundType === "noise" ||
+        theme.background.includes("gradient")
+      ? theme.background
+      : theme.background;
+
+    html.style.background = bgValue;
+    html.style.backgroundColor = "";
+    body.style.background = bgValue;
+    body.style.backgroundColor = "";
+    body.style.minHeight = "100dvh";
+
+    return () => {
+      html.style.background = prevHtmlBg;
+      html.style.backgroundColor = prevHtmlBgColor;
+      body.style.background = prevBodyBg;
+      body.style.backgroundColor = prevBodyBgColor;
+      body.style.minHeight = prevBodyMinH;
+    };
+  }, [page, theme, isImageBg]);
 
   if (isLoading) {
     return (
@@ -119,16 +173,6 @@ const PublicBioPage = () => {
     );
   }
 
-  // Resolve the theme: use bioTheme from API, fallback to minimal-light preset
-  const theme: BioTheme = page.bioTheme ||
-    bioThemes.find((t) => t.id === "minimal-light") ||
-    bioThemes[0];
-
-  const isImageBg = theme.backgroundType === "image" && theme.background.startsWith("url(");
-  const imageBgUrl = isImageBg
-    ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
-    : "";
-
   const bgStyle: React.CSSProperties = isImageBg
     ? { backgroundColor: "#000" }
     : theme.backgroundType === "gradient" ||
@@ -153,43 +197,6 @@ const PublicBioPage = () => {
   };
 
   const visibleBlocks = page.blocks.filter((b) => b.visible !== false);
-
-  // Force html & body backgrounds to the bio page theme so no cream/white peeks
-  // through at screen edges or behind browser chrome on mobile.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-
-    const prevHtmlBg = html.style.background;
-    const prevHtmlBgColor = html.style.backgroundColor;
-    const prevBodyBg = body.style.background;
-    const prevBodyBgColor = body.style.backgroundColor;
-    const prevBodyMinH = body.style.minHeight;
-
-    const bgValue = isImageBg
-      ? "#000"
-      : theme.backgroundType === "gradient" ||
-        theme.backgroundType === "mesh" ||
-        theme.backgroundType === "pattern" ||
-        theme.backgroundType === "noise" ||
-        theme.background.includes("gradient")
-      ? theme.background
-      : theme.background;
-
-    html.style.background = bgValue;
-    html.style.backgroundColor = "";
-    body.style.background = bgValue;
-    body.style.backgroundColor = "";
-    body.style.minHeight = "100dvh";
-
-    return () => {
-      html.style.background = prevHtmlBg;
-      html.style.backgroundColor = prevHtmlBgColor;
-      body.style.background = prevBodyBg;
-      body.style.backgroundColor = prevBodyBgColor;
-      body.style.minHeight = prevBodyMinH;
-    };
-  }, [theme, isImageBg]);
 
   return (
     <div
