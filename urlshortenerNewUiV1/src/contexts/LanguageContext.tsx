@@ -9,25 +9,6 @@ interface LanguageContextType {
   isAr: boolean;
 }
 
-const META = {
-  en: {
-    title: "snip.sa — Smart URL Shortener for Saudi Arabia",
-    description:
-      "The smartest URL shortener built for Saudi marketers and developers. Shorten links, generate QR codes, use custom domains, and track real-time analytics. Hosted in Saudi Arabia. PDPL compliant.",
-  },
-  ar: {
-    title: "اختصار الروابط مجانًا | أفضل موقع اختصار الروابط snip.sa",
-    description:
-      "أفضل منصة اختصار الروابط للعرب. أنشئ روابط قصيرة تحمل علامتك التجارية مع تحليلات وتتبع الإحصاءات بسهولة. جرّب أداة اختصار الروابط مجانًا على snip.sa.",
-  },
-};
-
-const applyMeta = (lang: Language) => {
-  document.title = META[lang].title;
-  const metaDesc = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-  if (metaDesc) metaDesc.content = META[lang].description;
-};
-
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const STORAGE_KEY = "preferred_lang";
@@ -43,14 +24,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setLangState(newLang);
     document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = newLang;
-    applyMeta(newLang);
   };
 
-  // Apply on mount
+  // Apply direction and language on mount
   useEffect(() => {
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = lang;
-    applyMeta(lang);
   }, []);
 
   const t = (en: string, ar: string) => (lang === "ar" ? ar : en);

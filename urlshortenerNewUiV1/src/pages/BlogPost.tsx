@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMetaTags } from "@/hooks/useMetaTags";
 import { blogPosts } from "@/data/blogPosts";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
@@ -38,25 +38,24 @@ const BlogPost = () => {
   const date = lang === "ar" ? post.date.ar : post.date.en;
 
   const seoTitle = post.seoTitle
-    ? lang === "ar" ? post.seoTitle.ar : post.seoTitle.en
+    ? (lang === "ar" ? post.seoTitle.ar : post.seoTitle.en)
     : title;
   const seoDescription = post.seoDescription
-    ? lang === "ar" ? post.seoDescription.ar : post.seoDescription.en
-    : lang === "ar" ? post.excerpt.ar : post.excerpt.en;
+    ? (lang === "ar" ? post.seoDescription.ar : post.seoDescription.en)
+    : (lang === "ar" ? post.excerpt.ar : post.excerpt.en);
 
-  useEffect(() => {
-    document.title = seoTitle;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", seoDescription);
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", seoTitle);
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute("content", seoDescription);
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) twitterTitle.setAttribute("content", seoTitle);
-    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
-    if (twitterDesc) twitterDesc.setAttribute("content", seoDescription);
-  }, [seoTitle, seoDescription]);
+  useMetaTags({
+    title: seoTitle,
+    description: seoDescription,
+    ogTitle: seoTitle,
+    ogDescription: seoDescription,
+    ogUrl: `https://snip.sa/blog/${slug}`,
+    ogImage: post.image || "https://snip.sa/og-image.png",
+    twitterTitle: seoTitle,
+    twitterDescription: seoDescription,
+    twitterImage: post.image || "https://snip.sa/og-image.png",
+    canonical: `https://snip.sa/blog/${slug}`,
+  });
 
   // Simple markdown-like rendering
   const renderContent = (text: string) => {

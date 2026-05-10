@@ -173,12 +173,12 @@ Whether you are managing a large scale marketing campaign, aiming to improve the
     readTime: { en: "8 min read", ar: "٨ دقائق قراءة" },
     date: { en: "Feb 20, 2026", ar: "٢٠ فبراير ٢٠٢٦" },
     seoTitle: {
-      en: "URL Shortening Strategy: Boost Digital Presence | snip.sa",
-      ar: "تقصير الروابط: دليلك للتميز الرقمي في السعودية مع snip.sa",
+      en: "URL Shortening Strategy: Boost Digital Presence | snip",
+      ar: "تقصير الروابط: دليلك للتميز الرقمي في السعودية مع snip",
     },
     seoDescription: {
-      en: "Master URL shortening with snip.sa to enhance your digital presence in Saudi Arabia. Track analytics, improve UX, and ensure data security with local standards.",
-      ar: "استخدم استراتيجية تقصير الروابط مع snip.sa لتعزيز حضورك الرقمي في السعودية. تتبع التحليلات، حسن تجربة المستخدم، واضمن أمان بياناتك وفقاً للمعايير المحلية.",
+      en: "Master URL shortening with snip to enhance your digital presence in Saudi Arabia. Track analytics, improve UX, and ensure data security with local standards.",
+      ar: "استخدم استراتيجية تقصير الروابط مع snip لتعزيز حضورك الرقمي في السعودية. تتبع التحليلات، حسن تجربة المستخدم، واضمن أمان بياناتك وفقاً للمعايير المحلية.",
     },
   },
   {
@@ -338,12 +338,12 @@ Whether you are managing a massive marketing campaign, want to improve the appea
     readTime: { en: "8 min read", ar: "٨ دقائق قراءة" },
     date: { en: "Apr 5, 2026", ar: "٥ أبريل ٢٠٢٦" },
     seoTitle: {
-      en: "URL Shortening Guide: Enhance Your Digital Identity | snip.sa",
-      ar: "اختصار الروابط: دليل شامل لتعزيز هويتك الرقمية مع snip.sa",
+      en: "URL Shortening Guide: Enhance Your Digital Identity | snip",
+      ar: "اختصار الروابط: دليل شامل لتعزيز هويتك الرقمية مع snip",
     },
     seoDescription: {
-      en: "Master URL shortening in Saudi Arabia with snip.sa. Improve user experience, track real-time analytics, and ensure PDPL compliance to grow your brand effectively.",
-      ar: "اكتشف أهمية اختصار الروابط في السعودية مع snip.sa. حسن تجربة المستخدم، تتبع التحليلات بدقة، واضمن الامتثال لنظام حماية البيانات الشخصية لنمو علامتك التجارية.",
+      en: "Master URL shortening in Saudi Arabia with snip. Improve user experience, track real-time analytics, and ensure PDPL compliance to grow your brand effectively.",
+      ar: "اكتشف أهمية اختصار الروابط في السعودية مع snip. حسن تجربة المستخدم، تتبع التحليلات بدقة، واضمن الامتثال لنظام حماية البيانات الشخصية لنمو علامتك التجارية.",
     },
   },
   {

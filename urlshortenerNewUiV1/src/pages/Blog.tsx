@@ -14,12 +14,10 @@ const Blog = () => {
     title: lang === "ar" 
       ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
       : "Shortlink Blog | Tips & Tools for Smart Link Management",
-    titleAr: "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة",
     description: lang === "ar"
       ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
       : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
-    descriptionAr: "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip.",
-    keywords: "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip.sa, مدونة اختصار الروابط, نصائح الروابط القصيرة",
+    keywords: "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip, مدونة اختصار الروابط, نصائح الروابط القصيرة",
     ogTitle: lang === "ar"
       ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
       : "Shortlink Blog | Tips & Tools for Smart Link Management",
