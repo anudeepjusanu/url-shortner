@@ -111,8 +111,14 @@ const PublicBioPage = () => {
 
     const prevHtmlBg = html.style.background;
     const prevHtmlBgColor = html.style.backgroundColor;
+    const prevHtmlBgAttachment = html.style.backgroundAttachment;
+    const prevHtmlBgSize = html.style.backgroundSize;
+    const prevHtmlBgPosition = html.style.backgroundPosition;
     const prevBodyBg = body.style.background;
     const prevBodyBgColor = body.style.backgroundColor;
+    const prevBodyBgAttachment = body.style.backgroundAttachment;
+    const prevBodyBgSize = body.style.backgroundSize;
+    const prevBodyBgPosition = body.style.backgroundPosition;
     const prevBodyMinH = body.style.minHeight;
 
     const bgValue = isImageBg
@@ -126,16 +132,28 @@ const PublicBioPage = () => {
       : theme.background;
 
     html.style.background = bgValue;
+    html.style.backgroundAttachment = "fixed";
+    html.style.backgroundSize = "cover";
+    html.style.backgroundPosition = "center";
     html.style.backgroundColor = "";
     body.style.background = bgValue;
+    body.style.backgroundAttachment = "fixed";
+    body.style.backgroundSize = "cover";
+    body.style.backgroundPosition = "center";
     body.style.backgroundColor = "";
     body.style.minHeight = "100dvh";
 
     return () => {
       html.style.background = prevHtmlBg;
       html.style.backgroundColor = prevHtmlBgColor;
+      html.style.backgroundAttachment = prevHtmlBgAttachment;
+      html.style.backgroundSize = prevHtmlBgSize;
+      html.style.backgroundPosition = prevHtmlBgPosition;
       body.style.background = prevBodyBg;
       body.style.backgroundColor = prevBodyBgColor;
+      body.style.backgroundAttachment = prevBodyBgAttachment;
+      body.style.backgroundSize = prevBodyBgSize;
+      body.style.backgroundPosition = prevBodyBgPosition;
       body.style.minHeight = prevBodyMinH;
     };
   }, [page, theme, isImageBg]);
@@ -174,16 +192,16 @@ const PublicBioPage = () => {
   }
 
   const bgStyle: React.CSSProperties = isImageBg
-    ? { backgroundColor: "#000" }
+    ? { backgroundColor: "#000", backgroundAttachment: "fixed" }
     : theme.backgroundType === "gradient" ||
       theme.backgroundType === "mesh" ||
       theme.backgroundType === "pattern" ||
       theme.backgroundType === "noise" ||
       theme.background.includes("gradient")
-    ? { background: theme.background }
+    ? { background: theme.background, backgroundAttachment: "fixed", backgroundSize: "cover", backgroundPosition: "center" }
     : theme.background.startsWith("#") || theme.background.startsWith("rgb") || theme.background.startsWith("hsl")
-    ? { backgroundColor: theme.background }
-    : { backgroundColor: "#ffffff" };
+    ? { backgroundColor: theme.background, backgroundAttachment: "fixed" }
+    : { backgroundColor: "#ffffff", backgroundAttachment: "fixed" };
 
   const hasWhatsApp = page.blocks.some(
     (b) => b.type === "whatsapp" && b.visible !== false
@@ -211,7 +229,7 @@ const PublicBioPage = () => {
           src={imageBgUrl}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className="fixed inset-0 w-full h-full pointer-events-none object-cover"
           style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
         />
       )}

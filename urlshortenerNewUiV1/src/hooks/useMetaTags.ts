@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from "react";
 
 interface MetaTagsConfig {
   title?: string;
-  titleAr?: string;
   description?: string;
-  descriptionAr?: string;
   keywords?: string;
   ogTitle?: string;
   ogDescription?: string;
@@ -16,95 +14,84 @@ interface MetaTagsConfig {
   canonical?: string;
 }
 
-/**
- * Custom hook to manage document meta tags dynamically
- * Supports bilingual (English/Arabic) meta tags
- */
 export const useMetaTags = (config: MetaTagsConfig) => {
+  const injected = useRef<Element[]>([]);
+
   useEffect(() => {
-    // Set document title
+    const created: Element[] = [];
+
+    const setMetaTag = (
+      attrName: string,
+      attrValue: string,
+      content: string
+    ) => {
+      const selector = `meta[${attrName}="${attrValue}"]`;
+      let element = document.querySelector(selector);
+      if (element) {
+        element.setAttribute("content", content);
+      } else {
+        element = document.createElement("meta");
+        element.setAttribute(attrName, attrValue);
+        element.setAttribute("content", content);
+        document.head.appendChild(element);
+        created.push(element);
+      }
+    };
+
     if (config.title) {
       document.title = config.title;
     }
 
-    // Helper function to set or update meta tag
-    const setMetaTag = (selector: string, content: string) => {
-      let element = document.querySelector(selector);
-      if (element) {
-        element.setAttribute('content', content);
-      } else {
-        const meta = document.createElement('meta');
-        const attrRegex = /\[(\w+)=["']([^"']*)["']\]/g;
-        let match;
-        while ((match = attrRegex.exec(selector)) !== null) {
-          meta.setAttribute(match[1], match[2]);
-        }
-        meta.setAttribute('content', content);
-        document.head.appendChild(meta);
-      }
-    };
-
-    // Set description
     if (config.description) {
-      setMetaTag('meta[name="description"]', config.description);
+      setMetaTag("name", "description", config.description);
     }
 
-    // Set Arabic title
-    if (config.titleAr) {
-      setMetaTag('meta[name="title"][lang="ar"]', config.titleAr);
-    }
-
-    // Set Arabic description
-    if (config.descriptionAr) {
-      setMetaTag('meta[name="description"][lang="ar"]', config.descriptionAr);
-    }
-
-    // Set keywords
     if (config.keywords) {
-      setMetaTag('meta[name="keywords"]', config.keywords);
+      setMetaTag("name", "keywords", config.keywords);
     }
 
-    // Set Open Graph tags
     if (config.ogTitle) {
-      setMetaTag('meta[property="og:title"]', config.ogTitle);
+      setMetaTag("property", "og:title", config.ogTitle);
     }
     if (config.ogDescription) {
-      setMetaTag('meta[property="og:description"]', config.ogDescription);
+      setMetaTag("property", "og:description", config.ogDescription);
     }
     if (config.ogImage) {
-      setMetaTag('meta[property="og:image"]', config.ogImage);
+      setMetaTag("property", "og:image", config.ogImage);
     }
     if (config.ogUrl) {
-      setMetaTag('meta[property="og:url"]', config.ogUrl);
+      setMetaTag("property", "og:url", config.ogUrl);
     }
 
-    // Set Twitter Card tags
     if (config.twitterTitle) {
-      setMetaTag('meta[name="twitter:title"]', config.twitterTitle);
+      setMetaTag("name", "twitter:title", config.twitterTitle);
     }
     if (config.twitterDescription) {
-      setMetaTag('meta[name="twitter:description"]', config.twitterDescription);
+      setMetaTag("name", "twitter:description", config.twitterDescription);
     }
     if (config.twitterImage) {
-      setMetaTag('meta[name="twitter:image"]', config.twitterImage);
+      setMetaTag("name", "twitter:image", config.twitterImage);
     }
 
-    // Set canonical URL
     if (config.canonical) {
-      let link = document.querySelector('link[rel="canonical"]');
+      const selector = 'link[rel="canonical"]';
+      let link = document.querySelector(selector);
       if (link) {
-        link.setAttribute('href', config.canonical);
+        link.setAttribute("href", config.canonical);
       } else {
-        const canonical = document.createElement('link');
-        canonical.setAttribute('rel', 'canonical');
-        canonical.setAttribute('href', config.canonical);
-        document.head.appendChild(canonical);
+        link = document.createElement("link");
+        link.setAttribute("rel", "canonical");
+        link.setAttribute("href", config.canonical);
+        document.head.appendChild(link);
+        created.push(link);
       }
     }
 
-    // Cleanup function to restore default values
+    injected.current = created;
+
     return () => {
-      document.title = 'snip.sa — Smart URL Shortener for Saudi Arabia';
+      injected.current.forEach((el) => el.remove());
+      injected.current = [];
     };
   }, [config]);
 };
