@@ -55,6 +55,13 @@ const config = {
   ADMIN: {
     DEFAULT_ADMIN_EMAIL: process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com',
     DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD || 'admin123',
+  },
+
+  GOOGLE_AUTH: {
+    CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+    CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+    IOS_CLIENT_ID: process.env.GOOGLE_IOS_CLIENT_ID || '',
+    ANDROID_CLIENT_ID: process.env.GOOGLE_ANDROID_CLIENT_ID || '',
   }
 };
 

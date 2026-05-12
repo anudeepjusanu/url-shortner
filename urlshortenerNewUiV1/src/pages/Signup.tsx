@@ -11,6 +11,8 @@ import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle, Glo
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 
 
 const COUNTRY_OPTIONS = [
@@ -29,7 +31,7 @@ const passwordRules = [
 const Signup = () => {
   const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const { toast } = useToast();
 
   const [fullName, setFullName]   = useState("");
@@ -46,6 +48,11 @@ const Signup = () => {
   // OTP verification step
   const [otpStep, setOtpStep] = useState(false);
   const [otp, setOtp]         = useState("");
+
+  // Google SSO state
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  const [showMobileVerification, setShowMobileVerification] = useState(false);
 
   useEffect(() => {
     amplitudeService.trackRegistrationStarted('direct');
@@ -190,6 +197,51 @@ const Signup = () => {
     }
   };
 
+  // ── Google SSO handlers ──
+  const handleGoogleSuccess = async (accessToken: string) => {
+    setIsGoogleLoading(true);
+    try {
+      const response = await googleLogin(accessToken);
+
+      if (response.success && response.data) {
+        if (response.isExistingUser) {
+          // Existing user attempting to sign up — auto login
+          amplitudeService.track("login");
+          toast({
+            title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
+            description: t("Welcome back! Your account already exists.", "مرحباً بعودتك! حسابك موجود مسبقاً."),
+          });
+          navigate("/dashboard");
+        } else if (response.data.requiresPhoneVerification) {
+          // New user — show mobile verification
+          setGoogleSessionToken(response.data.sessionToken);
+          setShowMobileVerification(true);
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: t("Google Sign-Up Failed", "فشل التسجيل بحساب قوقل"),
+        description: error.message || t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error: Error) => {
+    toast({
+      title: t("Google Sign-Up Failed", "فشل التسجيل بحساب قوقل"),
+      description: error.message,
+      variant: "destructive",
+    });
+  };
+
+  const handleMobileVerificationClose = async () => {
+    setShowMobileVerification(false);
+    setGoogleSessionToken(null);
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Left — branding */}
@@ -251,6 +303,28 @@ const Signup = () => {
                 : t("Get started for free — no credit card required", "ابدأ مجاناً — لا تحتاج إلى بطاقة ائتمان")}
             </p>
           </div>
+
+          {/* Google SSO Button — only on registration step, not OTP step */}
+          {!otpStep && (
+            <div className="space-y-4">
+              <GoogleAuthButton
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                isLoading={isGoogleLoading}
+              />
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground font-body">
+                    {t("Or sign up with email", "أو سجل بالبريد الإلكتروني")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── OTP step ── */}
           {otpStep ? (
@@ -491,6 +565,15 @@ const Signup = () => {
             </Link>
           </p>
         </div>
+
+        {/* Mobile Verification Popup for Google SSO new users */}
+        {googleSessionToken && (
+          <MobileVerificationPopup
+            open={showMobileVerification}
+            sessionToken={googleSessionToken}
+            onClose={handleMobileVerificationClose}
+          />
+        )}
       </div>
     </div>
   );

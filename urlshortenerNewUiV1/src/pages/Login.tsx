@@ -10,6 +10,8 @@ import { Zap, BarChart3, QrCode, Loader2, Eye, EyeOff, Globe } from "lucide-reac
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 
 // const COUNTRY_OPTIONS = [
 //   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
@@ -18,7 +20,7 @@ import amplitudeService from "@/services/amplitude";
 const Login = () => {
   const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -28,6 +30,11 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpData, setOtpData] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Google SSO state
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  const [showMobileVerification, setShowMobileVerification] = useState(false);
 
   // ── OTP tab state (commented out) ──────────────────────────────────────────
   // const [authMethod, setAuthMethod] = useState<"email" | "otp">("email");
@@ -75,6 +82,50 @@ const Login = () => {
 
   // ── Phone OTP handlers (commented out) ─────────────────────────────────────
   // const handleSendOtp = async (e: React.FormEvent) => { ... };
+
+  const handleGoogleSuccess = async (accessToken: string) => {
+    setIsGoogleLoading(true);
+    try {
+      const response = await googleLogin(accessToken);
+
+      if (response.success && response.data) {
+        if (response.data.requiresPhoneVerification) {
+          // New user — auto start sign-up flow with mobile verification
+          setGoogleSessionToken(response.data.sessionToken);
+          setShowMobileVerification(true);
+        } else {
+          // Existing user — logged in
+          amplitudeService.track("login");
+          toast({
+            title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
+            description: t("Welcome back!", "مرحباً بعودتك!"),
+          });
+          navigate("/dashboard");
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: t("Google Sign-In Failed", "فشل تسجيل الدخول بحساب قوقل"),
+        description: error.message || t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error: Error) => {
+    toast({
+      title: t("Google Sign-In Failed", "فشل تسجيل الدخول بحساب قوقل"),
+      description: error.message,
+      variant: "destructive",
+    });
+  };
+
+  const handleMobileVerificationClose = async () => {
+    setShowMobileVerification(false);
+    setGoogleSessionToken(null);
+  };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +214,26 @@ const Login = () => {
             <p className="text-muted-foreground font-body mt-2">
               {t("Sign in to your account", "سجل دخولك للمتابعة")}
             </p>
+          </div>
+
+          {/* Google SSO Button */}
+          <div className="space-y-4">
+            <GoogleAuthButton
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              isLoading={isGoogleLoading}
+            />
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground font-body">
+                  {t("Or continue with email", "أو تابع بالبريد الإلكتروني")}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Auth method tabs — OTP tab commented out */}
@@ -335,6 +406,15 @@ const Login = () => {
             </Link>
           </p>
         </div>
+
+        {/* Mobile Verification Popup for Google SSO new users */}
+        {googleSessionToken && (
+          <MobileVerificationPopup
+            open={showMobileVerification}
+            sessionToken={googleSessionToken}
+            onClose={handleMobileVerificationClose}
+          />
+        )}
       </div>
     </div>
   );

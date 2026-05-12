@@ -14,7 +14,11 @@ const endpoints = {
     resetPassword: '/auth/reset-password',
     sendPasswordResetOTP: '/auth/send-password-reset-otp',
     verifyPasswordResetOTP: '/auth/verify-password-reset-otp',
-    resetPasswordWithOTP: '/auth/reset-password-with-otp'
+    resetPasswordWithOTP: '/auth/reset-password-with-otp',
+    googleAuth: '/auth/google',
+    googleSendOTP: '/auth/google/send-otp',
+    googleVerifyOTP: '/auth/google/verify-otp',
+    googleCancel: '/auth/google/cancel'
   },
   urls: {
     create: '/urls',
@@ -418,6 +422,82 @@ export const authAPI = {
 
   resetPasswordWithOTP: async (data: any) => {
     return apiClient.post(endpoints.auth.resetPasswordWithOTP, data);
+  },
+
+  googleAuthenticate: async (accessToken: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.googleAuth}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken }),
+    });
+    const response = await res.json();
+
+    if (res.ok && response.success && response.data) {
+      if (response.data.accessToken) {
+        apiClient.setToken(response.data.accessToken);
+        if (response.data.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    return response;
+  },
+
+  googleSendOTP: async (sessionToken: string, phoneNumber: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.googleSendOTP}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken, phoneNumber }),
+    });
+    const response = await res.json();
+
+    if (!res.ok) {
+      throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    return response;
+  },
+
+  googleVerifyOTP: async (sessionToken: string, otp: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.googleVerifyOTP}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken, otp }),
+    });
+    const response = await res.json();
+
+    if (res.ok && response.success && response.data) {
+      if (response.data.accessToken) {
+        apiClient.setToken(response.data.accessToken);
+        if (response.data.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(response.message || `HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    return response;
+  },
+
+  googleCancelSignup: async (sessionToken: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.googleCancel}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken }),
+    });
+    return res.json();
   },
 };
 
