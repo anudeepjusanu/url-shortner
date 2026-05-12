@@ -27,7 +27,7 @@ const generateTokens = (userId) => {
 };
 
 const generateOtpCode = () =>
-  Math.floor(100000 + Math.random() * 900000).toString();
+  Math.floor(1000 + Math.random() * 9000).toString();
 
 const maskPhone = (phone) => {
   if (!phone || phone.length < 7) return phone;
@@ -139,7 +139,7 @@ const googleAuthenticate = async (req, res) => {
     const existingUser = await User.findOne({ email: googleUser.email });
 
     if (existingUser) {
-      // Existing user — log them in immediately
+      // Existing user — log them in immediately (account linking)
       if (!existingUser.isActive) {
         return res.status(403).json({
           success: false,
@@ -149,9 +149,18 @@ const googleAuthenticate = async (req, res) => {
 
       existingUser.lastLogin = new Date();
 
-      // Update googleId if not already set
+      // Update googleId if not already set (account linking)
       if (!existingUser.googleId) {
+        console.log('Account linking: Adding Google ID to existing manual account');
         existingUser.googleId = googleUser.googleId;
+      }
+
+      // Update name fields if they're empty and Google provides them
+      if (!existingUser.firstName && googleUser.firstName) {
+        existingUser.firstName = googleUser.firstName;
+      }
+      if (!existingUser.lastName && googleUser.lastName) {
+        existingUser.lastName = googleUser.lastName;
       }
 
       await existingUser.save();
@@ -163,6 +172,7 @@ const googleAuthenticate = async (req, res) => {
         success: true,
         message: 'Login successful',
         isExistingUser: true,
+        accountLinked: !existingUser.googleId, // Indicate if account was just linked
         data: {
           user: buildUserResponse(existingUser),
           accessToken,
@@ -395,26 +405,57 @@ const verifyGoogleSignupOTP = async (req, res) => {
       });
     }
 
-    // OTP verified — create the user account
-    const clientIP = getClientIP(req);
-    let registrationLocation = null;
-    try {
-      registrationLocation = await getLocationFromIP(clientIP);
-    } catch (locError) {
-      console.error('Failed to get location:', locError.message);
+    // OTP verified — check if user exists (for account linking scenario)
+    const existingUserForLinking = await User.findOne({ email: session.email });
+    
+    let user;
+    if (existingUserForLinking) {
+      // Account linking: This shouldn't happen normally, but handle it gracefully
+      console.log('Account linking during Google signup: User exists, linking Google ID');
+      
+      if (!existingUserForLinking.googleId) {
+        existingUserForLinking.googleId = session.googleId;
+      }
+      
+      // Update phone if provided and not already set
+      if (session.phone && !existingUserForLinking.phone) {
+        existingUserForLinking.phone = session.phone;
+      }
+      
+      // Update name if not already set
+      if (!existingUserForLinking.firstName && session.firstName) {
+        existingUserForLinking.firstName = session.firstName;
+      }
+      if (!existingUserForLinking.lastName && session.lastName) {
+        existingUserForLinking.lastName = session.lastName;
+      }
+      
+      existingUserForLinking.lastLogin = new Date();
+      await existingUserForLinking.save();
+      user = existingUserForLinking;
+      console.log('Account linked successfully during Google signup:', user.email);
+    } else {
+      // Create new user account
+      const clientIP = getClientIP(req);
+      let registrationLocation = null;
+      try {
+        registrationLocation = await getLocationFromIP(clientIP);
+      } catch (locError) {
+        console.error('Failed to get location:', locError.message);
+      }
+
+      user = new User({
+        email: session.email,
+        firstName: session.firstName,
+        lastName: session.lastName || undefined,
+        phone: session.phone,
+        googleId: session.googleId,
+        isEmailVerified: true,
+        registrationLocation,
+      });
+
+      await user.save();
     }
-
-    const user = new User({
-      email: session.email,
-      firstName: session.firstName,
-      lastName: session.lastName || undefined,
-      phone: session.phone,
-      googleId: session.googleId,
-      isEmailVerified: true,
-      registrationLocation,
-    });
-
-    await user.save();
 
     // Clear session from cache
     await cacheDel(cacheKey);

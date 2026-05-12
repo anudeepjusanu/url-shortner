@@ -335,7 +335,7 @@ async function publicRequest<T = any>(endpoint: string, body: unknown): Promise<
 }
 
 export const passwordResetService = {
-  /** POST /auth/send-password-reset-otp — sends a 6-digit OTP to the email */
+  /** POST /auth/send-password-reset-otp — sends a 4-digit OTP to the email */
   sendOtp: (email: string) =>
     publicRequest('/auth/send-password-reset-otp', { email }),
 
