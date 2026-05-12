@@ -99,5 +99,6 @@ export default {
       },
     },
   },
+  experimental: { rtl: true },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

@@ -162,7 +162,7 @@ app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 app.use('/api/bio-pages', require('./routes/bioPages'));
 app.use('/api/dynamic-qr', require('./routes/dynamicQRCodes'));
 
-// SEO routes - sitemap.xml and robots.txt
+// SEO routes - sitemap.xml and robots.txt (MUST come before catch-all routes)
 app.use('/', require('./routes/sitemapRoutes'));
 
 // Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
@@ -187,12 +187,12 @@ app.get('/qr/:shortCode', redirectController.generateQRCode);
 app.get('/q/:shortCode', redirectController.redirectFromQRCode);
 // app.get('/q/:shortCode/*', redirectController.redirectFromQRCode); // Handle extra paths
 
-// Handle shortened URL redirects (e.g., /mbtw7f)
-app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl);
-// app.get('/:shortCode/*', /* redirectLimiter, */ redirectController.redirectToOriginalUrl); // Handle extra paths
-
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)
 app.get('/preview/:shortCode', redirectController.getPreview);
+
+// Handle shortened URL redirects (e.g., /mbtw7f) - MUST be last to avoid catching other routes
+app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl);
+// app.get('/:shortCode/*', /* redirectLimiter, */ redirectController.redirectToOriginalUrl); // Handle extra paths
 
 app.use((req, res) => {
   res.status(404).json({

@@ -108,18 +108,14 @@ const PublicBioPage = () => {
     if (!page) return;
     const html = document.documentElement;
     const body = document.body;
+    const root = document.getElementById("root");
 
     const prevHtmlBg = html.style.background;
     const prevHtmlBgColor = html.style.backgroundColor;
-    const prevHtmlBgAttachment = html.style.backgroundAttachment;
-    const prevHtmlBgSize = html.style.backgroundSize;
-    const prevHtmlBgPosition = html.style.backgroundPosition;
     const prevBodyBg = body.style.background;
     const prevBodyBgColor = body.style.backgroundColor;
-    const prevBodyBgAttachment = body.style.backgroundAttachment;
-    const prevBodyBgSize = body.style.backgroundSize;
-    const prevBodyBgPosition = body.style.backgroundPosition;
     const prevBodyMinH = body.style.minHeight;
+    const prevRootMinH = root?.style.minHeight ?? "";
 
     const bgValue = isImageBg
       ? "#000"
@@ -132,35 +128,29 @@ const PublicBioPage = () => {
       : theme.background;
 
     html.style.background = bgValue;
-    html.style.backgroundAttachment = "fixed";
-    html.style.backgroundSize = "cover";
-    html.style.backgroundPosition = "center";
     html.style.backgroundColor = "";
     body.style.background = bgValue;
-    body.style.backgroundAttachment = "fixed";
-    body.style.backgroundSize = "cover";
-    body.style.backgroundPosition = "center";
     body.style.backgroundColor = "";
+    body.style.minHeight = "100vh";
     body.style.minHeight = "100dvh";
+    if (root) {
+      root.style.minHeight = "100vh";
+      root.style.minHeight = "100dvh";
+    }
 
     return () => {
       html.style.background = prevHtmlBg;
       html.style.backgroundColor = prevHtmlBgColor;
-      html.style.backgroundAttachment = prevHtmlBgAttachment;
-      html.style.backgroundSize = prevHtmlBgSize;
-      html.style.backgroundPosition = prevHtmlBgPosition;
       body.style.background = prevBodyBg;
       body.style.backgroundColor = prevBodyBgColor;
-      body.style.backgroundAttachment = prevBodyBgAttachment;
-      body.style.backgroundSize = prevBodyBgSize;
-      body.style.backgroundPosition = prevBodyBgPosition;
       body.style.minHeight = prevBodyMinH;
+      if (root) root.style.minHeight = prevRootMinH;
     };
   }, [page, theme, isImageBg]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -168,7 +158,7 @@ const PublicBioPage = () => {
 
   if (notFound || !page) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background text-center px-4">
+      <div className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background text-center px-4">
         <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center">
           <Link2 className="w-10 h-10 text-muted-foreground" />
         </div>
@@ -192,16 +182,16 @@ const PublicBioPage = () => {
   }
 
   const bgStyle: React.CSSProperties = isImageBg
-    ? { backgroundColor: "#000", backgroundAttachment: "fixed" }
+    ? { backgroundColor: "#000" }
     : theme.backgroundType === "gradient" ||
       theme.backgroundType === "mesh" ||
       theme.backgroundType === "pattern" ||
       theme.backgroundType === "noise" ||
       theme.background.includes("gradient")
-    ? { background: theme.background, backgroundAttachment: "fixed", backgroundSize: "cover", backgroundPosition: "center" }
+    ? { background: theme.background, backgroundSize: "cover", backgroundPosition: "center" }
     : theme.background.startsWith("#") || theme.background.startsWith("rgb") || theme.background.startsWith("hsl")
-    ? { backgroundColor: theme.background, backgroundAttachment: "fixed" }
-    : { backgroundColor: "#ffffff", backgroundAttachment: "fixed" };
+    ? { backgroundColor: theme.background }
+    : { backgroundColor: "#ffffff" };
 
   const hasWhatsApp = page.blocks.some(
     (b) => b.type === "whatsapp" && b.visible !== false

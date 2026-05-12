@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const authController = require('../controllers/authController');
+const googleAuthController = require('../controllers/googleAuthController');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { authLimiter, strictAuthLimiter, passwordResetLimiter, otpVerificationLimiter } = require('../middleware/rateLimiter');
 const {
@@ -65,6 +66,12 @@ router.post('/regenerate-api-key', authenticate, authController.regenerateApiKey
 // User preferences
 router.get('/preferences', authenticate, authController.getPreferences);
 router.put('/preferences', authenticate, authController.updatePreferences);
+
+// Google OAuth authentication
+router.post('/google', authLimiter, googleAuthController.googleAuthenticate);
+router.post('/google/send-otp', authLimiter, googleAuthController.sendGoogleSignupOTP);
+router.post('/google/verify-otp', otpVerificationLimiter, googleAuthController.verifyGoogleSignupOTP);
+router.post('/google/cancel', authLimiter, googleAuthController.cancelGoogleSignup);
 
 // Delete account
 router.delete('/account', authenticate, authController.deleteAccount);
