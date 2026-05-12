@@ -70,10 +70,17 @@ const sendRegistrationOTP = async (req, res) => {
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already registered",
-      });
+      // If user has a Google account but no password, allow them to add password (account linking)
+      if (existingUser.googleId && !existingUser.password) {
+        console.log("Account linking: Allowing OTP for existing Google account");
+        // Continue with OTP flow to allow account linking
+      } else {
+        // User already has a complete account
+        return res.status(400).json({
+          success: false,
+          message: "Email already registered",
+        });
+      }
     }
 
     const otp = generateOtpCode();
@@ -128,10 +135,18 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already registered",
-      });
+      // If user has a Google account but no password, allow them to add password (account linking)
+      if (existingUser.googleId && !existingUser.password) {
+        // This is account linking - allow them to add password to their Google account
+        console.log("Account linking: Adding password to existing Google account");
+        // Continue with the flow to add password
+      } else {
+        // User already has a complete account (either manual or Google with password)
+        return res.status(400).json({
+          success: false,
+          message: "Email already registered",
+        });
+      }
     }
 
     // If OTP not provided, store registration data and send OTP
@@ -216,34 +231,65 @@ const register = async (req, res) => {
       await cacheDel(otpKey);
       await cacheDel(dataKey);
 
-      // Get user's location from IP
-      const clientIP = getClientIP(req);
-      let registrationLocation = null;
-      try {
-        registrationLocation = await getLocationFromIP(clientIP);
-        console.log("User registration location:", registrationLocation);
-      } catch (locError) {
-        console.error("Failed to get location:", locError.message);
+      // Check again if user exists (for account linking scenario)
+      const existingUserForLinking = await User.findOne({ email: registrationData.email });
+      
+      let user;
+      if (existingUserForLinking && existingUserForLinking.googleId && !existingUserForLinking.password) {
+        // Account linking: Add password to existing Google account
+        console.log("Linking password to existing Google account:", existingUserForLinking.email);
+        
+        existingUserForLinking.password = registrationData.hashedPassword;
+        
+        // Update phone if provided and not already set
+        if (registrationData.phone && !existingUserForLinking.phone) {
+          existingUserForLinking.phone = registrationData.phone;
+        }
+        
+        // Update name if not already set
+        if (registrationData.fullName) {
+          const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
+          if (!existingUserForLinking.firstName) {
+            existingUserForLinking.firstName = nameParts[0] || registrationData.fullName;
+          }
+          if (!existingUserForLinking.lastName && nameParts.length > 1) {
+            existingUserForLinking.lastName = nameParts.slice(1).join(" ");
+          }
+        }
+        
+        await existingUserForLinking.save();
+        user = existingUserForLinking;
+        console.log("Account linked successfully:", user.email);
+      } else {
+        // Get user's location from IP
+        const clientIP = getClientIP(req);
+        let registrationLocation = null;
+        try {
+          registrationLocation = await getLocationFromIP(clientIP);
+          console.log("User registration location:", registrationLocation);
+        } catch (locError) {
+          console.error("Failed to get location:", locError.message);
+        }
+
+        // Split fullName into firstName / lastName for the schema
+        const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
+        const firstName = nameParts[0] || registrationData.fullName;
+        const lastName = nameParts.slice(1).join(" ") || undefined;
+
+        console.log("Creating user with email:", registrationData.email);
+        user = new User({
+          email: registrationData.email,
+          password: registrationData.hashedPassword,
+          firstName,
+          lastName,
+          phone: registrationData.phone,
+          isEmailVerified: true,
+          registrationLocation: registrationLocation,
+        });
+
+        await user.save();
+        console.log("User created:", user);
       }
-
-      // Split fullName into firstName / lastName for the schema
-      const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
-      const firstName = nameParts[0] || registrationData.fullName;
-      const lastName = nameParts.slice(1).join(" ") || undefined;
-
-      console.log("Creating user with email:", registrationData.email);
-      const user = new User({
-        email: registrationData.email,
-        password: registrationData.hashedPassword,
-        firstName,
-        lastName,
-        phone: registrationData.phone,
-        isEmailVerified: true,
-        registrationLocation: registrationLocation,
-      });
-
-      await user.save();
-      console.log("User created:", user);
 
       // Send welcome email to user
       try {
@@ -770,7 +816,7 @@ const sendPasswordResetOTP = async (req, res) => {
       });
     }
 
-    // Generate 6-digit OTP
+    // Generate 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     // Store OTP in cache with email as key for 10 minutes

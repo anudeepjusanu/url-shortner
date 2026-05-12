@@ -28,7 +28,7 @@ const INDIA_COUNTRY_CODE = '+91';  // TEMPORARY - REMOVE AFTER TESTING
 const RESEND_COOLDOWN = 60;
 const MAX_RESENDS = 3;
 const MAX_OTP_ATTEMPTS = 5;
-const OTP_LENGTH = 6;
+const OTP_LENGTH = 4;
 
 // TEMPORARY: Country options for testing - REMOVE AFTER TESTING
 const COUNTRY_OPTIONS = [
@@ -256,7 +256,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
     e.preventDefault();
 
     if (otp.length !== OTP_LENGTH) {
-      setOtpError(t('Please enter the 6-digit code', 'الرجاء إدخال الرمز المكون من 6 أرقام'));
+      setOtpError(t('Please enter the 4-digit code', 'الرجاء إدخال الرمز المكون من 4 أرقام'));
       return;
     }
 
@@ -336,8 +336,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
               )}
             {step === 'otp' &&
               t(
-                `A 6-digit code was sent to your mobile number`,
-                `تم إرسال رمز مكون من 6 أرقام إلى رقم جوالك`
+                `A 4-digit code was sent to your mobile number`,
+                `تم إرسال رمز مكون من 4 أرقام إلى رقم جوالك`
               )}
             {step === 'locked' &&
               t(
@@ -408,8 +408,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 )}
                 <p className="text-xs text-muted-foreground">
                   {t(
-                    'Enter your mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
-                    'أدخل رقم جوالك (السعودية: 5XXXXXXXX أو الهند: 9XXXXXXXXX)'
+                    'Enter your mobile number (Saudi: 5XXXXXXXX)',
+                    'أدخل رقم جوالك (السعودية: 5XXXXXXXX)'
                   )}
                 </p>
               </div>
@@ -439,7 +439,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 <Input
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder="0000"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, OTP_LENGTH))}
                   className="h-12 text-center text-xl tracking-[0.5em] font-display"
