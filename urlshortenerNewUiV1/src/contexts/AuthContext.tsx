@@ -19,6 +19,7 @@ interface AuthContextType {
   register: (userData: any) => Promise<any>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  googleLogin: (accessToken: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -144,6 +145,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const googleLogin = async (accessToken: string) => {
+    try {
+      const response = await authAPI.googleAuthenticate(accessToken);
+
+      if (response.success && response.data) {
+        if (!response.isExistingUser && response.data.requiresPhoneVerification) {
+          return response;
+        }
+
+        if (response.data.user) {
+          setUser(response.data.user);
+          amplitudeService.trackLogin(response.data.user.id, 'google');
+        }
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Google login error:', error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await authAPI.logout();
@@ -177,6 +200,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     refreshUser,
+    googleLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -8,6 +8,9 @@ router.get('/public/:username', bioPageController.getPublicBioPage);
 router.post('/public/:username/click/:linkId', bioPageController.trackLinkClick);
 router.get('/check-username/:username', bioPageController.checkUsernameAvailability);
 
+// AI background image generation (authenticated)
+router.post('/generate-bg-image', require('../middleware/auth').authenticate, bioPageController.generateBgImage);
+
 // Protected routes — authentication required
 router.use(authenticate);
 

@@ -1,22 +1,13 @@
 const BioPage = require('../models/BioPage');
+const https = require('https');
 
 const RESERVED_USERNAMES = [
   'admin', 'api', 'login', 'register', 'blog', 'bio', 'about',
   'contact', 'home', 'dashboard', 'settings', 'profile', 'help',
   'support', 'terms', 'privacy', 'www', 'mail', 'ftp', 'static',
   'assets', 'app', 'auth', 'user', 'users', 'health', 'status',
-  'q', 'qr', 'preview',
+  'q', 'qr', 'preview', '4r', 'test',
 ];
-
-const validateUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const parsed = new URL(url.trim());
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
 
 const makeError = (message, statusCode = 500) => {
   const err = new Error(message);
@@ -27,6 +18,10 @@ const makeError = (message, statusCode = 500) => {
 const bioPageService = {
   async checkUsernameAvailability(username, excludeId = null) {
     const normalized = username.toLowerCase().trim();
+
+    if (normalized.length < 3) {
+      return { available: false, reason: 'Username must be at least 3 characters' };
+    }
 
     if (RESERVED_USERNAMES.includes(normalized)) {
       return { available: false, reason: 'This username is reserved' };
@@ -42,7 +37,7 @@ const bioPageService = {
   },
 
   async createBioPage(userId, data) {
-    const { username, title, description, avatarUrl, theme, links = [], socialLinks, socialLinkImages } = data;
+    const { username, title, description, avatarUrl, blocks, design, bioTheme, isPublished, quizPurpose, quizIndustry } = data;
 
     if (!username) throw makeError('Username is required', 400);
     if (!title) throw makeError('Title is required', 400);
@@ -50,22 +45,18 @@ const bioPageService = {
     const { available, reason } = await this.checkUsernameAvailability(username);
     if (!available) throw makeError(reason || 'Username is already taken', 400);
 
-    for (const link of links) {
-      if (!validateUrl(link.url)) {
-        throw makeError(`Invalid URL for link "${link.title}": ${link.url}`, 400);
-      }
-    }
-
     const bioPage = new BioPage({
       username: username.toLowerCase().trim(),
       title: title.trim(),
       description: description?.trim() || '',
       avatarUrl: avatarUrl || '',
       owner: userId,
-      theme: theme || {},
-      links: links.map((l, i) => ({ ...l, order: l.order ?? i })),
-      socialLinks: socialLinks || {},
-      socialLinkImages: socialLinkImages || {},
+      blocks: blocks || [],
+      design: design || null,
+      bioTheme: bioTheme || null,
+      isPublished: isPublished !== undefined ? isPublished : true,
+      quizPurpose: quizPurpose || null,
+      quizIndustry: quizIndustry || null,
     });
 
     await bioPage.save();
@@ -94,21 +85,17 @@ const bioPageService = {
       bioPage.username = data.username.toLowerCase().trim();
     }
 
-    if (data.links) {
-      for (const link of data.links) {
-        if (!validateUrl(link.url)) {
-          throw makeError(`Invalid URL for link "${link.title}": ${link.url}`, 400);
-        }
-      }
-      bioPage.links = data.links.map((l, i) => ({ ...l, order: l.order ?? i }));
-    }
-
-    const updatableFields = ['title', 'description', 'avatarUrl', 'theme', 'socialLinks', 'socialLinkImages', 'isPublished'];
+    const updatableFields = ['title', 'description', 'avatarUrl', 'blocks', 'design', 'bioTheme', 'isPublished', 'quizPurpose', 'quizIndustry'];
     for (const field of updatableFields) {
       if (data[field] !== undefined) {
         bioPage[field] = data[field];
       }
     }
+
+    // Mark mixed fields as modified so Mongoose detects the change
+    bioPage.markModified('blocks');
+    bioPage.markModified('design');
+    bioPage.markModified('bioTheme');
 
     await bioPage.save();
     return bioPage;
@@ -137,22 +124,26 @@ const bioPageService = {
       .exec()
       .catch(() => {});
 
+    // Build response with block click counts merged in
+    const blockClickCounts = bioPage.blockClickCounts
+      ? Object.fromEntries(bioPage.blockClickCounts)
+      : {};
+
     return {
+      _id: bioPage._id,
       username: bioPage.username,
       title: bioPage.title,
       description: bioPage.description,
       avatarUrl: bioPage.avatarUrl,
-      theme: bioPage.theme,
-      links: bioPage.links
-        .filter((l) => l.isActive)
-        .sort((a, b) => a.order - b.order)
-        .map((l) => ({ _id: l._id, title: l.title, url: l.url, icon: l.icon, isFeatured: l.isFeatured })),
-      socialLinks: bioPage.socialLinks ?? {},
-      socialLinkImages: bioPage.socialLinkImages ? Object.fromEntries(bioPage.socialLinkImages) : {},
+      blocks: bioPage.blocks || [],
+      bioTheme: bioPage.bioTheme || null,
+      design: bioPage.design || null,
+      blockClickCounts,
+      totalViews: bioPage.totalViews,
     };
   },
 
-  async trackLinkClick(username, linkId) {
+  async trackLinkClick(username, blockId) {
     const bioPage = await BioPage.findOne({
       username: username.toLowerCase().trim(),
       isActive: true,
@@ -160,20 +151,92 @@ const bioPageService = {
 
     if (!bioPage) throw makeError('Bio page not found', 404);
 
-    const link = bioPage.links.id(linkId);
-    if (!link) throw makeError('Link not found', 404);
+    const countKey = `blockClickCounts.${blockId}`;
+    await BioPage.findByIdAndUpdate(
+      bioPage._id,
+      { $inc: { [countKey]: 1 } },
+    );
 
-    link.clickCount = (link.clickCount || 0) + 1;
-    await bioPage.save();
+    // Try to find the URL from blocks for the given blockId
+    let url = null;
+    if (bioPage.blocks && Array.isArray(bioPage.blocks)) {
+      const block = bioPage.blocks.find((b) => b.id === blockId);
+      if (block && block.data && block.data.url) {
+        url = block.data.url;
+      }
+    }
 
-    return { url: link.url };
+    return { url };
+  },
+
+  async generateBgImage(prompt) {
+    const sanitizedPrompt = (prompt || '').replace(/[<>"'`\\]/g, '').trim().slice(0, 300);
+    if (!sanitizedPrompt) {
+      throw makeError('Prompt must not be empty', 400);
+    }
+
+    // Pollinations.AI — free, no API key required.
+    // Use model=turbo (faster, more stable than flux) at 512×512.
+    const seed = Math.floor(Math.random() * 9999999);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(sanitizedPrompt)}?width=512&height=512&nologo=true&seed=${seed}&model=turbo`;
+
+    // Proxy the image server-side so the frontend never hits Pollinations directly.
+    // Returns a base64 data URL that is stored in MongoDB alongside the bio page.
+    const fetchImage = (url, redirectCount = 0) => new Promise((resolve, reject) => {
+      if (redirectCount > 5) return reject(makeError('Too many redirects from image service', 502));
+      const req = https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return resolve(fetchImage(res.headers.location, redirectCount + 1));
+        }
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(makeError(`AI image service returned ${res.statusCode}. Please try again.`, 502));
+        }
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          const contentType = res.headers['content-type'] || 'image/jpeg';
+          resolve(`data:${contentType};base64,${buffer.toString('base64')}`);
+        });
+        res.on('error', (err) => reject(makeError(`Error reading response: ${err.message}`, 502)));
+      });
+      req.setTimeout(90000, () => { req.destroy(); reject(makeError('Image generation timed out. Please try again.', 504)); });
+      req.on('error', (err) => reject(makeError(`Could not reach image service: ${err.message}`, 502)));
+    });
+
+    const dataUrl = await fetchImage(imageUrl);
+    return { url: dataUrl };
   },
 
   async getBioPageAnalytics(bioPageId, userId) {
     const bioPage = await BioPage.findOne({ _id: bioPageId, owner: userId, isActive: true });
     if (!bioPage) throw makeError('Bio page not found', 404);
 
-    const totalClicks = bioPage.links.reduce((sum, l) => sum + (l.clickCount || 0), 0);
+    const blockClickCounts = bioPage.blockClickCounts
+      ? Object.fromEntries(bioPage.blockClickCounts)
+      : {};
+
+    const totalClicks = Object.values(blockClickCounts).reduce((s, c) => s + (c || 0), 0);
+
+    // Build per-link analytics from link blocks
+    const linkAnalytics = [];
+    if (bioPage.blocks && Array.isArray(bioPage.blocks)) {
+      for (const block of bioPage.blocks) {
+        if (block.type === 'link' && block.visible) {
+          const clicks = blockClickCounts[block.id] || 0;
+          linkAnalytics.push({
+            blockId: block.id,
+            title: block.data?.titleEn || block.data?.title || 'Link',
+            url: block.data?.url || '',
+            clickCount: clicks,
+            clickRate: bioPage.totalViews > 0
+              ? ((clicks / bioPage.totalViews) * 100).toFixed(1)
+              : '0.0',
+          });
+        }
+      }
+    }
 
     return {
       bioPageId: bioPage._id,
@@ -181,15 +244,7 @@ const bioPageService = {
       username: bioPage.username,
       totalViews: bioPage.totalViews,
       totalClicks,
-      links: bioPage.links.map((l) => ({
-        _id: l._id,
-        title: l.title,
-        url: l.url,
-        clickCount: l.clickCount || 0,
-        clickRate: bioPage.totalViews > 0
-          ? ((l.clickCount / bioPage.totalViews) * 100).toFixed(1)
-          : '0.0',
-      })),
+      links: linkAnalytics,
     };
   },
 };

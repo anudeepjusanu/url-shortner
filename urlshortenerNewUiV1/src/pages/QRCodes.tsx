@@ -37,8 +37,9 @@ import {
 } from "@/components/ui/select";
 import {
   QrCode, Download, Trash2, Plus, ExternalLink,
-  Search, Loader2,
+  Search, Loader2, RefreshCw, AlertTriangle,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import { useToast } from "@/hooks/use-toast";
@@ -92,6 +93,13 @@ const QRCodes = () => {
     shortUrl: string;
   }>({ open: false, id: null, shortUrl: "" });
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Change destination dialog
+  const [changeDestTarget, setChangeDestTarget] = useState<any | null>(null);
+  const [changeDestUrl, setChangeDestUrl] = useState("");
+  const [changeDestError, setChangeDestError] = useState("");
+  const [changeDestAcknowledged, setChangeDestAcknowledged] = useState(false);
+  const [changeDestSaving, setChangeDestSaving] = useState(false);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -328,6 +336,53 @@ const QRCodes = () => {
     }
   };
 
+  // ─── Change Destination ──────────────────────────────────────────────────
+
+  const validateDestUrl = (url: string) => {
+    try {
+      const p = new URL(url);
+      return p.protocol === "http:" || p.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  const openChangeDestDialog = (url: any) => {
+    setChangeDestTarget(url);
+    setChangeDestUrl(url.originalUrl || "");
+    setChangeDestError("");
+    setChangeDestAcknowledged(false);
+  };
+
+  const handleSaveChangeDest = async () => {
+    const trimmed = changeDestUrl.trim();
+    if (!validateDestUrl(trimmed)) {
+      setChangeDestError(
+        t("Enter a valid http/https URL", "أدخل رابطاً صحيحاً يبدأ بـ http أو https")
+      );
+      return;
+    }
+    setChangeDestSaving(true);
+    try {
+      await myLinksService.update(changeDestTarget._id, { originalUrl: trimmed });
+      setAllUrls((prev) =>
+        prev.map((u) =>
+          u._id === changeDestTarget._id ? { ...u, originalUrl: trimmed } : u
+        )
+      );
+      setChangeDestTarget(null);
+      toast({ title: t("Destination updated", "تم تحديث الوجهة") });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: t("Update failed", "فشل التحديث"),
+        description: err.message,
+      });
+    } finally {
+      setChangeDestSaving(false);
+    }
+  };
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
   const qrCount = allUrls.filter((u) => u.qrCodeGenerated).length;
@@ -360,6 +415,70 @@ const QRCodes = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Destination dialog */}
+      <Dialog open={!!changeDestTarget} onOpenChange={(open) => !open && setChangeDestTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("Change Destination URL", "تغيير رابط الوجهة")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {/* Prominent warning */}
+            <div className="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                {t(
+                  "Both the QR code and its associated short link will point to the new destination immediately — anyone scanning the QR code or visiting the short link directly will be redirected to the new URL.",
+                  "سيشير كل من كود QR والرابط المختصر المرتبط به إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يمسح الكود أو يزور الرابط المختصر مباشرةً إلى الرابط الجديد."
+                )}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <Input
+                value={changeDestUrl}
+                onChange={(e) => {
+                  setChangeDestUrl(e.target.value);
+                  setChangeDestError("");
+                }}
+                placeholder="https://example.com/new-page"
+                dir="ltr"
+              />
+              {changeDestError && (
+                <p className="text-xs text-destructive">{changeDestError}</p>
+              )}
+            </div>
+
+            {/* Explicit acknowledgment */}
+            <label className="flex items-start gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={changeDestAcknowledged}
+                onChange={(e) => setChangeDestAcknowledged(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
+              />
+              <span className="text-sm text-foreground">
+                {t(
+                  "I understand that both the QR code and the short link will redirect to the new destination immediately",
+                  "أفهم أن كلاً من كود QR والرابط المختصر سيُوجَّهان إلى الوجهة الجديدة فوراً"
+                )}
+              </span>
+            </label>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setChangeDestTarget(null)}>
+              {t("Cancel", "إلغاء")}
+            </Button>
+            <Button
+              onClick={handleSaveChangeDest}
+              disabled={changeDestSaving || !changeDestAcknowledged}
+            >
+              {changeDestSaving && <Loader2 className="w-4 h-4 animate-spin me-2" />}
+              {t("Save", "حفظ")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Generate / Customize modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -632,7 +751,7 @@ const QRCodes = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="px-4 pb-4 pt-3 flex items-center gap-2">
+                <div className="px-4 pb-4 pt-3 flex items-center gap-2 flex-wrap">
                   {hasQR && (
                     <Button
                       variant="outline"
@@ -657,6 +776,18 @@ const QRCodes = () => {
                       onClick={() => openCustomizeModal(url)}
                     >
                       {t("Edit", "تعديل")}
+                    </Button>
+                  )}
+                  {hasQR && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-9 px-3"
+                      title={t("Change Destination URL", "تغيير رابط الوجهة")}
+                      onClick={() => openChangeDestDialog(url)}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 me-1" />
+                      {t("Dest.", "الوجهة")}
                     </Button>
                   )}
                   <Button

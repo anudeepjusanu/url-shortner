@@ -91,6 +91,11 @@
 }
 
 @layer base {
+  html, body, #root {
+    min-height: 100dvh;
+    width: 100%;
+  }
+
   * {
     @apply border-border;
   }
@@ -171,5 +176,20 @@
 
   .gradient-kaleidoscope {
     background: linear-gradient(135deg, hsl(var(--navy)), hsl(var(--sky)), hsl(var(--navy)));
+  }
+
+  @keyframes bio-shake {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-3px); }
+    20% { transform: translateX(3px); }
+    30% { transform: translateX(-2px); }
+    40% { transform: translateX(2px); }
+    50% { transform: translateX(-1px); }
+    60% { transform: translateX(1px); }
+    70%, 80%, 90% { transform: translateX(0); }
+  }
+
+  .animate-bio-shake {
+    animation: bio-shake 2s ease-in-out infinite;
   }
 }

@@ -4,9 +4,37 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { blogPosts } from "@/data/blogPosts";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+import { useMetaTags } from "@/hooks/useMetaTags";
 
 const Blog = () => {
   const { t, lang } = useLanguage();
+
+  // Set meta tags based on language
+  useMetaTags({
+    title: lang === "ar" 
+      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+      : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    description: lang === "ar"
+      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    keywords: "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip, مدونة اختصار الروابط, نصائح الروابط القصيرة",
+    ogTitle: lang === "ar"
+      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+      : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    ogDescription: lang === "ar"
+      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    ogUrl: "https://snip.sa/blog",
+    ogImage: "https://snip.sa/og-image.png",
+    twitterTitle: lang === "ar"
+      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+      : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    twitterDescription: lang === "ar"
+      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    twitterImage: "https://snip.sa/og-image.png",
+    canonical: "https://snip.sa/blog",
+  });
 
   return (
     <div className="min-h-screen">

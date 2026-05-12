@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMetaTags } from "@/hooks/useMetaTags";
 import { blogPosts } from "@/data/blogPosts";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
@@ -35,6 +36,26 @@ const BlogPost = () => {
   const category = lang === "ar" ? post.category.ar : post.category.en;
   const readTime = lang === "ar" ? post.readTime.ar : post.readTime.en;
   const date = lang === "ar" ? post.date.ar : post.date.en;
+
+  const seoTitle = post.seoTitle
+    ? (lang === "ar" ? post.seoTitle.ar : post.seoTitle.en)
+    : title;
+  const seoDescription = post.seoDescription
+    ? (lang === "ar" ? post.seoDescription.ar : post.seoDescription.en)
+    : (lang === "ar" ? post.excerpt.ar : post.excerpt.en);
+
+  useMetaTags({
+    title: seoTitle,
+    description: seoDescription,
+    ogTitle: seoTitle,
+    ogDescription: seoDescription,
+    ogUrl: `https://snip.sa/blog/${slug}`,
+    ogImage: post.image || "https://snip.sa/og-image.png",
+    twitterTitle: seoTitle,
+    twitterDescription: seoDescription,
+    twitterImage: post.image || "https://snip.sa/og-image.png",
+    canonical: `https://snip.sa/blog/${slug}`,
+  });
 
   // Simple markdown-like rendering
   const renderContent = (text: string) => {

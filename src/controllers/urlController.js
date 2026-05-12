@@ -35,19 +35,35 @@ const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
   const errorMsg = result.error || '';
   const status = result.status;
 
+  // DNS resolution failures - domain doesn't exist
   if (errorMsg.includes('ENOTFOUND') || errorMsg.includes('getaddrinfo') || errorMsg.includes('EAI_AGAIN')) {
     return { allowed: false, message: 'URL does not exist. The domain could not be found. Please check the URL and try again.' };
   }
+  
+  // Connection refused - server is not accepting connections
   if (errorMsg.includes('ECONNREFUSED')) {
     return { allowed: false, message: 'URL is not accessible. The server refused the connection. Please check the URL and try again.' };
   }
+  
+  // Handle HTTP status codes
   if (status && status >= 400) {
+    // Allow authentication/authorization errors - the URL exists but requires credentials
     if (status === 401 || status === 403 || status === 405) return { allowed: true };
+    
+    // 404 - Page not found
     if (status === 404) return { allowed: false, message: 'URL not found (HTTP 404). The page does not exist. Please check the URL.' };
+    
+    // 5xx errors - server errors, but the URL exists
     if (status >= 500) return { allowed: true };
+    
+    // Other 4xx errors
     return { allowed: false, message: `URL is not accessible (HTTP ${status}). Please provide a valid, existing URL.` };
   }
-  // Timeout / abort / ECONNRESET / ETIMEDOUT / ERR_BAD_RESPONSE — allow
+  
+  // For all other errors (timeout, connection reset, bad response, etc.)
+  // Allow the URL since these could be temporary network issues or strict server configs
+  // The URL format is already validated, so we trust it exists
+  console.log(`URL accessibility check inconclusive for ${cleanUrl}: ${errorMsg}. Allowing URL.`);
   return { allowed: true };
 };
 

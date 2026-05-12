@@ -4,8 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import ScrollToTop from "@/components/ScrollToTop";
 import amplitudeService from "@/services/amplitude";
+
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 // Initialize Amplitude once at module load
 amplitudeService.initialize();
@@ -47,11 +51,15 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import BioPages from "./pages/BioPages";
 import BioPageEditor from "./pages/BioPageEditor";
+import BioWizard from "./pages/BioWizard";
+import BioBuilder from "./pages/BioBuilder";
 import PublicBioPage from "./pages/PublicBioPage";
 import BulkCreate from "./pages/BulkCreate";
+import BulkShorten from "./pages/BulkShorten";
 import DynamicQRCodes from "./pages/DynamicQRCodes";
 import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
 import QRErrorPage from "./pages/QRErrorPage";
+import LinkNotFoundPage from "./pages/LinkNotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -61,9 +69,10 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <ScrollToTop />
             <PageViewTracker />
             <Routes>
@@ -91,16 +100,22 @@ const App = () => (
             <Route path="/dashboard/bio-pages" element={<ProtectedRoute><BioPages /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/create" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
             <Route path="/dashboard/bio-pages/:id/edit" element={<ProtectedRoute><BioPageEditor /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-wizard" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-wizard/:id/edit" element={<ProtectedRoute><BioWizard /></ProtectedRoute>} />
+            <Route path="/dashboard/bio-builder/:id" element={<ProtectedRoute><BioBuilder /></ProtectedRoute>} />
             <Route path="/dashboard/bulk-create" element={<ProtectedRoute><BulkCreate /></ProtectedRoute>} />
+            <Route path="/dashboard/bulk-shorten" element={<ProtectedRoute><BulkShorten /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* Public error page for failed dynamic QR scans — no auth required */}
             <Route path="/qr-error" element={<QRErrorPage />} />
+            <Route path="/link-not-found" element={<LinkNotFoundPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          </GoogleOAuthProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

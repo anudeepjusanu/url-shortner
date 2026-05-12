@@ -32,7 +32,7 @@ const validateRegistration = [
       }
       return /^\d{7,15}$/.test(normalized);
     })
-    .withMessage('Please enter a valid phone number (e.g., +9665XXXXXXXX or 05XXXXXXXX)'),
+    .withMessage('Please enter a valid phone number (e.g., +9665XXXXXXXX, 05XXXXXXXX, +919XXXXXXXXX, or 9XXXXXXXXX)'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
