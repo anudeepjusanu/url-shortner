@@ -89,12 +89,13 @@ const Login = () => {
       const response = await googleLogin(accessToken);
 
       if (response.success && response.data) {
-        if (response.data.requiresPhoneVerification) {
+        // Check if this is a NEW user that requires phone verification
+        if (!response.isExistingUser && response.data.requiresPhoneVerification) {
           // New user — auto start sign-up flow with mobile verification
           setGoogleSessionToken(response.data.sessionToken);
           setShowMobileVerification(true);
         } else {
-          // Existing user — logged in
+          // Existing user — logged in directly
           amplitudeService.track("login");
           toast({
             title: t("Login Successful", "تم تسجيل الدخول بنجاح"),

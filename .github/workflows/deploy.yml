@@ -58,6 +58,8 @@ jobs:
         VITE_API_URL: https://snip.sa/api
         REACT_APP_DEFAULT_DOMAIN: snip.sa
         VITE_AMPLITUDE_API_KEY: 4856f30af2b3945a8d260c4136ea7cd9
+        VITE_GOOGLE_CLIENT_ID: 1082255708858-sosps9c0jf1barbusi7rjfg118brkt24.apps.googleusercontent.com
+
 
     - name: Create deployment package
       run: |

@@ -16,12 +16,25 @@ import { authAPI } from '@/services/api';
 import amplitudeService from '@/services/amplitude';
 import { Loader2 } from 'lucide-react';
 
+// ============================================================================
+// TEMPORARY: India support added for testing - REMOVE BEFORE PRODUCTION
+// ============================================================================
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
-const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;
+const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;  // TEMPORARY - REMOVE AFTER TESTING
+const SAUDI_COUNTRY_CODE = '+966';
+const INDIA_COUNTRY_CODE = '+91';  // TEMPORARY - REMOVE AFTER TESTING
+// ============================================================================
+
 const RESEND_COOLDOWN = 60;
 const MAX_RESENDS = 3;
 const MAX_OTP_ATTEMPTS = 5;
 const OTP_LENGTH = 6;
+
+// TEMPORARY: Country options for testing - REMOVE AFTER TESTING
+const COUNTRY_OPTIONS = [
+  { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
+  // { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+];
 
 interface MobileVerificationPopupProps {
   open: boolean;
@@ -33,6 +46,10 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // TEMPORARY: Country selection state for testing - REMOVE AFTER TESTING
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
+  const [countryOpen, setCountryOpen] = useState(false);
 
   const [step, setStep] = useState<'phone' | 'otp' | 'locked'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -70,6 +87,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
       setResendCooldown(0);
       setOtpExpiresAt(null);
       setTimeRemaining(null);
+      setSelectedCountry(COUNTRY_OPTIONS[0]); // TEMPORARY - Reset to Saudi
+      setCountryOpen(false); // TEMPORARY
     }
   }, [open, clearTimers]);
 
@@ -107,8 +126,14 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
     onClose();
   };
 
+  // TEMPORARY: Validation for both Saudi and India - REMOVE AFTER TESTING
   const validatePhone = (value: string) => {
     const digits = value.replace(/\D/g, '');
+    
+    if (digits.length === 0) {
+      setPhoneError('');
+      return false;
+    }
     
     // Check if it's a Saudi number (9 digits starting with 5)
     const isSaudiNumber = digits.length === 9 && SAUDI_NUMBER_REGEX.test(digits);
@@ -116,24 +141,54 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
     // Check if it's an India number (10 digits starting with 6-9)
     const isIndiaNumber = digits.length === 10 && INDIA_NUMBER_REGEX.test(digits);
     
-    if (!isSaudiNumber && !isIndiaNumber) {
-      if (digits.length < 9) {
-        setPhoneError(t('Please enter a valid mobile number', 'الرجاء إدخال رقم جوال صحيح'));
-      } else {
-        setPhoneError(t('Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)', 'الرجاء إدخال رقم جوال صحيح (السعودية: 5XXXXXXXX أو الهند: 9XXXXXXXXX)'));
+    // Validate based on selected country
+    if (selectedCountry.dialCode === '+966') {
+      // Saudi Arabia validation
+      if (digits.length > 0 && digits[0] !== '5') {
+        setPhoneError(t('Saudi mobile numbers must start with 5', 'أرقام الجوال السعودية يجب أن تبدأ بـ 5'));
+        return false;
       }
-      return false;
+      
+      if (digits.length < 9) {
+        setPhoneError(t('Please enter 9 digits (5XXXXXXXX)', 'الرجاء إدخال 9 أرقام (5XXXXXXXX)'));
+        return false;
+      }
+      
+      if (digits.length === 9 && !isSaudiNumber) {
+        setPhoneError(t('Invalid Saudi mobile number format', 'تنسيق رقم الجوال السعودي غير صحيح'));
+        return false;
+      }
+    } else if (selectedCountry.dialCode === '+91') {
+      // India validation (TEMPORARY)
+      if (digits.length > 0 && !['6', '7', '8', '9'].includes(digits[0])) {
+        setPhoneError(t('Indian mobile numbers must start with 6, 7, 8, or 9', 'أرقام الجوال الهندية يجب أن تبدأ بـ 6 أو 7 أو 8 أو 9'));
+        return false;
+      }
+      
+      if (digits.length < 10) {
+        setPhoneError(t('Please enter 10 digits (9XXXXXXXXX)', 'الرجاء إدخال 10 أرقام (9XXXXXXXXX)'));
+        return false;
+      }
+      
+      if (digits.length === 10 && !isIndiaNumber) {
+        setPhoneError(t('Invalid Indian mobile number format', 'تنسيق رقم الجوال الهندي غير صحيح'));
+        return false;
+      }
     }
+    
     setPhoneError('');
     return true;
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10); // Allow up to 10 digits for India
+    // TEMPORARY: Allow up to 10 digits for India - REMOVE AFTER TESTING
+    const value = e.target.value.replace(/\D/g, '').slice(0, selectedCountry.maxDigits);
     setPhoneNumber(value);
-    if (value.length >= 9) { // Validate when we have at least 9 digits
+    
+    // Real-time validation - show errors immediately
+    if (value.length > 0) {
       validatePhone(value);
-    } else if (phoneError) {
+    } else {
       setPhoneError('');
     }
   };
@@ -298,16 +353,50 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
               <div className="space-y-2">
                 <Label className="text-sm">{t('Mobile Number', 'رقم الجوال')}</Label>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center h-11 px-3 rounded-md border border-input bg-muted text-sm font-body text-muted-foreground shrink-0">
-                    🇸🇦 +966
+                  {/* TEMPORARY: Country selector for testing - REMOVE AFTER TESTING */}
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCountryOpen(!countryOpen)}
+                      className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-background text-sm font-body text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span>{selectedCountry.flag}</span>
+                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
+                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute top-full start-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                        {COUNTRY_OPTIONS.map((c) => (
+                          <button
+                            key={c.dialCode}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(c);
+                              setPhoneNumber('');
+                              setPhoneError('');
+                              setCountryOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start ${
+                              selectedCountry.dialCode === c.dialCode ? 'bg-muted' : ''
+                            }`}
+                          >
+                            <span>{c.flag}</span>
+                            <span className="text-muted-foreground">{c.dialCode}</span>
+                            <span className="text-foreground">{c.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="5XXXXXXXX or 9XXXXXXXXX"
+                    placeholder={selectedCountry.placeholder}
                     value={phoneNumber}
                     onChange={handlePhoneChange}
-                    maxLength={10}
+                    maxLength={selectedCountry.maxDigits}
                     className="h-11"
                     dir="ltr"
                     disabled={isSendingOtp}
@@ -319,8 +408,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 )}
                 <p className="text-xs text-muted-foreground">
                   {t(
-                    'Saudi: 5XXXXXXXX (9 digits) or India: 9XXXXXXXXX (10 digits)',
-                    'السعودية: 5XXXXXXXX (9 أرقام) أو الهند: 9XXXXXXXXX (10 أرقام)'
+                    'Enter your mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
+                    'أدخل رقم جوالك (السعودية: 5XXXXXXXX أو الهند: 9XXXXXXXXX)'
                   )}
                 </p>
               </div>
@@ -329,7 +418,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 type="button"
                 className="w-full h-11 bg-primary text-primary-foreground"
                 onClick={handleSendOtp}
-                disabled={(phoneNumber.length !== 9 && phoneNumber.length !== 10) || isSendingOtp || !!phoneError}
+                disabled={phoneNumber.length !== selectedCountry.maxDigits || isSendingOtp || !!phoneError}
               >
                 {isSendingOtp ? (
                   <>
