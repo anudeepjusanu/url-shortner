@@ -17,6 +17,7 @@ import amplitudeService from '@/services/amplitude';
 import { Loader2 } from 'lucide-react';
 
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
+const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;
 const RESEND_COOLDOWN = 60;
 const MAX_RESENDS = 3;
 const MAX_OTP_ATTEMPTS = 5;
@@ -108,12 +109,19 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
 
   const validatePhone = (value: string) => {
     const digits = value.replace(/\D/g, '');
-    if (digits.length !== 9) {
-      setPhoneError(t('Please enter a valid 9-digit Saudi mobile number', 'الرجاء إدخال رقم جوال سعودي صحيح مكون من 9 أرقام'));
-      return false;
-    }
-    if (!SAUDI_NUMBER_REGEX.test(digits)) {
-      setPhoneError(t('Please enter a valid Saudi mobile number starting with 05', 'الرجاء إدخال رقم جوال سعودي صحيح يبدأ بـ 05'));
+    
+    // Check if it's a Saudi number (9 digits starting with 5)
+    const isSaudiNumber = digits.length === 9 && SAUDI_NUMBER_REGEX.test(digits);
+    
+    // Check if it's an India number (10 digits starting with 6-9)
+    const isIndiaNumber = digits.length === 10 && INDIA_NUMBER_REGEX.test(digits);
+    
+    if (!isSaudiNumber && !isIndiaNumber) {
+      if (digits.length < 9) {
+        setPhoneError(t('Please enter a valid mobile number', 'الرجاء إدخال رقم جوال صحيح'));
+      } else {
+        setPhoneError(t('Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)', 'الرجاء إدخال رقم جوال صحيح (السعودية: 5XXXXXXXX أو الهند: 9XXXXXXXXX)'));
+      }
       return false;
     }
     setPhoneError('');
@@ -121,9 +129,9 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 9);
+    const value = e.target.value.replace(/\D/g, '').slice(0, 10); // Allow up to 10 digits for India
     setPhoneNumber(value);
-    if (value.length === 9) {
+    if (value.length >= 9) { // Validate when we have at least 9 digits
       validatePhone(value);
     } else if (phoneError) {
       setPhoneError('');
@@ -149,8 +157,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
       toast({
         title: t('Code Sent', 'تم إرسال الرمز'),
         description: t(
-          `Verification code sent to +966 ${phoneNumber}`,
-          `تم إرسال رمز التحقق إلى +966 ${phoneNumber}`
+          `Verification code sent to your mobile number`,
+          `تم إرسال رمز التحقق إلى رقم جوالك`
         ),
       });
     } catch (error: any) {
@@ -268,13 +276,13 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
           <DialogDescription className="text-center text-sm">
             {step === 'phone' &&
               t(
-                'Please enter your Saudi mobile number to verify your identity.',
-                'الرجاء إدخال رقم جوالك السعودي للتحقق من هويتك.'
+                'Please enter your mobile number to verify your identity.',
+                'الرجاء إدخال رقم جوالك للتحقق من هويتك.'
               )}
             {step === 'otp' &&
               t(
-                `A 6-digit code was sent to +966 ${phoneNumber}`,
-                `تم إرسال رمز مكون من 6 أرقام إلى +966 ${phoneNumber}`
+                `A 6-digit code was sent to your mobile number`,
+                `تم إرسال رمز مكون من 6 أرقام إلى رقم جوالك`
               )}
             {step === 'locked' &&
               t(
@@ -296,10 +304,10 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                   <Input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="5XXXXXXXX"
+                    placeholder="5XXXXXXXX or 9XXXXXXXXX"
                     value={phoneNumber}
                     onChange={handlePhoneChange}
-                    maxLength={9}
+                    maxLength={10}
                     className="h-11"
                     dir="ltr"
                     disabled={isSendingOtp}
@@ -311,8 +319,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 )}
                 <p className="text-xs text-muted-foreground">
                   {t(
-                    'Saudi mobile numbers only (e.g., 5XXXXXXXX)',
-                    'أرقام الجوال السعودية فقط (مثال: 5XXXXXXXX)'
+                    'Saudi: 5XXXXXXXX (9 digits) or India: 9XXXXXXXXX (10 digits)',
+                    'السعودية: 5XXXXXXXX (9 أرقام) أو الهند: 9XXXXXXXXX (10 أرقام)'
                   )}
                 </p>
               </div>
@@ -321,7 +329,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
                 type="button"
                 className="w-full h-11 bg-primary text-primary-foreground"
                 onClick={handleSendOtp}
-                disabled={phoneNumber.length !== 9 || isSendingOtp || !!phoneError}
+                disabled={(phoneNumber.length !== 9 && phoneNumber.length !== 10) || isSendingOtp || !!phoneError}
               >
                 {isSendingOtp ? (
                   <>

@@ -9,6 +9,7 @@ const emailService = require('../services/emailService');
 const { getLocationFromIP, getClientIP } = require('../services/geoLocationService');
 
 const SAUDI_PHONE_REGEX = /^5\d{8}$/;
+const INDIA_PHONE_REGEX = /^[6-9]\d{9}$/;
 
 const googleClient = new OAuth2Client({
   clientId: config.GOOGLE_AUTH.CLIENT_ID,
@@ -231,11 +232,14 @@ const sendGoogleSignupOTP = async (req, res) => {
       });
     }
 
-    // Validate phone number is Saudi format (starts with 5, exactly 9 digits)
-    if (!SAUDI_PHONE_REGEX.test(phoneNumber)) {
+    // Validate phone number is Saudi or India format
+    const isSaudiNumber = SAUDI_PHONE_REGEX.test(phoneNumber);
+    const isIndiaNumber = INDIA_PHONE_REGEX.test(phoneNumber);
+    
+    if (!isSaudiNumber && !isIndiaNumber) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid Saudi mobile number (e.g., 5XXXXXXXX)',
+        message: 'Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
       });
     }
 
@@ -278,9 +282,13 @@ const sendGoogleSignupOTP = async (req, res) => {
 
     const otp = generateOtpCode();
 
+    // Determine country code based on phone number format
+    const countryCode = isSaudiNumber ? '+966' : '+91';
+    const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+
     // Update session with new OTP
     session.otp = otp;
-    session.phone = `+966${phoneNumber}`;
+    session.phone = fullPhoneNumber;
     session.otpExpiresAt = Date.now() + 5 * 60 * 1000;
     session.otpResends = (session.otpResends || 0) + 1;
 

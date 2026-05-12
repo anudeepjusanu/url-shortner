@@ -31,7 +31,7 @@ const GoogleAuthButton = ({
     <Button
       type="button"
       variant="outline"
-      className="w-full h-11 text-base font-body gap-2 border-border hover:bg-muted/50"
+      className="w-full h-11 text-base font-body gap-2 border-border hover:bg-muted/50 hover:text-primary"
       onClick={() => googleLogin()}
       disabled={isLoading}
     >
