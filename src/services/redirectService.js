@@ -158,21 +158,34 @@ class RedirectService {
       }
 
       if (url) {
-        console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive });
-        
-        // IMPORTANT: Always verify isActive status from database for cached URLs
-        // This ensures deactivated URLs don't redirect even if cached
-        const freshStatus = await Url.findOne({ 
-          $or: [
-            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
-            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
-          ]
-        }).select('isActive').lean();
+        console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive, cachedDomain: url.domain });
+
+        // Validate cached URL belongs to the requested domain (custom domain isolation)
+        const isRequestOnMainDomain = !normalizedDomain || this.isMainDomain(normalizedDomain);
+        const cachedUrlDomain = url.domain ? url.domain.toLowerCase() : null;
+        const domainMatches = isRequestOnMainDomain
+          ? true // main domain requests can resolve any URL (no domain restriction)
+          : cachedUrlDomain === normalizedDomain; // custom domain requests must match exactly
+
+        if (!domainMatches) {
+          console.log('⚠️ Cache domain mismatch! Request domain:', normalizedDomain, 'Cached domain:', cachedUrlDomain, '→ falling through to DB');
+          url = null; // Force DB lookup with correct domain filter
+        }
+
+        if (url) {
+          // IMPORTANT: Always verify isActive status from database for cached URLs
+          // This ensures deactivated URLs don't redirect even if cached
+          const freshStatus = await Url.findOne({
+            $or: [
+              { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
+              { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
+            ]
+          }).select('isActive').lean();
         
         if (freshStatus && freshStatus.isActive !== url.isActive) {
           console.log('⚠️ Cache stale! DB isActive:', freshStatus.isActive, 'Cache isActive:', url.isActive);
           url.isActive = freshStatus.isActive;
-          
+
           // If URL is now inactive, clear the cache
           if (!freshStatus.isActive) {
             console.log('🗑️ Clearing stale cache for deactivated URL');
@@ -181,6 +194,7 @@ class RedirectService {
             await cacheDel(`url:${originalShortCode}`);
           }
         }
+        } // closes inner if(url) after domain validation
       } else {
         console.log('💾 Cache MISS - querying database');
 
