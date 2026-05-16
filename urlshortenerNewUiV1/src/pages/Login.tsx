@@ -10,8 +10,8 @@ import { Zap, BarChart3, QrCode, Loader2, Eye, EyeOff, Globe } from "lucide-reac
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
-import GoogleAuthButton from "@/components/GoogleAuthButton";
-import MobileVerificationPopup from "@/components/MobileVerificationPopup";
+// import GoogleAuthButton from "@/components/GoogleAuthButton";
+// import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 
 // const COUNTRY_OPTIONS = [
 //   { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9, placeholder: "5XXXXXXXX" },
@@ -20,7 +20,7 @@ import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 const Login = () => {
   const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
-  const { login, googleLogin } = useAuth();
+  const { login /* , googleLogin */ } = useAuth();
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -31,10 +31,10 @@ const Login = () => {
   const [otpData, setOtpData] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Google SSO state
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
-  const [showMobileVerification, setShowMobileVerification] = useState(false);
+  // Google SSO state (commented out)
+  // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  // const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  // const [showMobileVerification, setShowMobileVerification] = useState(false);
 
   // ── OTP tab state (commented out) ──────────────────────────────────────────
   // const [authMethod, setAuthMethod] = useState<"email" | "otp">("email");
@@ -83,6 +83,7 @@ const Login = () => {
   // ── Phone OTP handlers (commented out) ─────────────────────────────────────
   // const handleSendOtp = async (e: React.FormEvent) => { ... };
 
+  /* ── Google SSO handlers (commented out) ─────────────────────────────
   const handleGoogleSuccess = async (accessToken: string) => {
     setIsGoogleLoading(true);
     try {
@@ -127,6 +128,7 @@ const Login = () => {
     setShowMobileVerification(false);
     setGoogleSessionToken(null);
   };
+  ────────────────────────────────────────────────────────────────── */
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,8 +219,8 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Google SSO Button */}
-          <div className="space-y-4">
+          {/* Google SSO Button (commented out) */}
+          {/* <div className="space-y-4">
             <GoogleAuthButton
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
@@ -235,7 +237,7 @@ const Login = () => {
                 </span>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Auth method tabs — OTP tab commented out */}
           {/* <div className="flex bg-muted rounded-lg p-1">
@@ -408,14 +410,14 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Mobile Verification Popup for Google SSO new users */}
-        {googleSessionToken && (
+        {/* Mobile Verification Popup for Google SSO new users (commented out) */}
+        {/* {googleSessionToken && (
           <MobileVerificationPopup
             open={showMobileVerification}
             sessionToken={googleSessionToken}
             onClose={handleMobileVerificationClose}
           />
-        )}
+        )} */}
       </div>
     </div>
   );
