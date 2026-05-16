@@ -7,7 +7,9 @@ const redirectToOriginalUrl = async (req, res) => {
     // URL-decode the shortCode to handle international characters (Arabic, Chinese, etc.)
     shortCode = decodeURIComponent(shortCode);
 
-    const requestDomain = req.get('host');
+    // Strip port from Host header to match domain stored in database
+    const rawHost = req.get('host') || '';
+    const requestDomain = rawHost.split(':')[0];
 
     console.log('🔗 Redirect Request:', {
       shortCode,
@@ -15,6 +17,7 @@ const redirectToOriginalUrl = async (req, res) => {
       shortCodeDecoded: shortCode,
       shortCodeBytes: Buffer.from(shortCode).toString('hex'),
       shortCodeLength: shortCode.length,
+      rawHost,
       requestDomain,
       ip: req.ip,
       userAgent: req.get('User-Agent')?.substring(0, 50),
@@ -321,7 +324,9 @@ const redirectFromQRCode = async (req, res) => {
     // URL-decode the shortCode to handle international characters
     shortCode = decodeURIComponent(shortCode);
 
-    const requestDomain = req.get('host');
+    // Strip port from Host header to match domain stored in database
+    const rawHost = req.get('host') || '';
+    const requestDomain = rawHost.split(':')[0];
 
     console.log('📱 QR Code Scan Redirect:', {
       shortCode,
@@ -329,6 +334,7 @@ const redirectFromQRCode = async (req, res) => {
       shortCodeDecoded: shortCode,
       shortCodeBytes: Buffer.from(shortCode).toString('hex'),
       shortCodeLength: shortCode.length,
+      rawHost,
       requestDomain,
       ip: req.ip,
       userAgent: req.get('User-Agent')?.substring(0, 50),
