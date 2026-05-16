@@ -35,10 +35,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
-  Link2, MousePointer, CalendarDays, Users, Search,
+  Link2, MousePointer, CalendarDays, Search,
   Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Layout, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { adminService } from "@/services/jwtService";
@@ -68,6 +72,22 @@ const getSortParams = (sort: string): Record<string, string> => {
   }
 };
 
+const getPublicBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3015/api";
+  return apiUrl.replace(/\/api\/?$/, "");
+};
+
+const getShortUrl = (url: AdminUrl) => {
+  const code = url.customCode || url.shortCode;
+  if (url.domain) {
+    const domain = url.domain.startsWith("http") ? url.domain : `https://${url.domain}`;
+    return `${domain}/${code}`;
+  }
+  const base = getPublicBaseUrl();
+  const domain = base.startsWith("http") ? base : `https://${base}`;
+  return `${domain}/${code}`;
+};
+
 const UrlManagement = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -79,6 +99,12 @@ const UrlManagement = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
+  const [datePopupOpen, setDatePopupOpen] = useState(false);
+  const [pickingFrom, setPickingFrom] = useState(true);
+  const [dateError, setDateError] = useState("");
+
   const [urls, setUrls] = useState<AdminUrl[]>([]);
   const [filteredTotal, setFilteredTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -89,10 +115,9 @@ const UrlManagement = () => {
     totalUrls: 0,
     totalClicks: 0,
     newUrlsLast30Days: 0,
-    totalUsers: 0,
+    totalBioPages: 0,
   });
 
-  // Full creator list fetched once on mount — id → name
   const [allCreators, setAllCreators] = useState<Map<string, string>>(new Map());
 
   const [viewUrl, setViewUrl] = useState<AdminUrl | null>(null);
@@ -102,7 +127,6 @@ const UrlManagement = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // Debounce search input — only fire API after 400 ms of no typing
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -110,8 +134,7 @@ const UrlManagement = () => {
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 400);
   };
 
-  // Reset to page 1 whenever filters or sort change
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, sortBy, fromDate, toDate]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -122,13 +145,13 @@ const UrlManagement = () => {
         totalUrls: overview.totalUrls ?? 0,
         totalClicks: overview.totalClicks ?? 0,
         newUrlsLast30Days: growth.newUrlsLast30Days ?? 0,
-        totalUsers: overview.totalUsers ?? 0,
+        totalBioPages: overview.totalBioPages ?? 0,
       });
-    } catch {}
+    } catch {
+      // silently ignore stats fetch errors
+    }
   }, []);
 
-  // Fetch full user list once on mount so the creator filter dropdown is always complete,
-  // regardless of which URL page is currently loaded
   const fetchAllCreators = useCallback(async () => {
     try {
       const PAGE_LIMIT = 500;
@@ -145,7 +168,9 @@ const UrlManagement = () => {
         page++;
       }
       setAllCreators(map);
-    } catch {}
+    } catch {
+      // silently ignore creator fetch errors
+    }
   }, []);
 
   const fetchUrls = useCallback(async () => {
@@ -159,6 +184,12 @@ const UrlManagement = () => {
       };
       if (debouncedSearch) params.search = debouncedSearch;
       if (creatorFilter !== "all") params.creator = creatorFilter;
+      if (fromDate) params.startDate = new Date(
+        fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0, 0
+      ).toISOString();
+      if (toDate) params.endDate = new Date(
+        toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59, 999
+      ).toISOString();
 
       const urlsRes = await adminService.getUrls(params);
       const fetchedUrls: AdminUrl[] = urlsRes?.data?.urls ?? [];
@@ -172,7 +203,7 @@ const UrlManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, debouncedSearch, creatorFilter, sortBy]);
+  }, [currentPage, debouncedSearch, creatorFilter, sortBy, fromDate, toDate]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchAllCreators(); }, [fetchAllCreators]);
@@ -188,8 +219,9 @@ const UrlManagement = () => {
         prev.map((u) => (u._id === url._id ? { ...u, isActive: !url.isActive } : u))
       );
       toast({ title: url.isActive ? t("URL deactivated", "تم تعطيل الرابط") : t("URL activated", "تم تفعيل الرابط") });
-    } catch (err: any) {
-      toast({ title: t("Update failed", "فشل التحديث"), description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ title: t("Update failed", "فشل التحديث"), description: message, variant: "destructive" });
     } finally {
       setTogglingId(null);
     }
@@ -204,8 +236,9 @@ const UrlManagement = () => {
       setUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
       setFilteredTotal((n) => Math.max(0, n - 1));
       toast({ title: t("URL deleted", "تم حذف الرابط") });
-    } catch (err: any) {
-      toast({ title: t("Delete failed", "فشل الحذف"), description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ title: t("Delete failed", "فشل الحذف"), description: message, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }
@@ -216,11 +249,53 @@ const UrlManagement = () => {
 
   const getShortDisplay = (url: AdminUrl) => url.customCode || url.shortCode;
 
+  const hasDateFilter = !!(fromDate || toDate);
+
+  const handleFromSelect = (date: Date | undefined) => {
+    setDateError("");
+    setFromDate(date);
+    if (date && toDate && date > toDate) {
+      setDateError(t(
+        "Start date cannot be after end date.",
+        "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية."
+      ));
+      return;
+    }
+    if (!date) {
+      setDatePopupOpen(false);
+      return;
+    }
+    setPickingFrom(false);
+  };
+
+  const handleToSelect = (date: Date | undefined) => {
+    setDateError("");
+    setToDate(date);
+    if (fromDate && date && fromDate > date) {
+      setDateError(t(
+        "End date cannot be before start date.",
+        "تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية."
+      ));
+      return;
+    }
+    if (date) {
+      setDatePopupOpen(false);
+    }
+  };
+
+  const clearDateFilter = () => {
+    setFromDate(undefined);
+    setToDate(undefined);
+    setDateError("");
+    setDatePopupOpen(false);
+    setPickingFrom(true);
+  };
+
   const statCards = [
     { label: t("Total URLs", "إجمالي الروابط"), value: stats.totalUrls, icon: Link2 },
     { label: t("Total Clicks", "إجمالي الضغطات"), value: stats.totalClicks, icon: MousePointer },
     { label: t("New URLs (30d)", "روابط جديدة (30 يوم)"), value: stats.newUrlsLast30Days, icon: CalendarDays },
-    { label: t("Total Users", "إجمالي المستخدمين"), value: stats.totalUsers, icon: Users },
+    { label: t("Total Bio Pages", "إجمالي صفحات التعريف"), value: stats.totalBioPages, icon: Layout },
   ];
 
   const getPageNumbers = (current: number, total: number): (number | "...")[] => {
@@ -232,6 +307,9 @@ const UrlManagement = () => {
 
   const startItem = filteredTotal === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const endItem = Math.min(currentPage * PAGE_SIZE, filteredTotal);
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
 
   return (
     <DashboardLayout>
@@ -314,6 +392,69 @@ const UrlManagement = () => {
             <SelectItem value="most-clicked">{t("Most clicked", "الأكثر ضغطاً")}</SelectItem>
           </SelectContent>
         </Select>
+        <Popover open={datePopupOpen} onOpenChange={setDatePopupOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full sm:w-auto justify-start gap-2 font-body text-sm",
+                hasDateFilter && "border-primary text-primary"
+              )}
+            >
+              <CalendarDays className="w-4 h-4" />
+              {hasDateFilter
+                ? `${fromDate ? format(fromDate, "MMM d, yyyy") : "…"} – ${toDate ? format(toDate, "MMM d, yyyy") : "…"}`
+                : t("Filter by date", "فلتر بالتاريخ")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={pickingFrom ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-8"
+                  onClick={() => setPickingFrom(true)}
+                >
+                  {t("From", "من")}
+                </Button>
+                <Button
+                  variant={!pickingFrom ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-8"
+                  onClick={() => setPickingFrom(false)}
+                >
+                  {t("To", "إلى")}
+                </Button>
+                {hasDateFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-8 ms-auto text-muted-foreground hover:text-foreground"
+                    onClick={clearDateFilter}
+                  >
+                    <X className="w-3 h-3 me-1" />
+                    {t("Clear", "مسح")}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <Calendar
+              mode="single"
+              selected={pickingFrom ? fromDate : toDate}
+              onSelect={pickingFrom ? handleFromSelect : handleToSelect}
+              disabled={(date: Date) => {
+                if (date > today) return true;
+                if (!pickingFrom && fromDate && date < fromDate) return true;
+                return false;
+              }}
+              initialFocus
+            />
+            {dateError && (
+              <p className="text-xs text-destructive px-3 pb-3 font-body">{dateError}</p>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Loading */}
@@ -343,9 +484,14 @@ const UrlManagement = () => {
                     <p className="text-sm font-display font-semibold text-foreground">
                       {url.title || getShortDisplay(url)}
                     </p>
-                    <p className="text-xs text-primary font-body flex items-center gap-1 mt-0.5">
+                    <a
+                      href={getShortUrl(url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary font-body flex items-center gap-1 mt-0.5 hover:underline"
+                    >
                       <ExternalLink className="w-3 h-3 shrink-0" /> {getShortDisplay(url)}
-                    </p>
+                    </a>
                   </div>
                   <Badge
                     variant={url.isActive ? "default" : "secondary"}
@@ -408,7 +554,7 @@ const UrlManagement = () => {
             ))}
             {urls.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
-                {t("No URLs found.", "لا توجد روابط.")}
+                {t("No URLs match your filters.", "لا توجد روابط مطابقة للمعايير.")}
               </div>
             )}
           </div>
@@ -431,9 +577,14 @@ const UrlManagement = () => {
                 {urls.map((url) => (
                   <TableRow key={url._id}>
                     <TableCell>
-                      <span className="font-display font-semibold text-primary text-sm flex items-center gap-1">
+                      <a
+                        href={getShortUrl(url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-display font-semibold text-primary text-sm flex items-center gap-1 hover:underline"
+                      >
                         <ExternalLink className="w-3 h-3" /> {getShortDisplay(url)}
-                      </span>
+                      </a>
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-muted-foreground font-body max-w-[200px] truncate block">
@@ -505,7 +656,7 @@ const UrlManagement = () => {
             </Table>
             {urls.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
-                {t("No URLs found.", "لا توجد روابط.")}
+                {t("No URLs match your filters.", "لا توجد روابط مطابقة للمعايير.")}
               </div>
             )}
           </div>
