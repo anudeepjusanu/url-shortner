@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const Url = require('../models/Url');
+const Domain = require('../models/Domain');
+const BioPage = require('../models/BioPage');
 const Organization = require('../models/Organization');
 const { Click } = require('../models/Analytics');
 const { cacheDel } = require('../config/redis');
@@ -11,6 +13,8 @@ const getSystemStats = async (req, res) => {
       totalUrls,
       totalClicks,
       totalOrganizations,
+      totalDomains,
+      totalBioPages,
       activeUsers,
       usersWithLinks,
       recentUsers,
@@ -20,6 +24,8 @@ const getSystemStats = async (req, res) => {
       Url.countDocuments(),
       Click.countDocuments({ isBot: { $ne: true } }),
       Organization.countDocuments(),
+      Domain.countDocuments(),
+      BioPage.countDocuments(),
       User.countDocuments({
         lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
       }),
@@ -56,6 +62,8 @@ const getSystemStats = async (req, res) => {
           totalUrls,
           totalClicks,
           totalOrganizations,
+          totalDomains,
+          totalBioPages,
           activeUsers,
           usersWithLinks,
           avgLinksPerUser
@@ -86,6 +94,8 @@ const getUsers = async (req, res) => {
       search,
       role,
       isActive,
+      startDate,
+      endDate,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -107,6 +117,12 @@ const getUsers = async (req, res) => {
     
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
+    }
+    
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
     
     const sortOptions = {};
@@ -232,6 +248,8 @@ const getAllUrls = async (req, res) => {
       search,
       isActive,
       creator,
+      startDate,
+      endDate,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -299,6 +317,12 @@ const getAllUrls = async (req, res) => {
     // Filter by status
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
+    }
+    
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
     
     const sortOptions = {};

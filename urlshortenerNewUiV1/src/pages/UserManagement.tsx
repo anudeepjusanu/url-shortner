@@ -20,9 +20,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2, MapPin } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import {
+  Users, UserPlus, Link2, CalendarDays, Trash2, Search,
+  BarChart3, Loader2, MapPin, Globe, Phone, X,
+} from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 type Role = "super_admin" | "admin" | "user" | "viewer";
 
@@ -35,6 +42,7 @@ interface AdminUser {
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
+  phone?: string;
   urlCount?: number;
   registrationLocation?: {
     country?: string;
@@ -65,15 +73,21 @@ const UserManagement = () => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
+  const [datePopupOpen, setDatePopupOpen] = useState(false);
+  const [pickingFrom, setPickingFrom] = useState(true);
+  const [dateError, setDateError] = useState("");
+
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Stats from /admin/stats
   const [stats, setStats] = useState({
     totalUsers: 0,
     newUsersLast30Days: 0,
     totalUrls: 0,
+    totalDomains: 0,
     activeUsers: 0,
     usersWithLinks: 0,
     avgLinksPerUser: 0,
@@ -100,6 +114,7 @@ const UserManagement = () => {
         totalUsers: overview.totalUsers ?? 0,
         newUsersLast30Days: growth.newUsersLast30Days ?? 0,
         totalUrls: overview.totalUrls ?? 0,
+        totalDomains: overview.totalDomains ?? 0,
         activeUsers: overview.activeUsers ?? 0,
         usersWithLinks: overview.usersWithLinks ?? 0,
         avgLinksPerUser: overview.avgLinksPerUser ?? 0,
@@ -113,13 +128,70 @@ const UserManagement = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const handleFromSelect = (date: Date | undefined) => {
+    setDateError("");
+    setFromDate(date);
+    if (date && toDate && date > toDate) {
+      setDateError(t(
+        "Start date cannot be after end date.",
+        "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية."
+      ));
+      return;
+    }
+    if (!date) {
+      setDatePopupOpen(false);
+      return;
+    }
+    setPickingFrom(false);
+  };
+
+  const handleToSelect = (date: Date | undefined) => {
+    setDateError("");
+    setToDate(date);
+    if (fromDate && date && fromDate > date) {
+      setDateError(t(
+        "End date cannot be before start date.",
+        "تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية."
+      ));
+      return;
+    }
+    if (date) {
+      setDatePopupOpen(false);
+    }
+  };
+
+  const clearDateFilter = () => {
+    setFromDate(undefined);
+    setToDate(undefined);
+    setDateError("");
+    setDatePopupOpen(false);
+    setPickingFrom(true);
+  };
+
   const filtered = users.filter((u) => {
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
     const matchSearch =
       name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === "all" || u.role === roleFilter;
-    return matchSearch && matchRole;
+
+    let matchDate = true;
+    if (fromDate || toDate) {
+      const userDate = new Date(u.createdAt);
+      userDate.setHours(0, 0, 0, 0);
+      if (fromDate) {
+        const from = new Date(fromDate);
+        from.setHours(0, 0, 0, 0);
+        if (userDate < from) matchDate = false;
+      }
+      if (toDate) {
+        const to = new Date(toDate);
+        to.setHours(23, 59, 59, 999);
+        if (userDate > to) matchDate = false;
+      }
+    }
+
+    return matchSearch && matchRole && matchDate;
   });
 
   const handleRoleChange = async (userId: string, newRole: string) => {
@@ -130,10 +202,11 @@ const UserManagement = () => {
         prev.map((u) => (u._id === userId ? { ...u, role: newRole as Role } : u))
       );
       toast({ title: t("Role updated", "تم تحديث الدور") });
-    } catch (err: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: t("Update failed", "فشل التحديث"),
-        description: err.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -149,10 +222,11 @@ const UserManagement = () => {
       await adminService.deleteUser(deleteDialog.id);
       setUsers((prev) => prev.filter((u) => u._id !== deleteDialog.id));
       toast({ title: t("User deleted", "تم حذف المستخدم") });
-    } catch (err: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: t("Delete failed", "فشل الحذف"),
-        description: err.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -165,12 +239,18 @@ const UserManagement = () => {
     return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
+  const hasDateFilter = !!(fromDate || toDate);
+
   const statCards = [
     { label: t("Number of Signups", "عدد المُسجّلين"), value: stats.totalUsers, icon: Users },
     { label: t("Users With Links", "مستخدمون لديهم روابط"), value: stats.usersWithLinks, icon: Link2 },
     { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: stats.avgLinksPerUser, icon: BarChart3 },
     { label: t("New Users (30d)", "مستخدمون جدد (30 يوم)"), value: stats.newUsersLast30Days, icon: UserPlus },
+    { label: t("Total Domains", "إجمالي النطاقات"), value: stats.totalDomains, icon: Globe },
   ];
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
 
   return (
     <DashboardLayout>
@@ -206,7 +286,7 @@ const UserManagement = () => {
       </h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {statCards.map((s) => (
           <div key={s.label} className="bg-background border border-border rounded-xl p-5">
             <div className="flex items-center gap-3 mb-3">
@@ -243,6 +323,69 @@ const UserManagement = () => {
             <SelectItem value="viewer">{t("Viewer", "مشاهد")}</SelectItem>
           </SelectContent>
         </Select>
+        <Popover open={datePopupOpen} onOpenChange={setDatePopupOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full sm:w-auto justify-start gap-2 font-body text-sm",
+                hasDateFilter && "border-primary text-primary"
+              )}
+            >
+              <CalendarDays className="w-4 h-4" />
+              {hasDateFilter
+                ? `${fromDate ? format(fromDate, "MMM d, yyyy") : "…"} – ${toDate ? format(toDate, "MMM d, yyyy") : "…"}`
+                : t("Filter by date", "فلتر بالتاريخ")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={pickingFrom ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-8"
+                  onClick={() => setPickingFrom(true)}
+                >
+                  {t("From", "من")}
+                </Button>
+                <Button
+                  variant={!pickingFrom ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-8"
+                  onClick={() => setPickingFrom(false)}
+                >
+                  {t("To", "إلى")}
+                </Button>
+                {hasDateFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-8 ms-auto text-muted-foreground hover:text-foreground"
+                    onClick={clearDateFilter}
+                  >
+                    <X className="w-3 h-3 me-1" />
+                    {t("Clear", "مسح")}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <Calendar
+              mode="single"
+              selected={pickingFrom ? fromDate : toDate}
+              onSelect={pickingFrom ? handleFromSelect : handleToSelect}
+              disabled={(date: Date) => {
+                if (date > today) return true;
+                if (!pickingFrom && fromDate && date < fromDate) return true;
+                return false;
+              }}
+              initialFocus
+            />
+            {dateError && (
+              <p className="text-xs text-destructive px-3 pb-3 font-body">{dateError}</p>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Loading */}
@@ -297,6 +440,12 @@ const UserManagement = () => {
                   </div>
 
                   <div className="space-y-2 text-xs font-body text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="w-3 h-3" /> {t("Phone", "الهاتف")}
+                      </span>
+                      <span className="text-foreground">{user.phone || "—"}</span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <CalendarDays className="w-3 h-3" /> {t("Signup", "تسجيل")}
@@ -360,7 +509,7 @@ const UserManagement = () => {
             <div className="text-center py-12 text-muted-foreground font-body text-sm">
               {users.length === 0
                 ? t("No users found.", "لا يوجد مستخدمون.")
-                : t("No users match your search.", "لا يوجد مستخدمون مطابقون.")}
+                : t("No users match your filters.", "لا يوجد مستخدمون مطابقون للمعايير.")}
             </div>
           )}
         </>
