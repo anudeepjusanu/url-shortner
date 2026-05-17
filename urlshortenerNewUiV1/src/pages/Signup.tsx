@@ -11,8 +11,8 @@ import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle, Glo
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
-// import GoogleAuthButton from "@/components/GoogleAuthButton";
-// import MobileVerificationPopup from "@/components/MobileVerificationPopup";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 
 
 const COUNTRY_OPTIONS = [
@@ -31,7 +31,7 @@ const passwordRules = [
 const Signup = () => {
   const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
-  const { register /* , googleLogin */ } = useAuth();
+  const { register , googleLogin  } = useAuth();
   const { toast } = useToast();
 
   const [fullName, setFullName]   = useState("");
@@ -50,9 +50,9 @@ const Signup = () => {
   const [otp, setOtp]         = useState("");
 
   // Google SSO state (commented out)
-  // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  // const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
-  // const [showMobileVerification, setShowMobileVerification] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  const [showMobileVerification, setShowMobileVerification] = useState(false);
 
   useEffect(() => {
     amplitudeService.trackRegistrationStarted('direct');
@@ -197,7 +197,7 @@ const Signup = () => {
     }
   };
 
-  /* ── Google SSO handlers (commented out) ───────────────────────────
+  /* ── Google SSO handlers (commented out) ─────────────────────────── */
   const handleGoogleSuccess = async (accessToken: string) => {
     setIsGoogleLoading(true);
     try {
@@ -241,7 +241,6 @@ const Signup = () => {
     setShowMobileVerification(false);
     setGoogleSessionToken(null);
   };
-  ────────────────────────────────────────────────────────────────── */
 
   return (
     <div className="min-h-screen flex">
@@ -306,7 +305,7 @@ const Signup = () => {
           </div>
 
           {/* Google SSO Button — only on registration step, not OTP step (commented out) */}
-          {/* {!otpStep && (
+          {!otpStep && (
             <div className="space-y-4">
               <GoogleAuthButton
                 onSuccess={handleGoogleSuccess}
@@ -325,7 +324,7 @@ const Signup = () => {
                 </div>
               </div>
             </div>
-          )} */}
+          )} 
 
           {/* ── OTP step ── */}
           {otpStep ? (
@@ -568,13 +567,13 @@ const Signup = () => {
         </div>
 
         {/* Mobile Verification Popup for Google SSO new users (commented out) */}
-        {/* {googleSessionToken && (
+        {googleSessionToken && (
           <MobileVerificationPopup
             open={showMobileVerification}
             sessionToken={googleSessionToken}
             onClose={handleMobileVerificationClose}
           />
-        )} */}
+        )}
       </div>
     </div>
   );

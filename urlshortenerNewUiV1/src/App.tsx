@@ -58,6 +58,7 @@ import BulkCreate from "./pages/BulkCreate";
 import BulkShorten from "./pages/BulkShorten";
 import DynamicQRCodes from "./pages/DynamicQRCodes";
 import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
+import ShortenLinkFlow from "./pages/ShortenLinkFlow";
 import QRErrorPage from "./pages/QRErrorPage";
 import LinkNotFoundPage from "./pages/LinkNotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -111,6 +112,7 @@ const App = () => (
             {/* Public error page for failed dynamic QR scans — no auth required */}
             <Route path="/qr-error" element={<QRErrorPage />} />
             <Route path="/link-not-found" element={<LinkNotFoundPage />} />
+            <Route path="/shorten" element={<ShortenLinkFlow />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

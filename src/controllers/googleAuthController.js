@@ -34,6 +34,8 @@ const maskPhone = (phone) => {
   return `${phone.slice(0, 4)}****${phone.slice(-3)}`;
 };
 
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const buildUserResponse = (user) => ({
   id: user._id,
   email: user.email,
@@ -135,8 +137,13 @@ const googleAuthenticate = async (req, res) => {
       });
     }
 
-    // Check if user exists with this email
-    const existingUser = await User.findOne({ email: googleUser.email });
+    // Look up user by googleId first, then by email (case-insensitive)
+    let existingUser = await User.findOne({ googleId: googleUser.googleId });
+
+    const emailRegex = new RegExp(`^${escapeRegex(googleUser.email)}$`, 'i');
+    if (!existingUser) {
+      existingUser = await User.findOne({ email: { $regex: emailRegex } });
+    }
 
     if (existingUser) {
       // Existing user — log them in immediately (account linking)
@@ -149,10 +156,18 @@ const googleAuthenticate = async (req, res) => {
 
       existingUser.lastLogin = new Date();
 
+      // Track whether account is being linked this login
+      const wasLinked = !existingUser.googleId;
+
       // Update googleId if not already set (account linking)
       if (!existingUser.googleId) {
         console.log('Account linking: Adding Google ID to existing manual account');
         existingUser.googleId = googleUser.googleId;
+      }
+
+      // Update email if it changed (Google users can change emails)
+      if (existingUser.email !== googleUser.email) {
+        existingUser.email = googleUser.email;
       }
 
       // Update name fields if they're empty and Google provides them
@@ -172,7 +187,7 @@ const googleAuthenticate = async (req, res) => {
         success: true,
         message: 'Login successful',
         isExistingUser: true,
-        accountLinked: !existingUser.googleId, // Indicate if account was just linked
+        accountLinked: wasLinked, // Indicate if account was just linked
         data: {
           user: buildUserResponse(existingUser),
           accessToken,
@@ -405,8 +420,13 @@ const verifyGoogleSignupOTP = async (req, res) => {
       });
     }
 
-    // OTP verified — check if user exists (for account linking scenario)
-    const existingUserForLinking = await User.findOne({ email: session.email });
+    // OTP verified — check if user exists by googleId first, then email (case-insensitive)
+    let existingUserForLinking = await User.findOne({ googleId: session.googleId });
+
+    const emailRegex = new RegExp(`^${escapeRegex(session.email)}$`, 'i');
+    if (!existingUserForLinking) {
+      existingUserForLinking = await User.findOne({ email: { $regex: emailRegex } });
+    }
     
     let user;
     if (existingUserForLinking) {
@@ -415,6 +435,11 @@ const verifyGoogleSignupOTP = async (req, res) => {
       
       if (!existingUserForLinking.googleId) {
         existingUserForLinking.googleId = session.googleId;
+      }
+      
+      // Update email if it changed
+      if (existingUserForLinking.email !== session.email) {
+        existingUserForLinking.email = session.email;
       }
       
       // Update phone if provided and not already set
@@ -454,7 +479,27 @@ const verifyGoogleSignupOTP = async (req, res) => {
         registrationLocation,
       });
 
-      await user.save();
+      try {
+        await user.save();
+      } catch (saveError) {
+        // Handle duplicate key errors (race condition or missing index)
+        if (saveError.code === 11000) {
+          console.log('Duplicate key error during Google signup, re-querying existing user');
+          let fallbackUser = await User.findOne({ googleId: session.googleId });
+          if (!fallbackUser) {
+            fallbackUser = await User.findOne({ email: { $regex: emailRegex } });
+          }
+          if (fallbackUser) {
+            fallbackUser.lastLogin = new Date();
+            await fallbackUser.save();
+            user = fallbackUser;
+          } else {
+            throw saveError;
+          }
+        } else {
+          throw saveError;
+        }
+      }
     }
 
     // Clear session from cache
