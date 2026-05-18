@@ -137,8 +137,8 @@ const Signup = () => {
         toast({
           title: t("OTP Sent", "تم إرسال رمز التحقق"),
           description: t(
-            "Please check your email or phone for the 4-digit code",
-            "تحقق من بريدك الإلكتروني أو هاتفك للحصول على الرمز المكون من 4 أرقام"
+            "Please check your mobile number for the 4-digit code",
+            "تحقق من رقم جوالك للحصول على الرمز المكون من 4 أرقام"
           ),
         });
       } else {
@@ -299,7 +299,7 @@ const Signup = () => {
             </h2>
             <p className="text-muted-foreground font-body mt-1 text-sm">
               {otpStep
-                ? t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)
+                ? t(`Code sent to ${selectedCountry.dialCode}${phone}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phone}`)
                 : t("Get started for free — no credit card required", "ابدأ مجاناً — لا تحتاج إلى بطاقة ائتمان")}
             </p>
           </div>

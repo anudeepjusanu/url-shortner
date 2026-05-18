@@ -292,13 +292,17 @@ export const adminService = {
     return authRequest(`/admin/users${query}`);
   },
 
-  /** PUT /admin/users/:id — update role / isActive */
-  updateUser: (id: string, data: { role?: string; isActive?: boolean }) =>
+  /** PUT /admin/users/:id — update role / isActive / email */
+  updateUser: (id: string, data: { role?: string; isActive?: boolean; email?: string }) =>
     authRequest(`/admin/users/${id}`, { method: 'PUT', body: data as any }),
 
   /** DELETE /admin/users/:id */
   deleteUser: (id: string) =>
     authRequest(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  /** POST /admin/users/bulk-delete — delete by emails or IDs */
+  bulkDeleteUsers: (data: { emails?: string[]; ids?: string[] }) =>
+    authRequest('/admin/users/bulk-delete', { method: 'POST', body: data as any }),
 
   // ── URLs ──
   /** GET /admin/urls?limit=&search=&creator=&page= */
@@ -318,6 +322,25 @@ export const adminService = {
   /** DELETE /admin/urls/:id */
   deleteUrl: (id: string) =>
     authRequest(`/admin/urls/${id}`, { method: 'DELETE' }),
+
+  // ── Bio Pages ──
+  /** GET /admin/bio-pages?limit=&search=&startDate=&endDate=&page= */
+  getBioPages: (params: Record<string, string | number> = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== '') qs.append(k, String(v));
+    });
+    const query = qs.toString() ? `?${qs.toString()}` : '';
+    return authRequest(`/admin/bio-pages${query}`);
+  },
+
+  /** PUT /admin/bio-pages/:id — update isActive */
+  updateBioPage: (id: string, data: { isActive?: boolean }) =>
+    authRequest(`/admin/bio-pages/${id}`, { method: 'PUT', body: data as any }),
+
+  /** DELETE /admin/bio-pages/:id */
+  deleteBioPage: (id: string) =>
+    authRequest(`/admin/bio-pages/${id}`, { method: 'DELETE' }),
 };
 
 // ─── Password Reset Service (unauthenticated) ─────────────────────────────────
