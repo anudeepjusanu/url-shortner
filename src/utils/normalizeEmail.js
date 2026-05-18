@@ -23,7 +23,7 @@ const normalizeEmail = (email) => {
   // Also covers googlemail.com
   const gmailDomains = ['gmail.com', 'googlemail.com'];
   if (gmailDomains.includes(domain)) {
-    const cleanedLocal = localPart.replace(/\./g, '');
+    const cleanedLocal = localPart;
     normalized = `${cleanedLocal}@${domain}`;
   }
 
