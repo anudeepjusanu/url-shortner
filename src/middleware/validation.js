@@ -344,6 +344,11 @@ const validateAdminUserUpdate = [
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
+  body('email')
+    .optional()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please enter a valid email'),
   body('limits.monthlyUrls')
     .optional()
     .isInt({ min: 0 })
