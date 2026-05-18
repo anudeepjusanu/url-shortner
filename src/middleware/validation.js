@@ -347,7 +347,6 @@ const validateAdminUserUpdate = [
   body('email')
     .optional()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('limits.monthlyUrls')
     .optional()
