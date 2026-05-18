@@ -11,6 +11,7 @@ const {
   getLocationFromIP,
   getClientIP,
 } = require("../services/geoLocationService");
+const { normalizeEmail } = require("../utils/normalizeEmail");
 
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
@@ -58,9 +59,10 @@ const generateTokens = (userId) => {
 const sendRegistrationOTP = async (req, res) => {
   try {
     const { email, phone } = req.body;
+    const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
-    if (!email) {
+    if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -68,7 +70,7 @@ const sendRegistrationOTP = async (req, res) => {
     }
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
@@ -85,8 +87,8 @@ const sendRegistrationOTP = async (req, res) => {
 
     const otp = generateOtpCode();
 
-    // Store OTP in cache with email as key for 5 minutes
-    const otpKey = `registration_otp:${email}`;
+    // Store OTP in cache with normalized email as key for 5 minutes
+    const otpKey = `registration_otp:${normalizedEmail}`;
     await cacheSet(otpKey, otp, 5 * 60); // 5 minutes TTL
 
     // Determine method based on available contact info
@@ -94,7 +96,7 @@ const sendRegistrationOTP = async (req, res) => {
     const targetPhone = normalizedPhone || undefined;
 
     // Send OTP via SMS or email (Authentica handles fallback)
-    await otpService.sendOtp({ email, phone: targetPhone, otp, method });
+    await otpService.sendOtp({ email: normalizedEmail, phone: targetPhone, otp, method });
 
     const message = normalizedPhone
       ? "OTP sent to your phone number. Please verify to complete registration."
@@ -104,7 +106,7 @@ const sendRegistrationOTP = async (req, res) => {
       success: true,
       message,
       data: {
-        email,
+        email: normalizedEmail,
         phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
         otpSent: true,
       },
@@ -123,9 +125,10 @@ const register = async (req, res) => {
   console.log("Registration request body:", req.body);
   try {
     const { email, password, fullName, phone, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
-    if (!email) {
+    if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -133,7 +136,7 @@ const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
@@ -155,8 +158,8 @@ const register = async (req, res) => {
         const generatedOtp = generateOtpCode();
 
         // Store both OTP and registration data in cache for 5 minutes
-        const otpKey = `registration_otp:${email}`;
-        const dataKey = `registration_data:${email}`;
+        const otpKey = `registration_otp:${normalizedEmail}`;
+        const dataKey = `registration_data:${normalizedEmail}`;
 
         // Hash the password before caching so plaintext is never persisted in Redis
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -164,7 +167,7 @@ const register = async (req, res) => {
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
         await cacheSet(
           dataKey,
-          JSON.stringify({ email, hashedPassword, fullName, phone: normalizedPhone }),
+          JSON.stringify({ email: normalizedEmail, hashedPassword, fullName, phone: normalizedPhone }),
           5 * 60,
         );
 
@@ -174,7 +177,7 @@ const register = async (req, res) => {
 
         // Send OTP via SMS or email (Authentica handles fallback)
         await otpService.sendOtp({
-          email,
+          email: normalizedEmail,
           phone: targetPhone,
           otp: generatedOtp,
           method,
@@ -189,7 +192,7 @@ const register = async (req, res) => {
           message,
           data: {
             otpSent: true,
-            email,
+            email: normalizedEmail,
             phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
           },
         });
@@ -204,8 +207,8 @@ const register = async (req, res) => {
       }
     } else {
       // Verify OTP from cache
-      const otpKey = `registration_otp:${email}`;
-      const dataKey = `registration_data:${email}`;
+      const otpKey = `registration_otp:${normalizedEmail}`;
+      const dataKey = `registration_data:${normalizedEmail}`;
 
       const storedOtp = await cacheGet(otpKey);
       const storedData = await cacheGet(dataKey);
@@ -233,19 +236,19 @@ const register = async (req, res) => {
 
       // Check again if user exists (for account linking scenario)
       const existingUserForLinking = await User.findOne({ email: registrationData.email });
-      
+
       let user;
       if (existingUserForLinking && existingUserForLinking.googleId && !existingUserForLinking.password) {
         // Account linking: Add password to existing Google account
         console.log("Linking password to existing Google account:", existingUserForLinking.email);
-        
+
         existingUserForLinking.password = registrationData.hashedPassword;
-        
+
         // Update phone if provided and not already set
         if (registrationData.phone && !existingUserForLinking.phone) {
           existingUserForLinking.phone = registrationData.phone;
         }
-        
+
         // Update name if not already set
         if (registrationData.fullName) {
           const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
@@ -256,7 +259,7 @@ const register = async (req, res) => {
             existingUserForLinking.lastName = nameParts.slice(1).join(" ");
           }
         }
-        
+
         await existingUserForLinking.save();
         user = existingUserForLinking;
         console.log("Account linked successfully:", user.email);
@@ -338,8 +341,9 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email: normalizedEmail }).select("+password");
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -728,8 +732,9 @@ const changePassword = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.json({
         success: true,
@@ -802,12 +807,13 @@ const resetPassword = async (req, res) => {
 const sendPasswordResetOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     if (process.env.NODE_ENV === "development") {
-      console.log("📧 Password reset OTP requested for:", email);
+      console.log("📧 Password reset OTP requested for:", normalizedEmail);
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       // Return success even if user doesn't exist (security best practice)
       return res.json({
@@ -819,8 +825,8 @@ const sendPasswordResetOTP = async (req, res) => {
     // Generate 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // Store OTP in cache with email as key for 10 minutes
-    const otpKey = `password_reset_otp:${email}`;
+    // Store OTP in cache with normalized email as key for 10 minutes
+    const otpKey = `password_reset_otp:${normalizedEmail}`;
     await cacheSet(otpKey, otp, 10 * 60); // 10 minutes TTL
 
     if (process.env.NODE_ENV === "development") {
@@ -830,7 +836,7 @@ const sendPasswordResetOTP = async (req, res) => {
 
     // Send OTP via email
     try {
-      await otpService.sendOtp({ email, otp, method: "email" });
+      await otpService.sendOtp({ email: normalizedEmail, otp, method: "email" });
       console.log("✅ OTP sent via Authentica");
     } catch (emailError) {
       console.error("❌ Failed to send OTP email:", emailError);
@@ -851,7 +857,7 @@ const sendPasswordResetOTP = async (req, res) => {
       responseData.otp = otp;
       responseData.debug = true;
       console.log("\n🔐 ===== PASSWORD RESET OTP =====");
-      console.log("📧 Email:", email);
+      console.log("📧 Email:", normalizedEmail);
       console.log("🔢 OTP Code:", otp);
       console.log("================================\n");
     }
@@ -870,9 +876,10 @@ const sendPasswordResetOTP = async (req, res) => {
 const verifyPasswordResetOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Verify OTP
-    const otpKey = `password_reset_otp:${email}`;
+    const otpKey = `password_reset_otp:${normalizedEmail}`;
     const storedOtp = await cacheGet(otpKey);
 
     if (!storedOtp || storedOtp !== otp) {
@@ -886,7 +893,7 @@ const verifyPasswordResetOTP = async (req, res) => {
     await cacheDel(otpKey);
 
     // Store verified flag for 10 minutes (to allow password reset)
-    const verifiedKey = `password_reset_verified:${email}`;
+    const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     await cacheSet(verifiedKey, "true", 10 * 60); // 10 minutes TTL
 
     res.json({
@@ -906,9 +913,10 @@ const verifyPasswordResetOTP = async (req, res) => {
 const resetPasswordWithOTP = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Check if OTP was verified (stored in verified cache)
-    const verifiedKey = `password_reset_verified:${email}`;
+    const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     const isVerified = await cacheGet(verifiedKey);
 
     if (!isVerified) {
@@ -919,7 +927,7 @@ const resetPasswordWithOTP = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(404).json({
         success: false,

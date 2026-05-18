@@ -9,8 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { authAPI, urlsAPI } from "@/services/api";
 import amplitudeService from "@/services/amplitude";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
-import { Loader2, ArrowDown, Link2, Check, Copy, Eye, EyeOff, ArrowRight, ArrowLeft, Globe } from "lucide-react";
-import logoIcon from "@/assets/logo.png";
+import { Loader2, Link2, Check, Copy, Eye, EyeOff, ArrowRight, ArrowLeft, Globe, Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
@@ -524,70 +523,92 @@ const ShortenLinkFlow = () => {
   // ── Render helpers ──
   const renderLeftSide = () => {
     const isResult = step === "result";
+    const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";
+    const domain = baseUrl.replace(/^https?:\/\//, "");
 
     return (
-      <div className="flex flex-col items-center justify-center h-full px-8 py-12 lg:px-16">
-        <div className="w-full max-w-md space-y-8">
-          {/* Logo */}
-          <div className="flex items-center justify-center lg:justify-start mb-6">
-            <img src={logoIcon} alt="snip.sa" className="h-12" />
-          </div>
+      <div className="flex flex-col h-full px-8 py-12 lg:px-16 bg-[hsl(350,52%,31%)] text-white">
+        {/* Back to home — stays at the top */}
+        <button
+          onClick={handleCancel}
+          className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors font-body"
+        >
+          {isAr ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+          {t("Back to home", "العودة للرئيسية")}
+        </button>
 
-          {/* Original URL */}
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-body">
-              {t("Original URL", "الرابط الأصلي")}
-            </p>
-            <div className="p-4 bg-muted/50 rounded-xl border border-border">
-              <p className="text-sm font-body text-foreground truncate" dir="ltr">
-                {originalUrl || "https://example.com/very/long/url..."}
+        {/* Remaining content vertically & horizontally centred */}
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="w-full max-w-md space-y-8">
+            {/* Heading */}
+            <div className="space-y-2">
+              <h1 className="text-4xl lg:text-5xl font-display font-bold text-white">
+                {t("Almost there.", "أوشكت على الانتهاء.")}
+              </h1>
+              <p className="text-base text-white/70 font-body">
+                {t("Sign up to unlock your shortened link.", "سجّل للحصول على رابطك المختصر.")}
               </p>
             </div>
-          </div>
 
-          {/* Arrow */}
-          <div className="flex justify-center">
-            <ArrowDown className="w-6 h-6 text-muted-foreground" />
-          </div>
+            {/* Original URL */}
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-white/50 font-body">
+                {t("Original URL", "الرابط الأصلي")}
+              </p>
+              <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+                <p className="text-sm font-body text-white/90 truncate" dir="ltr">
+                  {originalUrl || "https://example.com/very/long/url..."}
+                </p>
+              </div>
+            </div>
 
-          {/* Shortened link preview / result */}
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-body">
-              {isResult ? t("Your shortened link", "رابطك المختصر") : t("Your link will look like", "رابطك سيبدو هكذا")}
-            </p>
-            <div className="p-6 bg-primary/5 rounded-xl border border-primary/20 text-center">
+            {/* Shortened link preview / result */}
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-white/50 font-body">
+                {isResult ? t("Your shortened link", "رابطك المختصر") : t("Shortened link", "الرابط المختصر")}
+              </p>
               {isResult ? (
                 <div className="space-y-4">
-                  <p className="text-2xl font-display font-bold text-primary" dir="ltr">
-                    {shortUrl || "snip.sa/xxxxx"}
-                  </p>
+                  <div className="flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                    <Link2 className="w-5 h-5 text-white/70 shrink-0" />
+                    <p className="text-base font-display font-bold text-white/90" dir="ltr">
+                      {shortUrl || `${domain}/${previewShortCode}`}
+                    </p>
+                  </div>
                   <Button
                     onClick={handleCopy}
                     variant="outline"
-                    className="w-full h-11 gap-2"
+                    className="w-full h-11 gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
                   >
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     {copied ? t("Copied!", "تم النسخ!") : t("Copy Link", "نسخ الرابط")}
                   </Button>
                   <Button
                     onClick={() => navigate("/dashboard")}
-                    className="w-full h-11 bg-primary text-primary-foreground gap-2"
+                    className="w-full h-11 bg-white text-[hsl(350,52%,31%)] hover:bg-white/90 gap-2"
                   >
                     {t("Go to Dashboard", "الذهاب إلى لوحة التحكم")}
                     {isAr ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Link2 className="w-8 h-8 text-primary mx-auto" />
-                  <p className="text-xl font-display font-bold text-primary" dir="ltr">
-                    snip.sa/{previewShortCode}
+                <div className="flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                  <Link2 className="w-5 h-5 text-white/70 shrink-0" />
+                  <p className="text-base font-display font-bold text-white/90" dir="ltr">
+                    {domain}/••••••
                   </p>
-                  <p className="text-xs text-muted-foreground font-body">
-                    {t("Create an account to get your link", "أنشئ حساباً للحصول على رابطك")}
-                  </p>
+                  <span className="ms-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-xs text-white/60 font-body">
+                    <Lock className="w-3 h-3" />
+                    {t("Locked", "مقفل")}
+                  </span>
                 </div>
               )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center gap-2 text-xs text-white/40 font-body">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{t("Free forever · No credit card · Hosted in Saudi Arabia", "مجاني للأبد · بدون بطاقة ائتمان · مستضاف في السعودية")}</span>
             </div>
           </div>
         </div>
@@ -597,7 +618,7 @@ const ShortenLinkFlow = () => {
 
   const renderRightSide = () => {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-8 py-12 lg:px-16 bg-background">
+      <div className="flex flex-col items-center justify-center h-full px-8 py-12 lg:px-16 bg-[hsl(36,100%,98%)]">
         <div className="w-full max-w-md space-y-6">
           {/* Language toggle */}
           <div className="flex justify-end">
@@ -612,7 +633,7 @@ const ShortenLinkFlow = () => {
 
           {/* Step title */}
           <div className="text-center space-y-1">
-            <h2 className="text-2xl font-display font-bold text-foreground">
+            <h2 className="text-2xl font-display font-bold text-[hsl(350,52%,31%)]">
               {step === "email" && t("Create your account", "أنشئ حسابك")}
               {step === "password" && t("Welcome back", "مرحباً بعودتك")}
               {step === "emailOtp" && t("Verify your email", "تحقق من بريدك الإلكتروني")}
@@ -622,7 +643,7 @@ const ShortenLinkFlow = () => {
               {step === "result" && t("All set!", "كل شيء جاهز!")}
             </h2>
             <p className="text-sm text-muted-foreground font-body">
-              {step === "email" && t("Get started for free — no credit card required", "ابدأ مجاناً — لا تحتاج إلى بطاقة ائتمان")}
+              {step === "email" && t("Sign up to shorten your link.", "سجّل لإنشاء رابطك المختصر.")}
               {step === "password" && t("Enter your password to continue", "أدخل كلمة المرور للمتابعة")}
               {step === "emailOtp" && t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
               {step === "phone" && t("Enter your Saudi mobile number", "أدخل رقم جوالك السعودي")}
@@ -647,7 +668,7 @@ const ShortenLinkFlow = () => {
                   <div className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground font-body">
+                  <span className="bg-[hsl(36,100%,98%)] px-2 text-muted-foreground font-body">
                     {t("Or", "أو")}
                   </span>
                 </div>
@@ -657,32 +678,33 @@ const ShortenLinkFlow = () => {
                 <Label htmlFor="email" className="text-foreground text-sm">
                   {t("Email", "البريد الإلكتروني")}
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-                  className={cn("h-11", isAr && "text-right")}
-                  dir="ltr"
-                  autoFocus
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                    className={cn("h-11 flex-1", isAr && "text-right")}
+                    dir="ltr"
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    className="h-11 px-5 text-base bg-[hsl(350,52%,31%)] text-white hover:bg-[hsl(350,52%,26%)]"
+                    disabled={isLoading || isGoogleLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      t("Next", "التالي")
+                    )}
+                  </Button>
+                </div>
                 {emailError && (
                   <p className="text-xs text-destructive font-body">{emailError}</p>
                 )}
               </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 text-base bg-primary text-primary-foreground"
-                disabled={isLoading || isGoogleLoading}
-              >
-                {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Checking...", "جاري التحقق...")}</>
-                ) : (
-                  t("Continue", "متابعة")
-                )}
-              </Button>
 
               <p className="text-center text-sm text-muted-foreground font-body">
                 {t("Already have an account?", "عندك حساب؟")}{" "}
@@ -1041,16 +1063,6 @@ const ShortenLinkFlow = () => {
             </div>
           )}
 
-          {/* Cancel button (except on result step) */}
-          {step !== "result" && (
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="w-full text-sm text-muted-foreground hover:underline font-body pt-2"
-            >
-              {t("Cancel", "إلغاء")}
-            </button>
-          )}
         </div>
       </div>
     );
@@ -1059,7 +1071,7 @@ const ShortenLinkFlow = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side */}
-      <div className="flex-1 lg:w-1/2 bg-muted/30 border-b lg:border-b-0 lg:border-e border-border">
+      <div className="flex-1 lg:w-1/2">
         {renderLeftSide()}
       </div>
 

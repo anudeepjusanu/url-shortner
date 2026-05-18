@@ -21,10 +21,15 @@ router.get('/stats', adminController.getSystemStats);
 router.get('/users', validatePagination, adminController.getUsers);
 router.put('/users/:id', validateObjectId, validateAdminUserUpdate, adminController.updateUser);
 router.delete('/users/:id', validateObjectId, adminController.deleteUser);
+router.post('/users/bulk-delete', adminController.bulkDeleteUsers);
 
 router.get('/urls', validatePagination, adminController.getAllUrls);
 router.put('/urls/:id', validateObjectId, adminController.updateUrl);
 router.delete('/urls/:id', validateObjectId, adminController.deleteUrl);
+
+router.get('/bio-pages', validatePagination, adminController.getAllBioPages);
+router.put('/bio-pages/:id', validateObjectId, adminController.updateBioPage);
+router.delete('/bio-pages/:id', validateObjectId, adminController.deleteBioPage);
 
 router.get('/organizations', validatePagination, adminController.getOrganizations);
 

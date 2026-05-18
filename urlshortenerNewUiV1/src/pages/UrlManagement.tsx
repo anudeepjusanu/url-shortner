@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -35,34 +35,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import {
-  Link2, MousePointer, CalendarDays, Search,
-  Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
-  ChevronLeft, ChevronRight, Layout, X,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import DateRangeFilter, { DatePreset } from "@/components/DateRangeFilter";
+import {
+  Link2, MousePointer, CalendarDays, Search,
+  Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
+  ChevronLeft, ChevronRight, Layout, FileText,
+} from "lucide-react";
 
-interface AdminUrl {
+type ContentType = "url" | "bio";
+
+interface ContentItem {
   _id: string;
-  shortCode: string;
-  customCode?: string;
-  originalUrl: string;
+  type: ContentType;
+  identifier: string; // shortCode or username
+  originalUrl?: string;
   title?: string;
   domain?: string;
   clickCount: number;
   isActive: boolean;
+  isPublished?: boolean;
   createdAt: string;
   updatedAt: string;
   creator?: { _id: string; firstName: string; lastName: string; email: string };
 }
 
 const PAGE_SIZE = 20;
+const FETCH_LIMIT = 500;
 
 const getSortParams = (sort: string): Record<string, string> => {
   switch (sort) {
@@ -77,15 +78,19 @@ const getPublicBaseUrl = () => {
   return apiUrl.replace(/\/api\/?$/, "");
 };
 
-const getShortUrl = (url: AdminUrl) => {
-  const code = url.customCode || url.shortCode;
-  if (url.domain) {
-    const domain = url.domain.startsWith("http") ? url.domain : `https://${url.domain}`;
-    return `${domain}/${code}`;
+const getUrlLink = (item: ContentItem) => {
+  if (item.type === "bio") {
+    const base = getPublicBaseUrl();
+    const domain = base.startsWith("http") ? base : `https://${base}`;
+    return `${domain}/bio/${item.identifier}`;
+  }
+  if (item.domain) {
+    const domain = item.domain.startsWith("http") ? item.domain : `https://${item.domain}`;
+    return `${domain}/${item.identifier}`;
   }
   const base = getPublicBaseUrl();
   const domain = base.startsWith("http") ? base : `https://${base}`;
-  return `${domain}/${code}`;
+  return `${domain}/${item.identifier}`;
 };
 
 const UrlManagement = () => {
@@ -96,33 +101,32 @@ const UrlManagement = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState<ContentType | "all">("all");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
-  const [datePopupOpen, setDatePopupOpen] = useState(false);
-  const [pickingFrom, setPickingFrom] = useState(true);
-  const [dateError, setDateError] = useState("");
 
-  const [urls, setUrls] = useState<AdminUrl[]>([]);
-  const [filteredTotal, setFilteredTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [content, setContent] = useState<ContentItem[]>([]);
+  const [contentTotal, setContentTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  const [stats, setStats] = useState({
+  const [globalStats, setGlobalStats] = useState({
     totalUrls: 0,
+    totalBioPages: 0,
     totalClicks: 0,
     newUrlsLast30Days: 0,
-    totalBioPages: 0,
+    newBioPagesLast30Days: 0,
   });
 
   const [allCreators, setAllCreators] = useState<Map<string, string>>(new Map());
 
-  const [viewUrl, setViewUrl] = useState<AdminUrl | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; code: string }>({
-    open: false, id: null, code: "",
+  const [viewItem, setViewItem] = useState<ContentItem | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; name: string }>({
+    open: false, id: null, name: "",
   });
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -134,18 +138,19 @@ const UrlManagement = () => {
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 400);
   };
 
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, sortBy, fromDate, toDate]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, typeFilter, sortBy, fromDate, toDate]);
 
   const fetchStats = useCallback(async () => {
     try {
       const statsRes = await adminService.getStats();
       const overview = statsRes?.data?.overview ?? {};
       const growth = statsRes?.data?.growth ?? {};
-      setStats({
+      setGlobalStats({
         totalUrls: overview.totalUrls ?? 0,
+        totalBioPages: overview.totalBioPages ?? 0,
         totalClicks: overview.totalClicks ?? 0,
         newUrlsLast30Days: growth.newUrlsLast30Days ?? 0,
-        totalBioPages: overview.totalBioPages ?? 0,
+        newBioPagesLast30Days: growth.newBioPagesLast30Days ?? 0,
       });
     } catch {
       // silently ignore stats fetch errors
@@ -173,52 +178,144 @@ const UrlManagement = () => {
     }
   }, []);
 
-  const fetchUrls = useCallback(async () => {
+  const fetchContent = useCallback(async () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const params: Record<string, string | number> = {
-        page: currentPage,
-        limit: PAGE_SIZE,
+      const urlParams: Record<string, string | number> = {
+        page: 1,
+        limit: FETCH_LIMIT,
         ...getSortParams(sortBy),
       };
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (creatorFilter !== "all") params.creator = creatorFilter;
-      if (fromDate) params.startDate = new Date(
-        fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0, 0
-      ).toISOString();
-      if (toDate) params.endDate = new Date(
-        toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59, 999
-      ).toISOString();
+      const bioParams: Record<string, string | number> = {
+        page: 1,
+        limit: FETCH_LIMIT,
+        ...getSortParams(sortBy),
+      };
 
-      const urlsRes = await adminService.getUrls(params);
-      const fetchedUrls: AdminUrl[] = urlsRes?.data?.urls ?? [];
-      const pagination = urlsRes?.data?.pagination ?? {};
+      if (debouncedSearch) {
+        urlParams.search = debouncedSearch;
+        bioParams.search = debouncedSearch;
+      }
+      if (creatorFilter !== "all") {
+        urlParams.creator = creatorFilter;
+        bioParams.owner = creatorFilter;
+      }
+      if (fromDate) {
+        const startIso = new Date(
+          fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0, 0
+        ).toISOString();
+        urlParams.startDate = startIso;
+        bioParams.startDate = startIso;
+      }
+      if (toDate) {
+        const endIso = new Date(
+          toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59, 999
+        ).toISOString();
+        urlParams.endDate = endIso;
+        bioParams.endDate = endIso;
+      }
 
-      setUrls(fetchedUrls);
-      setFilteredTotal(pagination.total ?? 0);
-      setTotalPages(pagination.pages ?? 1);
+      const [urlsRes, bioRes] = await Promise.all([
+        adminService.getUrls(urlParams),
+        adminService.getBioPages(bioParams),
+      ]);
+
+      const fetchedUrls: Array<{
+        _id: string; shortCode: string; customCode?: string; originalUrl: string;
+        title?: string; domain?: string; clickCount: number; isActive: boolean;
+        createdAt: string; updatedAt: string;
+        creator?: { _id: string; firstName: string; lastName: string; email: string };
+      }> = urlsRes?.data?.urls ?? [];
+      const fetchedBioPages: Array<{
+        _id: string; username: string; title?: string;
+        totalViews: number; isActive: boolean; isPublished?: boolean;
+        createdAt: string; updatedAt: string;
+        owner?: { _id: string; firstName: string; lastName: string; email: string };
+      }> = bioRes?.data?.bioPages ?? [];
+
+      const urlItems: ContentItem[] = fetchedUrls.map((u) => ({
+        _id: u._id,
+        type: "url",
+        identifier: u.customCode || u.shortCode,
+        originalUrl: u.originalUrl,
+        title: u.title,
+        domain: u.domain,
+        clickCount: u.clickCount,
+        isActive: u.isActive,
+        createdAt: u.createdAt,
+        updatedAt: u.updatedAt,
+        creator: u.creator,
+      }));
+
+      const bioItems: ContentItem[] = fetchedBioPages.map((b) => ({
+        _id: b._id,
+        type: "bio",
+        identifier: b.username,
+        title: b.title,
+        clickCount: b.totalViews,
+        isActive: b.isActive,
+        isPublished: b.isPublished,
+        createdAt: b.createdAt,
+        updatedAt: b.updatedAt,
+        creator: b.owner,
+      }));
+
+      const merged = [...urlItems, ...bioItems];
+
+      // Sort merged list
+      merged.sort((a, b) => {
+        if (sortBy === "most-clicked") {
+          return b.clickCount - a.clickCount;
+        }
+        if (sortBy === "oldest") {
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      const total = merged.length;
+      setContent(merged);
+      setContentTotal(total);
     } catch {
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, debouncedSearch, creatorFilter, sortBy, fromDate, toDate]);
+  }, [debouncedSearch, creatorFilter, sortBy, fromDate, toDate]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchAllCreators(); }, [fetchAllCreators]);
-  useEffect(() => { fetchUrls(); }, [fetchUrls]);
+  useEffect(() => { fetchContent(); }, [fetchContent]);
 
   const creators = Array.from(allCreators.entries()).sort(([, a], [, b]) => a.localeCompare(b));
 
-  const handleToggleStatus = async (url: AdminUrl) => {
-    setTogglingId(url._id);
+  const typeFilteredContent = useMemo(() => {
+    if (typeFilter === "all") return content;
+    return content.filter((c) => c.type === typeFilter);
+  }, [content, typeFilter]);
+
+  const paginatedContent = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return typeFilteredContent.slice(start, start + PAGE_SIZE);
+  }, [typeFilteredContent, currentPage]);
+
+  const handleToggleStatus = async (item: ContentItem) => {
+    setTogglingId(item._id);
     try {
-      await adminService.updateUrl(url._id, { isActive: !url.isActive });
-      setUrls((prev) =>
-        prev.map((u) => (u._id === url._id ? { ...u, isActive: !url.isActive } : u))
+      if (item.type === "url") {
+        await adminService.updateUrl(item._id, { isActive: !item.isActive });
+      } else {
+        await adminService.updateBioPage(item._id, { isActive: !item.isActive });
+      }
+      setContent((prev) =>
+        prev.map((c) => (c._id === item._id ? { ...c, isActive: !c.isActive } : c))
       );
-      toast({ title: url.isActive ? t("URL deactivated", "تم تعطيل الرابط") : t("URL activated", "تم تفعيل الرابط") });
+      toast({
+        title: item.isActive
+          ? (item.type === "url" ? t("URL deactivated", "تم تعطيل الرابط") : t("Bio page deactivated", "تم تعطيل صفحة البايو"))
+          : (item.type === "url" ? t("URL activated", "تم تفعيل الرابط") : t("Bio page activated", "تم تفعيل صفحة البايو"))
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast({ title: t("Update failed", "فشل التحديث"), description: message, variant: "destructive" });
@@ -232,10 +329,17 @@ const UrlManagement = () => {
     setDeletingId(deleteDialog.id);
     setDeleteDialog((d) => ({ ...d, open: false }));
     try {
-      await adminService.deleteUrl(deleteDialog.id);
-      setUrls((prev) => prev.filter((u) => u._id !== deleteDialog.id));
-      setFilteredTotal((n) => Math.max(0, n - 1));
-      toast({ title: t("URL deleted", "تم حذف الرابط") });
+      const item = content.find((c) => c._id === deleteDialog.id);
+      if (item?.type === "url") {
+        await adminService.deleteUrl(deleteDialog.id);
+      } else {
+        await adminService.deleteBioPage(deleteDialog.id);
+      }
+      setContent((prev) => prev.filter((c) => c._id !== deleteDialog.id));
+      setContentTotal((n) => Math.max(0, n - 1));
+      toast({
+        title: item?.type === "url" ? t("URL deleted", "تم حذف الرابط") : t("Bio page deleted", "تم حذف صفحة البايو")
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast({ title: t("Delete failed", "فشل الحذف"), description: message, variant: "destructive" });
@@ -247,55 +351,41 @@ const UrlManagement = () => {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const getShortDisplay = (url: AdminUrl) => url.customCode || url.shortCode;
+  const totalInteractions = typeFilteredContent.reduce((sum, c) => sum + c.clickCount, 0);
+  const filteredTotal = typeFilteredContent.length;
 
-  const hasDateFilter = !!(fromDate || toDate);
-
-  const handleFromSelect = (date: Date | undefined) => {
-    setDateError("");
-    setFromDate(date);
-    if (date && toDate && date > toDate) {
-      setDateError(t(
-        "Start date cannot be after end date.",
-        "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية."
-      ));
-      return;
-    }
-    if (!date) {
-      setDatePopupOpen(false);
-      return;
-    }
-    setPickingFrom(false);
+  // Extensible type label maps — add new types here without structural changes
+  const typeLabels: Record<ContentType, { en: string; ar: string }> = {
+    url: { en: "Short Link", ar: "رابط مختصر" },
+    bio: { en: "Bio Page", ar: "صفحة بايو" },
   };
-
-  const handleToSelect = (date: Date | undefined) => {
-    setDateError("");
-    setToDate(date);
-    if (fromDate && date && fromDate > date) {
-      setDateError(t(
-        "End date cannot be before start date.",
-        "تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية."
-      ));
-      return;
-    }
-    if (date) {
-      setDatePopupOpen(false);
-    }
-  };
-
-  const clearDateFilter = () => {
-    setFromDate(undefined);
-    setToDate(undefined);
-    setDateError("");
-    setDatePopupOpen(false);
-    setPickingFrom(true);
+  const getTypeLabel = (type: ContentType) => t(typeLabels[type].en, typeLabels[type].ar);
+  const typeBadgeVariants: Record<ContentType, "default" | "secondary" | "outline"> = {
+    url: "default",
+    bio: "secondary",
   };
 
   const statCards = [
-    { label: t("Total URLs", "إجمالي الروابط"), value: stats.totalUrls, icon: Link2 },
-    { label: t("Total Clicks", "إجمالي الضغطات"), value: stats.totalClicks, icon: MousePointer },
-    { label: t("New URLs (30d)", "روابط جديدة (30 يوم)"), value: stats.newUrlsLast30Days, icon: CalendarDays },
-    { label: t("Total Bio Pages", "إجمالي صفحات التعريف"), value: stats.totalBioPages, icon: Layout },
+    {
+      label: t("Total Content", "إجمالي المحتوى"),
+      value: globalStats.totalUrls + globalStats.totalBioPages,
+      icon: FileText,
+    },
+    {
+      label: t("Total Interactions", "إجمالي التفاعلات"),
+      value: totalInteractions,
+      icon: MousePointer,
+    },
+    {
+      label: t("New Content (30d)", "محتوى جديد (30 يوم)"),
+      value: globalStats.newUrlsLast30Days + globalStats.newBioPagesLast30Days,
+      icon: CalendarDays,
+    },
+    {
+      label: t("Total Bio Pages", "إجمالي صفحات التعريف"),
+      value: globalStats.totalBioPages,
+      icon: Layout,
+    },
   ];
 
   const getPageNumbers = (current: number, total: number): (number | "...")[] => {
@@ -305,11 +395,9 @@ const UrlManagement = () => {
     return [1, "...", current - 1, current, current + 1, "...", total];
   };
 
+  const totalPages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE));
   const startItem = filteredTotal === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const endItem = Math.min(currentPage * PAGE_SIZE, filteredTotal);
-
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
 
   return (
     <DashboardLayout>
@@ -320,11 +408,11 @@ const UrlManagement = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete URL", "حذف الرابط")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("Delete", "حذف")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t(
-                `Are you sure you want to delete "${deleteDialog.code}"? This action cannot be undone.`,
-                `هل أنت متأكد من حذف "${deleteDialog.code}"؟ لا يمكن التراجع عن هذا الإجراء.`
+                `Are you sure you want to delete "${deleteDialog.name}"? This action cannot be undone.`,
+                `هل أنت متأكد من حذف "${deleteDialog.name}"؟ لا يمكن التراجع عن هذا الإجراء.`
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -343,6 +431,19 @@ const UrlManagement = () => {
       <h1 className="text-lg sm:text-2xl font-display font-bold text-foreground mb-4 sm:mb-6">
         {t("URL Management", "إدارة الروابط")}
       </h1>
+
+      {/* Date Filter */}
+      <div className="mb-4 sm:mb-6">
+        <DateRangeFilter
+          value={datePreset}
+          range={{ fromDate, toDate }}
+          onChange={(preset, range) => {
+            setDatePreset(preset);
+            setFromDate(range.fromDate);
+            setToDate(range.toDate);
+          }}
+        />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -364,12 +465,23 @@ const UrlManagement = () => {
         <div className="relative flex-1">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder={t("Search by short code, URL, title, or creator...", "ابحث بالرمز أو الرابط أو العنوان...")}
+            placeholder={t("Search by short code, URL, title, username, or creator...", "ابحث بالرمز أو الرابط أو العنوان أو اسم المستخدم...")}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="ps-9 text-sm"
           />
         </div>
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as ContentType | "all")}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder={t("Filter by type", "فلتر بالنوع")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("All Types", "جميع الأنواع")}</SelectItem>
+            {(Object.keys(typeLabels) as ContentType[]).map((type) => (
+              <SelectItem key={type} value={type}>{getTypeLabel(type)}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={creatorFilter} onValueChange={setCreatorFilter}>
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder={t("Filter by user", "فلتر بالمستخدم")} />
@@ -389,72 +501,9 @@ const UrlManagement = () => {
           <SelectContent>
             <SelectItem value="newest">{t("Newest first", "الأحدث أولاً")}</SelectItem>
             <SelectItem value="oldest">{t("Oldest first", "الأقدم أولاً")}</SelectItem>
-            <SelectItem value="most-clicked">{t("Most clicked", "الأكثر ضغطاً")}</SelectItem>
+            <SelectItem value="most-clicked">{t("Most interactions", "الأكثر تفاعلاً")}</SelectItem>
           </SelectContent>
         </Select>
-        <Popover open={datePopupOpen} onOpenChange={setDatePopupOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full sm:w-auto justify-start gap-2 font-body text-sm",
-                hasDateFilter && "border-primary text-primary"
-              )}
-            >
-              <CalendarDays className="w-4 h-4" />
-              {hasDateFilter
-                ? `${fromDate ? format(fromDate, "MMM d, yyyy") : "…"} – ${toDate ? format(toDate, "MMM d, yyyy") : "…"}`
-                : t("Filter by date", "فلتر بالتاريخ")}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <div className="p-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={pickingFrom ? "default" : "outline"}
-                  size="sm"
-                  className="text-xs h-8"
-                  onClick={() => setPickingFrom(true)}
-                >
-                  {t("From", "من")}
-                </Button>
-                <Button
-                  variant={!pickingFrom ? "default" : "outline"}
-                  size="sm"
-                  className="text-xs h-8"
-                  onClick={() => setPickingFrom(false)}
-                >
-                  {t("To", "إلى")}
-                </Button>
-                {hasDateFilter && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs h-8 ms-auto text-muted-foreground hover:text-foreground"
-                    onClick={clearDateFilter}
-                  >
-                    <X className="w-3 h-3 me-1" />
-                    {t("Clear", "مسح")}
-                  </Button>
-                )}
-              </div>
-            </div>
-            <Calendar
-              mode="single"
-              selected={pickingFrom ? fromDate : toDate}
-              onSelect={pickingFrom ? handleFromSelect : handleToSelect}
-              disabled={(date: Date) => {
-                if (date > today) return true;
-                if (!pickingFrom && fromDate && date < fromDate) return true;
-                return false;
-              }}
-              initialFocus
-            />
-            {dateError && (
-              <p className="text-xs text-destructive px-3 pb-3 font-body">{dateError}</p>
-            )}
-          </PopoverContent>
-        </Popover>
       </div>
 
       {/* Loading */}
@@ -468,7 +517,7 @@ const UrlManagement = () => {
       {isError && !isLoading && (
         <div className="text-center py-12">
           <p className="text-sm text-destructive font-body">
-            {t("Failed to load URLs. Please try again.", "فشل تحميل الروابط. حاول مرة أخرى.")}
+            {t("Failed to load content. Please try again.", "فشل تحميل المحتوى. حاول مرة أخرى.")}
           </p>
         </div>
       )}
@@ -477,72 +526,79 @@ const UrlManagement = () => {
         <>
           {/* Mobile cards */}
           <div className="sm:hidden space-y-3">
-            {urls.map((url) => (
-              <div key={url._id} className="bg-background border border-border rounded-xl p-4">
+            {paginatedContent.map((item) => (
+              <div key={`${item.type}-${item._id}`} className="bg-background border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-display font-semibold text-foreground">
-                      {url.title || getShortDisplay(url)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-display font-semibold text-foreground">
+                        {item.title || item.identifier}
+                      </p>
+                      <Badge variant={typeBadgeVariants[item.type]} className="text-[9px] px-1.5 py-0 h-4">
+                        {getTypeLabel(item.type)}
+                      </Badge>
+                    </div>
                     <a
-                      href={getShortUrl(url)}
+                      href={getUrlLink(item)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-primary font-body flex items-center gap-1 mt-0.5 hover:underline"
                     >
-                      <ExternalLink className="w-3 h-3 shrink-0" /> {getShortDisplay(url)}
+                      <ExternalLink className="w-3 h-3 shrink-0" /> {item.identifier}
                     </a>
                   </div>
                   <Badge
-                    variant={url.isActive ? "default" : "secondary"}
+                    variant={item.isActive ? "default" : "secondary"}
                     className="text-[10px] shrink-0"
                   >
-                    {url.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")}
+                    {item.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")}
                   </Badge>
                 </div>
                 <p className="text-[11px] text-muted-foreground font-body truncate mb-2">
-                  {url.originalUrl}
+                  {item.type === "url" ? item.originalUrl : (item.title || "—")}
                 </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-body">
-                    {url.creator && (
-                      <span>{[url.creator.firstName, url.creator.lastName].filter(Boolean).join(' ')}</span>
+                    {item.creator && (
+                      <span>{[item.creator.firstName, item.creator.lastName].filter(Boolean).join(' ')}</span>
                     )}
-                    <span>{url.clickCount} {t("clicks", "ضغطات")}</span>
+                    <span>{item.clickCount} {t("interactions", "تفاعل")}</span>
                   </div>
                   <div className="flex items-center gap-0.5">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewUrl(url)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewItem(item)}>
                       <Eye className="w-3.5 h-3.5 text-primary" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => handleToggleStatus(url)}
-                      disabled={togglingId === url._id}
+                      onClick={() => handleToggleStatus(item)}
+                      disabled={togglingId === item._id}
                     >
-                      {togglingId === url._id ? (
+                      {togglingId === item._id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
-                        <Power className={`w-3.5 h-3.5 ${url.isActive ? "text-orange-500" : "text-green-500"}`} />
+                        <Power className={`w-3.5 h-3.5 ${item.isActive ? "text-orange-500" : "text-green-500"}`} />
                       )}
                     </Button>
+                    {item.type === "url" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
+                      >
+                        <BarChart3 className="w-3.5 h-3.5 text-primary" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
+                      onClick={() => setDeleteDialog({ open: true, id: item._id, name: item.identifier })}
+                      disabled={deletingId === item._id}
                     >
-                      <BarChart3 className="w-3.5 h-3.5 text-primary" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => setDeleteDialog({ open: true, id: url._id, code: getShortDisplay(url) })}
-                      disabled={deletingId === url._id}
-                    >
-                      {deletingId === url._id ? (
+                      {deletingId === item._id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -552,9 +608,9 @@ const UrlManagement = () => {
                 </div>
               </div>
             ))}
-            {urls.length === 0 && (
+            {paginatedContent.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
-                {t("No URLs match your filters.", "لا توجد روابط مطابقة للمعايير.")}
+                {t("No content matches your filters.", "لا يوجد محتوى مطابق للمعايير.")}
               </div>
             )}
           </div>
@@ -564,85 +620,93 @@ const UrlManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("Short Code", "الرمز القصير")}</TableHead>
-                  <TableHead>{t("Original URL", "الرابط الأصلي")}</TableHead>
+                  <TableHead>{t("Link Type", "نوع الرابط")}</TableHead>
+                  <TableHead>{t("Identifier", "المعرف")}</TableHead>
+                  <TableHead>{t("Title / URL", "العنوان / الرابط")}</TableHead>
                   <TableHead>{t("Creator", "المنشئ")}</TableHead>
-                  <TableHead className="text-center">{t("Clicks", "الضغطات")}</TableHead>
+                  <TableHead className="text-center">{t("Interactions", "التفاعلات")}</TableHead>
                   <TableHead className="text-center">{t("Status", "الحالة")}</TableHead>
                   <TableHead>{t("Created", "الإنشاء")}</TableHead>
                   <TableHead className="text-center">{t("Actions", "الإجراءات")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {urls.map((url) => (
-                  <TableRow key={url._id}>
+                {paginatedContent.map((item) => (
+                  <TableRow key={`${item.type}-${item._id}`}>
+                    <TableCell>
+                      <Badge variant={typeBadgeVariants[item.type]} className="text-[10px]">
+                        {getTypeLabel(item.type)}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <a
-                        href={getShortUrl(url)}
+                        href={getUrlLink(item)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-display font-semibold text-primary text-sm flex items-center gap-1 hover:underline"
                       >
-                        <ExternalLink className="w-3 h-3" /> {getShortDisplay(url)}
+                        <ExternalLink className="w-3 h-3" /> {item.identifier}
                       </a>
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-muted-foreground font-body max-w-[200px] truncate block">
-                        {url.originalUrl}
+                        {item.type === "url" ? item.originalUrl : (item.title || "—")}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm font-body text-foreground">
-                        {url.creator ? [url.creator.firstName, url.creator.lastName].filter(Boolean).join(' ') : "—"}
+                        {item.creator ? [item.creator.firstName, item.creator.lastName].filter(Boolean).join(' ') : "—"}
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="font-display font-semibold text-foreground">{url.clickCount}</span>
+                      <span className="font-display font-semibold text-foreground">{item.clickCount}</span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={url.isActive ? "default" : "secondary"} className="text-[10px]">
-                        {url.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")}
+                      <Badge variant={item.isActive ? "default" : "secondary"} className="text-[10px]">
+                        {item.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs text-muted-foreground font-body">{formatDate(url.createdAt)}</span>
+                      <span className="text-xs text-muted-foreground font-body">{formatDate(item.createdAt)}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewUrl(url)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewItem(item)}>
                           <Eye className="w-4 h-4 text-primary" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => handleToggleStatus(url)}
-                          disabled={togglingId === url._id}
-                          title={url.isActive ? t("Deactivate", "تعطيل") : t("Activate", "تفعيل")}
+                          onClick={() => handleToggleStatus(item)}
+                          disabled={togglingId === item._id}
+                          title={item.isActive ? t("Deactivate", "تعطيل") : t("Activate", "تفعيل")}
                         >
-                          {togglingId === url._id ? (
+                          {togglingId === item._id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Power className={`w-4 h-4 ${url.isActive ? "text-orange-500" : "text-green-500"}`} />
+                            <Power className={`w-4 h-4 ${item.isActive ? "text-orange-500" : "text-green-500"}`} />
                           )}
                         </Button>
+                        {item.type === "url" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
+                            title={t("Analytics", "التحليلات")}
+                          >
+                            <BarChart3 className="w-4 h-4 text-primary" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
-                          title={t("Analytics", "التحليلات")}
+                          onClick={() => setDeleteDialog({ open: true, id: item._id, name: item.identifier })}
+                          disabled={deletingId === item._id}
                         >
-                          <BarChart3 className="w-4 h-4 text-primary" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setDeleteDialog({ open: true, id: url._id, code: getShortDisplay(url) })}
-                          disabled={deletingId === url._id}
-                        >
-                          {deletingId === url._id ? (
+                          {deletingId === item._id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Trash2 className="w-4 h-4 text-destructive" />
@@ -654,9 +718,9 @@ const UrlManagement = () => {
                 ))}
               </TableBody>
             </Table>
-            {urls.length === 0 && (
+            {paginatedContent.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-body text-sm">
-                {t("No URLs match your filters.", "لا توجد روابط مطابقة للمعايير.")}
+                {t("No content matches your filters.", "لا يوجد محتوى مطابق للمعايير.")}
               </div>
             )}
           </div>
@@ -666,8 +730,8 @@ const UrlManagement = () => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
               <p className="text-xs text-muted-foreground font-body order-2 sm:order-1">
                 {t(
-                  `Showing ${startItem}–${endItem} of ${filteredTotal} URLs`,
-                  `عرض ${startItem}–${endItem} من ${filteredTotal} رابط`
+                  `Showing ${startItem}–${endItem} of ${contentTotal} entries`,
+                  `عرض ${startItem}–${endItem} من ${contentTotal} إدخال`
                 )}
               </p>
               <div className="flex items-center gap-1 order-1 sm:order-2">
@@ -711,32 +775,58 @@ const UrlManagement = () => {
       )}
 
       {/* View Dialog */}
-      <Dialog open={!!viewUrl} onOpenChange={() => setViewUrl(null)}>
+      <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t("Link Details", "تفاصيل الرابط")}</DialogTitle>
+            <DialogTitle>
+              {viewItem?.type === "url" ? t("Link Details", "تفاصيل الرابط") : t("Bio Page Details", "تفاصيل صفحة البايو")}
+            </DialogTitle>
           </DialogHeader>
-          {viewUrl && (
+          {viewItem && viewItem.type === "url" && (
             <div className="space-y-5 text-sm font-body">
               <Section label={t("Link Information", "معلومات الرابط")}>
-                <Row label={t("Short Code", "الرمز القصير")} value={getShortDisplay(viewUrl)} />
-                <Row label={t("Original URL", "الرابط الأصلي")} value={viewUrl.originalUrl} truncate />
-                <Row label={t("Title", "العنوان")} value={viewUrl.title || "—"} />
-                <Row label={t("Domain", "الدومين")} value={viewUrl.domain || "—"} />
+                <Row label={t("Short Code", "الرمز القصير")} value={viewItem.identifier} />
+                <Row label={t("Original URL", "الرابط الأصلي")} value={viewItem.originalUrl || "—"} truncate />
+                <Row label={t("Title", "العنوان")} value={viewItem.title || "—"} />
+                <Row label={t("Domain", "الدومين")} value={viewItem.domain || "—"} />
               </Section>
-              {viewUrl.creator && (
+              {viewItem.creator && (
                 <Section label={t("Creator", "المنشئ")}>
-                  <Row label={t("Name", "الاسم")} value={[viewUrl.creator.firstName, viewUrl.creator.lastName].filter(Boolean).join(' ')} />
-                  <Row label={t("Email", "البريد")} value={viewUrl.creator.email} />
+                  <Row label={t("Name", "الاسم")} value={[viewItem.creator.firstName, viewItem.creator.lastName].filter(Boolean).join(' ')} />
+                  <Row label={t("Email", "البريد")} value={viewItem.creator.email} />
                 </Section>
               )}
               <Section label={t("Statistics", "الإحصائيات")}>
-                <Row label={t("Total Clicks", "إجمالي الضغطات")} value={String(viewUrl.clickCount)} />
-                <Row label={t("Status", "الحالة")} value={viewUrl.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")} />
+                <Row label={t("Total Clicks", "إجمالي الضغطات")} value={String(viewItem.clickCount)} />
+                <Row label={t("Status", "الحالة")} value={viewItem.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")} />
               </Section>
               <Section label={t("Dates", "التواريخ")}>
-                <Row label={t("Created", "الإنشاء")} value={formatDate(viewUrl.createdAt)} />
-                <Row label={t("Last Updated", "آخر تحديث")} value={formatDate(viewUrl.updatedAt)} />
+                <Row label={t("Created", "الإنشاء")} value={formatDate(viewItem.createdAt)} />
+                <Row label={t("Last Updated", "آخر تحديث")} value={formatDate(viewItem.updatedAt)} />
+              </Section>
+            </div>
+          )}
+          {viewItem && viewItem.type === "bio" && (
+            <div className="space-y-5 text-sm font-body">
+              <Section label={t("Bio Page Information", "معلومات صفحة البايو")}>
+                <Row label={t("Username", "اسم المستخدم")} value={viewItem.identifier} />
+                <Row label={t("Title", "العنوان")} value={viewItem.title || "—"} />
+                <Row label={t("Public URL", "الرابط العام")} value={getUrlLink(viewItem)} truncate />
+              </Section>
+              {viewItem.creator && (
+                <Section label={t("Creator", "المنشئ")}>
+                  <Row label={t("Name", "الاسم")} value={[viewItem.creator.firstName, viewItem.creator.lastName].filter(Boolean).join(' ')} />
+                  <Row label={t("Email", "البريد")} value={viewItem.creator.email} />
+                </Section>
+              )}
+              <Section label={t("Statistics", "الإحصائيات")}>
+                <Row label={t("Total Views", "إجمالي المشاهدات")} value={String(viewItem.clickCount)} />
+                <Row label={t("Status", "الحالة")} value={viewItem.isActive ? t("Active", "نشط") : t("Inactive", "غير نشط")} />
+                <Row label={t("Published", "منشور")} value={viewItem.isPublished ? t("Yes", "نعم") : t("No", "لا")} />
+              </Section>
+              <Section label={t("Dates", "التواريخ")}>
+                <Row label={t("Created", "الإنشاء")} value={formatDate(viewItem.createdAt)} />
+                <Row label={t("Last Updated", "آخر تحديث")} value={formatDate(viewItem.updatedAt)} />
               </Section>
             </div>
           )}
