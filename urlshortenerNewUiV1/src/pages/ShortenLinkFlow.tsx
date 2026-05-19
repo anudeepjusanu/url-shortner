@@ -39,6 +39,7 @@ const ShortenLinkFlow = () => {
   const [originalUrl, setOriginalUrl] = useState<string>("");
   const [shortUrl, setShortUrl] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const [urlError, setUrlError] = useState("");
 
   // ── Flow state ──
   const [step, setStep] = useState<FlowStep>("email");
@@ -128,6 +129,16 @@ const ShortenLinkFlow = () => {
   }, []);
 
   // ── Helpers ──
+  const validateUrl = (value: string) => {
+    if (!value.trim()) return t("URL is required", "الرابط مطلوب");
+    try {
+      new URL(value.startsWith("http") ? value : `https://${value}`);
+      return "";
+    } catch {
+      return t("Please enter a valid URL", "الرجاء إدخال رابط صحيح");
+    }
+  };
+
   const validateEmail = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!value.trim()) return t("Email is required", "البريد الإلكتروني مطلوب");
@@ -164,23 +175,15 @@ const ShortenLinkFlow = () => {
     if (hasCreatedUrlRef.current) return shortUrl || `${import.meta.env.VITE_BASE_URL || "https://snip.sa"}/${previewShortCode}`;
     hasCreatedUrlRef.current = true;
 
-    try {
-      const response = await urlsAPI.createUrl({ originalUrl: originalUrl, customCode: previewShortCode });
-      if (response.success && response.data) {
-        const shortCode = response.data.shortCode || response.data.shortUrl || previewShortCode;
-        const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";
-        const fullShortUrl = `${baseUrl}/${shortCode}`;
-        setShortUrl(fullShortUrl);
-        return fullShortUrl;
-      }
-    } catch (error: any) {
-      console.error("URL creation error:", error);
-      // Fallback: use the stable preview code so it doesn't flicker
+    const response = await urlsAPI.createUrl({ originalUrl: originalUrl, customCode: previewShortCode });
+    if (response.success && response.data) {
+      const shortCode = response.data.shortCode || response.data.shortUrl || previewShortCode;
       const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";
-      const fullShortUrl = `${baseUrl}/${previewShortCode}`;
+      const fullShortUrl = `${baseUrl}/${shortCode}`;
       setShortUrl(fullShortUrl);
       return fullShortUrl;
     }
+    throw new Error(response.message || t("Failed to create short URL", "فشل إنشاء الرابط المختصر"));
   };
 
   const handleCopy = () => {
@@ -193,12 +196,31 @@ const ShortenLinkFlow = () => {
   // ── Step 1: Email submitted ──
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate URL first
+    const urlErrorMsg = validateUrl(originalUrl);
+    setUrlError(urlErrorMsg);
+    if (urlErrorMsg) return;
+
     const error = validateEmail(email);
     setEmailError(error);
     if (error) return;
 
-    // Just advance to phone verification; we'll catch existing emails at registration time
-    setStep("phone");
+    setIsLoading(true);
+    try {
+      const response = await authAPI.checkEmail(email.trim());
+      if (response?.exists) {
+        // Existing user → password step
+        setStep("password");
+      } else {
+        // New user → phone verification (sign-up)
+        setStep("phone");
+      }
+    } catch (err: any) {
+      setEmailError(err.message || t("Failed to check email", "فشل التحقق من البريد الإلكتروني"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ── Step 2b: Existing user password ──
@@ -492,13 +514,32 @@ const ShortenLinkFlow = () => {
     if (hasFinishedRef.current) return;
     hasFinishedRef.current = true;
 
-    await createShortUrl();
-    setStep("result");
-    amplitudeService.track("Shorten Link Flow Completed", { url: originalUrl });
-    toast({
-      title: t("Success!", "نجاح!"),
-      description: t("Your link has been shortened", "تم اختصار رابطك"),
-    });
+    try {
+      await createShortUrl();
+      setStep("result");
+      amplitudeService.track("Shorten Link Flow Completed", { url: originalUrl });
+      toast({
+        title: t("Success!", "نجاح!"),
+        description: t("Your link has been shortened", "تم اختصار رابطك"),
+      });
+    } catch (error: any) {
+      // Reset so the user can retry after fixing the URL
+      hasFinishedRef.current = false;
+      hasCreatedUrlRef.current = false;
+
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("malicious") || msg.includes("phishing") || msg.includes("unsafe") || msg.includes("blocked") || msg.includes("suspicious")) {
+        setUrlError(t("This URL has been flagged as unsafe and cannot be shortened.", "تم تحديد هذا الرابط كغير آمن ولا يمكن اختصاره."));
+      } else {
+        setUrlError(error.message || t("Failed to create short link. Please try a different URL.", "فشل إنشاء الرابط المختصر. جرب رابطاً مختلفاً."));
+      }
+
+      toast({
+        title: t("Link Creation Failed", "فشل إنشاء الرابط"),
+        description: error.message || t("Unable to shorten this URL", "تعذر اختصار هذا الرابط"),
+        variant: "destructive",
+      });
+    }
   };
 
   // ── Cancel / go back ──
@@ -555,11 +596,17 @@ const ShortenLinkFlow = () => {
               <p className="text-xs uppercase tracking-wider text-white/50 font-body">
                 {t("Original URL", "الرابط الأصلي")}
               </p>
-              <div className="p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
+              <div className={cn(
+                "p-2 lg:p-4 bg-white/10 rounded-2xl border",
+                urlError ? "border-red-400" : "border-white/10"
+              )}>
                 <p className="text-sm font-body text-white/90 truncate" dir="ltr">
                   {originalUrl || "https://example.com/very/long/url..."}
                 </p>
               </div>
+              {urlError && (
+                <p className="text-xs text-red-300 font-body">{urlError}</p>
+              )}
             </div>
 
             {/* Shortened link preview / result */}
@@ -705,17 +752,6 @@ const ShortenLinkFlow = () => {
                   <p className="text-xs text-destructive font-body">{emailError}</p>
                 )}
               </div>
-
-              <p className="text-center text-sm text-muted-foreground font-body">
-                {t("Already have an account?", "عندك حساب؟")}{" "}
-                <button
-                  type="button"
-                  onClick={() => setStep("password")}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {t("Sign in", "سجل دخول")}
-                </button>
-              </p>
             </form>
           )}
 

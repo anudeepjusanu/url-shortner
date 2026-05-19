@@ -21,6 +21,8 @@ const {
 router.use(sanitizeInput);
 
 // Send OTP for email verification during registration
+router.post('/check-email', authLimiter, authController.checkEmail);
+
 router.post('/send-registration-otp', authLimiter, authController.sendRegistrationOTP);
 
 // Simplified register without rate limiter for testing
