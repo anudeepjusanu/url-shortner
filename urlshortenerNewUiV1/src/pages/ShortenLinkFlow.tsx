@@ -527,7 +527,7 @@ const ShortenLinkFlow = () => {
     const domain = baseUrl.replace(/^https?:\/\//, "");
 
     return (
-      <div className="flex flex-col h-full px-8 py-12 lg:px-16 bg-[hsl(350,52%,31%)] text-white">
+      <div className="flex flex-col h-full px-4 py-2 lg:px-16 lg:py-12 bg-[hsl(350,52%,31%)] text-white">
         {/* Back to home — stays at the top */}
         <button
           onClick={handleCancel}
@@ -539,13 +539,13 @@ const ShortenLinkFlow = () => {
 
         {/* Remaining content vertically & horizontally centred */}
         <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="w-full max-w-md space-y-8">
+          <div className="w-full max-w-md space-y-2 lg:space-y-8">
             {/* Heading */}
             <div className="space-y-2">
-              <h1 className="text-4xl lg:text-5xl font-display font-bold text-white">
+              <h1 className="text-2xl lg:text-5xl font-display font-bold text-white">
                 {t("Almost there.", "أوشكت على الانتهاء.")}
               </h1>
-              <p className="text-base text-white/70 font-body">
+              <p className="text-sm lg:text-base text-white/70 font-body">
                 {t("Sign up to unlock your shortened link.", "سجّل للحصول على رابطك المختصر.")}
               </p>
             </div>
@@ -555,7 +555,7 @@ const ShortenLinkFlow = () => {
               <p className="text-xs uppercase tracking-wider text-white/50 font-body">
                 {t("Original URL", "الرابط الأصلي")}
               </p>
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+              <div className="p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                 <p className="text-sm font-body text-white/90 truncate" dir="ltr">
                   {originalUrl || "https://example.com/very/long/url..."}
                 </p>
@@ -568,8 +568,8 @@ const ShortenLinkFlow = () => {
                 {isResult ? t("Your shortened link", "رابطك المختصر") : t("Shortened link", "الرابط المختصر")}
               </p>
               {isResult ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                <div className="space-y-2 lg:space-y-4">
+                  <div className="flex items-center gap-3 p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                     <Link2 className="w-5 h-5 text-white/70 shrink-0" />
                     <p className="text-base font-display font-bold text-white/90" dir="ltr">
                       {shortUrl || `${domain}/${previewShortCode}`}
@@ -592,7 +592,7 @@ const ShortenLinkFlow = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                <div className="flex items-center gap-3 p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                   <Link2 className="w-5 h-5 text-white/70 shrink-0" />
                   <p className="text-base font-display font-bold text-white/90" dir="ltr">
                     {domain}/••••••
@@ -618,8 +618,8 @@ const ShortenLinkFlow = () => {
 
   const renderRightSide = () => {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-8 py-12 lg:px-16 bg-[hsl(36,100%,98%)]">
-        <div className="w-full max-w-md space-y-6">
+      <div className="flex flex-col items-center justify-center h-full px-4 py-3 lg:px-16 lg:py-12 bg-[hsl(36,100%,98%)]">
+        <div className="w-full max-w-md space-y-2 lg:space-y-6">
           {/* Language toggle */}
           <div className="flex justify-end">
             <button
@@ -633,7 +633,7 @@ const ShortenLinkFlow = () => {
 
           {/* Step title */}
           <div className="text-center space-y-1">
-            <h2 className="text-2xl font-display font-bold text-[hsl(350,52%,31%)]">
+            <h2 className="text-lg lg:text-2xl font-display font-bold text-[hsl(350,52%,31%)]">
               {step === "email" && t("Create your account", "أنشئ حسابك")}
               {step === "password" && t("Welcome back", "مرحباً بعودتك")}
               {step === "emailOtp" && t("Verify your email", "تحقق من بريدك الإلكتروني")}
@@ -642,7 +642,7 @@ const ShortenLinkFlow = () => {
               {step === "completeProfile" && t("Complete your profile", "أكمل ملفك الشخصي")}
               {step === "result" && t("All set!", "كل شيء جاهز!")}
             </h2>
-            <p className="text-sm text-muted-foreground font-body">
+            <p className="text-xs lg:text-sm text-muted-foreground font-body">
               {step === "email" && t("Sign up to shorten your link.", "سجّل لإنشاء رابطك المختصر.")}
               {step === "password" && t("Enter your password to continue", "أدخل كلمة المرور للمتابعة")}
               {step === "emailOtp" && t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
@@ -655,7 +655,7 @@ const ShortenLinkFlow = () => {
 
           {/* Form content */}
           {step === "email" && (
-            <form onSubmit={handleEmailSubmit} className="space-y-4">
+            <form onSubmit={handleEmailSubmit} className="space-y-2 lg:space-y-4">
               <GoogleAuthButton
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
@@ -720,7 +720,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "password" && (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <form onSubmit={handlePasswordSubmit} className="space-y-2 lg:space-y-4">
               {/* Email — editable in case they want to change it */}
               <div className="space-y-1.5">
                 <Label htmlFor="signin-email" className="text-foreground text-sm">{t("Email", "البريد الإلكتروني")}</Label>
@@ -786,7 +786,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "emailOtp" && (
-            <form onSubmit={handleEmailOtpSubmit} className="space-y-4">
+            <form onSubmit={handleEmailOtpSubmit} className="space-y-2 lg:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailOtp" className="text-foreground text-sm">
                   {t("Verification Code", "رمز التحقق")}
@@ -831,7 +831,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "phone" && (
-            <div className="space-y-4">
+            <div className="space-y-2 lg:space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm">{t("Mobile Number", "رقم الجوال")}</Label>
                 <div className="flex items-center gap-2">
@@ -883,7 +883,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "phoneOtp" && (
-            <form onSubmit={handleVerifyPhoneOtp} className="space-y-4">
+            <form onSubmit={handleVerifyPhoneOtp} className="space-y-2 lg:space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm">{t("Verification Code", "رمز التحقق")}</Label>
                 <Input
@@ -957,7 +957,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "completeProfile" && (
-            <form onSubmit={handleCompleteProfile} className="space-y-4">
+            <form onSubmit={handleCompleteProfile} className="space-y-1 lg:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-foreground text-sm">
                   {t("Full Name", "الاسم الكامل")} *
@@ -1041,7 +1041,7 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "result" && (
-            <div className="space-y-6 text-center">
+            <div className="space-y-4 lg:space-y-6 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <Check className="w-8 h-8 text-green-600" />
               </div>
@@ -1069,14 +1069,14 @@ const ShortenLinkFlow = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
+    <div className="h-[100dvh] flex flex-col lg:flex-row overflow-hidden">
       {/* Left side */}
-      <div className="flex-1 lg:w-1/2">
+      <div className="flex-[0.8] lg:flex-1 lg:w-1/2">
         {renderLeftSide()}
       </div>
 
       {/* Right side */}
-      <div className="flex-1 lg:w-1/2">
+      <div className="flex-[1.2] lg:flex-1 lg:w-1/2 overflow-hidden">
         {renderRightSide()}
       </div>
     </div>
