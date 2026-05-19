@@ -12,6 +12,9 @@ const {
   getClientIP,
 } = require("../services/geoLocationService");
 const { normalizeEmail } = require("../utils/normalizeEmail");
+const { createLogger } = require("../utils/logger");
+
+const logger = createLogger("AuthController");
 
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
@@ -57,12 +60,20 @@ const generateTokens = (userId) => {
 };
 
 const sendRegistrationOTP = async (req, res) => {
+  logger.request(req, "sendRegistrationOTP called", {
+    email: req.body?.email,
+    phone: req.body?.phone ? maskPhone(normalizePhone(req.body.phone)) : undefined,
+  });
+
   try {
     const { email, phone } = req.body;
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedEmail) {
+      logger.request(req, "sendRegistrationOTP validation failed: Email is required", {
+        requestId: req.requestId,
+      });
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -74,10 +85,17 @@ const sendRegistrationOTP = async (req, res) => {
     if (existingUser) {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
-        console.log("Account linking: Allowing OTP for existing Google account");
+        logger.info("Account linking: Allowing OTP for existing Google account", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         // Continue with OTP flow to allow account linking
       } else {
         // User already has a complete account
+        logger.request(req, "sendRegistrationOTP failed: Email already registered", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         return res.status(400).json({
           success: false,
           message: "Email already registered",
@@ -102,6 +120,12 @@ const sendRegistrationOTP = async (req, res) => {
       ? "OTP sent to your phone number. Please verify to complete registration."
       : "OTP sent to your email. Please verify to complete registration.";
 
+    logger.request(req, "sendRegistrationOTP completed", {
+      requestId: req.requestId,
+      email: normalizedEmail,
+      method,
+    });
+
     return res.status(200).json({
       success: true,
       message,
@@ -112,7 +136,9 @@ const sendRegistrationOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Send registration OTP error:", error);
+    logger.requestError(req, "sendRegistrationOTP failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to send OTP",
@@ -121,14 +147,46 @@ const sendRegistrationOTP = async (req, res) => {
   }
 };
 
+const checkEmail = async (req, res) => {
+  logger.request(req, "checkEmail called", { email: req.body?.email });
+  try {
+    const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+    const user = await User.findOne({ email: normalizedEmail });
+    return res.json({
+      success: true,
+      exists: !!user,
+      hasPassword: user ? !!user.password : false,
+    });
+  } catch (error) {
+    logger.requestError(req, "checkEmail failed", error, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      message: "Failed to check email",
+    });
+  }
+};
+
 const register = async (req, res) => {
-  console.log("Registration request body:", req.body);
+  logger.request(req, "register called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email, password, fullName, phone, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedEmail) {
+      logger.request(req, "register validation failed: Email is required", {
+        requestId: req.requestId,
+      });
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -141,10 +199,17 @@ const register = async (req, res) => {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
         // This is account linking - allow them to add password to their Google account
-        console.log("Account linking: Adding password to existing Google account");
+        logger.info("Account linking: Adding password to existing Google account", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         // Continue with the flow to add password
       } else {
         // User already has a complete account (either manual or Google with password)
+        logger.request(req, "register failed: Email already registered", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         return res.status(400).json({
           success: false,
           message: "Email already registered",
@@ -187,6 +252,12 @@ const register = async (req, res) => {
           ? "OTP sent to your phone number. Please verify to complete registration."
           : "OTP sent to your email. Please verify to complete registration.";
 
+        logger.request(req, "register OTP sent", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+          method,
+        });
+
         return res.status(202).json({
           success: true,
           message,
@@ -197,7 +268,9 @@ const register = async (req, res) => {
           },
         });
       } catch (err) {
-        console.error("Send registration OTP error:", err);
+        logger.requestError(req, "register failed to send OTP", err, {
+          requestId: req.requestId,
+        });
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -214,6 +287,10 @@ const register = async (req, res) => {
       const storedData = await cacheGet(dataKey);
 
       if (!storedOtp || !storedData) {
+        logger.request(req, "register failed: OTP expired or invalid", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         return res.status(401).json({
           success: false,
           message: "OTP expired or invalid. Please request a new one.",
@@ -221,6 +298,10 @@ const register = async (req, res) => {
       }
 
       if (storedOtp !== otp) {
+        logger.request(req, "register failed: Invalid OTP", {
+          requestId: req.requestId,
+          email: normalizedEmail,
+        });
         return res.status(401).json({
           success: false,
           message: "Invalid OTP. Please try again.",
@@ -240,7 +321,10 @@ const register = async (req, res) => {
       let user;
       if (existingUserForLinking && existingUserForLinking.googleId && !existingUserForLinking.password) {
         // Account linking: Add password to existing Google account
-        console.log("Linking password to existing Google account:", existingUserForLinking.email);
+        logger.info("Linking password to existing Google account", {
+          requestId: req.requestId,
+          email: existingUserForLinking.email,
+        });
 
         existingUserForLinking.password = registrationData.hashedPassword;
 
@@ -262,16 +346,25 @@ const register = async (req, res) => {
 
         await existingUserForLinking.save();
         user = existingUserForLinking;
-        console.log("Account linked successfully:", user.email);
+        logger.info("Account linked successfully", {
+          requestId: req.requestId,
+          email: user.email,
+        });
       } else {
         // Get user's location from IP
         const clientIP = getClientIP(req);
         let registrationLocation = null;
         try {
           registrationLocation = await getLocationFromIP(clientIP);
-          console.log("User registration location:", registrationLocation);
+          logger.debug("User registration location", {
+            requestId: req.requestId,
+            location: registrationLocation,
+          });
         } catch (locError) {
-          console.error("Failed to get location:", locError.message);
+          logger.warn("Failed to get location", {
+            requestId: req.requestId,
+            error: locError.message,
+          });
         }
 
         // Split fullName into firstName / lastName for the schema
@@ -279,7 +372,10 @@ const register = async (req, res) => {
         const firstName = nameParts[0] || registrationData.fullName;
         const lastName = nameParts.slice(1).join(" ") || undefined;
 
-        console.log("Creating user with email:", registrationData.email);
+        logger.debug("Creating user", {
+          requestId: req.requestId,
+          email: registrationData.email,
+        });
         user = new User({
           email: registrationData.email,
           password: registrationData.hashedPassword,
@@ -291,24 +387,40 @@ const register = async (req, res) => {
         });
 
         await user.save();
-        console.log("User created:", user);
+        logger.info("User created", {
+          requestId: req.requestId,
+          userId: user._id,
+          email: user.email,
+        });
       }
 
       // Send welcome email to user
       try {
         await emailService.sendWelcomeEmail(user);
       } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError);
+        logger.warn("Failed to send welcome email", {
+          requestId: req.requestId,
+          error: emailError.message,
+        });
       }
 
       // Send admin notification
       try {
         await emailService.sendAdminNotification(user);
       } catch (emailError) {
-        console.error("Failed to send admin notification:", emailError);
+        logger.warn("Failed to send admin notification", {
+          requestId: req.requestId,
+          error: emailError.message,
+        });
       }
 
       const { accessToken, refreshToken } = generateTokens(user._id);
+
+      logger.request(req, "register completed", {
+        requestId: req.requestId,
+        userId: user._id,
+        email: user.email,
+      });
 
       res.status(201).json({
         success: true,
@@ -329,7 +441,9 @@ const register = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.requestError(req, "register failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Registration failed",
@@ -339,12 +453,20 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  logger.request(req, "login called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email, password, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
 
     const user = await User.findOne({ email: normalizedEmail }).select("+password");
     if (!user) {
+      logger.request(req, "login failed: Invalid credentials", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -352,6 +474,10 @@ const login = async (req, res) => {
     }
 
     if (user.isLocked) {
+      logger.request(req, "login failed: Account locked", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res.status(423).json({
         success: false,
         message:
@@ -362,6 +488,10 @@ const login = async (req, res) => {
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
       await user.incLoginAttempts();
+      logger.request(req, "login failed: Invalid credentials", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -376,6 +506,10 @@ const login = async (req, res) => {
         const emailAddr = user.email;
 
         if (!phone && !emailAddr) {
+          logger.request(req, "login failed: Phone or email required for OTP", {
+            requestId: req.requestId,
+            userId: user._id,
+          });
           return res.status(400).json({
             success: false,
             message: "Phone number or email required for OTP",
@@ -396,6 +530,12 @@ const login = async (req, res) => {
           method: "email",
         });
 
+        logger.request(req, "login OTP sent", {
+          requestId: req.requestId,
+          userId: user._id,
+          method: "email",
+        });
+
         return res.status(202).json({
           success: true,
           message: "OTP sent to your email. Please verify.",
@@ -406,7 +546,9 @@ const login = async (req, res) => {
           },
         });
       } catch (err) {
-        console.error("Send OTP error:", err);
+        logger.requestError(req, "login failed to send OTP", err, {
+          requestId: req.requestId,
+        });
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -422,6 +564,10 @@ const login = async (req, res) => {
         const storedOtp = await cacheGet(otpKey);
 
         if (!storedOtp) {
+          logger.request(req, "login failed: OTP expired or invalid", {
+            requestId: req.requestId,
+            userId: user._id,
+          });
           return res.status(401).json({
             success: false,
             message: "OTP expired or invalid. Please request a new one.",
@@ -429,6 +575,10 @@ const login = async (req, res) => {
         }
 
         if (storedOtp !== otp) {
+          logger.request(req, "login failed: Invalid OTP", {
+            requestId: req.requestId,
+            userId: user._id,
+          });
           return res.status(401).json({
             success: false,
             message: "Invalid OTP. Please try again.",
@@ -438,7 +588,9 @@ const login = async (req, res) => {
         // Clear OTP from cache after successful verification
         await cacheDel(otpKey);
       } catch (err) {
-        console.error("OTP verification error:", err);
+        logger.requestError(req, "login OTP verification failed", err, {
+          requestId: req.requestId,
+        });
         return res.status(401).json({
           success: false,
           message: "OTP verification failed",
@@ -447,8 +599,18 @@ const login = async (req, res) => {
         });
       }
     }
-    console.log("Authenticated user:", user);
+
+    logger.debug("Authenticated user", {
+      requestId: req.requestId,
+      userId: user._id,
+      email: user.email,
+    });
+
     if (!user.isActive) {
+      logger.request(req, "login failed: Account deactivated", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res.status(403).json({
         success: false,
         message: "Account deactivated",
@@ -467,7 +629,10 @@ const login = async (req, res) => {
           user.registrationLocation = location;
         }
       } catch (locError) {
-        console.error("Failed to capture login location:", locError.message);
+        logger.warn("Failed to capture login location", {
+          requestId: req.requestId,
+          error: locError.message,
+        });
       }
     }
 
@@ -485,6 +650,12 @@ const login = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
+
+    logger.request(req, "login completed", {
+      requestId: req.requestId,
+      userId: user._id,
+      email: user.email,
+    });
 
     res.json({
       success: true,
@@ -506,7 +677,9 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.requestError(req, "login failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Login failed",
@@ -516,10 +689,15 @@ const login = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
+  logger.request(req, "refreshToken called");
+
   try {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
+      logger.request(req, "refreshToken failed: Refresh token required", {
+        requestId: req.requestId,
+      });
       return res.status(401).json({
         success: false,
         message: "Refresh token required",
@@ -530,6 +708,9 @@ const refreshToken = async (req, res) => {
     const user = await User.findById(decoded.userId);
 
     if (!user || !user.isActive) {
+      logger.request(req, "refreshToken failed: Invalid refresh token", {
+        requestId: req.requestId,
+      });
       return res.status(401).json({
         success: false,
         message: "Invalid refresh token",
@@ -540,6 +721,11 @@ const refreshToken = async (req, res) => {
       user._id,
     );
 
+    logger.request(req, "refreshToken completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       data: {
@@ -548,7 +734,9 @@ const refreshToken = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Token refresh error:", error);
+    logger.requestError(req, "refreshToken failed", error, {
+      requestId: req.requestId,
+    });
     res.status(401).json({
       success: false,
       message: "Invalid refresh token",
@@ -557,17 +745,28 @@ const refreshToken = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+  logger.request(req, "logout called", {
+    userId: req.user?.id,
+  });
+
   try {
     const userId = req.user.id;
 
     await cacheDel(`user:${userId}`);
+
+    logger.request(req, "logout completed", {
+      requestId: req.requestId,
+      userId,
+    });
 
     res.json({
       success: true,
       message: "Logged out successfully",
     });
   } catch (error) {
-    console.error("Logout error:", error);
+    logger.requestError(req, "logout failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Logout failed",
@@ -576,17 +775,30 @@ const logout = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
+  logger.request(req, "getProfile called", {
+    userId: req.user?.id,
+  });
+
   try {
     const user = await User.findById(req.user.id)
       .populate("organization", "name slug")
       .select("-password -passwordResetToken -emailVerificationToken");
 
     if (!user) {
+      logger.request(req, "getProfile failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+
+    logger.request(req, "getProfile completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
 
     // Return user data directly for frontend compatibility
     res.json({
@@ -604,7 +816,9 @@ const getProfile = async (req, res) => {
       data: { user },
     });
   } catch (error) {
-    console.error("Get profile error:", error);
+    logger.requestError(req, "getProfile failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to fetch profile",
@@ -613,6 +827,10 @@ const getProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+  logger.request(req, "updateProfile called", {
+    userId: req.user?.id,
+  });
+
   try {
     const { firstName, lastName, phone, company, jobTitle, preferences } =
       req.body;
@@ -665,12 +883,21 @@ const updateProfile = async (req, res) => {
           );
 
     if (!updatedUser) {
+      logger.request(req, "updateProfile failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
     await cacheDel(`user:${updatedUser._id}`);
+
+    logger.request(req, "updateProfile completed", {
+      requestId: req.requestId,
+      userId: updatedUser._id,
+    });
 
     res.json({
       success: true,
@@ -684,7 +911,9 @@ const updateProfile = async (req, res) => {
       data: { user: updatedUser },
     });
   } catch (error) {
-    console.error("Update profile error:", error);
+    logger.requestError(req, "updateProfile failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to update profile",
@@ -693,11 +922,19 @@ const updateProfile = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
+  logger.request(req, "changePassword called", {
+    userId: req.user?.id,
+  });
+
   try {
     const { currentPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user.id).select("+password");
     if (!user) {
+      logger.request(req, "changePassword failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -707,6 +944,10 @@ const changePassword = async (req, res) => {
     const isCurrentPasswordCorrect =
       await user.comparePassword(currentPassword);
     if (!isCurrentPasswordCorrect) {
+      logger.request(req, "changePassword failed: Current password incorrect", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res.status(400).json({
         success: false,
         message: "Current password is incorrect",
@@ -716,12 +957,19 @@ const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
+    logger.request(req, "changePassword completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "Password changed successfully",
     });
   } catch (error) {
-    console.error("Change password error:", error);
+    logger.requestError(req, "changePassword failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to change password",
@@ -730,12 +978,20 @@ const changePassword = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+  logger.request(req, "forgotPassword called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email } = req.body;
     const normalizedEmail = normalizeEmail(email);
 
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
+      logger.request(req, "forgotPassword: User not found (silent success)", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       return res.json({
         success: true,
         message: "If the email exists, a password reset link has been sent",
@@ -751,6 +1007,11 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
+    logger.request(req, "forgotPassword completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "If the email exists, a password reset link has been sent",
@@ -758,7 +1019,9 @@ const forgotPassword = async (req, res) => {
         process.env.NODE_ENV === "development" ? resetToken : undefined,
     });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    logger.requestError(req, "forgotPassword failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to process password reset request",
@@ -767,6 +1030,8 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
+  logger.request(req, "resetPassword called");
+
   try {
     const { token, newPassword } = req.body;
 
@@ -778,6 +1043,9 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
+      logger.request(req, "resetPassword failed: Invalid or expired token", {
+        requestId: req.requestId,
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid or expired reset token",
@@ -790,12 +1058,19 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
+    logger.request(req, "resetPassword completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset password error:", error);
+    logger.requestError(req, "resetPassword failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
@@ -805,16 +1080,27 @@ const resetPassword = async (req, res) => {
 
 // Send password reset OTP
 const sendPasswordResetOTP = async (req, res) => {
+  logger.request(req, "sendPasswordResetOTP called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email } = req.body;
     const normalizedEmail = normalizeEmail(email);
 
     if (process.env.NODE_ENV === "development") {
-      console.log("📧 Password reset OTP requested for:", normalizedEmail);
+      logger.debug("Password reset OTP requested", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
     }
 
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
+      logger.request(req, "sendPasswordResetOTP: User not found (silent success)", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       // Return success even if user doesn't exist (security best practice)
       return res.json({
         success: true,
@@ -830,16 +1116,24 @@ const sendPasswordResetOTP = async (req, res) => {
     await cacheSet(otpKey, otp, 10 * 60); // 10 minutes TTL
 
     if (process.env.NODE_ENV === "development") {
-      console.log("🔢 Generated OTP:", otp);
-      console.log("💾 OTP stored in cache with key:", otpKey);
+      logger.debug("Generated OTP and stored in cache", {
+        requestId: req.requestId,
+        otpKey,
+      });
     }
 
     // Send OTP via email
     try {
       await otpService.sendOtp({ email: normalizedEmail, otp, method: "email" });
-      console.log("✅ OTP sent via Authentica");
+      logger.info("OTP sent via Authentica", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
     } catch (emailError) {
-      console.error("❌ Failed to send OTP email:", emailError);
+      logger.warn("Failed to send OTP email", {
+        requestId: req.requestId,
+        error: emailError.message,
+      });
       // Continue even if email fails in development
       if (process.env.NODE_ENV !== "development") {
         throw emailError;
@@ -856,15 +1150,23 @@ const sendPasswordResetOTP = async (req, res) => {
     if (process.env.NODE_ENV === "development") {
       responseData.otp = otp;
       responseData.debug = true;
-      console.log("\n🔐 ===== PASSWORD RESET OTP =====");
-      console.log("📧 Email:", normalizedEmail);
-      console.log("🔢 OTP Code:", otp);
-      console.log("================================\n");
+      logger.debug("Password reset OTP debug", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+        otp,
+      });
     }
+
+    logger.request(req, "sendPasswordResetOTP completed", {
+      requestId: req.requestId,
+      email: normalizedEmail,
+    });
 
     res.json(responseData);
   } catch (error) {
-    console.error("Send password reset OTP error:", error);
+    logger.requestError(req, "sendPasswordResetOTP failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to send verification code",
@@ -874,6 +1176,10 @@ const sendPasswordResetOTP = async (req, res) => {
 
 // Verify password reset OTP
 const verifyPasswordResetOTP = async (req, res) => {
+  logger.request(req, "verifyPasswordResetOTP called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -883,6 +1189,10 @@ const verifyPasswordResetOTP = async (req, res) => {
     const storedOtp = await cacheGet(otpKey);
 
     if (!storedOtp || storedOtp !== otp) {
+      logger.request(req, "verifyPasswordResetOTP failed: Invalid or expired OTP", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid or expired verification code",
@@ -896,12 +1206,19 @@ const verifyPasswordResetOTP = async (req, res) => {
     const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     await cacheSet(verifiedKey, "true", 10 * 60); // 10 minutes TTL
 
+    logger.request(req, "verifyPasswordResetOTP completed", {
+      requestId: req.requestId,
+      email: normalizedEmail,
+    });
+
     res.json({
       success: true,
       message: "OTP verified successfully",
     });
   } catch (error) {
-    console.error("Verify password reset OTP error:", error);
+    logger.requestError(req, "verifyPasswordResetOTP failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to verify OTP",
@@ -911,6 +1228,10 @@ const verifyPasswordResetOTP = async (req, res) => {
 
 // Reset password with OTP
 const resetPasswordWithOTP = async (req, res) => {
+  logger.request(req, "resetPasswordWithOTP called", {
+    email: req.body?.email,
+  });
+
   try {
     const { email, newPassword } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -920,6 +1241,10 @@ const resetPasswordWithOTP = async (req, res) => {
     const isVerified = await cacheGet(verifiedKey);
 
     if (!isVerified) {
+      logger.request(req, "resetPasswordWithOTP failed: OTP not verified", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       return res.status(400).json({
         success: false,
         message: "Please verify OTP first",
@@ -929,6 +1254,10 @@ const resetPasswordWithOTP = async (req, res) => {
     // Find user
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
+      logger.request(req, "resetPasswordWithOTP failed: User not found", {
+        requestId: req.requestId,
+        email: normalizedEmail,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -938,6 +1267,10 @@ const resetPasswordWithOTP = async (req, res) => {
     // Check if new password is same as old password
     const isSamePassword = await user.comparePassword(newPassword);
     if (isSamePassword) {
+      logger.request(req, "resetPasswordWithOTP failed: New password same as old", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res.status(400).json({
         success: false,
         message: "New password must be different from old password",
@@ -951,12 +1284,19 @@ const resetPasswordWithOTP = async (req, res) => {
     // Clear verified flag from cache
     await cacheDel(verifiedKey);
 
+    logger.request(req, "resetPasswordWithOTP completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset password with OTP error:", error);
+    logger.requestError(req, "resetPasswordWithOTP failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
@@ -965,10 +1305,17 @@ const resetPasswordWithOTP = async (req, res) => {
 };
 
 const loginWithPhoneOtp = async (req, res) => {
+  logger.request(req, "loginWithPhoneOtp called", {
+    phoneNumber: req.body?.phoneNumber ? maskPhone(req.body.phoneNumber) : undefined,
+  });
+
   try {
     const { phoneNumber, otp } = req.body;
 
     if (!phoneNumber) {
+      logger.request(req, "loginWithPhoneOtp failed: Phone number required", {
+        requestId: req.requestId,
+      });
       return res
         .status(400)
         .json({ success: false, message: "Phone number is required" });
@@ -977,6 +1324,10 @@ const loginWithPhoneOtp = async (req, res) => {
     // Find user by phone number (stored in E.164 format)
     const user = await User.findOne({ phone: phoneNumber });
     if (!user) {
+      logger.request(req, "loginWithPhoneOtp failed: No account found", {
+        requestId: req.requestId,
+        phoneNumber: maskPhone(phoneNumber),
+      });
       return res
         .status(401)
         .json({
@@ -986,6 +1337,10 @@ const loginWithPhoneOtp = async (req, res) => {
     }
 
     if (user.isLocked) {
+      logger.request(req, "loginWithPhoneOtp failed: Account locked", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res
         .status(423)
         .json({
@@ -1009,6 +1364,12 @@ const loginWithPhoneOtp = async (req, res) => {
           method: "sms",
         });
 
+        logger.request(req, "loginWithPhoneOtp OTP sent", {
+          requestId: req.requestId,
+          userId: user._id,
+          method: "sms",
+        });
+
         return res.status(202).json({
           success: true,
           message: "OTP sent to your phone number. Please verify.",
@@ -1019,7 +1380,9 @@ const loginWithPhoneOtp = async (req, res) => {
           },
         });
       } catch (err) {
-        console.error("Send phone OTP error:", err);
+        logger.requestError(req, "loginWithPhoneOtp failed to send OTP", err, {
+          requestId: req.requestId,
+        });
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -1033,6 +1396,10 @@ const loginWithPhoneOtp = async (req, res) => {
       const storedOtp = await cacheGet(otpKey);
 
       if (!storedOtp) {
+        logger.request(req, "loginWithPhoneOtp failed: OTP expired or invalid", {
+          requestId: req.requestId,
+          userId: user._id,
+        });
         return res
           .status(401)
           .json({
@@ -1042,6 +1409,10 @@ const loginWithPhoneOtp = async (req, res) => {
       }
 
       if (storedOtp !== otp) {
+        logger.request(req, "loginWithPhoneOtp failed: Invalid OTP", {
+          requestId: req.requestId,
+          userId: user._id,
+        });
         return res
           .status(401)
           .json({ success: false, message: "Invalid OTP. Please try again." });
@@ -1051,6 +1422,10 @@ const loginWithPhoneOtp = async (req, res) => {
     }
 
     if (!user.isActive) {
+      logger.request(req, "loginWithPhoneOtp failed: Account deactivated", {
+        requestId: req.requestId,
+        userId: user._id,
+      });
       return res
         .status(403)
         .json({ success: false, message: "Account deactivated" });
@@ -1068,7 +1443,10 @@ const loginWithPhoneOtp = async (req, res) => {
           user.registrationLocation = location;
         }
       } catch (locError) {
-        console.error("Failed to capture login location:", locError.message);
+        logger.warn("Failed to capture login location", {
+          requestId: req.requestId,
+          error: locError.message,
+        });
       }
     }
 
@@ -1086,6 +1464,11 @@ const loginWithPhoneOtp = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
+
+    logger.request(req, "loginWithPhoneOtp completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
 
     res.json({
       success: true,
@@ -1107,7 +1490,9 @@ const loginWithPhoneOtp = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Phone login error:", error);
+    logger.requestError(req, "loginWithPhoneOtp failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Login failed",
@@ -1118,10 +1503,18 @@ const loginWithPhoneOtp = async (req, res) => {
 
 // Get user's API key
 const getApiKey = async (req, res) => {
+  logger.request(req, "getApiKey called", {
+    userId: req.user?.id,
+  });
+
   try {
     const user = await User.findById(req.user.id);
 
     if (!user) {
+      logger.request(req, "getApiKey failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -1131,12 +1524,20 @@ const getApiKey = async (req, res) => {
     // Find active API key or return empty
     const activeKey = user.apiKeys?.find((k) => k.isActive);
 
+    logger.request(req, "getApiKey completed", {
+      requestId: req.requestId,
+      userId: user._id,
+      hasKey: !!activeKey,
+    });
+
     res.json({
       success: true,
       apiKey: activeKey ? activeKey.key : null,
     });
   } catch (error) {
-    console.error("Get API key error:", error);
+    logger.requestError(req, "getApiKey failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to fetch API key",
@@ -1146,10 +1547,18 @@ const getApiKey = async (req, res) => {
 
 // Regenerate API key
 const regenerateApiKey = async (req, res) => {
+  logger.request(req, "regenerateApiKey called", {
+    userId: req.user?.id,
+  });
+
   try {
     const user = await User.findById(req.user.id);
 
     if (!user) {
+      logger.request(req, "regenerateApiKey failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -1180,13 +1589,20 @@ const regenerateApiKey = async (req, res) => {
 
     await user.save();
 
+    logger.request(req, "regenerateApiKey completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "API key regenerated successfully",
       apiKey: newApiKey,
     });
   } catch (error) {
-    console.error("Regenerate API key error:", error);
+    logger.requestError(req, "regenerateApiKey failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to regenerate API key",
@@ -1196,15 +1612,28 @@ const regenerateApiKey = async (req, res) => {
 
 // Get user preferences
 const getPreferences = async (req, res) => {
+  logger.request(req, "getPreferences called", {
+    userId: req.user?.id,
+  });
+
   try {
     const user = await User.findById(req.user.id);
 
     if (!user) {
+      logger.request(req, "getPreferences failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+
+    logger.request(req, "getPreferences completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
 
     // Return preferences with defaults
     res.json({
@@ -1220,7 +1649,9 @@ const getPreferences = async (req, res) => {
       theme: user.preferences?.theme || "light",
     });
   } catch (error) {
-    console.error("Get preferences error:", error);
+    logger.requestError(req, "getPreferences failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to fetch preferences",
@@ -1230,6 +1661,10 @@ const getPreferences = async (req, res) => {
 
 // Update user preferences
 const updatePreferences = async (req, res) => {
+  logger.request(req, "updatePreferences called", {
+    userId: req.user?.id,
+  });
+
   try {
     const {
       emailNotifications,
@@ -1243,6 +1678,10 @@ const updatePreferences = async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
+      logger.request(req, "updatePreferences failed: User not found", {
+        requestId: req.requestId,
+        userId: req.user?.id,
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -1280,6 +1719,11 @@ const updatePreferences = async (req, res) => {
 
     await user.save();
 
+    logger.request(req, "updatePreferences completed", {
+      requestId: req.requestId,
+      userId: user._id,
+    });
+
     res.json({
       success: true,
       message: "Preferences updated successfully",
@@ -1293,7 +1737,9 @@ const updatePreferences = async (req, res) => {
       theme: user.preferences.theme || "light",
     });
   } catch (error) {
-    console.error("Update preferences error:", error);
+    logger.requestError(req, "updatePreferences failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to update preferences",
@@ -1302,6 +1748,10 @@ const updatePreferences = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
+  logger.request(req, "deleteAccount called", {
+    userId: req.user?.id,
+  });
+
   try {
     const userId = req.user.id;
 
@@ -1311,12 +1761,19 @@ const deleteAccount = async (req, res) => {
     // Delete the user document
     await User.findByIdAndDelete(userId);
 
+    logger.request(req, "deleteAccount completed", {
+      requestId: req.requestId,
+      userId,
+    });
+
     res.json({
       success: true,
       message: "Account deleted successfully",
     });
   } catch (error) {
-    console.error("Delete account error:", error);
+    logger.requestError(req, "deleteAccount failed", error, {
+      requestId: req.requestId,
+    });
     res.status(500).json({
       success: false,
       message: "Failed to delete account",
@@ -1325,6 +1782,7 @@ const deleteAccount = async (req, res) => {
 };
 
 module.exports = {
+  checkEmail,
   sendRegistrationOTP,
   register,
   login,

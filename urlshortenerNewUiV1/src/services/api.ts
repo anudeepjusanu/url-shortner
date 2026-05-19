@@ -15,6 +15,7 @@ const endpoints = {
     sendPasswordResetOTP: '/auth/send-password-reset-otp',
     verifyPasswordResetOTP: '/auth/verify-password-reset-otp',
     resetPasswordWithOTP: '/auth/reset-password-with-otp',
+    checkEmail: '/auth/check-email',
     googleAuth: '/auth/google',
     googleSendOTP: '/auth/google/send-otp',
     googleVerifyOTP: '/auth/google/verify-otp',
@@ -422,6 +423,10 @@ export const authAPI = {
 
   resetPasswordWithOTP: async (data: any) => {
     return apiClient.post(endpoints.auth.resetPasswordWithOTP, data);
+  },
+
+  checkEmail: async (email: string) => {
+    return apiClient.post(endpoints.auth.checkEmail, { email });
   },
 
   googleAuthenticate: async (accessToken: string) => {
