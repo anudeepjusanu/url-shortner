@@ -161,36 +161,16 @@ class RedirectService {
         console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive, cachedDomain: url.domain });
 
         // Validate cached URL belongs to the requested domain (custom domain isolation)
-        // const isRequestOnMainDomain = !normalizedDomain || this.isMainDomain(normalizedDomain);
+        const isRequestOnMainDomain = !normalizedDomain || this.isMainDomain(normalizedDomain);
         const cachedUrlDomain = url.domain ? url.domain.toLowerCase() : null;
-        // const domainMatches = isRequestOnMainDomain
-        //   ? true // main domain requests can resolve any URL (no domain restriction)
-        //   : cachedUrlDomain === normalizedDomain; // custom domain requests must match exactly
+        const domainMatches = isRequestOnMainDomain
+          ? true // main domain requests can resolve any URL (no domain restriction)
+          : cachedUrlDomain === normalizedDomain; // custom domain requests must match exactly
 
-  //       if (!domainMatches) {
-  //         console.log('⚠️ Cache domain mismatch! Request domain:', normalizedDomain, 'Cached domain:', cachedUrlDomain, '→ falling through to DB');
-  //         url = null; // Force DB lookup with correct domain filter
-  //       }
-
-  //       const domainMatches =
-  // !normalizedDomain ||
-  // cachedUrlDomain === normalizedDomain;
-
-  const domainMatches =
-  !normalizedDomain ||
-  cachedUrlDomain === normalizedDomain;
-
-if (!domainMatches) {
-  console.log(
-    '⚠️ Cache domain mismatch! Request domain:',
-    normalizedDomain,
-    'Cached domain:',
-    cachedUrlDomain,
-    '→ falling through to DB'
-  );
-
-  url = null;
-}
+        if (!domainMatches) {
+          console.log('⚠️ Cache domain mismatch! Request domain:', normalizedDomain, 'Cached domain:', cachedUrlDomain, '→ falling through to DB');
+          url = null; // Force DB lookup with correct domain filter
+        }
 
         if (url) {
           // IMPORTANT: Always verify isActive status from database for cached URLs
@@ -227,18 +207,13 @@ if (!domainMatches) {
         };
 
         // If a custom domain is being used, ensure the URL belongs to that domain
-        // if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
-        //   query.domain = normalizedDomain;
-        if (normalizedDomain) {
-  query.domain = normalizedDomain;
-
+        if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
+          query.domain = normalizedDomain;
           console.log('🌐 Custom domain query (case-insensitive):', JSON.stringify(query, null, 2));
         } else {
           console.log('🌐 Main domain query (case-insensitive):', JSON.stringify(query, null, 2));
         }
 
-        console.log("FINAL QUERY:", query);
-        
         url = await Url.findOne(query)
           .populate('creator', 'firstName lastName email')
           .populate('organization', 'name slug');
