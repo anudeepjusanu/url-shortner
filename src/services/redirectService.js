@@ -257,21 +257,37 @@ class RedirectService {
   }
 
   isMainDomain(domain) {
+    if (!domain) return true;
+
+    const normalize = (url) => {
+      if (!url) return null;
+      return url.toLowerCase()
+        .replace(/^https?:\/\//, '')   // strip protocol
+        .replace(/:\d+$/, '')          // strip port
+        .split('/')[0];                // strip path
+    };
+
     const mainDomains = [
-      process.env.APP_URL?.replace(/https?:\/\//, ''),
+      normalize(process.env.APP_URL),
+      normalize(process.env.BASE_URL),
+      normalize(process.env.BASE_DOMAIN),
+      normalize(process.env.SHORT_DOMAIN),
+      normalize(process.env.CNAME_TARGET),
       'laghhu.link',
       'www.laghhu.link',
       'shortener.laghhu.link',
-      '20.193.155.139',
-      'localhost:3015',
-      'localhost',
       'snip.sa',
       'www.snip.sa',
-      'shortener.snip.sa'
+      'shortener.snip.sa',
+      'qa.snip.sa',
+      'localhost',
+      'localhost:3015',
+      '20.193.155.139'
     ].filter(Boolean);
 
-    console.log('isMainDomain check:', { domain, mainDomains, isMain: mainDomains.includes(domain) });
-    return mainDomains.includes(domain);
+    const isMain = mainDomains.includes(domain.toLowerCase());
+    console.log('isMainDomain check:', { domain, mainDomains, isMain });
+    return isMain;
   }
   
   async validateRedirect(url, requestData) {
