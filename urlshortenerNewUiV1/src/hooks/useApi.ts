@@ -206,17 +206,18 @@ export const useAddDomain = () => {
   });
 };
 
-export const useCreateDomain = () => {
+export const useSetDefaultDomain = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: domainsAPI.createDomain,
+    mutationFn: domainsAPI.setDefaultDomain,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ['available-domains'] });
       toast({
         title: 'Success',
-        description: 'Domain added successfully',
+        description: 'Default domain updated successfully',
       });
     },
     onError: (error: Error) => {

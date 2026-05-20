@@ -14,12 +14,28 @@ const HeroSection = () => {
   const { t, isAr } = useLanguage();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
+  const [urlError, setUrlError] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
 
+  const validateUrl = (value: string) => {
+    if (!value.trim()) return t("Please enter a URL", "الرجاء إدخال رابط");
+    try {
+      new URL(value.startsWith("http") ? value : `https://${value}`);
+      return "";
+    } catch {
+      return t("Please enter a valid URL", "الرجاء إدخال رابط صحيح");
+    }
+  };
+
   const handleShorten = () => {
-    navigate("/signup");
+    const error = validateUrl(url);
+    setUrlError(error);
+    if (error) return;
+
+    const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+    navigate("/shorten", { state: { url: normalizedUrl } });
   };
 
   const handleCopy = () => {
@@ -88,8 +104,8 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="max-w-lg mx-auto lg:mx-0"
             >
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 flex items-center gap-2 px-5 bg-white rounded-full shadow-soft border-none">
+                <div className="flex flex-col sm:flex-row gap-3">
+                <div className={`flex-1 flex items-center gap-2 px-5 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400 ring-1 ring-red-400" : "border-none"}`}>
                   <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" aria-hidden="true" />
                   <input
                     id="hero-url-input"
@@ -97,7 +113,7 @@ const HeroSection = () => {
                     aria-label={t("Enter URL to shorten", "أدخل الرابط للاختصار")}
                     placeholder={t("Paste your campaign link here...", "الصق رابط الحملة هنا...")}
                     value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
                     className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-3.5 font-body text-sm"
                     dir="ltr"
@@ -111,6 +127,9 @@ const HeroSection = () => {
                   {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
                 </Button>
               </div>
+              {urlError && (
+                <p className="text-sm text-red-500 font-body ms-5">{urlError}</p>
+              )}
 
               {shortened && (
                 <motion.div

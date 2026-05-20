@@ -60,7 +60,7 @@ export interface CreateUrlData {
   originalUrl: string;
   customCode?: string;
   title?: string;
-  domain?: string;
+  domainId?: string;
   tags?: string[];
   expiresAt?: string;
 }
@@ -92,6 +92,7 @@ export interface DnsRecord {
 
 export interface CreateDomainData {
   domain: string;
+  subdomain?: string;
 }
 
 // Analytics Types
@@ -133,8 +134,8 @@ export interface ClicksByReferrer {
 // QR Code Types
 export interface QRCodeOptions {
   size?: number;
-  format?: 'png' | 'svg' | 'jpeg';
-  errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
+  format?: "png" | "svg" | "jpeg";
+  errorCorrectionLevel?: "L" | "M" | "Q" | "H";
   foregroundColor?: string;
   backgroundColor?: string;
   logo?: string;
@@ -177,7 +178,7 @@ export interface PaginationParams {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedResponse<T> {

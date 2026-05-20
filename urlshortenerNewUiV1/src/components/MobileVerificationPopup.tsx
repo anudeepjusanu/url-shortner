@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/services/api';
 import amplitudeService from '@/services/amplitude';
@@ -33,7 +34,7 @@ const OTP_LENGTH = 4;
 // TEMPORARY: Country options for testing - REMOVE AFTER TESTING
 const COUNTRY_OPTIONS = [
   { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
-  // { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+  { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 
 interface MobileVerificationPopupProps {
@@ -46,6 +47,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
 
   // TEMPORARY: Country selection state for testing - REMOVE AFTER TESTING
   const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
@@ -66,6 +68,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const didVerifyRef = useRef(false);
 
   const clearTimers = useCallback(() => {
     if (timerRef.current) {
@@ -89,6 +92,8 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
       setTimeRemaining(null);
       setSelectedCountry(COUNTRY_OPTIONS[0]); // TEMPORARY - Reset to Saudi
       setCountryOpen(false); // TEMPORARY
+    } else {
+      didVerifyRef.current = false;
     }
   }, [open, clearTimers]);
 
@@ -120,9 +125,12 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
 
   const handleClose = async () => {
     clearTimers();
-    try {
-      await authAPI.googleCancelSignup(sessionToken);
-    } catch {}
+    // Don't cancel signup if verification already succeeded
+    if (!didVerifyRef.current) {
+      try {
+        await authAPI.googleCancelSignup(sessionToken);
+      } catch {}
+    }
     onClose();
   };
 
@@ -267,6 +275,7 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
       const response = await authAPI.googleVerifyOTP(sessionToken, otp);
 
       if (response.success) {
+        didVerifyRef.current = true;
         clearTimers();
         amplitudeService.trackRegistrationCompleted(response.data.user?.id, {
           email: response.data.user?.email,
@@ -274,13 +283,21 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
           registration_method: 'google',
         });
 
+        // Refresh auth context so the user is logged in immediately
+        try {
+          await refreshUser();
+        } catch {
+          // Even if profile refresh fails, the token is already stored.
+          // Navigation should still proceed.
+        }
+
         toast({
           title: t('Account Created', 'تم إنشاء الحساب'),
           description: t('Welcome!', 'مرحباً بك!'),
         });
 
-        onClose();
         navigate('/dashboard');
+        onClose();
       }
     } catch (error: any) {
       const newAttempts = otpAttempts + 1;

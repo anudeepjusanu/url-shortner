@@ -9,7 +9,17 @@ const redirectToOriginalUrl = async (req, res) => {
 
     // Strip port from Host header to match domain stored in database
     const rawHost = req.get('host') || '';
-    const requestDomain = rawHost.split(':')[0];
+    let requestDomain = rawHost.split(':')[0];
+
+    // Fallback: nginx custom-domain catch-all may pass domain via X-Custom-Domain header
+    if (!requestDomain && req.get('X-Custom-Domain')) {
+      requestDomain = req.get('X-Custom-Domain').split(':')[0];
+    }
+
+    // Safety net: try X-Forwarded-Host if present (useful behind Cloudflare or multiple proxies)
+    if (!requestDomain && req.get('X-Forwarded-Host')) {
+      requestDomain = req.get('X-Forwarded-Host').split(':')[0];
+    }
 
     console.log('🔗 Redirect Request:', {
       shortCode,
@@ -326,7 +336,17 @@ const redirectFromQRCode = async (req, res) => {
 
     // Strip port from Host header to match domain stored in database
     const rawHost = req.get('host') || '';
-    const requestDomain = rawHost.split(':')[0];
+    let requestDomain = rawHost.split(':')[0];
+
+    // Fallback: nginx custom-domain catch-all may pass domain via X-Custom-Domain header
+    if (!requestDomain && req.get('X-Custom-Domain')) {
+      requestDomain = req.get('X-Custom-Domain').split(':')[0];
+    }
+
+    // Safety net: try X-Forwarded-Host if present (useful behind Cloudflare or multiple proxies)
+    if (!requestDomain && req.get('X-Forwarded-Host')) {
+      requestDomain = req.get('X-Forwarded-Host').split(':')[0];
+    }
 
     console.log('📱 QR Code Scan Redirect:', {
       shortCode,

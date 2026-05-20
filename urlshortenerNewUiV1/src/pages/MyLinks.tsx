@@ -14,8 +14,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Copy, BarChart3, Trash2, Link2, ExternalLink,
-  Search, Check, QrCode, Loader2, Tag, Edit2, AlertTriangle, Layers,
+  Copy,
+  BarChart3,
+  Trash2,
+  Link2,
+  ExternalLink,
+  Search,
+  Check,
+  QrCode,
+  Loader2,
+  Tag,
+  Edit2,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
 import {
   Dialog,
@@ -26,7 +37,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { myLinksService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
@@ -38,7 +53,9 @@ const MyLinks = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">("latest");
+  const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">(
+    "latest",
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedUtmId, setCopiedUtmId] = useState<string | null>(null);
   const [expandedDest, setExpandedDest] = useState<Set<string>>(new Set());
@@ -87,9 +104,12 @@ const MyLinks = () => {
 
   useEffect(() => {
     fetchUrls();
-    myLinksService.getAvailableDomains().then((res: any) => {
-      setAvailableDomains(res?.data?.domains ?? []);
-    }).catch(() => {});
+    myLinksService
+      .getAvailableDomains()
+      .then((res: any) => {
+        setAvailableDomains(res?.data?.domains ?? []);
+      })
+      .catch(() => {});
   }, [fetchUrls]);
 
   // Refetch when tab becomes visible again
@@ -98,14 +118,20 @@ const MyLinks = () => {
       if (!document.hidden) fetchUrls();
     };
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, [fetchUrls]);
 
   const getShortUrl = (url: any) => {
     const code = url.customCode || url.shortCode || "";
     if (url.domain) {
-      const domain = url.domain.startsWith("http") ? url.domain : `https://${url.domain}`;
-      return `${domain}/${code}`;
+      if (url.domain.startsWith("http")) {
+        return `${url.domain}/${code}`;
+      }
+      const isLocal =
+        url.domain.includes("localhost") || url.domain.startsWith("127.");
+      const protocol = isLocal ? "http" : "https";
+      return `${protocol}://${url.domain}/${code}`;
     }
     const baseDomain = availableDomains.find((d: any) => d.id === "base");
     const baseUrl = baseDomain?.shortUrl || window.location.origin;
@@ -114,7 +140,11 @@ const MyLinks = () => {
 
   const buildUtmUrl = (url: any): string | null => {
     const utm = url.utm;
-    if (!utm || (!utm.source && !utm.medium && !utm.campaign && !utm.term && !utm.content)) return null;
+    if (
+      !utm ||
+      (!utm.source && !utm.medium && !utm.campaign && !utm.term && !utm.content)
+    )
+      return null;
     try {
       const parsed = new URL(url.originalUrl);
       if (utm.source) parsed.searchParams.set("utm_source", utm.source);
@@ -136,7 +166,7 @@ const MyLinks = () => {
     try {
       amplitudeService.trackLinkCopied(url._id);
     } catch (trackError) {
-      console.error('Analytics error:', trackError);
+      console.error("Analytics error:", trackError);
     }
   };
 
@@ -154,7 +184,7 @@ const MyLinks = () => {
       try {
         amplitudeService.trackLinkDeleted(deleteDialog.id);
       } catch (trackError) {
-        console.error('Analytics error:', trackError);
+        console.error("Analytics error:", trackError);
       }
       toast({ title: t("Link deleted", "تم حذف الرابط") });
     } catch (err: any) {
@@ -188,7 +218,10 @@ const MyLinks = () => {
     const trimmed = editDestUrl.trim();
     if (!validateDestUrl(trimmed)) {
       setEditDestError(
-        t("Enter a valid http/https URL", "أدخل رابطاً صحيحاً يبدأ بـ http أو https")
+        t(
+          "Enter a valid http/https URL",
+          "أدخل رابطاً صحيحاً يبدأ بـ http أو https",
+        ),
       );
       return;
     }
@@ -196,7 +229,9 @@ const MyLinks = () => {
     try {
       await myLinksService.update(editDestTarget._id, { originalUrl: trimmed });
       setUrls((prev) =>
-        prev.map((u) => (u._id === editDestTarget._id ? { ...u, originalUrl: trimmed } : u))
+        prev.map((u) =>
+          u._id === editDestTarget._id ? { ...u, originalUrl: trimmed } : u,
+        ),
       );
       setEditDestTarget(null);
       toast({ title: t("Destination updated", "تم تحديث الوجهة") });
@@ -222,15 +257,22 @@ const MyLinks = () => {
       );
     })
     .sort((a, b) => {
-      if (sort === "most-clicked") return (b.clickCount || 0) - (a.clickCount || 0);
+      if (sort === "most-clicked")
+        return (b.clickCount || 0) - (a.clickCount || 0);
       if (sort === "oldest")
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const getRelativeTime = (dateStr: string) => {
@@ -257,11 +299,13 @@ const MyLinks = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete Link", "حذف الرابط")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("Delete Link", "حذف الرابط")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 `Are you sure you want to delete "${deleteDialog.shortUrl}"? This action cannot be undone.`,
-                `هل أنت متأكد من حذف "${deleteDialog.shortUrl}"؟ لا يمكن التراجع عن هذا الإجراء.`
+                `هل أنت متأكد من حذف "${deleteDialog.shortUrl}"؟ لا يمكن التراجع عن هذا الإجراء.`,
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -305,8 +349,12 @@ const MyLinks = () => {
       <div className="flex items-center gap-3 mb-6">
         <div className="bg-background border border-border rounded-lg px-4 py-2.5 flex items-center gap-2 shrink-0">
           <Link2 className="w-4 h-4 text-primary" />
-          <span className="text-sm font-display font-bold text-foreground">{urls.length}</span>
-          <span className="text-xs text-muted-foreground font-body">{t("Links", "روابط")}</span>
+          <span className="text-sm font-display font-bold text-foreground">
+            {urls.length}
+          </span>
+          <span className="text-xs text-muted-foreground font-body">
+            {t("Links", "روابط")}
+          </span>
         </div>
         <div className="flex items-center gap-2 px-4 bg-background border border-border rounded-lg flex-1">
           <Search size={16} className="text-muted-foreground shrink-0" />
@@ -320,7 +368,9 @@ const MyLinks = () => {
         </div>
         <Select
           value={sort}
-          onValueChange={(v) => setSort(v as "latest" | "oldest" | "most-clicked")}
+          onValueChange={(v) =>
+            setSort(v as "latest" | "oldest" | "most-clicked")
+          }
         >
           <SelectTrigger className="w-auto shrink-0">
             <SelectValue />
@@ -328,7 +378,9 @@ const MyLinks = () => {
           <SelectContent>
             <SelectItem value="latest">{t("Latest", "الأحدث")}</SelectItem>
             <SelectItem value="oldest">{t("Oldest", "الأقدم")}</SelectItem>
-            <SelectItem value="most-clicked">{t("Most Clicked", "الأكثر ضغطاً")}</SelectItem>
+            <SelectItem value="most-clicked">
+              {t("Most Clicked", "الأكثر ضغطاً")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -344,7 +396,10 @@ const MyLinks = () => {
       {isError && !isLoading && (
         <div className="text-center py-12">
           <p className="text-sm text-destructive font-body">
-            {t("Failed to load links. Please try again.", "فشل تحميل الروابط. حاول مرة أخرى.")}
+            {t(
+              "Failed to load links. Please try again.",
+              "فشل تحميل الروابط. حاول مرة أخرى.",
+            )}
           </p>
         </div>
       )}
@@ -360,7 +415,10 @@ const MyLinks = () => {
             const clicks = url.clickCount || 0;
             const date = formatDate(url.createdAt);
             const relative = getRelativeTime(url.createdAt);
-            const hasPreview = url.metaData?.ogImage || url.metaData?.ogTitle || url.metaData?.ogDescription;
+            const hasPreview =
+              url.metaData?.ogImage ||
+              url.metaData?.ogTitle ||
+              url.metaData?.ogDescription;
 
             return (
               <div
@@ -378,14 +436,17 @@ const MyLinks = () => {
                             alt={url.metaData.ogTitle || name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                              (e.target as HTMLImageElement).parentElement!.innerHTML = `
-                                <div class="w-full h-full flex items-center justify-center bg-muted/50">
-                                  <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                  </svg>
-                                </div>
-                              `;
+                              (e.target as HTMLImageElement).style.display =
+                                "none";
+                              (
+                                e.target as HTMLImageElement
+                              ).parentElement!.innerHTML = `
+ <div class="w-full h-full flex items-center justify-center bg-muted/50">
+ <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+ </svg>
+ </div>
+ `;
                             }}
                           />
                         </div>
@@ -418,7 +479,9 @@ const MyLinks = () => {
                         )}
 
                         <div className="min-w-0 flex-1 overflow-hidden">
-                          <h3 className="font-body font-medium text-foreground text-sm truncate">{name}</h3>
+                          <h3 className="font-body font-medium text-foreground text-sm truncate">
+                            {name}
+                          </h3>
                           <p className="text-xs text-primary font-body flex items-center gap-1 mt-1 min-w-0">
                             <ExternalLink size={10} className="shrink-0" />
                             <a
@@ -433,15 +496,26 @@ const MyLinks = () => {
                               onClick={() => handleCopy(url)}
                               className="ml-1 text-muted-foreground hover:text-primary transition-colors"
                             >
-                              {copiedId === (url.customCode || url.shortCode || "") ? <Check size={12} /> : <Copy size={12} />}
+                              {copiedId ===
+                              (url.customCode || url.shortCode || "") ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
                             </button>
                           </p>
                           <p
                             className={`text-[11px] text-muted-foreground font-body mt-0.5 cursor-pointer hover:text-foreground transition-colors ${
-                              expandedDest.has(url._id) ? "break-all" : "truncate"
+                              expandedDest.has(url._id)
+                                ? "break-all"
+                                : "truncate"
                             }`}
                             onClick={() => toggleDest(url._id)}
-                            title={expandedDest.has(url._id) ? t("Click to collapse", "اضغط للطي") : t("Click to expand", "اضغط للتوسيع")}
+                            title={
+                              expandedDest.has(url._id)
+                                ? t("Click to collapse", "اضغط للطي")
+                                : t("Click to expand", "اضغط للتوسيع")
+                            }
                           >
                             {dest}
                           </p>
@@ -450,7 +524,9 @@ const MyLinks = () => {
                               <Tag className="w-2.5 h-2.5 text-primary shrink-0 mt-0.5" />
                               <p
                                 className={`text-[11px] text-primary/80 font-mono flex-1 min-w-0 ${
-                                  expandedDest.has(url._id) ? "break-all" : "truncate"
+                                  expandedDest.has(url._id)
+                                    ? "break-all"
+                                    : "truncate"
                                 }`}
                                 title={t("Final UTM URL", "رابط UTM النهائي")}
                               >
@@ -465,7 +541,11 @@ const MyLinks = () => {
                                 className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
                                 title={t("Copy UTM URL", "نسخ رابط UTM")}
                               >
-                                {copiedUtmId === url._id ? <Check size={11} /> : <Copy size={11} />}
+                                {copiedUtmId === url._id ? (
+                                  <Check size={11} />
+                                ) : (
+                                  <Copy size={11} />
+                                )}
                               </button>
                             </div>
                           )}
@@ -474,14 +554,20 @@ const MyLinks = () => {
 
                       <div className="flex items-center gap-4 justify-between lg:justify-end w-full lg:w-auto">
                         <div className="text-center">
-                          <p className="text-lg font-display font-bold text-foreground">{clicks}</p>
+                          <p className="text-lg font-display font-bold text-foreground">
+                            {clicks}
+                          </p>
                           <p className="text-[10px] text-muted-foreground font-body">
                             {t("clicks", "ضغطات")}
                           </p>
                         </div>
                         <div className="text-center hidden sm:block">
-                          <p className="text-xs font-body text-muted-foreground">{date}</p>
-                          <p className="text-[10px] text-muted-foreground font-body">{relative}</p>
+                          <p className="text-xs font-body text-muted-foreground">
+                            {date}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground font-body">
+                            {relative}
+                          </p>
                         </div>
 
                         <div className="flex items-center gap-1.5">
@@ -490,7 +576,10 @@ const MyLinks = () => {
                             size="sm"
                             className="h-8 px-2.5"
                             onClick={() => handleOpenEditDest(url)}
-                            title={t("Change Destination URL", "تغيير رابط الوجهة")}
+                            title={t(
+                              "Change Destination URL",
+                              "تغيير رابط الوجهة",
+                            )}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </Button>
@@ -502,7 +591,7 @@ const MyLinks = () => {
                                 "h-8 px-2.5",
                                 url.qrCodeGenerated
                                   ? "text-primary border-primary/40 hover:bg-primary/5"
-                                  : "border-orange-300 hover:border-orange-400 hover:bg-orange-50 dark:border-orange-500/40 dark:hover:bg-orange-500/10"
+                                  : "border-orange-300 hover:border-orange-400 hover:bg-orange-50 dark:border-orange-500/40 dark:hover:bg-orange-500/10",
                               )}
                               onClick={() => {
                                 if (url.qrCodeGenerated) {
@@ -510,7 +599,9 @@ const MyLinks = () => {
                                   navigate("/dashboard/qr-codes");
                                 } else {
                                   // QR not yet created — go to creation page with this link pre-selected
-                                  navigate(`/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`);
+                                  navigate(
+                                    `/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`,
+                                  );
                                 }
                               }}
                               title={
@@ -519,7 +610,12 @@ const MyLinks = () => {
                                   : t("Generate QR Code", "إنشاء كود QR")
                               }
                             >
-                              <QrCode className={cn("w-3.5 h-3.5", !url.qrCodeGenerated && "text-orange-400")} />
+                              <QrCode
+                                className={cn(
+                                  "w-3.5 h-3.5",
+                                  !url.qrCodeGenerated && "text-orange-400",
+                                )}
+                              />
                             </Button>
                             {!url.qrCodeGenerated && (
                               <span className="absolute -top-1 -right-1 flex h-2 w-2">
@@ -532,7 +628,9 @@ const MyLinks = () => {
                             variant="outline"
                             size="sm"
                             className="h-8 px-2.5"
-                            onClick={() => navigate(`/dashboard/analytics/${url._id}`)}
+                            onClick={() =>
+                              navigate(`/dashboard/analytics/${url._id}`)
+                            }
                           >
                             <BarChart3 className="w-3.5 h-3.5" />
                           </Button>
@@ -565,17 +663,25 @@ const MyLinks = () => {
           <Link2 className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground font-body">
             {urls.length === 0
-              ? t("No links yet. Create your first link!", "لا توجد روابط بعد. أنشئ رابطك الأول!")
+              ? t(
+                  "No links yet. Create your first link!",
+                  "لا توجد روابط بعد. أنشئ رابطك الأول!",
+                )
               : t("No links found", "لا توجد روابط")}
           </p>
         </div>
       )}
 
       {/* Edit Destination Dialog */}
-      <Dialog open={!!editDestTarget} onOpenChange={(open) => !open && setEditDestTarget(null)}>
+      <Dialog
+        open={!!editDestTarget}
+        onOpenChange={(open) => !open && setEditDestTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("Change Destination URL", "تغيير رابط الوجهة")}</DialogTitle>
+            <DialogTitle>
+              {t("Change Destination URL", "تغيير رابط الوجهة")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             {/* Conditional warning — only when a QR code is associated */}
@@ -585,7 +691,7 @@ const MyLinks = () => {
                 <p className="text-sm text-amber-800 dark:text-amber-200">
                   {t(
                     "This short link has an associated QR code. Both the short link and its QR code will point to the new destination immediately — anyone visiting the short link directly or scanning the QR code will be redirected to the new URL.",
-                    "يرتبط بهذا الرابط المختصر كود QR. سيشير كلٌّ من الرابط المختصر وكود QR إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يزور الرابط مباشرةً أو يمسح الكود إلى الرابط الجديد."
+                    "يرتبط بهذا الرابط المختصر كود QR. سيشير كلٌّ من الرابط المختصر وكود QR إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يزور الرابط مباشرةً أو يمسح الكود إلى الرابط الجديد.",
                   )}
                 </p>
               </div>
@@ -618,7 +724,7 @@ const MyLinks = () => {
                 <span className="text-sm text-foreground">
                   {t(
                     "I understand that both the short link and its QR code will redirect to the new destination immediately",
-                    "أفهم أن كلاً من الرابط المختصر وكود QR سيُوجَّهان إلى الوجهة الجديدة فوراً"
+                    "أفهم أن كلاً من الرابط المختصر وكود QR سيُوجَّهان إلى الوجهة الجديدة فوراً",
                   )}
                 </span>
               </label>
@@ -635,7 +741,9 @@ const MyLinks = () => {
                 (editDestTarget?.qrCodeGenerated && !editDestAcknowledged)
               }
             >
-              {editDestSaving && <Loader2 className="w-4 h-4 animate-spin me-2" />}
+              {editDestSaving && (
+                <Loader2 className="w-4 h-4 animate-spin me-2" />
+              )}
               {t("Save", "حفظ")}
             </Button>
           </DialogFooter>

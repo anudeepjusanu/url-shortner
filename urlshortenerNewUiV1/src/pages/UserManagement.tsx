@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, UserPlus, Link2, CalendarDays, Trash2, Search, BarChart3, Loader2, MapPin } from "lucide-react";
+import {
+  Users, UserPlus, Link2, CalendarDays, Trash2, Search,
+  BarChart3, Loader2, MapPin, Globe, Phone,
+} from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import DateRangeFilter, { DatePreset } from "@/components/DateRangeFilter";
 
 type Role = "super_admin" | "admin" | "user" | "viewer";
 
@@ -35,6 +39,7 @@ interface AdminUser {
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
+  phone?: string;
   urlCount?: number;
   registrationLocation?: {
     country?: string;
@@ -44,13 +49,6 @@ interface AdminUser {
     urlsCreatedTotal?: number;
   };
 }
-
-const roleLabels: Record<string, string> = {
-  super_admin: "Super Admin",
-  admin: "Admin",
-  user: "User",
-  viewer: "Viewer",
-};
 
 const roleBadgeColors: Record<string, string> = {
   super_admin: "bg-destructive/10 text-destructive",
@@ -64,19 +62,16 @@ const UserManagement = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Stats from /admin/stats
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    newUsersLast30Days: 0,
-    totalUrls: 0,
-    activeUsers: 0,
-    usersWithLinks: 0,
-    avgLinksPerUser: 0,
+  const [globalStats, setGlobalStats] = useState({
+    totalDomains: 0,
   });
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; name: string }>({
@@ -95,14 +90,8 @@ const UserManagement = () => {
       ]);
       setUsers(usersRes?.data?.users ?? []);
       const overview = statsRes?.data?.overview ?? {};
-      const growth = statsRes?.data?.growth ?? {};
-      setStats({
-        totalUsers: overview.totalUsers ?? 0,
-        newUsersLast30Days: growth.newUsersLast30Days ?? 0,
-        totalUrls: overview.totalUrls ?? 0,
-        activeUsers: overview.activeUsers ?? 0,
-        usersWithLinks: overview.usersWithLinks ?? 0,
-        avgLinksPerUser: overview.avgLinksPerUser ?? 0,
+      setGlobalStats({
+        totalDomains: overview.totalDomains ?? 0,
       });
     } catch {
       setIsError(true);
@@ -113,14 +102,42 @@ const UserManagement = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const filtered = users.filter((u) => {
-    const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
-    const matchSearch =
-      name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === "all" || u.role === roleFilter;
-    return matchSearch && matchRole;
-  });
+  const filtered = useMemo(() => {
+    return users.filter((u) => {
+      const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
+      const matchSearch =
+        name.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase());
+      const matchRole = roleFilter === "all" || u.role === roleFilter;
+
+      let matchDate = true;
+      if (fromDate || toDate) {
+        const userDate = new Date(u.createdAt);
+        userDate.setHours(0, 0, 0, 0);
+        if (fromDate) {
+          const from = new Date(fromDate);
+          from.setHours(0, 0, 0, 0);
+          if (userDate < from) matchDate = false;
+        }
+        if (toDate) {
+          const to = new Date(toDate);
+          to.setHours(23, 59, 59, 999);
+          if (userDate > to) matchDate = false;
+        }
+      }
+
+      return matchSearch && matchRole && matchDate;
+    });
+  }, [users, search, roleFilter, fromDate, toDate]);
+
+  const filteredStats = useMemo(() => {
+    const totalUsers = filtered.length;
+    const activeUsers = filtered.filter(u => u.isActive).length;
+    const usersWithLinks = filtered.filter(u => (u.usage?.urlsCreatedTotal ?? u.urlCount ?? 0) > 0).length;
+    const totalLinks = filtered.reduce((sum, u) => sum + (u.usage?.urlsCreatedTotal ?? u.urlCount ?? 0), 0);
+    const avgLinksPerUser = totalUsers > 0 ? Math.round((totalLinks / totalUsers) * 10) / 10 : 0;
+    return { totalUsers, activeUsers, usersWithLinks, avgLinksPerUser, totalLinks };
+  }, [filtered]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setUpdatingId(userId);
@@ -130,10 +147,11 @@ const UserManagement = () => {
         prev.map((u) => (u._id === userId ? { ...u, role: newRole as Role } : u))
       );
       toast({ title: t("Role updated", "تم تحديث الدور") });
-    } catch (err: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: t("Update failed", "فشل التحديث"),
-        description: err.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -149,10 +167,11 @@ const UserManagement = () => {
       await adminService.deleteUser(deleteDialog.id);
       setUsers((prev) => prev.filter((u) => u._id !== deleteDialog.id));
       toast({ title: t("User deleted", "تم حذف المستخدم") });
-    } catch (err: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: t("Delete failed", "فشل الحذف"),
-        description: err.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -166,10 +185,11 @@ const UserManagement = () => {
   };
 
   const statCards = [
-    { label: t("Number of Signups", "عدد المُسجّلين"), value: stats.totalUsers, icon: Users },
-    { label: t("Users With Links", "مستخدمون لديهم روابط"), value: stats.usersWithLinks, icon: Link2 },
-    { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: stats.avgLinksPerUser, icon: BarChart3 },
-    { label: t("New Users (30d)", "مستخدمون جدد (30 يوم)"), value: stats.newUsersLast30Days, icon: UserPlus },
+    { label: t("Number of Signups", "عدد المُسجّلين"), value: filteredStats.totalUsers, icon: Users },
+    { label: t("Users With Links", "مستخدمون لديهم روابط"), value: filteredStats.usersWithLinks, icon: Link2 },
+    { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: filteredStats.avgLinksPerUser, icon: BarChart3 },
+    { label: t("Active Users", "المستخدمون النشطون"), value: filteredStats.activeUsers, icon: UserPlus },
+    { label: t("Total Domains", "إجمالي النطاقات"), value: globalStats.totalDomains, icon: Globe },
   ];
 
   return (
@@ -205,8 +225,21 @@ const UserManagement = () => {
         {t("User Management", "إدارة المستخدمين")}
       </h1>
 
+      {/* Date Filter — placed above stats */}
+      <div className="mb-6">
+        <DateRangeFilter
+          value={datePreset}
+          range={{ fromDate, toDate }}
+          onChange={(preset, range) => {
+            setDatePreset(preset);
+            setFromDate(range.fromDate);
+            setToDate(range.toDate);
+          }}
+        />
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {statCards.map((s) => (
           <div key={s.label} className="bg-background border border-border rounded-xl p-5">
             <div className="flex items-center gap-3 mb-3">
@@ -299,6 +332,12 @@ const UserManagement = () => {
                   <div className="space-y-2 text-xs font-body text-muted-foreground">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
+                        <Phone className="w-3 h-3" /> {t("Phone", "الهاتف")}
+                      </span>
+                      <span className="text-foreground">{user.phone || "—"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
                         <CalendarDays className="w-3 h-3" /> {t("Signup", "تسجيل")}
                       </span>
                       <span className="text-foreground">{formatDate(user.createdAt)}</span>
@@ -360,7 +399,7 @@ const UserManagement = () => {
             <div className="text-center py-12 text-muted-foreground font-body text-sm">
               {users.length === 0
                 ? t("No users found.", "لا يوجد مستخدمون.")
-                : t("No users match your search.", "لا يوجد مستخدمون مطابقون.")}
+                : t("No users match your filters.", "لا يوجد مستخدمون مطابقون للمعايير.")}
             </div>
           )}
         </>

@@ -20,7 +20,6 @@ const handleValidationErrors = (req, res, next) => {
 const validateRegistration = [
   body('email')
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('phone')
     .notEmpty()
@@ -48,7 +47,6 @@ const validateRegistration = [
 const validateLogin = [
   body('email')
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('password')
     .notEmpty()
@@ -71,7 +69,6 @@ const validatePasswordChange = [
 const validateForgotPassword = [
   body('email')
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   handleValidationErrors
 ];
@@ -91,7 +88,6 @@ const validateResetPassword = [
 const validateVerifyPasswordResetOTP = [
   body('email')
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('otp')
     .notEmpty()
@@ -104,7 +100,6 @@ const validateVerifyPasswordResetOTP = [
 const validateResetPasswordWithOTP = [
   body('email')
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please enter a valid email'),
   body('newPassword')
     .isLength({ min: 8 })
@@ -344,6 +339,10 @@ const validateAdminUserUpdate = [
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Please enter a valid email'),
   body('limits.monthlyUrls')
     .optional()
     .isInt({ min: 0 })

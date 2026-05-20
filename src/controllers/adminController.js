@@ -1,8 +1,11 @@
 const User = require('../models/User');
 const Url = require('../models/Url');
+const Domain = require('../models/Domain');
+const BioPage = require('../models/BioPage');
 const Organization = require('../models/Organization');
 const { Click } = require('../models/Analytics');
 const { cacheDel } = require('../config/redis');
+const { normalizeEmail } = require('../utils/normalizeEmail');
 
 const getSystemStats = async (req, res) => {
   try {
@@ -11,6 +14,8 @@ const getSystemStats = async (req, res) => {
       totalUrls,
       totalClicks,
       totalOrganizations,
+      totalDomains,
+      totalBioPages,
       activeUsers,
       usersWithLinks,
       recentUsers,
@@ -20,6 +25,8 @@ const getSystemStats = async (req, res) => {
       Url.countDocuments(),
       Click.countDocuments({ isBot: { $ne: true } }),
       Organization.countDocuments(),
+      Domain.countDocuments(),
+      BioPage.countDocuments(),
       User.countDocuments({
         lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
       }),
@@ -38,16 +45,18 @@ const getSystemStats = async (req, res) => {
     const [
       newUsersLast30Days,
       newUrlsLast30Days,
+      newBioPagesLast30Days,
       clicksLast30Days
     ] = await Promise.all([
       User.countDocuments({ createdAt: { $gte: last30Days } }),
       Url.countDocuments({ createdAt: { $gte: last30Days } }),
-      Click.countDocuments({ 
+      BioPage.countDocuments({ createdAt: { $gte: last30Days } }),
+      Click.countDocuments({
         timestamp: { $gte: last30Days },
         isBot: { $ne: true }
       })
     ]);
-    
+
     res.json({
       success: true,
       data: {
@@ -56,6 +65,8 @@ const getSystemStats = async (req, res) => {
           totalUrls,
           totalClicks,
           totalOrganizations,
+          totalDomains,
+          totalBioPages,
           activeUsers,
           usersWithLinks,
           avgLinksPerUser
@@ -63,6 +74,7 @@ const getSystemStats = async (req, res) => {
         growth: {
           newUsersLast30Days,
           newUrlsLast30Days,
+          newBioPagesLast30Days,
           clicksLast30Days
         },
         recentUsers,
@@ -86,6 +98,8 @@ const getUsers = async (req, res) => {
       search,
       role,
       isActive,
+      startDate,
+      endDate,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -107,6 +121,12 @@ const getUsers = async (req, res) => {
     
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
+    }
+    
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
     
     const sortOptions = {};
@@ -155,8 +175,8 @@ const getUsers = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role, isActive, limits } = req.body;
-    
+    const { role, isActive, limits, email } = req.body;
+
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -164,15 +184,24 @@ const updateUser = async (req, res) => {
         message: 'User not found'
       });
     }
-    
+
+    // Only super admins can edit another super admin's profile
+    if (user.role === 'super_admin' && req.user?.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only super admins can edit super admin profiles'
+      });
+    }
+
     const updateData = {};
     if (role !== undefined) updateData.role = role;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (limits !== undefined) updateData.limits = { ...user.limits, ...limits };
-    
+    if (email !== undefined) updateData.email = normalizeEmail(email);
+
     const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true })
       .populate('organization', 'name slug');
-    
+
     res.json({
       success: true,
       message: 'User updated successfully',
@@ -190,7 +219,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -198,19 +227,19 @@ const deleteUser = async (req, res) => {
         message: 'User not found'
       });
     }
-    
-    if (user.role === 'admin') {
+
+    if (user.role === 'super_admin') {
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete admin user'
+        message: 'Cannot delete super admin user'
       });
     }
-    
+
     await Promise.all([
       User.findByIdAndDelete(id),
       Url.updateMany({ creator: id }, { isActive: false })
     ]);
-    
+
     res.json({
       success: true,
       message: 'User deleted successfully'
@@ -224,6 +253,93 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const bulkDeleteUsers = async (req, res) => {
+  try {
+    const { emails, ids } = req.body;
+
+    const targetIds = new Set();
+    const notFound = [];
+    const errors = [];
+
+    // Resolve emails to user IDs (case-insensitive exact match)
+    if (emails && Array.isArray(emails) && emails.length > 0) {
+      for (const email of emails) {
+        const normalized = normalizeEmail(email);
+        const user = await User.findOne({ email: normalized });
+        if (user) {
+          targetIds.add(String(user._id));
+        } else {
+          notFound.push({ type: 'email', value: email });
+        }
+      }
+    }
+
+    // Add direct IDs
+    if (ids && Array.isArray(ids) && ids.length > 0) {
+      for (const id of ids) {
+        const user = await User.findById(id);
+        if (user) {
+          targetIds.add(String(user._id));
+        } else {
+          notFound.push({ type: 'id', value: id });
+        }
+      }
+    }
+
+    if (targetIds.size === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid users found to delete',
+        data: { notFound }
+      });
+    }
+
+    const deleted = [];
+
+    for (const userId of targetIds) {
+      try {
+        const user = await User.findById(userId);
+        if (!user) {
+          notFound.push({ type: 'id', value: userId });
+          continue;
+        }
+
+        if (user.role === 'super_admin') {
+          errors.push({ id: userId, email: user.email, reason: 'Cannot delete super admin user' });
+          continue;
+        }
+
+        await Promise.all([
+          User.findByIdAndDelete(userId),
+          Url.updateMany({ creator: userId }, { isActive: false }),
+          BioPage.updateMany({ owner: userId }, { isActive: false })
+        ]);
+
+        deleted.push({ id: userId, email: user.email });
+      } catch (err) {
+        errors.push({ id: userId, reason: err.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `${deleted.length} user(s) deleted successfully`,
+      data: {
+        deleted,
+        notFound,
+        errors
+      }
+    });
+  } catch (error) {
+    console.error('Bulk delete users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to bulk delete users',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 const getAllUrls = async (req, res) => {
   try {
     const {
@@ -232,6 +348,8 @@ const getAllUrls = async (req, res) => {
       search,
       isActive,
       creator,
+      startDate,
+      endDate,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -299,6 +417,12 @@ const getAllUrls = async (req, res) => {
     // Filter by status
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
+    }
+    
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
     
     const sortOptions = {};
@@ -425,6 +549,133 @@ const deleteUrl = async (req, res) => {
   }
 };
 
+const getAllBioPages = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      owner,
+      startDate,
+      endDate,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+    const filter = {};
+
+    if (search && search.trim()) {
+      const escapedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { username: { $regex: escapedSearch, $options: 'i' } }
+      ];
+    }
+
+    if (owner) {
+      filter.owner = owner;
+    }
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    const [bioPages, total] = await Promise.all([
+      BioPage.find(filter)
+        .populate('owner', 'firstName lastName email')
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(parseInt(limit)),
+      BioPage.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        bioPages,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get all bio pages error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch bio pages'
+    });
+  }
+};
+
+const updateBioPage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    const bioPage = await BioPage.findById(id);
+    if (!bioPage) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bio page not found'
+      });
+    }
+
+    const updateData = {};
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const updatedBioPage = await BioPage.findByIdAndUpdate(id, updateData, { new: true })
+      .populate('owner', 'firstName lastName email');
+
+    res.json({
+      success: true,
+      message: 'Bio page updated successfully',
+      data: { bioPage: updatedBioPage }
+    });
+  } catch (error) {
+    console.error('Update bio page error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update bio page'
+    });
+  }
+};
+
+const deleteBioPage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const bioPage = await BioPage.findById(id);
+    if (!bioPage) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bio page not found'
+      });
+    }
+
+    await BioPage.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Bio page deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete bio page error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete bio page'
+    });
+  }
+};
+
 const getOrganizations = async (req, res) => {
   try {
     const {
@@ -488,8 +739,12 @@ module.exports = {
   getUsers,
   updateUser,
   deleteUser,
+  bulkDeleteUsers,
   getAllUrls,
   updateUrl,
   deleteUrl,
+  getAllBioPages,
+  updateBioPage,
+  deleteBioPage,
   getOrganizations
 };

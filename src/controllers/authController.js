@@ -11,6 +11,7 @@ const {
   getLocationFromIP,
   getClientIP,
 } = require("../services/geoLocationService");
+const { normalizeEmail } = require("../utils/normalizeEmail");
 
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
@@ -56,11 +57,13 @@ const generateTokens = (userId) => {
 };
 
 const sendRegistrationOTP = async (req, res) => {
+
   try {
     const { email, phone } = req.body;
+    const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
-    if (!email) {
+    if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -68,11 +71,10 @@ const sendRegistrationOTP = async (req, res) => {
     }
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
-        console.log("Account linking: Allowing OTP for existing Google account");
         // Continue with OTP flow to allow account linking
       } else {
         // User already has a complete account
@@ -85,8 +87,8 @@ const sendRegistrationOTP = async (req, res) => {
 
     const otp = generateOtpCode();
 
-    // Store OTP in cache with email as key for 5 minutes
-    const otpKey = `registration_otp:${email}`;
+    // Store OTP in cache with normalized email as key for 5 minutes
+    const otpKey = `registration_otp:${normalizedEmail}`;
     await cacheSet(otpKey, otp, 5 * 60); // 5 minutes TTL
 
     // Determine method based on available contact info
@@ -94,23 +96,23 @@ const sendRegistrationOTP = async (req, res) => {
     const targetPhone = normalizedPhone || undefined;
 
     // Send OTP via SMS or email (Authentica handles fallback)
-    await otpService.sendOtp({ email, phone: targetPhone, otp, method });
+    await otpService.sendOtp({ email: normalizedEmail, phone: targetPhone, otp, method });
 
     const message = normalizedPhone
       ? "OTP sent to your phone number. Please verify to complete registration."
       : "OTP sent to your email. Please verify to complete registration.";
 
+
     return res.status(200).json({
       success: true,
       message,
       data: {
-        email,
+        email: normalizedEmail,
         phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
         otpSent: true,
       },
     });
   } catch (error) {
-    console.error("Send registration OTP error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to send OTP",
@@ -119,13 +121,38 @@ const sendRegistrationOTP = async (req, res) => {
   }
 };
 
+const checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+    const user = await User.findOne({ email: normalizedEmail });
+    return res.json({
+      success: true,
+      exists: !!user,
+      hasPassword: user ? !!user.password : false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to check email",
+    });
+  }
+};
+
 const register = async (req, res) => {
-  console.log("Registration request body:", req.body);
+
   try {
     const { email, password, fullName, phone, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
 
-    if (!email) {
+    if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -133,12 +160,11 @@ const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       // If user has a Google account but no password, allow them to add password (account linking)
       if (existingUser.googleId && !existingUser.password) {
         // This is account linking - allow them to add password to their Google account
-        console.log("Account linking: Adding password to existing Google account");
         // Continue with the flow to add password
       } else {
         // User already has a complete account (either manual or Google with password)
@@ -155,8 +181,8 @@ const register = async (req, res) => {
         const generatedOtp = generateOtpCode();
 
         // Store both OTP and registration data in cache for 5 minutes
-        const otpKey = `registration_otp:${email}`;
-        const dataKey = `registration_data:${email}`;
+        const otpKey = `registration_otp:${normalizedEmail}`;
+        const dataKey = `registration_data:${normalizedEmail}`;
 
         // Hash the password before caching so plaintext is never persisted in Redis
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -164,7 +190,7 @@ const register = async (req, res) => {
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
         await cacheSet(
           dataKey,
-          JSON.stringify({ email, hashedPassword, fullName, phone: normalizedPhone }),
+          JSON.stringify({ email: normalizedEmail, hashedPassword, fullName, phone: normalizedPhone }),
           5 * 60,
         );
 
@@ -174,7 +200,7 @@ const register = async (req, res) => {
 
         // Send OTP via SMS or email (Authentica handles fallback)
         await otpService.sendOtp({
-          email,
+          email: normalizedEmail,
           phone: targetPhone,
           otp: generatedOtp,
           method,
@@ -184,17 +210,17 @@ const register = async (req, res) => {
           ? "OTP sent to your phone number. Please verify to complete registration."
           : "OTP sent to your email. Please verify to complete registration.";
 
+
         return res.status(202).json({
           success: true,
           message,
           data: {
             otpSent: true,
-            email,
+            email: normalizedEmail,
             phone: normalizedPhone ? maskPhone(normalizedPhone) : undefined,
           },
         });
       } catch (err) {
-        console.error("Send registration OTP error:", err);
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -204,8 +230,8 @@ const register = async (req, res) => {
       }
     } else {
       // Verify OTP from cache
-      const otpKey = `registration_otp:${email}`;
-      const dataKey = `registration_data:${email}`;
+      const otpKey = `registration_otp:${normalizedEmail}`;
+      const dataKey = `registration_data:${normalizedEmail}`;
 
       const storedOtp = await cacheGet(otpKey);
       const storedData = await cacheGet(dataKey);
@@ -233,19 +259,18 @@ const register = async (req, res) => {
 
       // Check again if user exists (for account linking scenario)
       const existingUserForLinking = await User.findOne({ email: registrationData.email });
-      
+
       let user;
       if (existingUserForLinking && existingUserForLinking.googleId && !existingUserForLinking.password) {
         // Account linking: Add password to existing Google account
-        console.log("Linking password to existing Google account:", existingUserForLinking.email);
-        
+
         existingUserForLinking.password = registrationData.hashedPassword;
-        
+
         // Update phone if provided and not already set
         if (registrationData.phone && !existingUserForLinking.phone) {
           existingUserForLinking.phone = registrationData.phone;
         }
-        
+
         // Update name if not already set
         if (registrationData.fullName) {
           const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
@@ -256,19 +281,16 @@ const register = async (req, res) => {
             existingUserForLinking.lastName = nameParts.slice(1).join(" ");
           }
         }
-        
+
         await existingUserForLinking.save();
         user = existingUserForLinking;
-        console.log("Account linked successfully:", user.email);
       } else {
         // Get user's location from IP
         const clientIP = getClientIP(req);
         let registrationLocation = null;
         try {
           registrationLocation = await getLocationFromIP(clientIP);
-          console.log("User registration location:", registrationLocation);
         } catch (locError) {
-          console.error("Failed to get location:", locError.message);
         }
 
         // Split fullName into firstName / lastName for the schema
@@ -276,7 +298,6 @@ const register = async (req, res) => {
         const firstName = nameParts[0] || registrationData.fullName;
         const lastName = nameParts.slice(1).join(" ") || undefined;
 
-        console.log("Creating user with email:", registrationData.email);
         user = new User({
           email: registrationData.email,
           password: registrationData.hashedPassword,
@@ -288,24 +309,22 @@ const register = async (req, res) => {
         });
 
         await user.save();
-        console.log("User created:", user);
       }
 
       // Send welcome email to user
       try {
         await emailService.sendWelcomeEmail(user);
       } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError);
       }
 
       // Send admin notification
       try {
         await emailService.sendAdminNotification(user);
       } catch (emailError) {
-        console.error("Failed to send admin notification:", emailError);
       }
 
       const { accessToken, refreshToken } = generateTokens(user._id);
+
 
       res.status(201).json({
         success: true,
@@ -326,7 +345,6 @@ const register = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Registration error:", error);
     res.status(500).json({
       success: false,
       message: "Registration failed",
@@ -336,10 +354,12 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+
   try {
     const { email, password, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email: normalizedEmail }).select("+password");
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -392,6 +412,7 @@ const login = async (req, res) => {
           method: "email",
         });
 
+
         return res.status(202).json({
           success: true,
           message: "OTP sent to your email. Please verify.",
@@ -402,7 +423,6 @@ const login = async (req, res) => {
           },
         });
       } catch (err) {
-        console.error("Send OTP error:", err);
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -434,7 +454,6 @@ const login = async (req, res) => {
         // Clear OTP from cache after successful verification
         await cacheDel(otpKey);
       } catch (err) {
-        console.error("OTP verification error:", err);
         return res.status(401).json({
           success: false,
           message: "OTP verification failed",
@@ -443,7 +462,8 @@ const login = async (req, res) => {
         });
       }
     }
-    console.log("Authenticated user:", user);
+
+
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -463,7 +483,6 @@ const login = async (req, res) => {
           user.registrationLocation = location;
         }
       } catch (locError) {
-        console.error("Failed to capture login location:", locError.message);
       }
     }
 
@@ -481,6 +500,7 @@ const login = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
+
 
     res.json({
       success: true,
@@ -502,7 +522,6 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
     res.status(500).json({
       success: false,
       message: "Login failed",
@@ -512,6 +531,7 @@ const login = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
+
   try {
     const { refreshToken } = req.body;
 
@@ -536,6 +556,7 @@ const refreshToken = async (req, res) => {
       user._id,
     );
 
+
     res.json({
       success: true,
       data: {
@@ -544,7 +565,6 @@ const refreshToken = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Token refresh error:", error);
     res.status(401).json({
       success: false,
       message: "Invalid refresh token",
@@ -553,17 +573,18 @@ const refreshToken = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+
   try {
     const userId = req.user.id;
 
     await cacheDel(`user:${userId}`);
+
 
     res.json({
       success: true,
       message: "Logged out successfully",
     });
   } catch (error) {
-    console.error("Logout error:", error);
     res.status(500).json({
       success: false,
       message: "Logout failed",
@@ -572,6 +593,7 @@ const logout = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
+
   try {
     const user = await User.findById(req.user.id)
       .populate("organization", "name slug")
@@ -583,6 +605,7 @@ const getProfile = async (req, res) => {
         message: "User not found",
       });
     }
+
 
     // Return user data directly for frontend compatibility
     res.json({
@@ -600,7 +623,6 @@ const getProfile = async (req, res) => {
       data: { user },
     });
   } catch (error) {
-    console.error("Get profile error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch profile",
@@ -609,6 +631,7 @@ const getProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+
   try {
     const { firstName, lastName, phone, company, jobTitle, preferences } =
       req.body;
@@ -668,6 +691,7 @@ const updateProfile = async (req, res) => {
 
     await cacheDel(`user:${updatedUser._id}`);
 
+
     res.json({
       success: true,
       message: "Profile updated successfully",
@@ -680,7 +704,6 @@ const updateProfile = async (req, res) => {
       data: { user: updatedUser },
     });
   } catch (error) {
-    console.error("Update profile error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update profile",
@@ -689,6 +712,7 @@ const updateProfile = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
+
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -712,12 +736,12 @@ const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
+
     res.json({
       success: true,
       message: "Password changed successfully",
     });
   } catch (error) {
-    console.error("Change password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to change password",
@@ -726,10 +750,12 @@ const changePassword = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+
   try {
     const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.json({
         success: true,
@@ -746,6 +772,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
+
     res.json({
       success: true,
       message: "If the email exists, a password reset link has been sent",
@@ -753,7 +780,6 @@ const forgotPassword = async (req, res) => {
         process.env.NODE_ENV === "development" ? resetToken : undefined,
     });
   } catch (error) {
-    console.error("Forgot password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to process password reset request",
@@ -762,6 +788,7 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
+
   try {
     const { token, newPassword } = req.body;
 
@@ -785,12 +812,12 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
+
     res.json({
       success: true,
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
@@ -800,14 +827,15 @@ const resetPassword = async (req, res) => {
 
 // Send password reset OTP
 const sendPasswordResetOTP = async (req, res) => {
+
   try {
     const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     if (process.env.NODE_ENV === "development") {
-      console.log("📧 Password reset OTP requested for:", email);
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       // Return success even if user doesn't exist (security best practice)
       return res.json({
@@ -819,21 +847,17 @@ const sendPasswordResetOTP = async (req, res) => {
     // Generate 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // Store OTP in cache with email as key for 10 minutes
-    const otpKey = `password_reset_otp:${email}`;
+    // Store OTP in cache with normalized email as key for 10 minutes
+    const otpKey = `password_reset_otp:${normalizedEmail}`;
     await cacheSet(otpKey, otp, 10 * 60); // 10 minutes TTL
 
     if (process.env.NODE_ENV === "development") {
-      console.log("🔢 Generated OTP:", otp);
-      console.log("💾 OTP stored in cache with key:", otpKey);
     }
 
     // Send OTP via email
     try {
-      await otpService.sendOtp({ email, otp, method: "email" });
-      console.log("✅ OTP sent via Authentica");
+      await otpService.sendOtp({ email: normalizedEmail, otp, method: "email" });
     } catch (emailError) {
-      console.error("❌ Failed to send OTP email:", emailError);
       // Continue even if email fails in development
       if (process.env.NODE_ENV !== "development") {
         throw emailError;
@@ -850,15 +874,11 @@ const sendPasswordResetOTP = async (req, res) => {
     if (process.env.NODE_ENV === "development") {
       responseData.otp = otp;
       responseData.debug = true;
-      console.log("\n🔐 ===== PASSWORD RESET OTP =====");
-      console.log("📧 Email:", email);
-      console.log("🔢 OTP Code:", otp);
-      console.log("================================\n");
     }
+
 
     res.json(responseData);
   } catch (error) {
-    console.error("Send password reset OTP error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to send verification code",
@@ -868,11 +888,13 @@ const sendPasswordResetOTP = async (req, res) => {
 
 // Verify password reset OTP
 const verifyPasswordResetOTP = async (req, res) => {
+
   try {
     const { email, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Verify OTP
-    const otpKey = `password_reset_otp:${email}`;
+    const otpKey = `password_reset_otp:${normalizedEmail}`;
     const storedOtp = await cacheGet(otpKey);
 
     if (!storedOtp || storedOtp !== otp) {
@@ -886,15 +908,15 @@ const verifyPasswordResetOTP = async (req, res) => {
     await cacheDel(otpKey);
 
     // Store verified flag for 10 minutes (to allow password reset)
-    const verifiedKey = `password_reset_verified:${email}`;
+    const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     await cacheSet(verifiedKey, "true", 10 * 60); // 10 minutes TTL
+
 
     res.json({
       success: true,
       message: "OTP verified successfully",
     });
   } catch (error) {
-    console.error("Verify password reset OTP error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to verify OTP",
@@ -904,11 +926,13 @@ const verifyPasswordResetOTP = async (req, res) => {
 
 // Reset password with OTP
 const resetPasswordWithOTP = async (req, res) => {
+
   try {
     const { email, newPassword } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Check if OTP was verified (stored in verified cache)
-    const verifiedKey = `password_reset_verified:${email}`;
+    const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     const isVerified = await cacheGet(verifiedKey);
 
     if (!isVerified) {
@@ -919,7 +943,7 @@ const resetPasswordWithOTP = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -943,12 +967,12 @@ const resetPasswordWithOTP = async (req, res) => {
     // Clear verified flag from cache
     await cacheDel(verifiedKey);
 
+
     res.json({
       success: true,
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset password with OTP error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
@@ -957,6 +981,7 @@ const resetPasswordWithOTP = async (req, res) => {
 };
 
 const loginWithPhoneOtp = async (req, res) => {
+
   try {
     const { phoneNumber, otp } = req.body;
 
@@ -1001,6 +1026,7 @@ const loginWithPhoneOtp = async (req, res) => {
           method: "sms",
         });
 
+
         return res.status(202).json({
           success: true,
           message: "OTP sent to your phone number. Please verify.",
@@ -1011,7 +1037,6 @@ const loginWithPhoneOtp = async (req, res) => {
           },
         });
       } catch (err) {
-        console.error("Send phone OTP error:", err);
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP",
@@ -1060,7 +1085,6 @@ const loginWithPhoneOtp = async (req, res) => {
           user.registrationLocation = location;
         }
       } catch (locError) {
-        console.error("Failed to capture login location:", locError.message);
       }
     }
 
@@ -1078,6 +1102,7 @@ const loginWithPhoneOtp = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
+
 
     res.json({
       success: true,
@@ -1099,7 +1124,6 @@ const loginWithPhoneOtp = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Phone login error:", error);
     res.status(500).json({
       success: false,
       message: "Login failed",
@@ -1110,6 +1134,7 @@ const loginWithPhoneOtp = async (req, res) => {
 
 // Get user's API key
 const getApiKey = async (req, res) => {
+
   try {
     const user = await User.findById(req.user.id);
 
@@ -1123,12 +1148,12 @@ const getApiKey = async (req, res) => {
     // Find active API key or return empty
     const activeKey = user.apiKeys?.find((k) => k.isActive);
 
+
     res.json({
       success: true,
       apiKey: activeKey ? activeKey.key : null,
     });
   } catch (error) {
-    console.error("Get API key error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch API key",
@@ -1138,6 +1163,7 @@ const getApiKey = async (req, res) => {
 
 // Regenerate API key
 const regenerateApiKey = async (req, res) => {
+
   try {
     const user = await User.findById(req.user.id);
 
@@ -1172,13 +1198,13 @@ const regenerateApiKey = async (req, res) => {
 
     await user.save();
 
+
     res.json({
       success: true,
       message: "API key regenerated successfully",
       apiKey: newApiKey,
     });
   } catch (error) {
-    console.error("Regenerate API key error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to regenerate API key",
@@ -1188,6 +1214,7 @@ const regenerateApiKey = async (req, res) => {
 
 // Get user preferences
 const getPreferences = async (req, res) => {
+
   try {
     const user = await User.findById(req.user.id);
 
@@ -1197,6 +1224,7 @@ const getPreferences = async (req, res) => {
         message: "User not found",
       });
     }
+
 
     // Return preferences with defaults
     res.json({
@@ -1212,7 +1240,6 @@ const getPreferences = async (req, res) => {
       theme: user.preferences?.theme || "light",
     });
   } catch (error) {
-    console.error("Get preferences error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch preferences",
@@ -1222,6 +1249,7 @@ const getPreferences = async (req, res) => {
 
 // Update user preferences
 const updatePreferences = async (req, res) => {
+
   try {
     const {
       emailNotifications,
@@ -1272,6 +1300,7 @@ const updatePreferences = async (req, res) => {
 
     await user.save();
 
+
     res.json({
       success: true,
       message: "Preferences updated successfully",
@@ -1285,7 +1314,6 @@ const updatePreferences = async (req, res) => {
       theme: user.preferences.theme || "light",
     });
   } catch (error) {
-    console.error("Update preferences error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update preferences",
@@ -1294,6 +1322,7 @@ const updatePreferences = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
+
   try {
     const userId = req.user.id;
 
@@ -1303,12 +1332,12 @@ const deleteAccount = async (req, res) => {
     // Delete the user document
     await User.findByIdAndDelete(userId);
 
+
     res.json({
       success: true,
       message: "Account deleted successfully",
     });
   } catch (error) {
-    console.error("Delete account error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete account",
@@ -1317,6 +1346,7 @@ const deleteAccount = async (req, res) => {
 };
 
 module.exports = {
+  checkEmail,
   sendRegistrationOTP,
   register,
   login,
