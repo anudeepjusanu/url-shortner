@@ -519,6 +519,25 @@ export const urlsAPI = {
   createUrl: (urlData: any) => apiClient.post(endpoints.urls.create, urlData),
   updateUrl: (id: string, data: any) => apiClient.put(`${endpoints.urls.update}/${id}`, data),
   getAvailableDomains: () => apiClient.get(endpoints.urls.availableDomains),
+  // Public — runs the Google Safe Browsing check without requiring auth, so
+  // the landing page can block malware/phishing URLs before the auth flow.
+  checkSafety: async (urlValue: string): Promise<{ isSafe: boolean; message?: string; code?: string }> => {
+    const res = await fetch(`${API_BASE_URL}/urls/check-safety`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: urlValue }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      // Invalid-URL or other 4xx responses surface the server message.
+      return { isSafe: false, message: data?.message || 'Invalid URL', code: data?.code };
+    }
+    return {
+      isSafe: data?.data?.isSafe !== false,
+      message: data?.data?.message,
+      code: data?.data?.code,
+    };
+  },
 };
 
 // Domains API methods

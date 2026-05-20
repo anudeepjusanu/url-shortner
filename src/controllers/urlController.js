@@ -1168,6 +1168,62 @@ const getAvailableDomains = async (req, res) => {
   }
 };
 
+// Public safety check — used by the landing page input to flag unsafe URLs
+// before the user enters the auth flow. Does not create any DB record.
+const checkUrlSafety = async (req, res) => {
+  try {
+    const { url: inputUrl } = req.body || {};
+
+    if (!inputUrl || typeof inputUrl !== 'string' || !inputUrl.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL is required'
+      });
+    }
+
+    const urlValidation = validateUrl(inputUrl);
+    if (!urlValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: urlValidation.message,
+        code: 'INVALID_URL'
+      });
+    }
+
+    const safetyCheck = await safeBrowsingService.checkUrl(urlValidation.cleanUrl);
+    if (!safetyCheck.isSafe) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          isSafe: false,
+          message: safetyCheck.message || 'The link provided has been flagged by Google Safe Browsing as unsafe. Please use a different link.',
+          threats: safetyCheck.threats || [],
+          code: 'UNSAFE_URL'
+        }
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        isSafe: true,
+        message: 'URL is safe'
+      }
+    });
+  } catch (error) {
+    console.error('checkUrlSafety error:', error);
+    // Fail open — never block the user on infrastructure errors
+    return res.json({
+      success: true,
+      data: {
+        isSafe: true,
+        message: 'Safety check unavailable',
+        skipped: true
+      }
+    });
+  }
+};
+
 module.exports = {
   createUrl,
   getUrls,
@@ -1178,5 +1234,6 @@ module.exports = {
   bulkCreate,
   bulkCreateTemplate,
   getUrlStats,
-  getAvailableDomains
+  getAvailableDomains,
+  checkUrlSafety
 };
