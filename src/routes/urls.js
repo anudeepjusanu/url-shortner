@@ -3,7 +3,7 @@ const router = express.Router();
 
 const urlController = require('../controllers/urlController');
 const { authenticate, apiKeyAuth, authenticateAny } = require('../middleware/auth');
-const { urlCreationLimiter, apiLimiter } = require('../middleware/rateLimiter');
+const { urlCreationLimiter, apiLimiter, generalLimiter } = require('../middleware/rateLimiter');
 const { checkResourceLimits, checkFeatureAccess } = require('../middleware/roleCheck');
 const {
   validateUrlCreation,
@@ -16,6 +16,13 @@ const {
 } = require('../middleware/validation');
 
 router.use(sanitizeInput);
+
+// Public URL safety check — no auth required. Used by the landing page to
+// flag malware/phishing URLs before the user begins the auth flow.
+router.post('/check-safety',
+  generalLimiter,
+  urlController.checkUrlSafety
+);
 
 // Create URL - accepts both Bearer token and API key
 router.post('/',

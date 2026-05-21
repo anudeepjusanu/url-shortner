@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye } from "lucide-react";
+import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { urlsAPI } from "@/services/api";
 import qrImage from "@/assets/qr-1.png";
 
 const INTERVAL = 4000;
@@ -15,6 +16,7 @@ const HeroSection = () => {
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [isChecking, setIsChecking] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
@@ -29,12 +31,36 @@ const HeroSection = () => {
     }
   };
 
-  const handleShorten = () => {
+  const handleShorten = async () => {
+    if (isChecking) return;
+
     const error = validateUrl(url);
     setUrlError(error);
     if (error) return;
 
     const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+
+    // Run the malware/phishing check here on the landing page so unsafe links
+    // are rejected before the user enters the auth flow.
+    setIsChecking(true);
+    try {
+      const safety = await urlsAPI.checkSafety(normalizedUrl);
+      if (!safety.isSafe) {
+        setUrlError(
+          safety.message ||
+            t(
+              "This URL has been flagged as unsafe and cannot be shortened.",
+              "تم تحديد هذا الرابط كغير آمن ولا يمكن اختصاره."
+            )
+        );
+        return;
+      }
+    } catch {
+      // Network/unknown failure — fail open so the flow still works.
+    } finally {
+      setIsChecking(false);
+    }
+
     navigate("/shorten", { state: { url: normalizedUrl } });
   };
 
@@ -121,10 +147,20 @@ const HeroSection = () => {
                 </div>
                 <Button
                   onClick={handleShorten}
-                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-8 shrink-0 rounded-full hover:opacity-90 transition-all text-base"
+                  disabled={isChecking}
+                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-8 shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-80"
                 >
-                  {t("Shorten Link for Free", "اختصر الرابط مجاناً")}
-                  {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
+                  {isChecking ? (
+                    <>
+                      <Loader2 size={16} className="me-1.5 animate-spin" />
+                      {t("Checking...", "جاري التحقق...")}
+                    </>
+                  ) : (
+                    <>
+                      {t("Shorten Link for Free", "اختصر الرابط مجاناً")}
+                      {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
+                    </>
+                  )}
                 </Button>
               </div>
               {urlError && (
