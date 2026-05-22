@@ -584,10 +584,14 @@ const ShortenLinkFlow = () => {
             {/* Heading */}
             <div className="space-y-2">
               <h1 className="text-2xl lg:text-5xl font-display font-bold text-white">
-                {t("Almost there.", "أوشكت على الانتهاء.")}
+                {isResult
+                  ? t("Your link is ready!", "رابطك جاهز!")
+                  : t("Almost there.", "أوشكت على الانتهاء.")}
               </h1>
               <p className="text-sm lg:text-base text-white/70 font-body">
-                {t("Sign up to unlock your shortened link.", "سجّل للحصول على رابطك المختصر.")}
+                {isResult
+                  ? t("Copy it now or head to your dashboard.", "انسخه الآن أو توجه إلى لوحة التحكم.")
+                  : t("Sign up to unlock your shortened link.", "سجّل للحصول على رابطك المختصر.")}
               </p>
             </div>
 
@@ -619,7 +623,7 @@ const ShortenLinkFlow = () => {
                   <div className="flex items-center gap-3 p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                     <Link2 className="w-5 h-5 text-white/70 shrink-0" />
                     <p className="text-base font-display font-bold text-white/90" dir="ltr">
-                      {shortUrl || `${domain}/${previewShortCode}`}
+                      {(shortUrl || `${domain}/${previewShortCode}`).replace(/^https?:\/\//, "")}
                     </p>
                   </div>
                   <Button
