@@ -62,6 +62,9 @@ import ShortenLinkFlow from "./pages/ShortenLinkFlow";
 import QRErrorPage from "./pages/QRErrorPage";
 import LinkNotFoundPage from "./pages/LinkNotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import UTMBuilder from "./pages/UTMBuilder";
+import CreateUTMLink from "./pages/CreateUTMLink";
+import { UTMProvider } from "./contexts/UTMContext";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +73,7 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
+          <UTMProvider>
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
             <Toaster />
             <Sonner />
@@ -108,6 +112,8 @@ const App = () => (
             <Route path="/dashboard/bulk-shorten" element={<ProtectedRoute><BulkShorten /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr" element={<ProtectedRoute><DynamicQRCodes /></ProtectedRoute>} />
             <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
+            <Route path="/dashboard/utm-builder" element={<ProtectedRoute><UTMBuilder /></ProtectedRoute>} />
+            <Route path="/dashboard/utm-builder/create" element={<ProtectedRoute><CreateUTMLink /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* Public error page for failed dynamic QR scans — no auth required */}
             <Route path="/qr-error" element={<QRErrorPage />} />
@@ -118,6 +124,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
           </GoogleOAuthProvider>
+          </UTMProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>
