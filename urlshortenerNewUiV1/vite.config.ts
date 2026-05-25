@@ -35,35 +35,13 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // React core — tiny, shared by every chunk, cached long-term
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
-            return "vendor-react";
-          }
-          // React Router
-          if (id.includes("node_modules/react-router-dom/") || id.includes("node_modules/react-router/")) {
-            return "vendor-router";
-          }
-          // Framer Motion — used on landing page, split for long-term caching
-          if (id.includes("node_modules/framer-motion/")) {
-            return "vendor-framer";
-          }
-          // Recharts — heavy charting lib, only used in analytics dashboard
-          if (id.includes("node_modules/recharts/") || id.includes("node_modules/d3-")) {
-            return "vendor-charts";
-          }
-          // Amplitude analytics — deferred, never on critical path
-          if (id.includes("node_modules/@amplitude/")) {
-            return "vendor-amplitude";
-          }
-          // XLSX — bulk import/export only
-          if (id.includes("node_modules/xlsx/")) {
-            return "vendor-xlsx";
-          }
-          // All other node_modules into a shared vendor chunk
-          if (id.includes("node_modules/")) {
-            return "vendor-shared";
-          }
+        // Only manually chunk packages with clean, non-circular dependency graphs.
+        // recharts/d3 have circular deps that cause TDZ errors when force-grouped —
+        // let Rollup auto-split them via the lazy-loaded route boundary instead.
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-router": ["react-router-dom"],
+          "vendor-framer": ["framer-motion"],
         },
       },
     },
