@@ -116,7 +116,7 @@ const UTMBuilder = () => {
           className="bg-primary text-primary-foreground shrink-0"
         >
           <Plus className="w-4 h-4 me-2" />
-          {t("+ New UTM", "+ UTM جديد")}
+          {t(" New UTM", " UTM جديد")}
         </Button>
       </div>
 
