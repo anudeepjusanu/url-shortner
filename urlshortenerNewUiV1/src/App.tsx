@@ -18,8 +18,9 @@ const PageViewTracker = () => {
       const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
       amplitudeService.trackPageView(pageName, location.pathname);
     });
-    if (typeof window !== "undefined" && (window as any).ttq) {
-      (window as any).ttq.page();
+    type TikTokWindow = Window & { ttq?: { page: () => void } };
+    if (typeof window !== "undefined" && (window as TikTokWindow).ttq) {
+      (window as TikTokWindow).ttq!.page();
     }
   }, [location]);
   return null;
