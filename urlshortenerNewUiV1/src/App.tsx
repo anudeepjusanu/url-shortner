@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,67 +6,88 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import ScrollToTop from "@/components/ScrollToTop";
-import amplitudeService from "@/services/amplitude";
 
 // Google OAuth Client ID
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-// Initialize Amplitude once at module load
-amplitudeService.initialize();
-
-// Tracks a Page View event on every route change
+// Tracks a Page View event on every route change — Amplitude is loaded lazily
 const PageViewTracker = () => {
   const location = useLocation();
   useEffect(() => {
-    const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
-    amplitudeService.trackPageView(pageName, location.pathname);
+    import("@/services/amplitude").then(({ default: amplitudeService }) => {
+      const pageName = location.pathname.replace(/^\//, "").replace(/\//g, " / ") || "home";
+      amplitudeService.trackPageView(pageName, location.pathname);
+    });
     if (typeof window !== "undefined" && (window as any).ttq) {
       (window as any).ttq.page();
     }
   }, [location]);
   return null;
 };
+
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import MyLinks from "./pages/MyLinks";
-import CreateLink from "./pages/CreateLink";
-import QRCodes from "./pages/QRCodes";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import CustomDomains from "./pages/CustomDomains";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Profile from "./pages/Profile";
-import ApiDocs from "./pages/ApiDocs";
-import UserManagement from "./pages/UserManagement";
-import UrlManagement from "./pages/UrlManagement";
-import CreateQRCode from "./pages/CreateQRCode";
-import AddDomain from "./pages/AddDomain";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import BioPages from "./pages/BioPages";
-import BioPageEditor from "./pages/BioPageEditor";
-import BioWizard from "./pages/BioWizard";
-import BioBuilder from "./pages/BioBuilder";
-import PublicBioPage from "./pages/PublicBioPage";
-import BulkCreate from "./pages/BulkCreate";
-import BulkShorten from "./pages/BulkShorten";
-import DynamicQRCodes from "./pages/DynamicQRCodes";
-import CreateDynamicQRCode from "./pages/CreateDynamicQRCode";
-import ShortenLinkFlow from "./pages/ShortenLinkFlow";
-import QRErrorPage from "./pages/QRErrorPage";
-import LinkNotFoundPage from "./pages/LinkNotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import UTMBuilder from "./pages/UTMBuilder";
-import CreateUTMLink from "./pages/CreateUTMLink";
 import { UTMProvider } from "./contexts/UTMContext";
 
+// Initialize Amplitude lazily after first render — keeps SDK off the critical path
+const AmplitudeInit = () => {
+  useEffect(() => {
+    import("@/services/amplitude").then(({ default: amplitudeService }) => {
+      amplitudeService.initialize();
+    });
+  }, []);
+  return null;
+};
+
+// Landing page kept eager — it IS the critical path for the homepage LCP
+import Index from "./pages/Index";
+
+// All other pages are lazy-loaded — they ship in separate chunks
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const MyLinks = lazy(() => import("./pages/MyLinks"));
+const CreateLink = lazy(() => import("./pages/CreateLink"));
+const QRCodes = lazy(() => import("./pages/QRCodes"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const CustomDomains = lazy(() => import("./pages/CustomDomains"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ApiDocs = lazy(() => import("./pages/ApiDocs"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const UrlManagement = lazy(() => import("./pages/UrlManagement"));
+const CreateQRCode = lazy(() => import("./pages/CreateQRCode"));
+const AddDomain = lazy(() => import("./pages/AddDomain"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const BioPages = lazy(() => import("./pages/BioPages"));
+const BioPageEditor = lazy(() => import("./pages/BioPageEditor"));
+const BioWizard = lazy(() => import("./pages/BioWizard"));
+const BioBuilder = lazy(() => import("./pages/BioBuilder"));
+const PublicBioPage = lazy(() => import("./pages/PublicBioPage"));
+const BulkCreate = lazy(() => import("./pages/BulkCreate"));
+const BulkShorten = lazy(() => import("./pages/BulkShorten"));
+const DynamicQRCodes = lazy(() => import("./pages/DynamicQRCodes"));
+const CreateDynamicQRCode = lazy(() => import("./pages/CreateDynamicQRCode"));
+const ShortenLinkFlow = lazy(() => import("./pages/ShortenLinkFlow"));
+const QRErrorPage = lazy(() => import("./pages/QRErrorPage"));
+const LinkNotFoundPage = lazy(() => import("./pages/LinkNotFoundPage"));
+const UTMBuilder = lazy(() => import("./pages/UTMBuilder"));
+const CreateUTMLink = lazy(() => import("./pages/CreateUTMLink"));
+
 const queryClient = new QueryClient();
+
+// Minimal spinner shown while a lazy chunk loads — keeps LCP element visible
+const PageLoader = () => (
+  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ width: 32, height: 32, border: "3px solid #e5e7eb", borderTopColor: "#1e3a5f", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -79,7 +100,9 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
             <ScrollToTop />
+            <AmplitudeInit />
             <PageViewTracker />
+            <Suspense fallback={<PageLoader />}>
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -122,6 +145,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
           </GoogleOAuthProvider>
           </UTMProvider>
