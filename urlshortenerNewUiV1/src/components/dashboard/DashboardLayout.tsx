@@ -20,6 +20,7 @@ import {
   Layers,
   ScanLine,
   LayoutList,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("QR Codes", "أكواد QR"), icon: QrCode, path: "/dashboard/qr-codes" },
     // { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
     { label: t("Bio Pages", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
+    { label: t("UTM Builder", "منشئ UTM"), icon: Tag, path: "/dashboard/utm-builder" },
   ];
 
   const adminNav = [
@@ -75,7 +77,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { label: t("API", "API"), icon: FileText, path: "https://docs.snip.sa", external: true },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/dashboard") return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   const NavItem = ({ item }: { item: NavItemConfig }) => {
     if (item.external) {

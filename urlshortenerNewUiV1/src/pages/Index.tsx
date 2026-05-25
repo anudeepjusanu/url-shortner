@@ -1,17 +1,23 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMetaTags } from "@/hooks/useMetaTags";
+// Above-the-fold sections loaded eagerly
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
-import FeaturesSection from "@/components/landing/FeaturesSection";
-import AnalyticsSection from "@/components/landing/AnalyticsSection";
-import DeveloperSection from "@/components/landing/DeveloperSection";
-import ComparisonSection from "@/components/landing/ComparisonSection";
-import BlogSection from "@/components/landing/BlogSection";
-import FAQSection from "@/components/landing/FAQSection";
-import CTASection from "@/components/landing/CTASection";
-import Footer from "@/components/landing/Footer";
+
+// Below-the-fold sections lazy-loaded — they only need to render after scroll
+const FeaturesSection = lazy(() => import("@/components/landing/FeaturesSection"));
+const AnalyticsSection = lazy(() => import("@/components/landing/AnalyticsSection"));
+const DeveloperSection = lazy(() => import("@/components/landing/DeveloperSection"));
+const ComparisonSection = lazy(() => import("@/components/landing/ComparisonSection"));
+const BlogSection = lazy(() => import("@/components/landing/BlogSection"));
+const FAQSection = lazy(() => import("@/components/landing/FAQSection"));
+const CTASection = lazy(() => import("@/components/landing/CTASection"));
+const Footer = lazy(() => import("@/components/landing/Footer"));
+
+// Minimal height placeholder keeps layout stable while sections load
+const SectionFallback = () => <div style={{ minHeight: "200px" }} />;
 
 const Index = () => {
   const location = useLocation();
@@ -53,7 +59,6 @@ const Index = () => {
   useEffect(() => {
     const scrollTo = (location.state as { scrollTo?: string } | null)?.scrollTo;
     if (scrollTo) {
-      // Small delay to ensure all sections have mounted before scrolling
       const timer = setTimeout(() => {
         document.getElementById(scrollTo)?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -66,15 +71,19 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <FeaturesSection />
-        <AnalyticsSection />
-        <DeveloperSection />
-        <ComparisonSection />
-        <BlogSection />
-        <FAQSection />
-        <CTASection />
+        <Suspense fallback={<SectionFallback />}>
+          <FeaturesSection />
+          <AnalyticsSection />
+          <DeveloperSection />
+          <ComparisonSection />
+          <BlogSection />
+          <FAQSection />
+          <CTASection />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={<SectionFallback />}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };
