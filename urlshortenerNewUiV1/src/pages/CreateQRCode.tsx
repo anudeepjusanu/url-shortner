@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, QrCode, Palette, Maximize, Download, ChevronDown, Link2, Search } from "lucide-react";
 import amplitudeService from "@/services/amplitude";
+import { fireConversion } from "@/lib/conversion";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import { QRCodeCanvas } from "qrcode.react";
 import { cn } from "@/lib/utils";
@@ -187,6 +188,7 @@ const CreateQRCode = () => {
       }
 
       amplitudeService.track('QR Code', { autoShortened: isNew, updated: hasExistingQR });
+      fireConversion('qr_created');
       navigate("/dashboard/qr-codes");
     } catch (err: any) {
       setError(err.message || t("Failed to create QR code", "فشل إنشاء كود QR"));

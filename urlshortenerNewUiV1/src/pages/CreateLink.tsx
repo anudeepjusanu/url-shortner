@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag, Copy,
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 import amplitudeService from "@/services/amplitude";
+import { fireConversion } from "@/lib/conversion";
 
 const CreateLink = () => {
   const { t } = useLanguage();
@@ -159,6 +160,7 @@ const CreateLink = () => {
         } catch (trackError) {
           console.error('Analytics error:', trackError);
         }
+        fireConversion('mylinks_shorten');
         toast({
           title: t("Success", "نجح"),
           description: t("Link created successfully", "تم إنشاء الرابط بنجاح"),

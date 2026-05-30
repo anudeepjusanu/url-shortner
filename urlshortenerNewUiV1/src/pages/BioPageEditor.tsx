@@ -21,6 +21,7 @@ import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
+import { fireConversion } from "@/lib/conversion";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -693,6 +694,9 @@ const BioPageEditor = () => {
         await bioPageAPI.update(id!, payload);
       } else {
         await bioPageAPI.create(payload);
+      }
+      if (form.isPublished) {
+        fireConversion('bio_published');
       }
       toast({
         title: t("Saved!", "تم الحفظ!"),

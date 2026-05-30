@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { authAPI, urlsAPI } from "@/services/api";
 import amplitudeService from "@/services/amplitude";
+import { fireConversion } from "@/lib/conversion";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { Loader2, Link2, Check, Copy, Eye, EyeOff, ArrowRight, ArrowLeft, Globe, Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -518,6 +519,7 @@ const ShortenLinkFlow = () => {
       await createShortUrl();
       setStep("result");
       amplitudeService.track("Shorten Link Flow Completed", { url: originalUrl });
+      fireConversion('landing_shorten');
       toast({
         title: t("Success!", "نجاح!"),
         description: t("Your link has been shortened", "تم اختصار رابطك"),
