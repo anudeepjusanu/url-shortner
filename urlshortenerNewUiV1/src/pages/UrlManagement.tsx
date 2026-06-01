@@ -354,6 +354,12 @@ const UrlManagement = () => {
   const totalInteractions = typeFilteredContent.reduce((sum, c) => sum + c.clickCount, 0);
   const filteredTotal = typeFilteredContent.length;
 
+  const getDisplayDomain = (item: ContentItem) => {
+    if (item.type === "bio") return "—";
+    if (!item.domain) return t("Default", "افتراضي");
+    return item.domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  };
+
   // Extensible type label maps — add new types here without structural changes
   const typeLabels: Record<ContentType, { en: string; ar: string }> = {
     url: { en: "Short Link", ar: "رابط مختصر" },
@@ -563,6 +569,7 @@ const UrlManagement = () => {
                       <span>{[item.creator.firstName, item.creator.lastName].filter(Boolean).join(' ')}</span>
                     )}
                     <span>{item.clickCount} {t("interactions", "تفاعل")}</span>
+                    <span className="truncate max-w-[100px]">{getDisplayDomain(item)}</span>
                   </div>
                   <div className="flex items-center gap-0.5">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewItem(item)}>
@@ -624,6 +631,7 @@ const UrlManagement = () => {
                   <TableHead>{t("Identifier", "المعرف")}</TableHead>
                   <TableHead>{t("Title / URL", "العنوان / الرابط")}</TableHead>
                   <TableHead>{t("Creator", "المنشئ")}</TableHead>
+                  <TableHead>{t("Domain", "الدومين")}</TableHead>
                   <TableHead className="text-center">{t("Interactions", "التفاعلات")}</TableHead>
                   <TableHead className="text-center">{t("Status", "الحالة")}</TableHead>
                   <TableHead>{t("Created", "الإنشاء")}</TableHead>
@@ -658,6 +666,11 @@ const UrlManagement = () => {
                         {item.creator ? [item.creator.firstName, item.creator.lastName].filter(Boolean).join(' ') : "—"}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <span className="text-xs font-body text-muted-foreground">
+                        {getDisplayDomain(item)}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-center">
                       <span className="font-display font-semibold text-foreground">{item.clickCount}</span>
                     </TableCell>
@@ -672,7 +685,7 @@ const UrlManagement = () => {
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewItem(item)}>
-                          <Eye className="w-4 h-4 text-primary" />
+                          <Eye className="w-4 h-4 text-secondary" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -696,7 +709,7 @@ const UrlManagement = () => {
                             onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
                             title={t("Analytics", "التحليلات")}
                           >
-                            <BarChart3 className="w-4 h-4 text-primary" />
+                            <BarChart3 className="w-4 h-4 text-secondary" />
                           </Button>
                         )}
                         <Button
