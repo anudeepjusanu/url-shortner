@@ -5,6 +5,9 @@ const { execSync } = require('child_process');
 const SITES_AVAILABLE = process.env.NGINX_SITES_AVAILABLE || '/etc/nginx/sites-available';
 const SITES_ENABLED = process.env.NGINX_SITES_ENABLED || '/etc/nginx/sites-enabled';
 const NGINX_SSL_DIR = process.env.NGINX_SSL_DIR || '/etc/nginx/ssl';
+// When nginx runs in Docker, use BACKEND_HOST=172.18.0.1 (Docker host gateway).
+// For non-Docker setups, 127.0.0.1 is correct.
+const BACKEND_HOST = process.env.BACKEND_HOST || '127.0.0.1';
 const BACKEND_PORT = process.env.PORT || 3015;
 const NGINX_CONTAINER = process.env.NGINX_CONTAINER_NAME || null; // set if nginx runs in Docker
 
@@ -35,7 +38,7 @@ server {
     }
 
     location / {
-        proxy_pass http://127.0.0.1:${BACKEND_PORT};
+        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -96,7 +99,7 @@ server {
     }
 
     location / {
-        proxy_pass http://127.0.0.1:${BACKEND_PORT};
+        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
