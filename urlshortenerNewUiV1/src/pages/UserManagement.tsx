@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Users, UserPlus, Link2, CalendarDays, Trash2, Search,
-  BarChart3, Loader2, MapPin, Globe, Phone,
+  BarChart3, Loader2, MapPin, Globe, Phone, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
@@ -49,6 +49,15 @@ interface AdminUser {
     urlsCreatedTotal?: number;
   };
 }
+
+const PAGE_SIZE = 12;
+
+const getPageNumbers = (current: number, total: number): (number | "...")[] => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+  if (current >= total - 3) return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "...", current - 1, current, current + 1, "...", total];
+};
 
 const roleBadgeColors: Record<string, string> = {
   super_admin: "bg-destructive/10 text-destructive",
@@ -79,6 +88,7 @@ const UserManagement = () => {
   });
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -101,6 +111,8 @@ const UserManagement = () => {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -129,6 +141,11 @@ const UserManagement = () => {
       return matchSearch && matchRole && matchDate;
     });
   }, [users, search, roleFilter, fromDate, toDate]);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, currentPage]);
 
   const filteredStats = useMemo(() => {
     const totalUsers = filtered.length;
@@ -298,7 +315,7 @@ const UserManagement = () => {
       {!isLoading && !isError && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((user) => {
+            {paginatedUsers.map((user) => {
               const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
               return (
                 <div
@@ -402,6 +419,53 @@ const UserManagement = () => {
                 : t("No users match your filters.", "لا يوجد مستخدمون مطابقون للمعايير.")}
             </div>
           )}
+
+          {(() => {
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            const startItem = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+            const endItem = Math.min(currentPage * PAGE_SIZE, filtered.length);
+            return totalPages > 1 ? (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                <p className="text-xs text-muted-foreground font-body order-2 sm:order-1">
+                  {t(
+                    `Showing ${startItem}–${endItem} of ${filtered.length} users`,
+                    `عرض ${startItem}–${endItem} من ${filtered.length} مستخدم`
+                  )}
+                </p>
+                <div className="flex items-center gap-1 order-1 sm:order-2">
+                  <Button
+                    variant="outline" size="icon" className="h-8 w-8"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+                    page === "..." ? (
+                      <span key={`ellipsis-${idx}`} className="w-8 text-center text-xs">…</span>
+                    ) : (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="icon"
+                        className="h-8 w-8 text-xs font-body"
+                        onClick={() => setCurrentPage(page as number)}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+                  <Button
+                    variant="outline" size="icon" className="h-8 w-8"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : null;
+          })()}
         </>
       )}
     </DashboardLayout>

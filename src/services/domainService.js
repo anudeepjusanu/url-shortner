@@ -1,5 +1,6 @@
 const dns = require('dns').promises;
 const Domain = require('../models/Domain');
+const sslProvisioningService = require('./sslProvisioningService');
 
 class DomainService {
   constructor() {
@@ -172,11 +173,18 @@ class DomainService {
       if (verification.verified) {
         await domain.markAsVerified();
         console.log('✅ Domain verified successfully:', domain.fullDomain);
+
+        // Auto-trigger SSL provisioning in background — fire and forget.
+        // This means the user never has to manually trigger SSL after verification.
+        sslProvisioningService.provision(domain._id.toString()).catch(err => {
+          console.error(`[SSL] Auto-provisioning failed for ${domain.fullDomain}:`, err.message);
+        });
+
         return {
           success: true,
           verified: true,
           domain: domain.fullDomain,
-          message: 'Domain verification successful'
+          message: 'Domain verification successful. SSL provisioning started automatically.'
         };
       } else {
         await domain.markVerificationFailed(verification.error || 'DNS verification failed');

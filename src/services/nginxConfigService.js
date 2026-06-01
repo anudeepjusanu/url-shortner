@@ -197,7 +197,8 @@ server {
   _ensureDirs() {
     fs.mkdirSync(SITES_AVAILABLE, { recursive: true });
     fs.mkdirSync(SITES_ENABLED, { recursive: true });
-    fs.mkdirSync(NGINX_SSL_DIR, { recursive: true });
+    // NGINX_SSL_DIR is the container-internal path (/etc/nginx/ssl) — never mkdir it on the host.
+    // Cert files are written to NGINX_SSL_WRITE_DIR by sslCertificateService.copyCertificateToNginx().
   }
 }
 
