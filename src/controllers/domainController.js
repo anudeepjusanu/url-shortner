@@ -1,6 +1,8 @@
 const Domain = require('../models/Domain');
 const Url = require('../models/Url');
 const domainService = require('../services/domainService');
+const sslProvisioningService = require('../services/sslProvisioningService');
+const sslCertificateService = require('../services/sslCertificateService');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const config = require('../config/environment');
 
@@ -611,6 +613,98 @@ const getDomainInfo = async (req, res) => {
   }
 };
 
+// POST /api/domains/:id/provision-ssl
+// Triggers SSL certificate provisioning for a verified custom domain.
+// Runs asynchronously — responds immediately with 202, provisioning continues in background.
+const provisionSSL = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const domain = await Domain.findById(id);
+    if (!domain) {
+      return res.status(404).json({ success: false, message: 'Domain not found' });
+    }
+
+    if (!checkDomainAccess(domain, req.user)) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    if (domain.verificationStatus !== 'verified') {
+      return res.status(400).json({
+        success: false,
+        message: 'Domain must be verified before SSL can be provisioned'
+      });
+    }
+
+    if (domain.ssl.status === 'active') {
+      return res.status(400).json({
+        success: false,
+        message: 'SSL is already active for this domain'
+      });
+    }
+
+    // Respond immediately — provisioning can take 30-120 s (certbot + DNS).
+    // Client should poll GET /api/domains/:id/ssl-status.
+    res.status(202).json({
+      success: true,
+      message: 'SSL provisioning started. Poll /ssl-status to track progress.',
+      data: { domainId: id, domain: domain.fullDomain }
+    });
+
+    // Fire-and-forget provisioning in background.
+    sslProvisioningService.provision(id).catch(err => {
+      console.error(`[SSL] Background provisioning failed for ${domain.fullDomain}:`, err.message);
+    });
+  } catch (error) {
+    console.error('Provision SSL error:', error);
+    res.status(500).json({ success: false, message: 'Failed to start SSL provisioning' });
+  }
+};
+
+// GET /api/domains/:id/ssl-status
+// Returns the current SSL state including status, expiry, and any error message.
+const getSSLStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const domain = await Domain.findById(id);
+    if (!domain) {
+      return res.status(404).json({ success: false, message: 'Domain not found' });
+    }
+
+    if (!checkDomainAccess(domain, req.user)) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    // If cert is active, also read live expiry from disk (catches renewals not yet in DB).
+    let liveCertInfo = null;
+    if (domain.ssl.status === 'active') {
+      liveCertInfo = sslCertificateService.checkCertificateStatus(domain.fullDomain);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        domain: domain.fullDomain,
+        ssl: {
+          enabled: domain.ssl.enabled,
+          status: domain.ssl.status,
+          provider: domain.ssl.provider,
+          expiresAt: liveCertInfo?.expiresAt || domain.ssl.expiresAt,
+          daysRemaining: liveCertInfo?.daysRemaining ?? null,
+          lastRenewal: domain.ssl.lastRenewal,
+          autoRenewal: domain.ssl.autoRenewal,
+          error: domain.ssl.error || null
+        },
+        url: domain.shortUrl
+      }
+    });
+  } catch (error) {
+    console.error('Get SSL status error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch SSL status' });
+  }
+};
+
 module.exports = {
   addDomain,
   getDomains,
@@ -620,5 +714,7 @@ module.exports = {
   verifyDomain,
   setDefaultDomain,
   getDomainStats,
-  getDomainInfo
+  getDomainInfo,
+  provisionSSL,
+  getSSLStatus
 };

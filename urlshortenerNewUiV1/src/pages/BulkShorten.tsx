@@ -35,6 +35,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { myLinksService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
+import { fireConversion } from "@/lib/conversion";
 import { cn } from "@/lib/utils";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -427,6 +428,7 @@ const BulkShorten = () => {
       try {
         amplitudeService.trackBulkLinksCreated(succeeded);
       } catch {}
+      fireConversion('bulk_shorten', { count: succeeded });
     }
 
     toast({
