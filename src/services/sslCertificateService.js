@@ -136,7 +136,7 @@ class SSLCertificateService {
   }
 
   checkCertificateStatus(domain) {
-    const certPath = path.join(NGINX_SSL_DIR, domain, 'fullchain.pem');
+    const certPath = path.join(NGINX_SSL_WRITE_DIR, domain, 'fullchain.pem');
 
     if (!fs.existsSync(certPath)) {
       return { exists: false, domain };
