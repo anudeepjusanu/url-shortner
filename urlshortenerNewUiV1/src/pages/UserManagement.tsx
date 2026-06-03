@@ -40,6 +40,7 @@ interface AdminUser {
   createdAt: string;
   lastLogin?: string;
   phone?: string;
+  googleId?: string;
   urlCount?: number;
   registrationLocation?: {
     country?: string;
@@ -153,7 +154,7 @@ const UserManagement = () => {
     const usersWithLinks = filtered.filter(u => (u.usage?.urlsCreatedTotal ?? u.urlCount ?? 0) > 0).length;
     const totalLinks = filtered.reduce((sum, u) => sum + (u.usage?.urlsCreatedTotal ?? u.urlCount ?? 0), 0);
     const avgLinksPerUser = totalUsers > 0 ? Math.round((totalLinks / totalUsers) * 10) / 10 : 0;
-    const googleSSOUsers = filtered.filter(u => (u as any).googleId).length;
+    const googleSSOUsers = filtered.filter(u => u.googleId).length;
     return { totalUsers, activeUsers, usersWithLinks, avgLinksPerUser, totalLinks, googleSSOUsers };
   }, [filtered]);
 
@@ -328,7 +329,7 @@ const UserManagement = () => {
                     <div>
                       <h3 className="font-display font-semibold text-foreground text-sm">{fullName}</h3>
                       <p className="text-xs text-muted-foreground font-body mt-0.5">{user.email}</p>
-                      {(user as any).googleId && (
+                      {user.googleId && (
                         <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800">
                           <svg className="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

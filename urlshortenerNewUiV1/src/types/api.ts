@@ -25,6 +25,7 @@ export interface User {
   name?: string;
   role?: string;
   phoneNumber?: string;
+  googleId?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
