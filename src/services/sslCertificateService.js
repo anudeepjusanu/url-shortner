@@ -129,8 +129,27 @@ class SSLCertificateService {
 
     fs.mkdirSync(destDir, { recursive: true });
 
-    fs.copyFileSync(path.join(srcDir, 'fullchain.pem'), path.join(destDir, 'fullchain.pem'));
-    fs.copyFileSync(path.join(srcDir, 'privkey.pem'), path.join(destDir, 'privkey.pem'));
+    const fullchainSrc = path.join(srcDir, 'fullchain.pem');
+    const privkeySrc = path.join(srcDir, 'privkey.pem');
+    const fullchainDest = path.join(destDir, 'fullchain.pem');
+    const privkeyDest = path.join(destDir, 'privkey.pem');
+
+    // fullchain.pem is 644 in certbot's archive — readable without sudo.
+    fs.copyFileSync(fullchainSrc, fullchainDest);
+
+    if (USE_SUDO) {
+      // privkey.pem is 600 (root-only). Use sudo cp to copy it without
+      // broadening permissions on /etc/letsencrypt.
+      const currentUser = execSync('whoami', { encoding: 'utf8' }).trim();
+      execSync(`sudo cp "${privkeySrc}" "${privkeyDest}"`, { stdio: 'ignore' });
+      execSync(`sudo chown "${currentUser}":"${currentUser}" "${privkeyDest}"`, { stdio: 'ignore' });
+    } else {
+      fs.copyFileSync(privkeySrc, privkeyDest);
+    }
+
+    // Restrict private key to owner-read-only in the nginx dir.
+    fs.chmodSync(privkeyDest, 0o600);
+    fs.chmodSync(fullchainDest, 0o644);
 
     return { destDir };
   }
@@ -187,13 +206,17 @@ class SSLCertificateService {
   _fixPermissions(domain) {
     if (!USE_SUDO) return;
     try {
-      execSync(`sudo chown -R $(whoami):$(whoami) ${LETSENCRYPT_DIR}`, { stdio: 'ignore' });
-      execSync(`sudo chmod 755 ${LETSENCRYPT_DIR}/live ${LETSENCRYPT_DIR}/archive`, { stdio: 'ignore' });
-
+      // Only make the specific directories traversable so the node process can
+      // read fullchain.pem (644) and _verifyCertificateCN can run openssl on it.
+      // Do NOT chown /etc/letsencrypt (that mutates certbot-managed ownership for
+      // every cert on the host) and do NOT chmod privkey.pem (private keys must
+      // stay root-readable only; copyCertificateToNginx uses sudo cp instead).
       const archiveDir = path.join(LETSENCRYPT_DIR, 'archive', domain);
-      if (fs.existsSync(archiveDir)) {
-        execSync(`sudo chmod 644 ${archiveDir}/privkey*.pem`, { stdio: 'ignore' });
-      }
+      const liveDir = path.join(LETSENCRYPT_DIR, 'live', domain);
+      const dirs = [`${LETSENCRYPT_DIR}/live`, `${LETSENCRYPT_DIR}/archive`];
+      if (fs.existsSync(liveDir)) dirs.push(liveDir);
+      if (fs.existsSync(archiveDir)) dirs.push(archiveDir);
+      execSync(`sudo chmod 755 ${dirs.join(' ')}`, { stdio: 'ignore' });
     } catch (err) {
       // Non-fatal — if the copy step below also fails, that error is the real signal.
       console.warn(`[SSL] Permission fixup warning for ${domain}: ${err.message}`);
