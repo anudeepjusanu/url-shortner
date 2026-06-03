@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const emailService = require('./emailService');
+const Domain = require('../models/Domain');
 
 class ScheduledTasks {
   // Send payment reminders 3 days before billing
@@ -155,6 +156,39 @@ class ScheduledTasks {
     }
   }
 
+  // Retry SSL provisioning for all verified domains with pending or failed SSL.
+  // Runs every hour so no domain stays stuck forever without human intervention.
+  static async retryFailedSSL() {
+    try {
+      const sslProvisioningService = require('./sslProvisioningService');
+
+      const domains = await Domain.find({
+        verificationStatus: 'verified',
+        'ssl.status': { $in: ['pending', 'failed'] }
+      });
+
+      if (domains.length === 0) return;
+
+      console.log(`[SSL] Hourly retry: found ${domains.length} domain(s) needing SSL`);
+
+      for (const domain of domains) {
+        console.log(`[SSL] Retrying SSL for ${domain.fullDomain}...`);
+        try {
+          const result = await sslProvisioningService.provision(domain._id.toString());
+          if (result.success) {
+            console.log(`[SSL] ✅ ${domain.fullDomain} — SSL provisioned successfully`);
+          } else {
+            console.log(`[SSL] ❌ ${domain.fullDomain} — still failing: ${result.error}`);
+          }
+        } catch (err) {
+          console.error(`[SSL] ❌ ${domain.fullDomain} — error: ${err.message}`);
+        }
+      }
+    } catch (error) {
+      console.error('[SSL] Hourly retry task failed:', error.message);
+    }
+  }
+
   // Initialize all cron jobs
   static initializeCronJobs() {
     console.log('Initializing scheduled tasks...');
@@ -187,6 +221,13 @@ class ScheduledTasks {
     cron.schedule('0 0 * * *', async () => {
       console.log('Running expired subscription check...');
       await this.handleExpiredSubscriptions();
+    });
+
+    // Retry failed/pending SSL — every hour
+    // Catches domains where certbot failed due to DNS lag, timeouts, or rate limits.
+    // Keeps retrying automatically until SSL is active — no manual intervention needed.
+    cron.schedule('0 * * * *', async () => {
+      await ScheduledTasks.retryFailedSSL();
     });
 
     console.log('✓ Scheduled tasks initialized');

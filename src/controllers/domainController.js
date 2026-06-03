@@ -705,6 +705,48 @@ const getSSLStatus = async (req, res) => {
   }
 };
 
+// POST /api/domains/reset-ssl
+// Admin only — resets ssl.status to 'pending' for all verified domains with failed or pending SSL.
+// The hourly cron will then retry provisioning for all of them automatically.
+const resetPendingSSL = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const result = await Domain.updateMany(
+      {
+        verificationStatus: 'verified',
+        'ssl.status': { $in: ['failed', 'pending'] }
+      },
+      {
+        $set: {
+          'ssl.status': 'pending',
+          'ssl.enabled': true,
+          'ssl.error': null
+        }
+      }
+    );
+
+    const domains = await Domain.find(
+      { verificationStatus: 'verified', 'ssl.status': 'pending' },
+      { fullDomain: 1, 'ssl.status': 1 }
+    );
+
+    res.json({
+      success: true,
+      message: `Reset ${result.modifiedCount} domain(s). Hourly cron will provision them automatically.`,
+      data: {
+        resetCount: result.modifiedCount,
+        domains: domains.map(d => d.fullDomain)
+      }
+    });
+  } catch (error) {
+    console.error('Reset pending SSL error:', error);
+    res.status(500).json({ success: false, message: 'Failed to reset SSL status' });
+  }
+};
+
 module.exports = {
   addDomain,
   getDomains,
@@ -716,5 +758,6 @@ module.exports = {
   getDomainStats,
   getDomainInfo,
   provisionSSL,
-  getSSLStatus
+  getSSLStatus,
+  resetPendingSSL
 };
