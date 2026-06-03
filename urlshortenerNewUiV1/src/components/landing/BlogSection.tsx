@@ -6,8 +6,10 @@ import { motion } from "framer-motion";
 
 const BlogSection = () => {
   const { t, lang } = useLanguage();
-  const featured = blogPosts[0];
-  const rest = blogPosts.slice(1, 3);
+  const FEATURED_SLUG = "url-shortening-crucial-digital-strategy";
+  const SIDE_SLUGS = ["url-shortening-guide-digital-identity", "url-shortening-strategy-digital-presence"];
+  const featured = blogPosts.find((p) => p.slug === FEATURED_SLUG) ?? blogPosts[0];
+  const rest = SIDE_SLUGS.map((s) => blogPosts.find((p) => p.slug === s)).filter(Boolean) as typeof blogPosts;
 
   return (
     <section id="blog" className="section-cream-blush py-28 md:py-36">
