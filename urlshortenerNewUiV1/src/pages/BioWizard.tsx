@@ -14,6 +14,7 @@ import {
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { fireConversion } from "@/lib/conversion";
 
 type Stage = "loading" | "manual" | "publishing" | "published";
 
@@ -82,6 +83,7 @@ const BioWizard = () => {
       }
       setPublishedUsername(draft.settings.username);
       setStage("published");
+      fireConversion('bio_published');
     } catch (err: any) {
       toast({
         variant: "destructive",

@@ -1,5 +1,6 @@
 const dns = require('dns').promises;
 const Domain = require('../models/Domain');
+const sslProvisioningService = require('./sslProvisioningService');
 
 class DomainService {
   constructor() {
@@ -172,11 +173,22 @@ class DomainService {
       if (verification.verified) {
         await domain.markAsVerified();
         console.log('✅ Domain verified successfully:', domain.fullDomain);
+
+        // Delay SSL provisioning by 2 minutes after DNS verification.
+        // Let's Encrypt uses different DNS resolvers than our verification check —
+        // the delay ensures DNS has fully propagated to their resolvers before certbot runs,
+        // preventing NXDOMAIN failures even when our check passed.
+        setTimeout(() => {
+          sslProvisioningService.provision(domain._id.toString()).catch(err => {
+            console.error(`[SSL] Auto-provisioning failed for ${domain.fullDomain}:`, err.message);
+          });
+        }, 2 * 60 * 1000);
+
         return {
           success: true,
           verified: true,
           domain: domain.fullDomain,
-          message: 'Domain verification successful'
+          message: 'Domain verification successful. SSL provisioning started automatically.'
         };
       } else {
         await domain.markVerificationFailed(verification.error || 'DNS verification failed');

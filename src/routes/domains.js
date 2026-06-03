@@ -19,6 +19,11 @@ router.delete('/:id', domainController.deleteDomain);
 router.post('/:id/verify', domainController.verifyDomain);
 router.post('/:id/set-default', domainController.setDefaultDomain);
 
+// SSL provisioning
+router.post('/reset-ssl', domainController.resetPendingSSL);
+router.post('/:id/provision-ssl', domainController.provisionSSL);
+router.get('/:id/ssl-status', domainController.getSSLStatus);
+
 // Domain information lookup
 router.get('/info/:domain', domainController.getDomainInfo);
 

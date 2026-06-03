@@ -94,7 +94,15 @@ const domainSchema = new mongoose.Schema({
     autoRenewal: {
       type: Boolean,
       default: true
+    },
+    error: {
+      type: String,
+      default: null
     }
+  },
+  nginxConfigPath: {
+    type: String,
+    default: null
   },
   dnsProviders: [{
     name: String,

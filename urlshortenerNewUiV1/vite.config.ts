@@ -26,4 +26,24 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Target modern browsers — allows smaller, faster output
+    target: "esnext",
+    // esbuild minifier is faster and produces smaller output than terser
+    minify: "esbuild",
+    // Raise warning threshold to 600KB since we now have proper splitting
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        // Only manually chunk packages with clean, non-circular dependency graphs.
+        // recharts/d3 have circular deps that cause TDZ errors when force-grouped —
+        // let Rollup auto-split them via the lazy-loaded route boundary instead.
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-router": ["react-router-dom"],
+          "vendor-framer": ["framer-motion"],
+        },
+      },
+    },
+  },
 }));

@@ -147,6 +147,21 @@ app.post('/test-register', async (req, res) => {
   res.json({ success: true, message: 'Test endpoint working' });
 });
 
+// SSL certificate renewal — runs at 03:00 on the 1st of each month.
+// certbot renew is idempotent: skips certs not within 30 days of expiry.
+if (process.env.NODE_ENV === 'production') {
+  const cron = require('node-cron');
+  const sslProvisioningService = require('./services/sslProvisioningService');
+  cron.schedule('0 3 1 * *', async () => {
+    console.log('[SSL] Monthly renewal cron triggered');
+    try {
+      await sslProvisioningService.renewAll();
+    } catch (err) {
+      console.error('[SSL] Monthly renewal cron failed:', err.message);
+    }
+  }, { timezone: 'UTC' });
+}
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/country-codes', require('./routes/countryCodes'));
 app.use('/api/urls', require('./routes/urls'));

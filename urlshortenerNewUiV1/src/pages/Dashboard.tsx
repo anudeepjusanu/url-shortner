@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import amplitudeService from "@/services/amplitude";
+import { fireConversion } from "@/lib/conversion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,6 +129,7 @@ const Dashboard = () => {
         setShortened(`${domain}/${shortCode}`);
         setLongUrl("");
         amplitudeService.trackLinkCreated({ linkType: 'standard' });
+        fireConversion('dashboard_shorten');
       }
     } catch (error: any) {
       toast({
