@@ -174,11 +174,15 @@ class DomainService {
         await domain.markAsVerified();
         console.log('✅ Domain verified successfully:', domain.fullDomain);
 
-        // Auto-trigger SSL provisioning in background — fire and forget.
-        // This means the user never has to manually trigger SSL after verification.
-        sslProvisioningService.provision(domain._id.toString()).catch(err => {
-          console.error(`[SSL] Auto-provisioning failed for ${domain.fullDomain}:`, err.message);
-        });
+        // Delay SSL provisioning by 2 minutes after DNS verification.
+        // Let's Encrypt uses different DNS resolvers than our verification check —
+        // the delay ensures DNS has fully propagated to their resolvers before certbot runs,
+        // preventing NXDOMAIN failures even when our check passed.
+        setTimeout(() => {
+          sslProvisioningService.provision(domain._id.toString()).catch(err => {
+            console.error(`[SSL] Auto-provisioning failed for ${domain.fullDomain}:`, err.message);
+          });
+        }, 2 * 60 * 1000);
 
         return {
           success: true,
