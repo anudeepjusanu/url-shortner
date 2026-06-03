@@ -57,41 +57,112 @@ const BlogPost = () => {
     canonical: `https://snip.sa/blog/${slug}`,
   });
 
-  // Simple markdown-like rendering
+  // Renders inline markdown: **bold**, `code`, [text](url)
+  const renderInline = (str: string) => {
+    const parts = str.split(/(\*\*.*?\*\*|`.*?`|\[.*?\]\(.*?\))/g);
+    return parts.map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+        return <strong key={j} className="text-foreground">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+        return <code key={j} className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">{part.slice(1, -1)}</code>;
+      }
+      const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
+      if (linkMatch) {
+        return (
+          <a key={j} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            {linkMatch[1]}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   const renderContent = (text: string) => {
     const lines = text.split("\n");
     const elements: JSX.Element[] = [];
+    let idx = 0;
     let inCodeBlock = false;
     let codeLines: string[] = [];
 
-    lines.forEach((line, i) => {
+    while (idx < lines.length) {
+      const line = lines[idx];
+
       if (line.startsWith("```")) {
         if (inCodeBlock) {
           elements.push(
-            <pre key={`code-${i}`} className="bg-foreground text-background/80 rounded-lg p-5 text-sm font-mono overflow-x-auto my-6">
+            <pre key={`code-${idx}`} className="bg-foreground text-background/80 rounded-lg p-5 text-sm font-mono overflow-x-auto my-6">
               {codeLines.join("\n")}
             </pre>
           );
           codeLines = [];
         }
         inCodeBlock = !inCodeBlock;
-        return;
+        idx++;
+        continue;
       }
 
       if (inCodeBlock) {
         codeLines.push(line);
-        return;
+        idx++;
+        continue;
+      }
+
+      // Table: collect consecutive lines starting with "|"
+      if (line.startsWith("|")) {
+        const tableLines: string[] = [];
+        while (idx < lines.length && lines[idx].startsWith("|")) {
+          tableLines.push(lines[idx]);
+          idx++;
+        }
+        const parseRow = (row: string) =>
+          row.split("|").slice(1, -1).map((c) => c.trim());
+        const isSep = (cells: string[]) => cells.every((c) => /^[-: ]+$/.test(c));
+        const allRows = tableLines.map(parseRow);
+        const sepIdx = allRows.findIndex(isSep);
+        const headerRows = sepIdx >= 0 ? allRows.slice(0, sepIdx) : [allRows[0]];
+        const bodyRows = sepIdx >= 0 ? allRows.slice(sepIdx + 1) : allRows.slice(1);
+        elements.push(
+          <div key={`table-${idx}`} className="overflow-x-auto my-6">
+            <table className="w-full border-collapse text-sm font-body">
+              <thead>
+                {headerRows.map((row, ri) => (
+                  <tr key={ri} className="bg-muted/50">
+                    {row.map((cell, ci) => (
+                      <th key={ci} className="border border-border px-4 py-2 text-left font-semibold text-foreground whitespace-nowrap">
+                        {cell}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {bodyRows.map((row, ri) => (
+                  <tr key={ri} className={ri % 2 === 0 ? "" : "bg-muted/20"}>
+                    {row.map((cell, ci) => (
+                      <td key={ci} className="border border-border px-4 py-2 text-muted-foreground">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+        continue;
       }
 
       if (line.startsWith("## ")) {
         elements.push(
-          <h2 key={i} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
+          <h2 key={idx} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
             {line.replace("## ", "")}
           </h2>
         );
       } else if (line.startsWith("### ")) {
         elements.push(
-          <h3 key={i} className="font-display text-xl font-semibold text-foreground mt-8 mb-3">
+          <h3 key={idx} className="font-display text-xl font-semibold text-foreground mt-8 mb-3">
             {line.replace("### ", "")}
           </h3>
         );
@@ -99,50 +170,42 @@ const BlogPost = () => {
         const match = line.match(/^- \*\*(.+?)\*\*\s*,?\s*(.*)/);
         if (match) {
           elements.push(
-            <li key={i} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
+            <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
               <strong className="text-foreground">{match[1]}</strong>
-              {match[2] && `, ${match[2]}`}
+              {match[2] && <span>, {renderInline(match[2])}</span>}
             </li>
           );
         }
       } else if (line.startsWith("- ")) {
         elements.push(
-          <li key={i} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
-            {line.replace("- ", "")}
+          <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
+            {renderInline(line.replace("- ", ""))}
           </li>
         );
       } else if (line.match(/^\d+\.\s/)) {
         elements.push(
-          <li key={i} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2 list-decimal">
-            {line.replace(/^\d+\.\s/, "")}
+          <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2 list-decimal">
+            {renderInline(line.replace(/^\d+\.\s/, ""))}
           </li>
         );
       } else if (line.startsWith("`") && line.endsWith("`")) {
         elements.push(
-          <code key={i} className="bg-muted px-2 py-1 rounded text-sm font-mono text-foreground block my-4">
+          <code key={idx} className="bg-muted px-2 py-1 rounded text-sm font-mono text-foreground block my-4">
             {line.replace(/`/g, "")}
           </code>
         );
       } else if (line.trim() === "") {
-        elements.push(<div key={i} className="h-4" />);
+        elements.push(<div key={idx} className="h-4" />);
       } else {
-        // Handle inline bold and code
-        const parts = line.split(/(\*\*.*?\*\*|`.*?`)/g);
         elements.push(
-          <p key={i} className="font-body text-muted-foreground leading-relaxed mb-3">
-            {parts.map((part, j) => {
-              if (part.startsWith("**") && part.endsWith("**")) {
-                return <strong key={j} className="text-foreground">{part.slice(2, -2)}</strong>;
-              }
-              if (part.startsWith("`") && part.endsWith("`")) {
-                return <code key={j} className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">{part.slice(1, -1)}</code>;
-              }
-              return part;
-            })}
+          <p key={idx} className="font-body text-muted-foreground leading-relaxed mb-3">
+            {renderInline(line)}
           </p>
         );
       }
-    });
+
+      idx++;
+    }
 
     return elements;
   };
