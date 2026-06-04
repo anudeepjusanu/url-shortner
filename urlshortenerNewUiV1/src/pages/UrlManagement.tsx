@@ -63,7 +63,6 @@ interface ContentItem {
 }
 
 const PAGE_SIZE = 20;
-const FETCH_LIMIT = 500;
 
 const getSortParams = (sort: string): Record<string, string> => {
   switch (sort) {
@@ -182,14 +181,15 @@ const UrlManagement = () => {
     setIsLoading(true);
     setIsError(false);
     try {
+      const BATCH = 500;
       const urlParams: Record<string, string | number> = {
         page: 1,
-        limit: FETCH_LIMIT,
+        limit: BATCH,
         ...getSortParams(sortBy),
       };
       const bioParams: Record<string, string | number> = {
         page: 1,
-        limit: FETCH_LIMIT,
+        limit: BATCH,
         ...getSortParams(sortBy),
       };
 
@@ -216,9 +216,31 @@ const UrlManagement = () => {
         bioParams.endDate = endIso;
       }
 
+      // Fetch first pages in parallel
       const [urlsRes, bioRes] = await Promise.all([
         adminService.getUrls(urlParams),
         adminService.getBioPages(bioParams),
+      ]);
+
+      const urlTotalPages: number = urlsRes?.data?.pagination?.pages ?? 1;
+      const bioTotalPages: number = bioRes?.data?.pagination?.pages ?? 1;
+
+      // Fetch any remaining pages in parallel so all records are visible
+      const [restUrlResults, restBioResults] = await Promise.all([
+        urlTotalPages > 1
+          ? Promise.all(
+              Array.from({ length: urlTotalPages - 1 }, (_, i) =>
+                adminService.getUrls({ ...urlParams, page: i + 2 })
+              )
+            )
+          : Promise.resolve([]),
+        bioTotalPages > 1
+          ? Promise.all(
+              Array.from({ length: bioTotalPages - 1 }, (_, i) =>
+                adminService.getBioPages({ ...bioParams, page: i + 2 })
+              )
+            )
+          : Promise.resolve([]),
       ]);
 
       const fetchedUrls: Array<{
@@ -226,13 +248,19 @@ const UrlManagement = () => {
         title?: string; domain?: string; clickCount: number; isActive: boolean;
         createdAt: string; updatedAt: string;
         creator?: { _id: string; firstName: string; lastName: string; email: string };
-      }> = urlsRes?.data?.urls ?? [];
+      }> = [
+        ...(urlsRes?.data?.urls ?? []),
+        ...restUrlResults.flatMap((r: any) => r?.data?.urls ?? []),
+      ];
       const fetchedBioPages: Array<{
         _id: string; username: string; title?: string;
         totalViews: number; isActive: boolean; isPublished?: boolean;
         createdAt: string; updatedAt: string;
         owner?: { _id: string; firstName: string; lastName: string; email: string };
-      }> = bioRes?.data?.bioPages ?? [];
+      }> = [
+        ...(bioRes?.data?.bioPages ?? []),
+        ...restBioResults.flatMap((r: any) => r?.data?.bioPages ?? []),
+      ];
 
       const urlItems: ContentItem[] = fetchedUrls.map((u) => ({
         _id: u._id,

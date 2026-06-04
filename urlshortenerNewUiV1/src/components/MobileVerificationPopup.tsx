@@ -22,8 +22,6 @@ import { Loader2 } from 'lucide-react';
 // ============================================================================
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
 const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;  // TEMPORARY - REMOVE AFTER TESTING
-const SAUDI_COUNTRY_CODE = '+966';
-const INDIA_COUNTRY_CODE = '+91';  // TEMPORARY - REMOVE AFTER TESTING
 // ============================================================================
 
 const RESEND_COOLDOWN = 60;
@@ -34,7 +32,7 @@ const OTP_LENGTH = 4;
 // TEMPORARY: Country options for testing - REMOVE AFTER TESTING
 const COUNTRY_OPTIONS = [
   { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
-  // { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+  { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 
 interface MobileVerificationPopupProps {
@@ -52,7 +50,6 @@ const MobileVerificationPopup = ({ open, sessionToken, onClose }: MobileVerifica
   // TEMPORARY: Country selection state for testing - REMOVE AFTER TESTING
   const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
   const [countryOpen, setCountryOpen] = useState(false);
-
   const [step, setStep] = useState<'phone' | 'otp' | 'locked'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
