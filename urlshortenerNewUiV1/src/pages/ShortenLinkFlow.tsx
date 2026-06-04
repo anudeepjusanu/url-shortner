@@ -14,6 +14,13 @@ import { Loader2, Link2, Check, Copy, Eye, EyeOff, ArrowRight, ArrowLeft, Globe,
 import { cn } from "@/lib/utils";
 
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
+// TEMPORARY: India support for testing - REMOVE BEFORE PRODUCTION
+const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;
+const COUNTRY_OPTIONS = [
+  { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
+  { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+];
+// ============================================================================
 const RESEND_COOLDOWN = 60;
 const MAX_RESENDS = 3;
 const MAX_OTP_ATTEMPTS = 5;
@@ -53,6 +60,13 @@ const ShortenLinkFlow = () => {
   const [emailOtpError, setEmailOtpError] = useState("");
 
   // ── Phone verification state ──
+  // TEMPORARY: Country selection for testing - REMOVE AFTER TESTING
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
+  const [countryOpen, setCountryOpen] = useState(false);
+  // TEMPORARY: devOtp for Indian numbers in non-production - REMOVE AFTER TESTING
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  // sessionKey returned by /auth/phone/send-otp for email-flow verification
+  const [phoneSessionKey, setPhoneSessionKey] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [phoneOtp, setPhoneOtp] = useState("");
@@ -150,8 +164,14 @@ const ShortenLinkFlow = () => {
   const validatePhone = (value: string) => {
     const digits = value.replace(/\D/g, "");
     if (!digits) return t("Phone number is required", "رقم الجوال مطلوب");
-    if (digits.length !== 9) return t("Please enter 9 digits", "الرجاء إدخال 9 أرقام");
-    if (!SAUDI_NUMBER_REGEX.test(digits)) return t("Invalid Saudi mobile number", "رقم جوال سعودي غير صحيح");
+    if (selectedCountry.dialCode === '+91') {
+      // TEMPORARY: India validation - REMOVE AFTER TESTING
+      if (digits.length !== 10) return t("Please enter 10 digits", "الرجاء إدخال 10 أرقام");
+      if (!INDIA_NUMBER_REGEX.test(digits)) return t("Invalid Indian mobile number", "رقم جوال هندي غير صحيح");
+    } else {
+      if (digits.length !== 9) return t("Please enter 9 digits", "الرجاء إدخال 9 أرقام");
+      if (!SAUDI_NUMBER_REGEX.test(digits)) return t("Invalid Saudi mobile number", "رقم جوال سعودي غير صحيح");
+    }
     return "";
   };
 
@@ -330,16 +350,16 @@ const ShortenLinkFlow = () => {
     try {
       if (googleSessionToken) {
         // Google SSO flow
-        await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        const otpRes = await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        // TEMPORARY: devOtp returned for Indian numbers in non-production - REMOVE AFTER TESTING
+        setDevOtp(otpRes?.data?.devOtp ?? null);
       } else {
-        // Email flow: we need to store phone for later registration
-        // For now, we'll simulate OTP by storing in session
-        // In a real implementation, you'd call a backend endpoint to send SMS OTP
-        // Since the current backend only supports Google SSO phone OTP,
-        // we'll use a workaround for email-based new users
-        const mockSessionToken = `email_phone_${Date.now()}`;
+        // Email registration flow — real OTP via /auth/phone/send-otp
+        const otpRes = await authAPI.phoneSendOTP(email.trim(), phoneNumber);
+        setPhoneSessionKey(otpRes?.data?.sessionKey ?? null);
+        // TEMPORARY: devOtp returned for Indian numbers in non-production - REMOVE AFTER TESTING
+        setDevOtp(otpRes?.data?.devOtp ?? null);
         sessionStorage.setItem("phoneVerificationPhone", phoneNumber);
-        sessionStorage.setItem("phoneVerificationToken", mockSessionToken);
       }
 
       setPhoneOtpResends((prev) => prev + 1);
@@ -367,7 +387,12 @@ const ShortenLinkFlow = () => {
     setIsLoading(true);
     try {
       if (googleSessionToken) {
-        await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        const otpRes = await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        setDevOtp(otpRes?.data?.devOtp ?? null);
+      } else {
+        const otpRes = await authAPI.phoneSendOTP(email.trim(), phoneNumber);
+        setPhoneSessionKey(otpRes?.data?.sessionKey ?? null);
+        setDevOtp(otpRes?.data?.devOtp ?? null);
       }
 
       setPhoneOtpResends((prev) => prev + 1);
@@ -406,11 +431,16 @@ const ShortenLinkFlow = () => {
           await finishFlow();
         }
       } else {
-        // Email-based new user flow
-        // Since backend doesn't have direct SMS OTP for email registration,
-        // we verify the OTP conceptually and move to complete profile
-        // In production, this would call a backend verify endpoint
-        setStep("completeProfile");
+        // Email registration flow — verify against Redis via /auth/phone/verify-otp
+        if (!phoneSessionKey) {
+          setPhoneOtpError(t("Session expired. Please request a new code.", "انتهت الجلسة. الرجاء طلب رمز جديد."));
+          return;
+        }
+        const response = await authAPI.phoneVerifyOTP(phoneSessionKey, phoneOtp);
+        if (response?.success) {
+          setPhoneSessionKey(null);
+          setStep("completeProfile");
+        }
       }
     } catch (error: any) {
       const newAttempts = phoneOtpAttempts + 1;
@@ -475,20 +505,21 @@ const ShortenLinkFlow = () => {
         fullName: fullName.trim(),
         email: email.trim(),
         password: newPassword,
-        phone: phone ? `+966${phone}` : "",
+        phone: phone ? `${selectedCountry.dialCode}${phone}` : "",
       };
 
       const response = await authAPI.register(payload);
 
-      if (response?.otpRequired || response?.data?.otpSent) {
-        // Backend sent email OTP, but we've already done phone verification
-        // Try registering again with a dummy OTP or handle accordingly
-        // For now, just proceed to result
+      if (response?.success) {
+        // Token is already set by authAPI.register — refreshUser will succeed
         await refreshUser();
         await finishFlow();
-      } else if (response?.success) {
-        await refreshUser();
-        await finishFlow();
+      } else if (response?.otpRequired || response?.data?.otpSent) {
+        // Phone verification didn't produce a Redis token in time — surface a clear error
+        throw new Error(t(
+          "Verification session expired. Please go back and re-verify your phone number.",
+          "انتهت جلسة التحقق. الرجاء العودة والتحقق من رقم جوالك مجدداً."
+        ));
       }
     } catch (error: any) {
       const msg = error.message || "";
@@ -559,7 +590,7 @@ const ShortenLinkFlow = () => {
     if (step === "password") setStep("email");
     else if (step === "emailOtp") setStep("password");
     else if (step === "phone") setStep("email");
-    else if (step === "phoneOtp") setStep("phone");
+    else if (step === "phoneOtp") { setDevOtp(null); setPhoneSessionKey(null); setStep("phone"); }
     else if (step === "completeProfile") setStep("phoneOtp");
   };
 
@@ -699,8 +730,10 @@ const ShortenLinkFlow = () => {
               {step === "email" && t("Sign up to shorten your link.", "سجّل لإنشاء رابطك المختصر.")}
               {step === "password" && t("Enter your password to continue", "أدخل كلمة المرور للمتابعة")}
               {step === "emailOtp" && t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
-              {step === "phone" && t("Enter your Saudi mobile number", "أدخل رقم جوالك السعودي")}
-              {step === "phoneOtp" && t(`Code sent to +966${phoneNumber}`, `تم إرسال الرمز إلى +966${phoneNumber}`)}
+              {step === "phone" && (selectedCountry.dialCode === '+91'
+                ? t("Enter your Indian mobile number", "أدخل رقم جوالك الهندي")
+                : t("Enter your Saudi mobile number", "أدخل رقم جوالك السعودي"))}
+              {step === "phoneOtp" && t(`Code sent to ${selectedCountry.dialCode}${phoneNumber}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phoneNumber}`)}
               {step === "completeProfile" && t("Just a few more details", "بضعة تفاصيل إضافية")}
               {step === "result" && t("Your link is ready", "رابطك جاهز")}
             </p>
@@ -877,19 +910,52 @@ const ShortenLinkFlow = () => {
               <div className="space-y-2">
                 <Label className="text-sm">{t("Mobile Number", "رقم الجوال")}</Label>
                 <div className="flex items-center gap-2">
-                  <div className="shrink-0 h-11 px-3 rounded-md border border-input bg-muted/50 flex items-center gap-1.5 text-sm font-body text-foreground">
-                    <span>🇸🇦</span>
-                    <span className="text-muted-foreground">+966</span>
+                  {/* TEMPORARY: Country selector for testing - REMOVE AFTER TESTING */}
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCountryOpen(!countryOpen)}
+                      className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-background text-sm font-body text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span>{selectedCountry.flag}</span>
+                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
+                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute top-full start-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md min-w-[140px]">
+                        {COUNTRY_OPTIONS.map((c) => (
+                          <button
+                            key={c.dialCode}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(c);
+                              setPhoneNumber("");
+                              setPhoneError("");
+                              setCountryOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start ${
+                              selectedCountry.dialCode === c.dialCode ? "bg-muted" : ""
+                            }`}
+                          >
+                            <span>{c.flag}</span>
+                            <span className="text-muted-foreground">{c.dialCode}</span>
+                            <span className="text-foreground">{c.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="5XXXXXXXX"
+                    placeholder={selectedCountry.placeholder}
                     value={phoneNumber}
-                    onChange={(e) => { setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 9)); setPhoneError(""); }}
+                    onChange={(e) => { setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits)); setPhoneError(""); }}
                     className="h-11"
                     dir="ltr"
-                    maxLength={9}
+                    maxLength={selectedCountry.maxDigits}
                     autoFocus
                   />
                 </div>
@@ -897,7 +963,10 @@ const ShortenLinkFlow = () => {
                   <p className="text-xs text-destructive font-body">{phoneError}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {t("Enter your Saudi mobile number (5XXXXXXXX)", "أدخل رقم جوالك السعودي (5XXXXXXXX)")}
+                  {selectedCountry.dialCode === '+91'
+                    ? t(`Enter your Indian mobile number (${selectedCountry.placeholder})`, `أدخل رقم جوالك الهندي (${selectedCountry.placeholder})`)
+                    : t(`Enter your Saudi mobile number (${selectedCountry.placeholder})`, `أدخل رقم جوالك السعودي (${selectedCountry.placeholder})`)
+                  }
                 </p>
               </div>
 
@@ -905,7 +974,7 @@ const ShortenLinkFlow = () => {
                 type="button"
                 className="w-full h-11 bg-primary text-primary-foreground"
                 onClick={handleSendPhoneOtp}
-                disabled={phoneNumber.length !== 9 || isLoading || !!phoneError}
+                disabled={phoneNumber.length !== selectedCountry.maxDigits || isLoading || !!phoneError}
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Sending...", "جاري الإرسال...")}</>

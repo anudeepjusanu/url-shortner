@@ -15,8 +15,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Trust proxy
-app.set('trust proxy', true);
+// Trust only the first proxy hop (nginx/load balancer). Using `true` allows
+// clients to spoof X-Forwarded-For and bypass IP-based rate limiting.
+app.set('trust proxy', 1);
 
 // Enable compression
 const compression = require('compression');
@@ -64,8 +65,7 @@ app.use(helmet({
   }
 }));
 
-// Trust proxy - CRITICAL for getting real IP addresses behind reverse proxies (nginx, cloudflare, etc.)
-app.set('trust proxy', true);
+// Trust proxy already set to 1 above (single hop — safe for rate limiting)
 
 app.use(helmet({
   contentSecurityPolicy: {

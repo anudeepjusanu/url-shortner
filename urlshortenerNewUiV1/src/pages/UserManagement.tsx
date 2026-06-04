@@ -95,15 +95,32 @@ const UserManagement = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const [usersRes, statsRes] = await Promise.all([
-        adminService.getUsers({ limit: 500 }),
+      const BATCH = 500;
+      // First batch + stats in parallel
+      const [firstRes, statsRes] = await Promise.all([
+        adminService.getUsers({ limit: BATCH, page: 1 }),
         adminService.getStats(),
       ]);
-      setUsers(usersRes?.data?.users ?? []);
+
+      const firstUsers: AdminUser[] = firstRes?.data?.users ?? [];
+      const totalPages: number = firstRes?.data?.pagination?.pages ?? 1;
+
+      // Fetch all remaining pages in parallel so we never miss users beyond page 1
+      let allUsers: AdminUser[] = [...firstUsers];
+      if (totalPages > 1) {
+        const rest = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, i) =>
+            adminService.getUsers({ limit: BATCH, page: i + 2 })
+          )
+        );
+        rest.forEach((res) => {
+          allUsers = allUsers.concat(res?.data?.users ?? []);
+        });
+      }
+
+      setUsers(allUsers);
       const overview = statsRes?.data?.overview ?? {};
-      setGlobalStats({
-        totalDomains: overview.totalDomains ?? 0,
-      });
+      setGlobalStats({ totalDomains: overview.totalDomains ?? 0 });
     } catch {
       setIsError(true);
     } finally {

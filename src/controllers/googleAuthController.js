@@ -330,12 +330,16 @@ const sendGoogleSignupOTP = async (req, res) => {
       method: 'sms',
     });
 
+    // TEMPORARY: Return OTP in response for Indian numbers in non-production (Authentica SA doesn't support +91)
+    const isDevIndiaNumber = process.env.NODE_ENV !== 'production' && isIndiaNumber;
+
     return res.json({
       success: true,
       message: 'Verification code sent to your mobile number',
       data: {
         phone: maskPhone(session.phone),
         expiresIn: 300,
+        ...(isDevIndiaNumber ? { devOtp: otp } : {}),
       },
     });
   } catch (error) {
@@ -567,9 +571,112 @@ const cancelGoogleSignup = async (req, res) => {
   }
 };
 
+// ── Generic phone OTP (for email-based registration flow) ──────────────────
+// TEMPORARY: India support added for testing - REMOVE BEFORE PRODUCTION
+
+const sendPhoneOTP = async (req, res) => {
+  try {
+    const { email, phoneNumber } = req.body;
+    if (!email || !phoneNumber) {
+      return res.status(400).json({ success: false, message: 'Email and phone number are required' });
+    }
+
+    const digits = phoneNumber.replace(/\D/g, '');
+    const isSaudiNumber = SAUDI_PHONE_REGEX.test(digits);
+    const isIndiaNumber = INDIA_PHONE_REGEX.test(digits);
+
+    if (!isSaudiNumber && !isIndiaNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
+      });
+    }
+
+    const countryCode = isSaudiNumber ? '+966' : '+91';
+    const fullPhone = `${countryCode}${digits}`;
+    const otp = generateOtpCode();
+    const sessionKey = `phone_otp:${fullPhone}`;
+
+    await cacheSet(sessionKey, JSON.stringify({ otp, email, phone: fullPhone, attempts: 0 }), 5 * 60);
+
+    await otpService.sendOtp({ email, phone: fullPhone, otp, method: 'sms' });
+
+    const isDevIndia = process.env.NODE_ENV !== 'production' && isIndiaNumber;
+
+    return res.json({
+      success: true,
+      message: 'Verification code sent to your mobile number',
+      data: {
+        phone: maskPhone(fullPhone),
+        sessionKey,
+        expiresIn: 300,
+        ...(isDevIndia ? { devOtp: otp } : {}),
+      },
+    });
+  } catch (error) {
+    console.error('sendPhoneOTP error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send verification code',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
+const verifyPhoneOTP = async (req, res) => {
+  try {
+    const { sessionKey, otp } = req.body;
+    if (!sessionKey || !otp) {
+      return res.status(400).json({ success: false, message: 'Session key and OTP are required' });
+    }
+
+    const cached = await cacheGet(sessionKey);
+    if (!cached) {
+      return res.status(401).json({ success: false, message: 'OTP expired or invalid. Please request a new one.' });
+    }
+
+    const session = JSON.parse(cached);
+
+    if (session.attempts >= 5) {
+      await cacheDel(sessionKey);
+      return res.status(423).json({ success: false, message: 'Too many failed attempts. Please request a new code.' });
+    }
+
+    if (session.otp !== otp) {
+      session.attempts = (session.attempts || 0) + 1;
+      await cacheSet(sessionKey, JSON.stringify(session), 5 * 60);
+      return res.status(400).json({
+        success: false,
+        message: `Invalid OTP. ${5 - session.attempts} attempt${5 - session.attempts === 1 ? '' : 's'} remaining.`,
+      });
+    }
+
+    await cacheDel(sessionKey);
+
+    // Mark phone as verified for this email so register can skip its own OTP step
+    const phoneVerifiedKey = `phone_verified:${session.email}`;
+    await cacheSet(phoneVerifiedKey, JSON.stringify({ phone: session.phone }), 10 * 60);
+
+    return res.json({
+      success: true,
+      message: 'Phone number verified successfully',
+      data: { phone: session.phone, email: session.email },
+    });
+  } catch (error) {
+    console.error('verifyPhoneOTP error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify OTP',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
 module.exports = {
   googleAuthenticate,
   sendGoogleSignupOTP,
   verifyGoogleSignupOTP,
   cancelGoogleSignup,
+  sendPhoneOTP,
+  verifyPhoneOTP,
 };

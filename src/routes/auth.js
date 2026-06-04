@@ -75,6 +75,10 @@ router.post('/google/send-otp', authLimiter, googleAuthController.sendGoogleSign
 router.post('/google/verify-otp', otpVerificationLimiter, googleAuthController.verifyGoogleSignupOTP);
 router.post('/google/cancel', authLimiter, googleAuthController.cancelGoogleSignup);
 
+// Generic phone OTP (email-based registration flow) - TEMPORARY for India testing
+router.post('/phone/send-otp', authLimiter, googleAuthController.sendPhoneOTP);
+router.post('/phone/verify-otp', otpVerificationLimiter, googleAuthController.verifyPhoneOTP);
+
 // Delete account
 router.delete('/account', authenticate, authController.deleteAccount);
 

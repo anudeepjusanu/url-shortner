@@ -19,7 +19,9 @@ const endpoints = {
     googleAuth: '/auth/google',
     googleSendOTP: '/auth/google/send-otp',
     googleVerifyOTP: '/auth/google/verify-otp',
-    googleCancel: '/auth/google/cancel'
+    googleCancel: '/auth/google/cancel',
+    phoneSendOTP: '/auth/phone/send-otp',
+    phoneVerifyOTP: '/auth/phone/verify-otp'
   },
   urls: {
     create: '/urls',
@@ -503,6 +505,31 @@ export const authAPI = {
       body: JSON.stringify({ sessionToken }),
     });
     return res.json();
+  },
+
+  // Generic phone OTP — used by email-based registration flow
+  phoneSendOTP: async (email: string, phoneNumber: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.phoneSendOTP}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, phoneNumber }),
+    });
+    const response = await res.json();
+    if (!res.ok) throw new Error(response.message || `HTTP ${res.status}`);
+    return response;
+  },
+
+  phoneVerifyOTP: async (sessionKey: string, otp: string) => {
+    const url = `${apiClient['baseURL']}${endpoints.auth.phoneVerifyOTP}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionKey, otp }),
+    });
+    const response = await res.json();
+    if (!res.ok) throw new Error(response.message || `HTTP ${res.status}`);
+    return response;
   },
 };
 

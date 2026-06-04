@@ -175,6 +175,66 @@ const register = async (req, res) => {
       }
     }
 
+    // Phone was already verified via /auth/phone/verify-otp — skip OTP, create user directly
+    const phoneVerifiedKey = `phone_verified:${normalizedEmail}`;
+    const phoneVerifiedData = await cacheGet(phoneVerifiedKey);
+    if (phoneVerifiedData) {
+      await cacheDel(phoneVerifiedKey);
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const clientIP = getClientIP(req);
+      let registrationLocation = null;
+      try { registrationLocation = await getLocationFromIP(clientIP); } catch (_) {}
+
+      const nameParts = (fullName || "").trim().split(/\s+/);
+      const firstName = nameParts[0] || fullName;
+      const lastName = nameParts.slice(1).join(" ") || undefined;
+      const verifiedPhone = JSON.parse(phoneVerifiedData).phone || normalizedPhone;
+
+      let user;
+      if (existingUser && existingUser.googleId && !existingUser.password) {
+        existingUser.password = hashedPassword;
+        if (verifiedPhone && !existingUser.phone) existingUser.phone = verifiedPhone;
+        if (!existingUser.firstName) existingUser.firstName = firstName;
+        if (!existingUser.lastName && lastName) existingUser.lastName = lastName;
+        await existingUser.save();
+        user = existingUser;
+      } else {
+        user = new User({
+          email: normalizedEmail,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          phone: verifiedPhone,
+          isEmailVerified: true,
+          registrationLocation,
+        });
+        await user.save();
+      }
+
+      try { await emailService.sendWelcomeEmail(user); } catch (_) {}
+      try { await emailService.sendAdminNotification(user); } catch (_) {}
+
+      const { accessToken, refreshToken } = generateTokens(user._id);
+      return res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone,
+            role: user.role,
+            isEmailVerified: user.isEmailVerified,
+          },
+          accessToken,
+          refreshToken,
+        },
+      });
+    }
+
     // If OTP not provided, store registration data and send OTP
     if (!otp) {
       try {
