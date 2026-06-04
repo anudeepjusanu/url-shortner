@@ -5,285 +5,408 @@ const Domain = require('../models/Domain');
 const { cacheGet, cacheSet } = require('../config/redis');
 const config = require('../config/environment');
 
+// Shared helper — fetches, caches, and returns the full analytics data object.
+// All sub-route controllers call this so they share the same cache entry.
+const resolveAnalyticsData = async (id, query, user) => {
+  const {
+    period = '30d',
+    startDate,
+    endDate,
+    groupBy = 'day'
+  } = query;
+
+  let urlObjectId;
+  try {
+    urlObjectId = new mongoose.Types.ObjectId(id);
+  } catch (err) {
+    const e = new Error('Invalid URL ID format');
+    e.status = 400;
+    throw e;
+  }
+
+  const url = await Url.findById(urlObjectId);
+  if (!url) {
+    const e = new Error('URL not found');
+    e.status = 404;
+    throw e;
+  }
+
+  if (url.creator.toString() !== user.id &&
+      (!user.organization || url.organization?.toString() !== user.organization.toString())) {
+    const e = new Error('Access denied');
+    e.status = 403;
+    throw e;
+  }
+
+  const cacheKey = `analytics:${id}:${period}:${groupBy}`;
+  const cachedData = await cacheGet(cacheKey);
+  if (cachedData) {
+    console.log('📊 Returning CACHED analytics data for:', cacheKey);
+    return cachedData;
+  }
+
+  console.log('📊 No cache found, fetching fresh data for:', cacheKey);
+
+  let dateRange = {};
+  const now = new Date();
+
+  if (startDate && endDate) {
+    dateRange = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    };
+  } else {
+    const days = {
+      '24h': 1,
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      '1y': 365
+    }[period] || 30;
+    const start = new Date(now);
+    start.setDate(start.getDate() - days);
+    dateRange = { $gte: start, $lte: now };
+  }
+
+  console.log('📊 Analytics Query:', {
+    urlId: urlObjectId,
+    urlIdString: id,
+    period,
+    dateRange,
+    groupBy
+  });
+
+  const totalClicksEver = await Click.countDocuments({ url: urlObjectId });
+  console.log('📊 Total clicks ever for this URL:', totalClicksEver);
+
+  const clicksByShortCode = await Click.countDocuments({ shortCode: url.shortCode });
+  console.log('📊 Clicks by shortCode:', clicksByShortCode);
+
+  const [clicks, topStats, rawTimeSeriesData, clickCounts] = await Promise.all([
+    Click.find({
+      url: urlObjectId,
+      timestamp: dateRange,
+      isBot: { $ne: true }
+    }).sort({ timestamp: -1 }).limit(1000),
+
+    Click.getTopStats(urlObjectId, dateRange),
+
+    Click.aggregate([
+      {
+        $match: {
+          url: urlObjectId,
+          timestamp: dateRange,
+          isBot: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: groupBy === 'hour' ? '%Y-%m-%d-%H' : '%Y-%m-%d',
+              date: '$timestamp'
+            }
+          },
+          clicks: { $sum: 1 },
+          uniqueClicks: { $addToSet: '$ipHash' }
+        }
+      },
+      {
+        $project: {
+          date: '$_id',
+          clicks: 1,
+          uniqueClicks: { $size: '$uniqueClicks' }
+        }
+      },
+      { $sort: { date: 1 } }
+    ]),
+
+    Click.aggregate([
+      {
+        $match: {
+          url: urlObjectId,
+          timestamp: dateRange,
+          isBot: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalClicks: { $sum: 1 },
+          uniqueClicks: {
+            $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] }
+          }
+        }
+      }
+    ])
+  ]);
+
+  console.log('📊 Analytics Results:', {
+    clicksFound: clicks.length,
+    timeSeriesPoints: rawTimeSeriesData.length,
+    rawTimeSeriesData: rawTimeSeriesData.slice(0, 5),
+    clickCounts: clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 }
+  });
+
+  const dataMap = new Map();
+  rawTimeSeriesData.forEach(item => {
+    dataMap.set(item.date, {
+      date: item.date,
+      clicks: item.clicks,
+      uniqueClicks: item.uniqueClicks
+    });
+  });
+
+  const timeSeriesData = [];
+  const rangeStart = dateRange.$gte;
+  const rangeEnd = dateRange.$lte || now;
+
+  if (groupBy === 'hour') {
+    const current = new Date(rangeStart);
+    while (current <= rangeEnd) {
+      const dateStr = current.toISOString().slice(0, 13).replace('T', '-');
+      const existing = dataMap.get(dateStr);
+      timeSeriesData.push({
+        date: dateStr,
+        clicks: existing ? existing.clicks : 0,
+        uniqueClicks: existing ? existing.uniqueClicks : 0
+      });
+      current.setHours(current.getHours() + 1);
+    }
+  } else {
+    const current = new Date(rangeStart);
+    current.setHours(0, 0, 0, 0);
+    const end = new Date(rangeEnd);
+    end.setHours(23, 59, 59, 999);
+
+    while (current <= end) {
+      const dateStr = current.toISOString().slice(0, 10);
+      const existing = dataMap.get(dateStr);
+      timeSeriesData.push({
+        date: dateStr,
+        clicks: existing ? existing.clicks : 0,
+        uniqueClicks: existing ? existing.uniqueClicks : 0
+      });
+      current.setDate(current.getDate() + 1);
+    }
+  }
+
+  const aggregatedCounts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
+  const daysDiff = Math.ceil((dateRange.$lte - dateRange.$gte) / (1000 * 60 * 60 * 24)) || 1;
+  const totalClicks = aggregatedCounts.totalClicks > 0 ? aggregatedCounts.totalClicks : (url.clickCount || 0);
+  const uniqueClicks = aggregatedCounts.uniqueClicks > 0 ? aggregatedCounts.uniqueClicks : (url.uniqueClickCount || 0);
+
+  console.log('📊 Final counts:', {
+    aggregatedTotal: aggregatedCounts.totalClicks,
+    aggregatedUnique: aggregatedCounts.uniqueClicks,
+    urlModelTotal: url.clickCount,
+    urlModelUnique: url.uniqueClickCount,
+    finalTotal: totalClicks,
+    finalUnique: uniqueClicks
+  });
+
+  const analyticsData = {
+    url: {
+      _id: url._id,
+      shortCode: url.shortCode,
+      customCode: url.customCode,
+      originalUrl: url.originalUrl,
+      title: url.title,
+      domain: url.domain,
+      createdAt: url.createdAt,
+      clickCount: url.clickCount || 0,
+      uniqueClickCount: url.uniqueClickCount || 0,
+      qrScanCount: url.qrScanCount || 0,
+      uniqueQrScanCount: url.uniqueQrScanCount || 0
+    },
+    overview: {
+      totalClicks,
+      uniqueClicks,
+      averageClicksPerDay: Math.round(totalClicks / daysDiff),
+      lastClicked: url.lastClickedAt,
+      allTimeTotalClicks: url.clickCount || 0,
+      allTimeUniqueClicks: url.uniqueClickCount || 0
+    },
+    timeSeries: timeSeriesData,
+    topStats: topStats[0] || {
+      countries: [],
+      cities: [],
+      referrers: [],
+      devices: [],
+      browsers: [],
+      operatingSystems: []
+    },
+    recentClicks: clicks.slice(0, 20).map(click => ({
+      timestamp: click.timestamp,
+      country: click.location?.countryName || click.location?.country || '',
+      countryName: click.location?.countryName || click.location?.country || '',
+      region: click.location?.region || '',
+      city: click.location?.city || '',
+      device: click.device?.type || '',
+      deviceType: click.device?.type || '',
+      browser: click.device?.browser?.name || '',
+      os: click.device?.os?.name || '',
+      referer: click.referer || '',
+      language: click.language || '',
+      clickSource: click.clickSource || 'unknown'
+    }))
+  };
+
+  await cacheSet(cacheKey, analyticsData, config.CACHE_TTL.ANALYTICS_CACHE);
+  return analyticsData;
+};
+
 const getUrlAnalytics = async (req, res) => {
   try {
+    const data = await resolveAnalyticsData(req.params.id, req.query, req.user);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Get URL analytics error:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch analytics'
+    });
+  }
+};
+
+const getUrlOverview = async (req, res) => {
+  try {
+    const data = await resolveAnalyticsData(req.params.id, req.query, req.user);
+    res.json({
+      success: true,
+      data: {
+        url: data.url,
+        overview: data.overview,
+        timeSeries: data.timeSeries
+      }
+    });
+  } catch (error) {
+    console.error('Get URL overview error:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch analytics overview'
+    });
+  }
+};
+
+const getDeviceAnalytics = async (req, res) => {
+  try {
+    const data = await resolveAnalyticsData(req.params.id, req.query, req.user);
+    res.json({
+      success: true,
+      data: {
+        devices: data.topStats.devices,
+        browsers: data.topStats.browsers,
+        operatingSystems: data.topStats.operatingSystems
+      }
+    });
+  } catch (error) {
+    console.error('Get device analytics error:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch device analytics'
+    });
+  }
+};
+
+const getGeographicAnalytics = async (req, res) => {
+  try {
+    const data = await resolveAnalyticsData(req.params.id, req.query, req.user);
+    res.json({
+      success: true,
+      data: {
+        countries: data.topStats.countries,
+        cities: data.topStats.cities
+      }
+    });
+  } catch (error) {
+    console.error('Get geographic analytics error:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch geographic analytics'
+    });
+  }
+};
+
+// Paginated click log — runs its own DB query so page/limit work correctly.
+const getClickAnalytics = async (req, res) => {
+  try {
     const { id } = req.params;
-    const { 
+    const {
       period = '30d',
       startDate,
       endDate,
-      groupBy = 'day'
+      page = 1,
+      limit = 50
     } = req.query;
-    
-    // Convert string ID to ObjectId for MongoDB queries
+
     let urlObjectId;
     try {
       urlObjectId = new mongoose.Types.ObjectId(id);
     } catch (err) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid URL ID format'
-      });
+      return res.status(400).json({ success: false, message: 'Invalid URL ID format' });
     }
-    
-    const url = await Url.findById(urlObjectId);
-    
-    if (!url) {
-      return res.status(404).json({
-        success: false,
-        message: 'URL not found'
-      });
-    }
-    
-    if (url.creator.toString() !== req.user.id && 
-        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied'
-      });
-    }
-    
-    const cacheKey = `analytics:${id}:${period}:${groupBy}`;
-    const cachedData = await cacheGet(cacheKey);
-    
-    if (cachedData) {
-      console.log('📊 Returning CACHED analytics data for:', cacheKey);
-      console.log('📊 Cached overview:', cachedData.overview);
-      return res.json({
-        success: true,
-        data: cachedData
-      });
-    }
-    
-    console.log('📊 No cache found, fetching fresh data for:', cacheKey);
-    
-    let dateRange = {};
-    const now = new Date();
 
+    const url = await Url.findById(urlObjectId);
+    if (!url) {
+      return res.status(404).json({ success: false, message: 'URL not found' });
+    }
+
+    if (url.creator.toString() !== req.user.id &&
+        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    const now = new Date();
+    let dateRange = {};
     if (startDate && endDate) {
-      dateRange = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
+      dateRange = { $gte: new Date(startDate), $lte: new Date(endDate) };
     } else {
-      const days = {
-        '24h': 1,
-        '7d': 7,
-        '30d': 30,
-        '90d': 90,
-        '1y': 365
-      }[period] || 30;
+      const days = { '24h': 1, '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[period] || 30;
       const start = new Date(now);
       start.setDate(start.getDate() - days);
       dateRange = { $gte: start, $lte: now };
     }
-    
-    console.log('📊 Analytics Query:', {
-      urlId: urlObjectId,
-      urlIdString: id,
-      period,
-      dateRange,
-      groupBy
-    });
-    
-    // First, check if there are any clicks for this URL at all (without date filter)
-    const totalClicksEver = await Click.countDocuments({ url: urlObjectId });
-    console.log('📊 Total clicks ever for this URL:', totalClicksEver);
-    
-    // Also try with shortCode in case url field has issues
-    const clicksByShortCode = await Click.countDocuments({ shortCode: url.shortCode });
-    console.log('📊 Clicks by shortCode:', clicksByShortCode);
-    
-    const [clicks, topStats, rawTimeSeriesData, clickCounts] = await Promise.all([
-      Click.find({
-        url: urlObjectId,
-        timestamp: dateRange,
-        isBot: { $ne: true }
-      }).sort({ timestamp: -1 }).limit(1000),
-      
-      Click.getTopStats(urlObjectId, dateRange),
-      
-      Click.aggregate([
-        {
-          $match: {
-            url: urlObjectId,
-            timestamp: dateRange,
-            isBot: { $ne: true }
-          }
-        },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: groupBy === 'hour' ? '%Y-%m-%d-%H' : '%Y-%m-%d',
-                date: '$timestamp'
-              }
-            },
-            clicks: { $sum: 1 },
-            uniqueClicks: {
-              $addToSet: '$ipHash'
-            }
-          }
-        },
-        {
-          $project: {
-            date: '$_id',
-            clicks: 1,
-            uniqueClicks: { $size: '$uniqueClicks' }
-          }
-        },
-        { $sort: { date: 1 } }
-      ]),
-      
-      // Get accurate click counts within the date range
-      Click.aggregate([
-        {
-          $match: {
-            url: urlObjectId,
-            timestamp: dateRange,
-            isBot: { $ne: true }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalClicks: { $sum: 1 },
-            uniqueClicks: {
-              $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] }
-            }
-          }
-        }
-      ])
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const matchFilter = { url: urlObjectId, timestamp: dateRange, isBot: { $ne: true } };
+
+    const [clicks, total] = await Promise.all([
+      Click.find(matchFilter).sort({ timestamp: -1 }).skip(skip).limit(limitNum),
+      Click.countDocuments(matchFilter)
     ]);
-    
-    console.log('📊 Analytics Results:', {
-      clicksFound: clicks.length,
-      timeSeriesPoints: rawTimeSeriesData.length,
-      rawTimeSeriesData: rawTimeSeriesData.slice(0, 5), // Log first 5 entries
-      clickCounts: clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 }
-    });
 
-    // Fill in missing dates with zero values
-    const dataMap = new Map();
-    rawTimeSeriesData.forEach(item => {
-      dataMap.set(item.date, {
-        date: item.date,
-        clicks: item.clicks,
-        uniqueClicks: item.uniqueClicks
-      });
-    });
-
-    const timeSeriesData = [];
-    const rangeStart = dateRange.$gte;
-    const rangeEnd = dateRange.$lte || now;
-
-    if (groupBy === 'hour') {
-      const current = new Date(rangeStart);
-      while (current <= rangeEnd) {
-        const dateStr = current.toISOString().slice(0, 13).replace('T', '-');
-        const existing = dataMap.get(dateStr);
-        timeSeriesData.push({
-          date: dateStr,
-          clicks: existing ? existing.clicks : 0,
-          uniqueClicks: existing ? existing.uniqueClicks : 0
-        });
-        current.setHours(current.getHours() + 1);
-      }
-    } else {
-      const current = new Date(rangeStart);
-      current.setHours(0, 0, 0, 0);
-      const end = new Date(rangeEnd);
-      end.setHours(23, 59, 59, 999);
-      
-      while (current <= end) {
-        const dateStr = current.toISOString().slice(0, 10);
-        const existing = dataMap.get(dateStr);
-        timeSeriesData.push({
-          date: dateStr,
-          clicks: existing ? existing.clicks : 0,
-          uniqueClicks: existing ? existing.uniqueClicks : 0
-        });
-        current.setDate(current.getDate() + 1);
-      }
-    }
-    
-    // Use accurate counts from aggregation for the selected period
-    // Fall back to URL model counts if aggregation returns nothing
-    const aggregatedCounts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
-    const daysDiff = Math.ceil((dateRange.$lte - dateRange.$gte) / (1000 * 60 * 60 * 24)) || 1;
-    
-    // Use aggregated counts if available, otherwise use URL model counts
-    const totalClicks = aggregatedCounts.totalClicks > 0 ? aggregatedCounts.totalClicks : (url.clickCount || 0);
-    const uniqueClicks = aggregatedCounts.uniqueClicks > 0 ? aggregatedCounts.uniqueClicks : (url.uniqueClickCount || 0);
-    
-    console.log('📊 Final counts:', {
-      aggregatedTotal: aggregatedCounts.totalClicks,
-      aggregatedUnique: aggregatedCounts.uniqueClicks,
-      urlModelTotal: url.clickCount,
-      urlModelUnique: url.uniqueClickCount,
-      finalTotal: totalClicks,
-      finalUnique: uniqueClicks
-    });
-    
-    const analyticsData = {
-      url: {
-        _id: url._id,
-        shortCode: url.shortCode,
-        customCode: url.customCode,
-        originalUrl: url.originalUrl,
-        title: url.title,
-        domain: url.domain,
-        createdAt: url.createdAt,
-        clickCount: url.clickCount || 0,
-        uniqueClickCount: url.uniqueClickCount || 0,
-        qrScanCount: url.qrScanCount || 0,
-        uniqueQrScanCount: url.uniqueQrScanCount || 0
-      },
-      overview: {
-        totalClicks: totalClicks,
-        uniqueClicks: uniqueClicks,
-        averageClicksPerDay: Math.round(totalClicks / daysDiff),
-        lastClicked: url.lastClickedAt,
-        // Include all-time stats as well
-        allTimeTotalClicks: url.clickCount || 0,
-        allTimeUniqueClicks: url.uniqueClickCount || 0
-      },
-      timeSeries: timeSeriesData,
-      topStats: topStats[0] || {
-        countries: [],
-        cities: [],
-        referrers: [],
-        devices: [],
-        browsers: [],
-        operatingSystems: []
-      },
-      recentClicks: clicks.slice(0, 20).map(click => ({
-        timestamp: click.timestamp,
-        country: click.location?.countryName || click.location?.country || '',
-        countryName: click.location?.countryName || click.location?.country || '',
-        region: click.location?.region || '',
-        city: click.location?.city || '',
-        device: click.device?.type || '',
-        deviceType: click.device?.type || '',
-        browser: click.device?.browser?.name || '',
-        os: click.device?.os?.name || '',
-        referer: click.referer || '',
-        language: click.language || '',
-        clickSource: click.clickSource || 'unknown'
-      }))
-    };
-    
-    await cacheSet(cacheKey, analyticsData, config.CACHE_TTL.ANALYTICS_CACHE);
-    
     res.json({
       success: true,
-      data: analyticsData
+      data: {
+        clicks: clicks.map(click => ({
+          timestamp: click.timestamp,
+          country: click.location?.countryName || click.location?.country || '',
+          region: click.location?.region || '',
+          city: click.location?.city || '',
+          device: click.device?.type || '',
+          browser: click.device?.browser?.name || '',
+          os: click.device?.os?.name || '',
+          referer: click.referer || '',
+          language: click.language || '',
+          clickSource: click.clickSource || 'unknown'
+        })),
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum)
+        }
+      }
     });
   } catch (error) {
-    console.error('Get URL analytics error:', error);
+    console.error('Get click analytics error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch analytics'
+      message: 'Failed to fetch click analytics'
     });
   }
 };
@@ -294,7 +417,6 @@ const getDashboardAnalytics = async (req, res) => {
     const userId = req.user.id;
     const organizationId = req.user.organization;
 
-    // Convert user ID to ObjectId for proper MongoDB queries
     let userObjectId;
     try {
       userObjectId = new mongoose.Types.ObjectId(userId);
@@ -321,8 +443,6 @@ const getDashboardAnalytics = async (req, res) => {
       ]
     };
 
-    // Build date range: prefer explicit startDate/endDate from the frontend
-    // (which encode the exact client-selected window) over the coarse period string.
     const now = new Date();
     let dateRange;
     if (startDateParam && endDateParam) {
@@ -353,7 +473,6 @@ const getDashboardAnalytics = async (req, res) => {
     const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
     const urlIds = urls.map(url => url._id);
 
-    // Get custom domains count for the user
     const customDomainsFilter = {
       $or: [
         { owner: userObjectId },
@@ -376,14 +495,12 @@ const getDashboardAnalytics = async (req, res) => {
       topReferrers,
       periodStats
     ] = await Promise.all([
-      // Period-filtered total clicks
       Click.countDocuments({
         url: { $in: urlIds },
         timestamp: dateRange,
         isBot: { $ne: true }
       }),
 
-      // Daily click series (filtered to selected range)
       Click.aggregate([
         {
           $match: {
@@ -403,7 +520,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
-      // Peak hours filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -421,7 +537,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
-      // Top countries — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -444,7 +559,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Top cities — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -468,7 +582,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Top devices — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -486,7 +599,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { clicks: -1 } }
       ]),
 
-      // Top browsers — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -506,7 +618,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Top operating systems — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -526,7 +637,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Top referrers — filtered to selected range
       Click.aggregate([
         {
           $match: {
@@ -559,7 +669,6 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Period-specific unique clicks and QR scans (derived from click records)
       Click.aggregate([
         {
           $match: {
@@ -668,8 +777,7 @@ const exportAnalytics = async (req, res) => {
   try {
     const { id } = req.params;
     const { format = 'json', period = '30d' } = req.query;
-    
-    // Convert string ID to ObjectId
+
     let urlObjectId;
     try {
       urlObjectId = new mongoose.Types.ObjectId(id);
@@ -679,24 +787,23 @@ const exportAnalytics = async (req, res) => {
         message: 'Invalid URL ID format'
       });
     }
-    
+
     const url = await Url.findById(urlObjectId);
-    
     if (!url) {
       return res.status(404).json({
         success: false,
         message: 'URL not found'
       });
     }
-    
-    if (url.creator.toString() !== req.user.id && 
+
+    if (url.creator.toString() !== req.user.id &&
         (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
       });
     }
-    
+
     const days = {
       '24h': 1,
       '7d': 7,
@@ -706,13 +813,13 @@ const exportAnalytics = async (req, res) => {
     }[period] || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    
+
     const clicks = await Click.find({
       url: urlObjectId,
       timestamp: { $gte: startDate },
       isBot: { $ne: true }
     }).sort({ timestamp: -1 });
-    
+
     const exportData = {
       url: {
         shortCode: url.shortCode,
@@ -734,13 +841,13 @@ const exportAnalytics = async (req, res) => {
         language: click.language || ''
       }))
     };
-    
+
     if (format === 'csv') {
       const csvHeader = 'Timestamp,Country,Region,City,Device,Browser,OS,Language,Referer\n';
-      const csvData = exportData.clicks.map(click => 
+      const csvData = exportData.clicks.map(click =>
         `${click.timestamp},${click.country},${click.region},${click.city},${click.deviceType},${click.browser},${click.os},${click.language},"${click.referer}"`
       ).join('\n');
-      
+
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="analytics-${url.shortCode}-${period}.csv"`);
       res.send(csvHeader + csvData);
@@ -760,6 +867,10 @@ const exportAnalytics = async (req, res) => {
 
 module.exports = {
   getUrlAnalytics,
+  getUrlOverview,
+  getDeviceAnalytics,
+  getGeographicAnalytics,
+  getClickAnalytics,
   getDashboardAnalytics,
   exportAnalytics
 };

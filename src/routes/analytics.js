@@ -16,22 +16,46 @@ router.use(sanitizeInput);
 router.use(authenticateAny);  // Accept both Bearer token and API key
 router.use(apiLimiter);
 
-router.get('/dashboard', 
-  validateAnalyticsQuery, 
+router.get('/dashboard',
+  validateAnalyticsQuery,
   analyticsController.getDashboardAnalytics
 );
 
-router.get('/:id', 
-  validateObjectId, 
-  validateAnalyticsQuery, 
-  analyticsController.getUrlAnalytics
+router.get('/:id/overview',
+  validateObjectId,
+  validateAnalyticsQuery,
+  analyticsController.getUrlOverview
 );
 
-router.get('/:id/export', 
-  validateObjectId, 
+router.get('/:id/devices',
+  validateObjectId,
+  validateAnalyticsQuery,
+  analyticsController.getDeviceAnalytics
+);
+
+router.get('/:id/geographic',
+  validateObjectId,
+  validateAnalyticsQuery,
+  analyticsController.getGeographicAnalytics
+);
+
+router.get('/:id/clicks',
+  validateObjectId,
+  validateAnalyticsQuery,
+  analyticsController.getClickAnalytics
+);
+
+router.get('/:id/export',
+  validateObjectId,
   checkFeatureAccess('analytics_export'),
-  validateExportQuery, 
+  validateExportQuery,
   analyticsController.exportAnalytics
+);
+
+router.get('/:id',
+  validateObjectId,
+  validateAnalyticsQuery,
+  analyticsController.getUrlAnalytics
 );
 
 module.exports = router;
