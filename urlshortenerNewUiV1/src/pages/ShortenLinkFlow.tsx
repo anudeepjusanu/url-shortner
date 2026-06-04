@@ -18,7 +18,7 @@ const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
 const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;
 const COUNTRY_OPTIONS = [
   { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
-  { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+  // { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 // ============================================================================
 const RESEND_COOLDOWN = 60;

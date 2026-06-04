@@ -32,7 +32,7 @@ const OTP_LENGTH = 4;
 // TEMPORARY: Country options for testing - REMOVE AFTER TESTING
 const COUNTRY_OPTIONS = [
   { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
-  { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+  // { dialCode: '+91', flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 
 interface MobileVerificationPopupProps {
