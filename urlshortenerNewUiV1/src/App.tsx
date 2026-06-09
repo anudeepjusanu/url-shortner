@@ -79,6 +79,12 @@ const QRErrorPage = lazy(() => import("./pages/QRErrorPage"));
 const LinkNotFoundPage = lazy(() => import("./pages/LinkNotFoundPage"));
 const UTMBuilder = lazy(() => import("./pages/UTMBuilder"));
 const CreateUTMLink = lazy(() => import("./pages/CreateUTMLink"));
+const FeatureUrlShortening = lazy(() => import("./pages/FeatureUrlShortening"));
+const FeatureQRCodes = lazy(() => import("./pages/FeatureQRCodes"));
+const FeatureLinkInBio = lazy(() => import("./pages/FeatureLinkInBio"));
+const FeatureUTMTracking = lazy(() => import("./pages/FeatureUTMTracking"));
+const FeatureCustomDomains = lazy(() => import("./pages/FeatureCustomDomains"));
+const FeatureAPI = lazy(() => import("./pages/FeatureAPI"));
 
 const queryClient = new QueryClient();
 
@@ -143,6 +149,12 @@ const App = () => (
             <Route path="/qr-error" element={<QRErrorPage />} />
             <Route path="/link-not-found" element={<LinkNotFoundPage />} />
             <Route path="/shorten" element={<ShortenLinkFlow />} />
+            <Route path="/features/url-shortening" element={<FeatureUrlShortening />} />
+            <Route path="/features/qr-codes" element={<FeatureQRCodes />} />
+            <Route path="/features/link-in-bio" element={<FeatureLinkInBio />} />
+            <Route path="/features/utm-tracking" element={<FeatureUTMTracking />} />
+            <Route path="/features/custom-domains" element={<FeatureCustomDomains />} />
+            <Route path="/features/api" element={<FeatureAPI />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

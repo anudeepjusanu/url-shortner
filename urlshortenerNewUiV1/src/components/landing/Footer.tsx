@@ -32,16 +32,12 @@ const Footer = () => {
           <div>
             <h3 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Product", "المنتج")}</h3>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/70">
-              <li>
-                <button onClick={() => scrollToSection("features")} className="hover:text-[hsl(var(--cream))]/90 transition-colors text-start">
-                  {t("Features", "الميزات")}
-                </button>
-              </li>
-              <li>
-                <a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/90 transition-colors">
-                  {t("API Documentation", "وثائق الـ API")}
-                </a>
-              </li>
+              <li><Link to="/features/url-shortening" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("URL Shortening", "اختصار الروابط")}</Link></li>
+              <li><Link to="/features/qr-codes" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("QR Codes", "أكواد QR")}</Link></li>
+              <li><Link to="/features/link-in-bio" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("Link in Bio", "رابط البايو")}</Link></li>
+              <li><Link to="/features/utm-tracking" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("UTM Tracking", "تتبع UTM")}</Link></li>
+              <li><Link to="/features/custom-domains" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("Custom Domains", "النطاقات المخصصة")}</Link></li>
+              <li><Link to="/features/api" className="hover:text-[hsl(var(--cream))]/90 transition-colors">{t("API Documentation", "وثائق الـ API")}</Link></li>
             </ul>
           </div>
 

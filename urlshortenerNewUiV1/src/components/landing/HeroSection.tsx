@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Loader2, Sparkles, CreditCard, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -184,12 +184,23 @@ const HeroSection = () => {
                 </motion.div>
               )}
 
-              <p className="mt-5 text-sm font-body text-[hsl(var(--navy))]/75">
-                {t(
-                  "Free to try · No credit card · Hosted in Saudi Arabia",
-                  "مجاني للتجربة · بدون بطاقة ائتمانية · مستضاف في السعودية"
-                )}
-              </p>
+              <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-2.5">
+                {[
+                  { icon: Sparkles, en: "Free to try", ar: "مجاني للتجربة" },
+                  { icon: CreditCard, en: "No credit card", ar: "بدون بطاقة ائتمانية" },
+                  { icon: MapPin, en: "Hosted in Saudi Arabia", ar: "مستضاف في السعودية" },
+                ].map((badge, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white shadow-soft border border-[hsl(var(--navy))]/5"
+                  >
+                    <badge.icon size={14} className="text-[hsl(var(--sky))]" />
+                    <span className="text-sm font-body font-medium text-[hsl(var(--navy))]/75">
+                      {t(badge.en, badge.ar)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
 
