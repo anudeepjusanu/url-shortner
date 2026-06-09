@@ -8,6 +8,7 @@ import HeroSection from "@/components/landing/HeroSection";
 
 // Below-the-fold sections lazy-loaded — they only need to render after scroll
 const FeaturesSection = lazy(() => import("@/components/landing/FeaturesSection"));
+const BioShowcase = lazy(() => import("@/components/landing/BioShowcase"));
 const AnalyticsSection = lazy(() => import("@/components/landing/AnalyticsSection"));
 const DeveloperSection = lazy(() => import("@/components/landing/DeveloperSection"));
 const ComparisonSection = lazy(() => import("@/components/landing/ComparisonSection"));
@@ -73,6 +74,7 @@ const Index = () => {
         <HeroSection />
         <Suspense fallback={<SectionFallback />}>
           <FeaturesSection />
+          <BioShowcase />
           <AnalyticsSection />
           <DeveloperSection />
           <ComparisonSection />

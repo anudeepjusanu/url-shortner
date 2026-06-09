@@ -1,9 +1,10 @@
-import { Link2, QrCode, Globe, ArrowRight } from "lucide-react";
+import { Link2, QrCode, Globe, Tag, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { LinksPreview, QRCodesPreview, DomainsPreview } from "./PreviewMockups";
+import { UTMPreview } from "./UTMPreviewMockup";
 
 const FeaturesSection = () => {
   const { t, isAr } = useLanguage();
@@ -17,6 +18,7 @@ const FeaturesSection = () => {
         "حوّل أي رابط طويل إلى رابط قصير ونظيف في ثواني. سهل تشاركه على السوشال ميديا، الرسائل، الإيميل، أو أي مكان تحتاج فيه رابط بسيط وسهل الحفظ."
       ),
       visual: <LinksPreview />,
+      link: "/features/url-shortening",
     },
     {
       icon: QrCode,
@@ -26,6 +28,17 @@ const FeaturesSection = () => {
         "سوي QR Codes لفلاير المطعم، تغليف المنتج، أو ستاند المعرض. كل مسح يتتبع مثل الضغطات."
       ),
       visual: <QRCodesPreview />,
+      link: "/features/qr-codes",
+    },
+    {
+      icon: Tag,
+      title: t("UTM tracking built in", "تتبع UTM مدمج"),
+      description: t(
+        "Add UTM parameters to any link with our visual builder. Track which campaigns, sources, and mediums drive the most clicks. No spreadsheets needed.",
+        "أضف معلمات UTM لأي رابط عبر أداتنا البصرية. تتبع أي الحملات والمصادر والوسائط تجلب أكثر ضغطات. بدون جداول بيانات."
+      ),
+      visual: <UTMPreview />,
+      link: "/features/utm-tracking",
     },
     {
       icon: Globe,
@@ -35,10 +48,11 @@ const FeaturesSection = () => {
         "خلي الروابط بنطاقك مو snip.sa. مثلاً: go.متجرك.sa/عرض_رمضان. SSL مجاني والإعداد يخلص في دقيقتين."
       ),
       visual: <DomainsPreview />,
+      link: "/features/custom-domains",
     },
   ];
 
-  const creamShades = ["section-cream-soft", "section-cream-warm", "section-cream-rose", "section-cream-blush"];
+  const creamShades = ["section-cream-soft", "section-cream-warm", "section-cream-rose", "section-cream-blush", "section-cream", "section-cream-soft"];
 
   return (
     <section id="features">
@@ -62,12 +76,21 @@ const FeaturesSection = () => {
                   <p className="font-body text-lg leading-relaxed mb-8 max-w-md text-[hsl(var(--navy))]/75">
                     {feature.description}
                   </p>
-                  <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>
-                    <Link to="/signup">
-                      {t("Get started for free", "ابدأ مجاناً")}
-                      <ArrowRight size={16} className="ms-1.5" />
-                    </Link>
-                  </Button>
+                  {feature.link ? (
+                    <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>
+                      <Link to={feature.link}>
+                        {t("Learn more", "اعرف أكثر")}
+                        <ArrowRight size={16} className="ms-1.5" />
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>
+                      <Link to="/signup">
+                        {t("Get started for free", "ابدأ مجاناً")}
+                        <ArrowRight size={16} className="ms-1.5" />
+                      </Link>
+                    </Button>
+                  )}
                 </motion.div>
 
                 <motion.div
