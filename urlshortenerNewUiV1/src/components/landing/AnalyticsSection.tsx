@@ -2,7 +2,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
 import { AnalyticsPreview } from "./PreviewMockups";
 
 const AnalyticsSection = () => {
@@ -25,20 +24,18 @@ const AnalyticsSection = () => {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-14"
         >
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-5 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-5 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
             {t("See exactly where your clicks are coming from", "شوف بالضبط من وين عملائك جايين")}
           </h2>
-          <p className="font-body text-lg leading-relaxed text-[hsl(var(--navy))]/75 max-w-xl mx-auto mb-8">
+          <p className="font-body text-lg leading-relaxed text-[hsl(var(--navy))]/65 max-w-xl mx-auto mb-8">
             {t(
               "Every link you shorten becomes a data source. Track clicks by country, city, device, browser, and platform.",
               "كل رابط تختصره يصير مصدر بيانات. تتبع الضغطات حسب الدولة، المدينة، الجهاز، المتصفح، والمصدر."
             )}
           </p>
-          <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all" asChild>
-            <Link to="/signup">
-              {t("Get started for free", "ابدأ مجاناً")}
-              <ArrowRight size={16} className="ms-1.5" />
-            </Link>
+          <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all">
+            {t("Get started for free", "ابدأ مجاناً")}
+            <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
           </Button>
         </motion.div>
 

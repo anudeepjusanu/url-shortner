@@ -12,26 +12,42 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      q: t("Is my data really stored in Saudi Arabia?", "هل بياناتي فعلاً مخزنة في السعودية؟"),
-      a: t("Yes. Our servers are physically located in Saudi data centers. Your data never leaves the Kingdom. We're PDPL compliant by design.", "نعم. سيرفراتنا موجودة فعلياً في مراكز بيانات سعودية. بياناتك ما تطلع من المملكة أبداً. نحن متوافقين مع نظام حماية البيانات الشخصية."),
+      q: t("Is my data stored inside Saudi Arabia?", "هل بياناتي محفوظة داخل السعودية؟"),
+      a: t(
+        "Yes. Our servers are inside the Kingdom of Saudi Arabia, and we comply with the Personal Data Protection Law (PDPL). Your data never leaves the Kingdom and is never shared with any external party.",
+        "نعم. سيرفراتنا داخل المملكة العربية السعودية، وممتثلون لنظام حماية البيانات الشخصية (PDPL). بياناتك ما تخرج من المملكة، ولا تُشارك مع أي جهة خارجية."
+      ),
     },
     {
-      q: t("Can I use my own domain like go.mybrand.sa?", "أقدر أستخدم نطاقي الخاص مثل go.متجري.sa؟"),
-      a: t("Absolutely. On Pro and Business plans, you can add custom domains. We provide DNS instructions and free SSL certificates.", "أكيد. في خطط Pro و Business تقدر تضيف نطاقات خاصة. نوفر تعليمات DNS وشهادات SSL مجانية."),
+      q: t("Can I use my own domain like go.mystore.sa?", "هل أقدر أستخدم نطاقي الخاص مثل go.متجري.sa؟"),
+      a: t(
+        "Absolutely. You can connect your own domain including .sa domains and use it in your short links. Free SSL certificate, setup takes two minutes with step-by-step instructions.",
+        "بكل تأكيد. تقدر تربط نطاقك الخاص حتى نطاقات .sa وتستخدمه في روابطك المختصرة. شهادة SSL مجانية، والإعداد في دقيقتين مع تعليمات خطوة بخطوة."
+      ),
     },
     {
-      q: t("How does pricing work?", "كيف يشتغل التسعير؟"),
-      a: t("On the Free plan, you get 1,000 links per month. If you hit the limit, you can upgrade or wait until next month. We never delete your existing links.", "في الخطة المجانية تحصل 1,000 رابط شهرياً. لو وصلت الحد، تقدر تترقى أو تنتظر الشهر الجاي. ما نحذف روابطك الموجودة أبداً."),
+      q: t("Is snip.sa really free?", "هل snip.sa مجاني فعلاً؟"),
+      a: t(
+        "Yes. Right now the entire platform is completely free. All services are available with no fees and no credit card.",
+        "نعم، في المرحلة الحالية المنصة مجانية بالكامل. جميع الخدمات متاحة بدون رسوم ولا بطاقة بنكية."
+      ),
     },
     {
-      q: t("How fast are redirects?", "كم سرعة التحويلات؟"),
-      a: t("From Saudi Arabia: 10 to 30ms average. From other GCC countries: 30 to 50ms. From anywhere else: less than 150ms.", "من السعودية: 10 إلى 30ms متوسط. من دول الخليج: 30 إلى 50ms. من أي مكان ثاني: أقل من 150ms."),
+      q: t("What information shows up in analytics?", "ايش المعلومات اللي تظهر في التحليلات؟"),
+      a: t(
+        "You see total clicks, unique visitors, country, city, device used, source, and timing of every click all in one clear dashboard.",
+        "تشوف عدد الضغطات، الزوار الفريدين، الدولة، المدينة، الجهاز المستخدم، المصدر، وتوقيت كل ضغطة كل هذا في لوحة تحكم واضحة."
+      ),
     },
     {
-      q: t("Can I export my data if I want to leave?", "أقدر أصدّر بياناتي لو بغيت أطلع؟"),
-      a: t("Yes. You own your data. Export everything (links, analytics, settings) as CSV anytime. No lock-in.", "نعم. بياناتك ملكك. صدّر كل شي (روابط، تحليلات، إعدادات) كـ CSV في أي وقت. بدون قيود."),
+      q: t("Can I export my data?", "هل أقدر أصدّر بياناتي؟"),
+      a: t(
+        "Yes. Your data belongs to you. You can export all your links and analytics as a CSV file at any time no limits, no fees.",
+        "نعم. بياناتك ملكك. تقدر تصدّر كل الروابط والتحليلات كملف CSV في أي وقت بدون قيود ولا رسوم."
+      ),
     },
   ];
+
 
   return (
     <section id="faq" className="section-cream-warm py-28 md:py-36">
@@ -44,15 +60,16 @@ const FAQSection = () => {
             transition={{ duration: 0.4 }}
             className="lg:col-span-2 lg:sticky lg:top-32 lg:self-start"
           >
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--navy))] mb-4">
-              {t("Questions? Answered", "أسئلة شائعة")}
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))] mb-4">
+              {t("Questions before you start? Here are the answers", "أسئلة قبل ما تبدأ؟ هنا إجاباتها")}
             </h2>
-            <p className="font-body text-base text-[hsl(var(--navy))]/75 leading-relaxed">
+            <p className="font-body text-base text-[hsl(var(--navy))]/60 leading-relaxed">
               {t(
                 "Everything you need to know about snip.sa. Can't find an answer? Chat with us on WhatsApp.",
                 "كل اللي تحتاج تعرفه عن snip.sa. ما لقيت جوابك؟ كلمنا على واتساب."
               )}
             </p>
+
           </motion.div>
 
           <div className="lg:col-span-3">
@@ -69,7 +86,7 @@ const FAQSection = () => {
                     <AccordionTrigger className="font-body text-sm font-bold text-start hover:no-underline py-5 text-[hsl(var(--navy))]">
                       {faq.q}
                     </AccordionTrigger>
-                    <AccordionContent className="font-body text-sm leading-relaxed pb-5 text-[hsl(var(--navy))]/75">
+                    <AccordionContent className="font-body text-sm leading-relaxed pb-5 text-[hsl(var(--navy))]/65">
                       {faq.a}
                     </AccordionContent>
                   </AccordionItem>

@@ -172,7 +172,6 @@ class AnalyticsService {
   async getLocationFromIP(ipAddress) {
     try {
       if (!config.ANALYTICS.TRACK_GEOLOCATION) {
-        console.warn('⚠️ Geolocation tracking is disabled');
         return {};
       }
 
@@ -190,8 +189,15 @@ class AnalyticsService {
         /^fe80::/
       ];
       if (!cleanIP || privateRanges.some(r => r.test(cleanIP))) {
-        console.warn('⚠️ Cannot geolocate private/localhost IP:', cleanIP);
         return {};
+      }
+
+      // Cache geolocation results by IP for 24 hours to avoid hitting ip-api.com's
+      // 45 req/min rate limit under real traffic.
+      const cacheKey = `geo:${cleanIP}`;
+      const cached = await cacheGet(cacheKey);
+      if (cached) {
+        return cached;
       }
 
       // Use ip-api.com (free, no key needed, 45 req/min)
@@ -204,15 +210,7 @@ class AnalyticsService {
         return {};
       }
 
-      console.log('✅ Geolocation found:', {
-        ip: cleanIP,
-        country: data.countryCode,
-        countryName: data.country,
-        region: data.regionName,
-        city: data.city
-      });
-
-      return {
+      const location = {
         country: data.countryCode,
         countryName: data.country,
         region: data.regionName || data.region,
@@ -223,6 +221,11 @@ class AnalyticsService {
           longitude: data.lon
         }
       };
+
+      // Cache for 24 hours — IP locations rarely change
+      await cacheSet(cacheKey, location, 86400);
+
+      return location;
     } catch (error) {
       console.error('❌ Error getting location from IP:', ipAddress, error);
       return {};
@@ -552,8 +555,8 @@ class AnalyticsService {
           ],
           browsers: [
             {
-              $match: { 
-                'device.browser.name': { $exists: true, $ne: null, $ne: '' }
+              $match: {
+                'device.browser.name': { $exists: true, $nin: [null, ''] }
               }
             },
             {
@@ -567,7 +570,7 @@ class AnalyticsService {
           ],
           operatingSystems: [
             {
-              $match: { 'device.os.name': { $ne: null, $ne: '' } }
+              $match: { 'device.os.name': { $nin: [null, ''] } }
             },
             {
               $group: {
@@ -689,12 +692,12 @@ class AnalyticsService {
   formatClickForResponse(click) {
     return {
       timestamp: click.timestamp,
-      country: click.location.countryName || '',
-      region: click.location.region || '',
-      city: click.location.city || '',
-      device: click.device.type || '',
-      browser: click.device.browser.name || '',
-      os: click.device.os.name || '',
+      country: click.location?.countryName || '',
+      region: click.location?.region || '',
+      city: click.location?.city || '',
+      device: click.device?.type || '',
+      browser: click.device?.browser?.name || '',
+      os: click.device?.os?.name || '',
       referer: click.referer || '',
       language: click.language || ''
     };
@@ -884,7 +887,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.browser.name': { $ne: null, $ne: '' }
+          'device.browser.name': { $nin: [null, ''] }
         }
       },
       {
@@ -910,7 +913,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.os.name': { $ne: null, $ne: '' }
+          'device.os.name': { $nin: [null, ''] }
         }
       },
       {
@@ -1026,12 +1029,12 @@ class AnalyticsService {
   formatClickForExport(click) {
     return {
       timestamp: click.timestamp,
-      country: click.location.countryName || '',
-      region: click.location.region || '',
-      city: click.location.city || '',
-      deviceType: click.device.type || '',
-      browser: click.device.browser.name || '',
-      os: click.device.os.name || '',
+      country: click.location?.countryName || '',
+      region: click.location?.region || '',
+      city: click.location?.city || '',
+      deviceType: click.device?.type || '',
+      browser: click.device?.browser?.name || '',
+      os: click.device?.os?.name || '',
       referer: click.referer || '',
       language: click.language || ''
     };

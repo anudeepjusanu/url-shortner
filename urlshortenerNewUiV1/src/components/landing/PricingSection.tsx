@@ -45,7 +45,7 @@ const PricingSection = () => {
 
             <Button className="w-full bg-primary text-primary-foreground font-body font-medium">
               Get Started Free
-              <ArrowRight size={14} className="ml-1.5" />
+              <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
             </Button>
           </div>
         </div>

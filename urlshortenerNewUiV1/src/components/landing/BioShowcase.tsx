@@ -20,6 +20,7 @@ const iconMap: Record<string, any> = {
 
 const categoryIcons = [Sparkles, Zap, Star];
 
+// Rich gradient + accent per persona (overrides the simple theme background for a polished preview)
 const personaVisual: Record<string, { bg: string; accent: string; socials: ("instagram" | "tiktok" | "whatsapp" | "globe" | "phone")[]; handle: string; statLabel: { en: string; ar: string } }> = {
   "showcase-1": {
     bg: "linear-gradient(160deg, hsl(350 55% 22%) 0%, hsl(350 60% 36%) 55%, hsl(350 70% 52%) 100%)",
@@ -33,7 +34,7 @@ const personaVisual: Record<string, { bg: string; accent: string; socials: ("ins
     accent: "hsl(30 85% 60%)",
     socials: ["instagram", "whatsapp", "phone"],
     handle: "snip.sa/aldeera",
-    statLabel: { en: "Open · 11am — 1am", ar: "مفتوح · ١١ص — ١ص" },
+    statLabel: { en: "Open · 11am 1am", ar: "مفتوح · ١١ص ١ص" },
   },
   "showcase-3": {
     bg: "linear-gradient(170deg, hsl(220 50% 16%) 0%, hsl(215 45% 26%) 55%, hsl(210 60% 42%) 100%)",
@@ -71,14 +72,13 @@ const BioShowcase = () => {
     window.clearTimeout((handleSelect as any)._t);
     (handleSelect as any)._t = window.setTimeout(() => setPaused(false), 8000);
   };
-
   const activePage = showcasePages[active];
   const activeTheme = bioThemes.find(t => t.id === activePage.theme) || bioThemes[0];
   const visual = personaVisual[activePage.id] ?? personaVisual["showcase-1"];
 
   return (
     <section className="section-cream py-28 md:py-36 relative overflow-hidden">
-      {/* Decorative background */}
+      {/* Decorative background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 start-10 w-72 h-72 rounded-full bg-[hsl(var(--sky))]/5 blur-3xl" />
         <div className="absolute bottom-20 end-10 w-96 h-96 rounded-full bg-[hsl(var(--navy))]/5 blur-3xl" />
@@ -105,7 +105,7 @@ const BioShowcase = () => {
               {t("Bio Pages", "صفحات البايو")}
             </span>
           </motion.div>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))] mb-5">
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))] mb-5">
             {t("See What You Can ", "شاهد ما يمكنك ")}
             <span className="relative">
               <span className="relative z-10">{t("Create", "إنشاؤه")}</span>
@@ -149,10 +149,14 @@ const BioShowcase = () => {
           })}
         </div>
 
-        {/* Main showcase */}
+        {/* Main showcase area */}
         <div className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
           {/* Phone mockup */}
-          <motion.div layout className="relative">
+          <motion.div
+            layout
+            className="relative"
+          >
+            {/* Glow behind phone */}
             <div
               className="absolute inset-0 blur-[60px] opacity-30 rounded-full scale-110 transition-all duration-700"
               style={{ background: visual.bg }}
@@ -172,7 +176,7 @@ const BioShowcase = () => {
                     className="relative h-[540px] md:h-[580px] overflow-hidden"
                     style={{ background: visual.bg }}
                   >
-                    {/* Notch */}
+                    {/* Notch overlay */}
                     <div className="absolute inset-x-0 top-0 z-10 h-6 flex justify-center pointer-events-none">
                       <div className="w-24 h-4 bg-gray-900 rounded-b-2xl" />
                     </div>
@@ -193,7 +197,7 @@ const BioShowcase = () => {
                         <span className="text-[10px] font-semibold text-white/85 tracking-wide">{visual.handle}</span>
                       </div>
 
-                      {/* Avatar */}
+                      {/* Avatar with glow */}
                       <div className="relative mb-3">
                         <div
                           className="absolute inset-0 rounded-full blur-xl scale-125"
@@ -212,7 +216,7 @@ const BioShowcase = () => {
                         />
                       </div>
 
-                      {/* Name */}
+                      {/* Name + verified */}
                       <motion.div
                         className="flex items-center gap-1 mb-0.5"
                         initial={{ opacity: 0, y: 5 }}
@@ -318,8 +322,8 @@ const BioShowcase = () => {
                 </h3>
                 <p className="font-body text-[hsl(var(--navy))]/60 mb-6 leading-relaxed">
                   {active === 0 && t(
-                    "A designer sharing his portfolio, booking consultations, and connecting with clients through WhatsApp.",
-                    "مصمم يشارك معرض أعماله، يحجز استشارات، ويتواصل مع العملاء عبر الواتساب."
+                    "A designer sharing her portfolio, booking consultations, and connecting with clients through WhatsApp.",
+                    "مصممة تشارك معرض أعمالها، تحجز استشارات، وتتواصل مع العملاء عبر الواتساب."
                   )}
                   {active === 1 && t(
                     "A restaurant showcasing its menu, enabling delivery orders, and sharing its location with customers.",
@@ -369,6 +373,7 @@ const BioShowcase = () => {
             </Button>
           </div>
         </div>
+
       </div>
     </section>
   );

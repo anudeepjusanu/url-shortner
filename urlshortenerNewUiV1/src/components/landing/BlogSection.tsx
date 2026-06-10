@@ -6,20 +6,18 @@ import { motion } from "framer-motion";
 
 const BlogSection = () => {
   const { t, lang } = useLanguage();
-  const FEATURED_SLUG = "url-shortening-crucial-digital-strategy";
-  const SIDE_SLUGS = ["url-shortening-guide-digital-identity", "url-shortening-strategy-digital-presence"];
-  const featured = blogPosts.find((p) => p.slug === FEATURED_SLUG) ?? blogPosts[0];
-  const rest = SIDE_SLUGS.map((s) => blogPosts.find((p) => p.slug === s)).filter(Boolean) as typeof blogPosts;
+  const featured = blogPosts[0];
+  const rest = blogPosts.slice(1, 3);
 
   return (
     <section id="blog" className="section-cream-blush py-28 md:py-36">
       <div className="container mx-auto px-6">
         <div className="flex items-end justify-between mb-14">
           <div>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--navy))] mb-3 tracking-tight">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--navy))] mb-3 tracking-tight">
               {t("From the blog", "من المدونة")}
             </h2>
-            <p className="text-[hsl(var(--navy))]/75 font-body text-lg max-w-md">
+            <p className="text-[hsl(var(--navy))]/60 font-body text-lg max-w-md">
               {t(
                 "Tips, guides, and insights to help you get the most out of your short links and campaigns.",
                 "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك."
@@ -31,7 +29,7 @@ const BlogSection = () => {
             className="hidden sm:flex items-center gap-1.5 bg-[hsl(var(--sky))] text-white font-body text-sm font-bold px-6 py-3 rounded-full hover:brightness-110 transition-all"
           >
             {t("View all posts", "جميع المقالات")}
-            <ArrowRight size={14} />
+            <ArrowRight size={14} className="rtl:rotate-180" />
           </Link>
         </div>
 
@@ -49,14 +47,7 @@ const BlogSection = () => {
             >
               <div className="h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center relative overflow-hidden">
                 {featured.image ? (
-                  <img
-                    src={featured.image}
-                    alt={lang === "ar" ? featured.title.ar : featured.title.en}
-                    width="1200"
-                    height="672"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+                  <img src={featured.image} alt={lang === "ar" ? featured.title.ar : featured.title.en} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <span className="text-white/10 font-display text-[10rem] font-black">01</span>
                 )}
@@ -66,19 +57,19 @@ const BlogSection = () => {
               </div>
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="flex items-center gap-1 text-[hsl(var(--navy))]/70 text-xs font-body">
+                  <span className="flex items-center gap-1 text-[hsl(var(--navy))]/50 text-xs font-body">
                     <Clock size={12} />
                     {lang === "ar" ? featured.readTime.ar : featured.readTime.en}
                   </span>
-                  <span className="text-[hsl(var(--navy))]/50 text-xs">·</span>
-                  <span className="text-[hsl(var(--navy))]/70 font-body text-xs">
+                  <span className="text-[hsl(var(--navy))]/30 text-xs">·</span>
+                  <span className="text-[hsl(var(--navy))]/40 font-body text-xs">
                     {lang === "ar" ? featured.date.ar : featured.date.en}
                   </span>
                 </div>
                 <h3 className="font-display text-2xl font-bold text-[hsl(var(--navy))] mb-3 leading-snug group-hover:text-[hsl(var(--sky))] transition-colors">
                   {lang === "ar" ? featured.title.ar : featured.title.en}
                 </h3>
-                <p className="text-[hsl(var(--navy))]/75 font-body text-sm leading-relaxed line-clamp-3">
+                <p className="text-[hsl(var(--navy))]/60 font-body text-sm leading-relaxed line-clamp-3">
                   {lang === "ar" ? featured.excerpt.ar : featured.excerpt.en}
                 </p>
               </div>
@@ -101,14 +92,7 @@ const BlogSection = () => {
                 >
                   <div className={`h-28 ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"} flex items-center justify-center overflow-hidden`}>
                     {post.image ? (
-                      <img
-                        src={post.image}
-                        alt={lang === "ar" ? post.title.ar : post.title.en}
-                        width="1200"
-                        height="672"
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                      <img src={post.image} alt={lang === "ar" ? post.title.ar : post.title.en} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <span className="text-white/10 font-display text-7xl font-black">
                         {String(i + 2).padStart(2, "0")}
@@ -120,7 +104,7 @@ const BlogSection = () => {
                       <span className="text-xs font-body font-bold text-white bg-[hsl(var(--sky))] px-3 py-1 rounded-full">
                         {lang === "ar" ? post.category.ar : post.category.en}
                       </span>
-                      <span className="flex items-center gap-1 text-[hsl(var(--navy))]/70 text-xs font-body">
+                      <span className="flex items-center gap-1 text-[hsl(var(--navy))]/50 text-xs font-body">
                         <Clock size={12} />
                         {lang === "ar" ? post.readTime.ar : post.readTime.en}
                       </span>
@@ -128,7 +112,7 @@ const BlogSection = () => {
                     <h3 className="font-display text-base font-bold text-[hsl(var(--navy))] leading-snug group-hover:text-[hsl(var(--sky))] transition-colors">
                       {lang === "ar" ? post.title.ar : post.title.en}
                     </h3>
-                    <p className="text-[hsl(var(--navy))]/70 font-body text-xs mt-3">
+                    <p className="text-[hsl(var(--navy))]/40 font-body text-xs mt-3">
                       {lang === "ar" ? post.date.ar : post.date.en}
                     </p>
                   </div>
@@ -143,7 +127,7 @@ const BlogSection = () => {
           className="sm:hidden flex items-center justify-center gap-1.5 bg-[hsl(var(--sky))] text-white font-body text-sm font-bold mt-8 px-6 py-3 rounded-full hover:brightness-110"
         >
           {t("View all posts", "جميع المقالات")}
-          <ArrowRight size={14} />
+          <ArrowRight size={14} className="rtl:rotate-180" />
         </Link>
       </div>
     </section>
