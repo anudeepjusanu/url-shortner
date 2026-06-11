@@ -150,7 +150,8 @@ const createUrl = async (req, res) => {
       restrictions,
       redirectType,
       domainId,
-      generateQRCode = false // Option to auto-generate QR code
+      generateQRCode = false, // Option to auto-generate QR code
+      source: bodySource
     } = req.body;
 
     // Check usage limits before creating URL
@@ -286,6 +287,8 @@ const createUrl = async (req, res) => {
       } while (await Url.findOne({ shortCode }));
     }
     
+    const resolvedSource = req.apiKey ? 'api' : (['landing', 'dashboard', 'bulk'].includes(bodySource) ? bodySource : 'dashboard');
+
     const urlData = {
       originalUrl: urlValidation.cleanUrl,
       shortCode,
@@ -300,7 +303,8 @@ const createUrl = async (req, res) => {
       password,
       utm: utm || {},
       restrictions: restrictions || {},
-      redirectType: redirectType || 302
+      redirectType: redirectType || 302,
+      source: resolvedSource
     };
     
     const url = new Url(urlData);
@@ -1069,7 +1073,8 @@ const bulkCreate = async (req, res) => {
           tags,
           utm: hasUtm ? utm : {},
           bulkImportId,
-          redirectType: 302
+          redirectType: 302,
+          source: 'bulk'
         });
 
         await urlDoc.save();

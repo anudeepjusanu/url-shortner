@@ -189,6 +189,11 @@ const urlSchema = new mongoose.Schema({
   bulkImportId: {
     type: String,
     default: null
+  },
+  source: {
+    type: String,
+    enum: ['landing', 'dashboard', 'api', 'bulk'],
+    default: 'dashboard'
   }
 }, {
   timestamps: true,

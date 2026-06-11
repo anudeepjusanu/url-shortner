@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link2, ArrowRight, Zap, BarChart3, Shield, Globe, MousePointerClick, Smartphone, Check, Tag, Copy, TrendingUp, Mail, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LinksPreview } from "@/components/landing/PreviewMockups";
 import { UTMPreview } from "@/components/landing/UTMPreviewMockup";
 import { useState } from "react";
@@ -13,13 +13,13 @@ import { toast } from "sonner";
 
 const FeatureUrlShortening = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [inputUrl, setInputUrl] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
 
   const handleShorten = () => {
     if (!inputUrl.trim()) return;
-    const alias = inputUrl.replace(/https?:\/\//, "").split("/")[0].split(".")[0].slice(0, 8);
-    setShortenedUrl(`snip.sa/${alias}`);
+    navigate("/shorten", { state: { url: inputUrl.trim() } });
   };
 
   const handleCopy = () => {

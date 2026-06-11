@@ -4,6 +4,8 @@ const Domain = require('../models/Domain');
 const BioPage = require('../models/BioPage');
 const Organization = require('../models/Organization');
 const { Click } = require('../models/Analytics');
+const QRCode = require('../models/QRCode');
+const DynamicQRCode = require('../models/DynamicQRCode');
 const { cacheDel } = require('../config/redis');
 const { normalizeEmail } = require('../utils/normalizeEmail');
 
@@ -19,7 +21,14 @@ const getSystemStats = async (req, res) => {
       activeUsers,
       usersWithLinks,
       recentUsers,
-      topUrls
+      topUrls,
+      totalStaticQRCodes,
+      totalDynamicQRCodes,
+      apiUsers,
+      sourceLanding,
+      sourceDashboard,
+      sourceApi,
+      sourceBulk
     ] = await Promise.all([
       User.countDocuments(),
       Url.countDocuments(),
@@ -34,7 +43,14 @@ const getSystemStats = async (req, res) => {
       User.find().sort({ createdAt: -1 }).limit(10).select('firstName lastName email createdAt'),
       Url.find().sort({ clickCount: -1 }).limit(10)
         .populate('creator', 'firstName lastName email')
-        .select('title shortCode clickCount createdAt')
+        .select('title shortCode clickCount createdAt'),
+      QRCode.countDocuments(),
+      DynamicQRCode.countDocuments(),
+      User.countDocuments({ 'apiKeys': { $elemMatch: { isActive: true } } }),
+      Url.distinct('creator', { source: 'landing' }).then(ids => ids.length),
+      Url.distinct('creator', { source: 'dashboard' }).then(ids => ids.length),
+      Url.distinct('creator', { source: 'api' }).then(ids => ids.length),
+      Url.distinct('creator', { source: 'bulk' }).then(ids => ids.length)
     ]);
     const avgLinksPerUser = totalUsers > 0
       ? Math.round((totalUrls / totalUsers) * 10) / 10
@@ -69,7 +85,15 @@ const getSystemStats = async (req, res) => {
           totalBioPages,
           activeUsers,
           usersWithLinks,
-          avgLinksPerUser
+          avgLinksPerUser,
+          totalQRCodes: totalStaticQRCodes + totalDynamicQRCodes,
+          apiUsers,
+          linkSources: {
+            landing: sourceLanding,
+            dashboard: sourceDashboard,
+            api: sourceApi,
+            bulk: sourceBulk
+          }
         },
         growth: {
           newUsersLast30Days,

@@ -115,6 +115,7 @@ const CreateLink = () => {
     try {
       const payload: any = {
         originalUrl: originalUrl.trim(),
+        source: "dashboard",
       };
 
       if (customAlias.trim()) {
