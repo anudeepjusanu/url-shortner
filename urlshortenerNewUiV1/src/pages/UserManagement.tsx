@@ -256,7 +256,7 @@ const UserManagement = () => {
     { label: t("Number of Signups", "عدد المُسجّلين"), value: filteredStats.totalUsers, icon: Users },
     { label: t("Users With Links", "مستخدمون لديهم روابط"), value: filteredStats.usersWithLinks, icon: Link2 },
     { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: filteredStats.avgLinksPerUser, icon: BarChart3 },
-    { label: t("Active Users", "المستخدمون النشطون"), value: filteredStats.activeUsers, icon: UserPlus },
+    // { label: t("Active Users", "المستخدمون النشطون"), value: filteredStats.activeUsers, icon: UserPlus },
     { label: t("Total Domains", "إجمالي النطاقات"), value: globalStats.totalDomains, icon: Globe },
     { label: t("Google SSO Users", "مستخدمو Google SSO"), value: filteredStats.googleSSOUsers, icon: LogIn },
     { label: t("Total QR Codes Created", "إجمالي QR Codes المُنشأة"), value: globalStats.totalQRCodes, icon: QrCode },
