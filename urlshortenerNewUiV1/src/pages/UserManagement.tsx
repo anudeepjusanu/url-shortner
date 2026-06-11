@@ -72,7 +72,7 @@ const UserManagement = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [linksRange, setLinksRange] = useState<string>("all");
+  const [linksSort, setLinksSort] = useState<"default" | "most" | "least" | "latest">("default");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
@@ -131,7 +131,7 @@ const UserManagement = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, linksRange, fromDate, toDate]);
+  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, linksSort, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     const result = users.filter((u) => {
@@ -157,20 +157,27 @@ const UserManagement = () => {
         }
       }
 
-      let matchLinks = true;
-      if (linksRange !== "all") {
-        const count = u.usage?.urlsCreatedTotal ?? u.urlCount ?? 0;
-        if (linksRange === "0-10")   matchLinks = count >= 0   && count <= 10;
-        if (linksRange === "11-20")  matchLinks = count >= 11  && count <= 20;
-        if (linksRange === "21-100") matchLinks = count >= 21  && count <= 100;
-        if (linksRange === "101+")   matchLinks = count >= 101;
-      }
-
-      return matchSearch && matchRole && matchDate && matchLinks;
+      return matchSearch && matchRole && matchDate;
     });
 
+    if (linksSort === "most") {
+      result.sort((a, b) => {
+        const aLinks = a.usage?.urlsCreatedTotal ?? a.urlCount ?? 0;
+        const bLinks = b.usage?.urlsCreatedTotal ?? b.urlCount ?? 0;
+        return bLinks - aLinks;
+      });
+    } else if (linksSort === "least") {
+      result.sort((a, b) => {
+        const aLinks = a.usage?.urlsCreatedTotal ?? a.urlCount ?? 0;
+        const bLinks = b.usage?.urlsCreatedTotal ?? b.urlCount ?? 0;
+        return aLinks - bLinks;
+      });
+    } else if (linksSort === "latest") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
     return result;
-  }, [users, search, roleFilter, linksRange, fromDate, toDate]);
+  }, [users, search, roleFilter, linksSort, fromDate, toDate]);
 
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -325,16 +332,15 @@ const UserManagement = () => {
             <SelectItem value="viewer">{t("Viewer", "مشاهد")}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={linksRange} onValueChange={setLinksRange}>
+        <Select value={linksSort} onValueChange={(v) => setLinksSort(v as typeof linksSort)}>
           <SelectTrigger className="w-full sm:w-52">
-            <SelectValue placeholder={t("Filter by links", "فلتر بعدد الروابط")} />
+            <SelectValue placeholder={t("Sort by links", "رتّب حسب الروابط")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("All Link Counts", "جميع الأعداد")}</SelectItem>
-            <SelectItem value="0-10">0 – 10</SelectItem>
-            <SelectItem value="11-20">11 – 20</SelectItem>
-            <SelectItem value="21-100">21 – 100</SelectItem>
-            <SelectItem value="101+">{t("101+", "١٠١+")}</SelectItem>
+            <SelectItem value="default">{t("Default Order", "الترتيب الافتراضي")}</SelectItem>
+            <SelectItem value="most">{t("Most Links", "الأكثر روابط")}</SelectItem>
+            <SelectItem value="latest">{t("Latest Links", "أحدث الروابط")}</SelectItem>
+            <SelectItem value="least">{t("Least Links", "الأقل روابط")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

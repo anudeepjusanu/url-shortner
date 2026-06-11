@@ -343,7 +343,7 @@ clickSchema.statics.getTopStats = async function(urlId, daysOrRange = 30) {
         ],
         referrers: [
           {
-            $match: { referer: { $exists: true, $ne: null, $ne: '' } }
+            $match: { referer: { $exists: true, $nin: [null, ''] } }
           },
           {
             $addFields: {
@@ -378,7 +378,7 @@ clickSchema.statics.getTopStats = async function(urlId, daysOrRange = 30) {
         ],
         browsers: [
           {
-            $match: { 'device.browser.name': { $exists: true, $ne: null, $ne: '' } }
+            $match: { 'device.browser.name': { $exists: true, $nin: [null, ''] } }
           },
           {
             $group: {
@@ -391,7 +391,7 @@ clickSchema.statics.getTopStats = async function(urlId, daysOrRange = 30) {
         ],
         operatingSystems: [
           {
-            $match: { 'device.os.name': { $exists: true, $ne: null, $ne: '' } }
+            $match: { 'device.os.name': { $exists: true, $nin: [null, ''] } }
           },
           {
             $group: {

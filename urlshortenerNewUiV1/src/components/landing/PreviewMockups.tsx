@@ -1,62 +1,87 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link2, ExternalLink, Copy, BarChart3, Trash2, QrCode, Download, Globe, CheckCircle, Clock, Search } from "lucide-react";
+import { Link2, ExternalLink, Copy, BarChart3, Trash2, QrCode, Download, Globe, CheckCircle, Clock, Search, ArrowRight, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import qrRestaurantImg from "@/assets/qr-restaurant-table.jpg";
+
 
 /**
  * Cropped, self-contained dashboard previews with fresh sample data.
  * Used as visuals inside FeaturesSection / AnalyticsSection.
  */
 
-/* ───────── Links preview ───────── */
+/* ───────── Links preview long URL morphing into a clean snip.sa link ───────── */
 export const LinksPreview = () => {
   const { t } = useLanguage();
-  const links = [
-    { name: "Ramadan Offer", short: "snip.sa/ramadan", dest: "myshop.sa/offers/ramadan-2026", clicks: 1420, time: t("3 days ago", "قبل 3 أيام") },
-    { name: "New Collection", short: "snip.sa/newdrop", dest: "myshop.sa/collections/spring", clicks: 863, time: t("1 week ago", "قبل أسبوع") },
-    { name: "Support Page", short: "snip.sa/help", dest: "myshop.sa/support", clicks: 241, time: t("2 weeks ago", "قبل أسبوعين") },
-  ];
 
   return (
     <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-elevated overflow-hidden">
       {/* Mini header */}
       <div className="px-5 py-3.5 border-b border-[hsl(var(--navy))]/8 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link2 className="w-4 h-4 text-[hsl(var(--sky))]" />
-          <span className="text-sm font-display font-bold text-[hsl(var(--navy))]">{links.length} {t("Links", "روابط")}</span>
+          <Sparkles className="w-4 h-4 text-[hsl(var(--sky))]" />
+          <span className="text-sm font-display font-bold text-[hsl(var(--navy))]">{t("Live shortener", "اختصار مباشر")}</span>
         </div>
-        <div className="flex items-center gap-2 bg-[hsl(var(--navy))]/5 rounded-lg px-3 py-1.5">
-          <Search size={12} className="text-[hsl(var(--navy))]/40" />
-          <span className="text-xs text-[hsl(var(--navy))]/30 font-body">{t("Search...", "ابحث...")}</span>
-        </div>
+        <span className="text-[10px] font-body text-[hsl(var(--navy))]/40">{t("in 0.3s", "في 0.3 ثانية")}</span>
       </div>
 
-      {/* Link rows */}
-      <div className="divide-y divide-[hsl(var(--navy))]/6">
-        {links.map((link) => (
-          <div key={link.short} className="px-5 py-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[hsl(var(--sky))]/10 flex items-center justify-center shrink-0">
-                <Link2 size={14} className="text-[hsl(var(--sky))]" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-sm text-[hsl(var(--navy))] truncate">{link.name}</p>
-                <p className="text-xs text-[hsl(var(--sky))] font-body flex items-center gap-1">
-                  <ExternalLink size={9} /> {link.short}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="text-end">
-                <p className="font-display font-bold text-sm text-[hsl(var(--navy))]">{link.clicks.toLocaleString()}</p>
-                <p className="text-[10px] text-[hsl(var(--navy))]/40 font-body">{t("clicks", "ضغطة")}</p>
-              </div>
-              <span className="text-[10px] text-[hsl(var(--navy))]/35 font-body hidden sm:block">{link.time}</span>
-            </div>
+      <div className="p-5 space-y-4">
+        {/* Long URL pill dim, struck-through */}
+        <div>
+          <p className="text-[10px] font-body font-bold uppercase tracking-wider text-[hsl(var(--navy))]/40 mb-1.5">
+            {t("From long URL", "من الرابط الطويل")}
+          </p>
+          <div className="bg-[hsl(0,75%,98%)] border border-[hsl(0,75%,55%)]/15 rounded-xl px-3 py-2.5 overflow-hidden">
+            <p className="text-xs font-mono text-[hsl(var(--navy))]/45 truncate line-through">
+              https://www.myshop.sa/collections/ramadan-2026/products?utm=fb&ref=story
+            </p>
           </div>
-        ))}
+        </div>
+
+        {/* Morph arrow */}
+        <div className="flex justify-center">
+          <motion.div
+            animate={{ y: [0, 4, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="w-8 h-8 rounded-full bg-[hsl(var(--sky))]/10 flex items-center justify-center"
+          >
+            <ArrowRight size={14} className="text-[hsl(var(--sky))] rotate-90" />
+          </motion.div>
+        </div>
+
+        {/* Short URL pill bright, animated */}
+        <div>
+          <p className="text-[10px] font-body font-bold uppercase tracking-wider text-[hsl(var(--sky))] mb-1.5">
+            {t("To clean short link", "الى رابط قصير نظيف")}
+          </p>
+          <motion.div
+            initial={{ scale: 0.98, opacity: 0.8 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: false }}
+            className="bg-gradient-to-r from-[hsl(var(--sky))]/8 to-[hsl(var(--navy))]/5 border border-[hsl(var(--sky))]/25 rounded-xl px-3 py-3 flex items-center justify-between"
+          >
+            <span className="font-display font-bold text-base text-[hsl(var(--navy))]">snip.sa/ramadan</span>
+            <button className="flex items-center gap-1 text-[10px] font-body font-bold text-white bg-[hsl(var(--sky))] px-2.5 py-1 rounded-full">
+              <Copy size={10} /> {t("Copy", "نسخ")}
+            </button>
+          </motion.div>
+        </div>
+
+        {/* Live click counter */}
+        <div className="flex items-center justify-between pt-2 border-t border-[hsl(var(--navy))]/5">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(150,60%,45%)] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(150,60%,45%)]"></span>
+            </span>
+            <span className="text-[10px] font-body text-[hsl(var(--navy))]/55">{t("Live clicks", "ضغطات مباشرة")}</span>
+          </div>
+          <span className="font-display font-bold text-sm text-[hsl(var(--navy))]">1,420</span>
+        </div>
       </div>
     </div>
   );
 };
+
 
 /* ───────── Analytics preview ───────── */
 export const AnalyticsPreview = () => {
@@ -160,26 +185,108 @@ export const AnalyticsPreview = () => {
   );
 };
 
-/* ───────── QR Codes preview ───────── */
+/* ───────── QR Codes preview QR placed on a stylized business card ───────── */
 export const QRCodesPreview = () => {
   const { t } = useLanguage();
-  const qrItems = [
-    { name: t("Menu", "القائمة"), scans: 312 },
-    { name: t("Booth", "الستاند"), scans: 189 },
-    { name: t("Flyer", "الفلاير"), scans: 97 },
+
+  // Simple deterministic QR-looking grid (10x10)
+  const cells = Array.from({ length: 100 }, (_, i) => {
+    const pattern = [0,3,5,7,9,12,15,18,21,24,29,32,36,40,43,47,51,55,58,62,66,70,73,77,81,84,88,91,94,97];
+    return pattern.includes(i % 100) || (i * 13) % 7 === 0;
+  });
+
+  return (
+    <div className="space-y-3">
+      {/* Restaurant table photo with QR stand */}
+      <div className="relative rounded-2xl shadow-elevated overflow-hidden aspect-[1.7/1]">
+        <img
+          src={qrRestaurantImg}
+          alt={t("QR code stand on restaurant table", "حامل QR على طاولة مطعم")}
+          loading="lazy"
+          width={1024}
+          height={1024}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+
+
+
+      {/* Scan stats */}
+      <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-soft px-5 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[hsl(25,95%,53%)]/12 flex items-center justify-center">
+            <QrCode size={13} className="text-[hsl(25,95%,53%)]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-body text-[hsl(var(--navy))]/45">{t("Total scans this week", "إجمالي المسح هذا الأسبوع")}</p>
+            <p className="font-display font-bold text-sm text-[hsl(var(--navy))]">892 {t("scans", "مسح")}</p>
+          </div>
+        </div>
+        <span className="text-[10px] font-body font-bold text-[hsl(150,60%,45%)] bg-[hsl(150,60%,45%)]/10 px-2 py-1 rounded-full">↑ 24%</span>
+      </div>
+    </div>
+  );
+};
+
+
+/* ───────── Custom Domains preview fake browser bar with .sa domain ───────── */
+export const DomainsPreview = () => {
+  const { t } = useLanguage();
+  const domains = [
+    { name: "go.yourshop.sa", status: "verified" as const },
+    { name: "r.brand.sa", status: "verified" as const },
+    { name: "link.agency.sa", status: "pending" as const },
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-elevated overflow-hidden">
-      <div className="grid grid-cols-3 gap-0 divide-x divide-[hsl(var(--navy))]/6">
-        {qrItems.map((qr) => (
-          <div key={qr.name} className="p-4 flex flex-col items-center text-center">
-            {/* QR placeholder */}
-            <div className="w-full aspect-square bg-[hsl(var(--navy))]/4 rounded-xl flex items-center justify-center mb-3">
-              <QrCode className="w-12 h-12 text-[hsl(var(--navy))]/50" />
+    <div className="space-y-3">
+      {/* Browser chrome mock */}
+      <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-elevated overflow-hidden">
+        <div className="px-4 py-2.5 bg-[hsl(var(--cream))] border-b border-[hsl(var(--navy))]/8 flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-[hsl(0,75%,65%)]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[hsl(45,90%,60%)]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[hsl(150,55%,55%)]" />
+          </div>
+          <div className="flex-1 min-w-0 mx-3 bg-white border border-[hsl(var(--navy))]/10 rounded-lg px-3 py-1.5 flex items-center gap-2 overflow-hidden">
+            <CheckCircle size={11} className="text-[hsl(150,60%,45%)] shrink-0" />
+            <span className="text-xs font-mono text-[hsl(var(--navy))] truncate">
+              <span className="text-[hsl(var(--navy))]/40">https://</span>
+              <span className="font-bold text-[hsl(var(--sky))]">go.yourshop.sa</span>
+              <span className="text-[hsl(var(--navy))]/60">/ramadan</span>
+            </span>
+          </div>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-body uppercase tracking-wider text-[hsl(var(--navy))]/40 mb-2">{t("Your branded short link", "رابطك المختصر بعلامتك")}</p>
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="font-display font-bold text-base sm:text-lg text-[hsl(var(--navy))] truncate min-w-0">go.yourshop.sa/ramadan</span>
+            <span className="text-[10px] font-body font-bold text-[hsl(150,60%,45%)] bg-[hsl(150,60%,45%)]/10 px-2 py-1 rounded-full flex items-center gap-1 shrink-0">
+              <CheckCircle size={10} /> SSL
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Domain list */}
+      <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-soft overflow-hidden divide-y divide-[hsl(var(--navy))]/6">
+        {domains.map((d) => (
+          <div key={d.name} className="px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${d.status === "verified" ? "bg-[hsl(var(--sky))]/10" : "bg-[hsl(var(--navy))]/5"}`}>
+                <Globe size={12} className={d.status === "verified" ? "text-[hsl(var(--sky))]" : "text-[hsl(var(--navy))]/40"} />
+              </div>
+              <span className="font-mono text-xs text-[hsl(var(--navy))]">{d.name}</span>
             </div>
-            <p className="font-display font-semibold text-sm text-[hsl(var(--navy))]">{qr.name}</p>
-            <p className="text-xs text-[hsl(var(--sky))] font-body mt-0.5">{qr.scans} {t("scans", "مسح")}</p>
+            {d.status === "verified" ? (
+              <span className="flex items-center gap-1 text-[10px] font-body text-[hsl(var(--sky))] bg-[hsl(var(--sky))]/10 px-2 py-0.5 rounded-full">
+                <CheckCircle size={9} /> {t("Verified", "مُثبت")}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-[10px] font-body text-[hsl(var(--navy))]/45 bg-[hsl(var(--navy))]/5 px-2 py-0.5 rounded-full">
+                <Clock size={9} /> {t("Pending", "قيد الانتظار")}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -187,36 +294,3 @@ export const QRCodesPreview = () => {
   );
 };
 
-/* ───────── Custom Domains preview ───────── */
-export const DomainsPreview = () => {
-  const { t } = useLanguage();
-  const domains = [
-    { name: "go.mybrand.sa", status: "verified" as const },
-    { name: "link.agency.sa", status: "verified" as const },
-    { name: "r.newstore.sa", status: "pending" as const },
-  ];
-
-  return (
-    <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-elevated overflow-hidden divide-y divide-[hsl(var(--navy))]/6">
-      {domains.map((d) => (
-        <div key={d.name} className="px-5 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${d.status === "verified" ? "bg-[hsl(var(--sky))]/10" : "bg-[hsl(var(--navy))]/5"}`}>
-              <Globe size={14} className={d.status === "verified" ? "text-[hsl(var(--sky))]" : "text-[hsl(var(--navy))]/40"} />
-            </div>
-            <span className="font-display font-semibold text-sm text-[hsl(var(--navy))]">{d.name}</span>
-          </div>
-          {d.status === "verified" ? (
-            <span className="flex items-center gap-1 text-[10px] font-body text-[hsl(var(--sky))] bg-[hsl(var(--sky))]/10 px-2.5 py-1 rounded-full">
-              <CheckCircle size={10} /> {t("Verified", "مُثبت")}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-[10px] font-body text-[hsl(var(--navy))]/45 bg-[hsl(var(--navy))]/5 px-2.5 py-1 rounded-full">
-              <Clock size={10} /> {t("Pending", "قيد الانتظار")}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};

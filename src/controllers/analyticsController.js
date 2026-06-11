@@ -82,7 +82,7 @@ const resolveAnalyticsData = async (id, query, user) => {
   const clicksByShortCode = await Click.countDocuments({ shortCode: url.shortCode });
   console.log('📊 Clicks by shortCode:', clicksByShortCode);
 
-  const [clicks, topStats, rawTimeSeriesData, clickCounts] = await Promise.all([
+  const [clicks, topStats, rawTimeSeriesData, clickCounts, rawPeakHours] = await Promise.all([
     Click.find({
       url: urlObjectId,
       timestamp: dateRange,
@@ -138,6 +138,23 @@ const resolveAnalyticsData = async (id, query, user) => {
           }
         }
       }
+    ]),
+
+    Click.aggregate([
+      {
+        $match: {
+          url: urlObjectId,
+          timestamp: dateRange,
+          isBot: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: { $hour: '$timestamp' },
+          clicks: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
     ])
   ]);
 
@@ -193,8 +210,8 @@ const resolveAnalyticsData = async (id, query, user) => {
 
   const aggregatedCounts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
   const daysDiff = Math.ceil((dateRange.$lte - dateRange.$gte) / (1000 * 60 * 60 * 24)) || 1;
-  const totalClicks = aggregatedCounts.totalClicks > 0 ? aggregatedCounts.totalClicks : (url.clickCount || 0);
-  const uniqueClicks = aggregatedCounts.uniqueClicks > 0 ? aggregatedCounts.uniqueClicks : (url.uniqueClickCount || 0);
+  const totalClicks = aggregatedCounts.totalClicks;
+  const uniqueClicks = aggregatedCounts.uniqueClicks;
 
   console.log('📊 Final counts:', {
     aggregatedTotal: aggregatedCounts.totalClicks,
@@ -204,6 +221,9 @@ const resolveAnalyticsData = async (id, query, user) => {
     finalTotal: totalClicks,
     finalUnique: uniqueClicks
   });
+
+  const raw = topStats[0] || {};
+  const hourMap = new Map((rawPeakHours || []).map(h => [h._id, h.clicks]));
 
   const analyticsData = {
     url: {
@@ -228,13 +248,38 @@ const resolveAnalyticsData = async (id, query, user) => {
       allTimeUniqueClicks: url.uniqueClickCount || 0
     },
     timeSeries: timeSeriesData,
-    topStats: topStats[0] || {
-      countries: [],
-      cities: [],
-      referrers: [],
-      devices: [],
-      browsers: [],
-      operatingSystems: []
+    peakHours: Array.from({ length: 24 }, (_, h) => ({
+      hour: h,
+      clicks: hourMap.get(h) || 0
+    })),
+    topStats: {
+      countries: (raw.countries || []).map(item => ({
+        country: item._id?.country || 'Unknown',
+        countryName: item._id?.countryName || item._id?.country || 'Unknown',
+        clicks: item.count || 0
+      })),
+      cities: (raw.cities || []).map(item => ({
+        city: item._id?.city || 'Unknown',
+        region: item._id?.region || '',
+        country: item._id?.country || '',
+        clicks: item.count || 0
+      })),
+      devices: (raw.devices || []).map(item => ({
+        type: item._id || 'unknown',
+        clicks: item.count || 0
+      })),
+      browsers: (raw.browsers || []).map(item => ({
+        browser: item._id || 'Unknown',
+        clicks: item.count || 0
+      })),
+      operatingSystems: (raw.operatingSystems || []).map(item => ({
+        os: item._id || 'Unknown',
+        clicks: item.count || 0
+      })),
+      referrers: (raw.referrers || []).map(item => ({
+        domain: item._id || 'Direct',
+        clicks: item.count || 0
+      }))
     },
     recentClicks: clicks.slice(0, 20).map(click => ({
       timestamp: click.timestamp,

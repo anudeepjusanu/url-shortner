@@ -64,7 +64,7 @@ const UseCasesSection = () => {
             {t("Built specifically for you", "مصمم خصيصًا لك")}
           </h2>
           <p className="text-muted-foreground font-body">
-            {t("We built 4r for two audiences, and we're great at both.", "بنينا 4r لجمهورين، ونحن ممتازين في الاثنين.")}
+            {t("We built snip for two audiences, and we're great at both.", "بنينا snip لجمهورين، ونحن ممتازين في الاثنين.")}
           </p>
         </div>
 
@@ -105,7 +105,7 @@ const UseCasesSection = () => {
             </div>
             <Button className="bg-primary text-primary-foreground font-body font-medium">
               {current.cta}
-              <ArrowRight size={14} className="ms-1.5" />
+              <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
             </Button>
           </div>
 
