@@ -515,7 +515,7 @@ const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: stri
                       animate={{ x: [0, 4, 0] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      <ArrowRight className="w-3.5 h-3.5 text-[hsl(var(--sky))]" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[hsl(var(--sky))] rtl:rotate-180" />
                     </motion.div>
                   </div>
                 )}
@@ -534,7 +534,7 @@ const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: stri
           <Link to="/signup">
             <Button className="bg-gradient-to-r from-[hsl(var(--sky))] to-[hsl(var(--navy))] text-white font-body font-bold rounded-full px-10 py-4 h-auto text-base shadow-xl shadow-[hsl(var(--sky))]/25 hover:shadow-2xl hover:shadow-[hsl(var(--sky))]/35 hover:scale-105 transition-all duration-300">
               {t("Start building now", "ابدأ البناء الآن")}
-              <ArrowRight size={16} className="ms-2" />
+              <ArrowRight size={16} className="ms-2 rtl:rotate-180" />
             </Button>
           </Link>
         </motion.div>
@@ -547,7 +547,7 @@ const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: stri
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════════ */
 const FeatureLinkInBio = () => {
-  const { t } = useLanguage();
+  const { t, isAr } = useLanguage();
 
   const features = [
     t("Full Arabic & RTL support", "دعم كامل للعربية و RTL"),
@@ -740,6 +740,7 @@ const FeatureLinkInBio = () => {
                   <span className="text-sm font-body text-[hsl(var(--navy))]/30 shrink-0">snip.sa/</span>
                   <input
                     type="text"
+                    dir={isAr ? "rtl" : "ltr"}
                     placeholder={t("yourname", "اسمك")}
                     className="bg-transparent outline-none text-sm font-body text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/20 w-full ms-0.5"
                   />
@@ -747,7 +748,7 @@ const FeatureLinkInBio = () => {
                 <Link to="/signup">
                   <Button className="bg-gradient-to-r from-[hsl(var(--sky))] to-[hsl(var(--navy))] text-white font-body font-bold rounded-e-full rounded-s-none px-7 py-4 h-auto text-sm hover:brightness-110 transition-all whitespace-nowrap shadow-xl shadow-[hsl(var(--sky))]/25 hover:shadow-2xl hover:scale-[1.02]">
                     {t("Claim it free", "احجزه مجاناً")}
-                    <ArrowRight size={14} className="ms-1.5" />
+                    <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
                   </Button>
                 </Link>
               </motion.div>
@@ -891,7 +892,7 @@ const FeatureLinkInBio = () => {
                     <Link to="/signup">
                       <Button variant="ghost" className="text-white/90 hover:text-white hover:bg-white/15 font-body font-bold text-sm px-5 py-2.5 h-auto gap-2 rounded-full border border-white/20 backdrop-blur-sm">
                         {t("Get started", "ابدأ الآن")}
-                        <ArrowRight size={14} />
+                        <ArrowRight size={14} className="rtl:rotate-180" />
                       </Button>
                     </Link>
                   </div>
@@ -977,7 +978,7 @@ const FeatureLinkInBio = () => {
                                     <p className="text-[9.5px] font-bold leading-tight truncate">{link.label}</p>
                                     {link.sub && <p className="text-[7.5px] opacity-60 leading-tight truncate mt-0.5">{link.sub}</p>}
                                   </div>
-                                  <ChevronRight className="w-3 h-3 opacity-50 shrink-0" />
+                                  <ChevronRight className="w-3 h-3 opacity-50 shrink-0 rtl:rotate-180" />
                                 </motion.div>
                               );
                             })}

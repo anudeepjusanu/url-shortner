@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,10 @@ const HeroSection = () => {
 
   const handleShorten = () => {
     const trimmed = url.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      toast.error(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
+      return;
+    }
     navigate("/shorten", { state: { url: trimmed } });
   };
 

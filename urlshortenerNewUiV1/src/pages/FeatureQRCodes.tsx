@@ -236,9 +236,9 @@ const FeatureQRCodes = () => {
               transition={{ duration: 0.6, delay: 0.15 }}
               className="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.92] text-[hsl(var(--navy))] mb-6"
             >
-              {t("Every scan", "كل مسح")}
+              {t("Print. Scan.", "اطبع. امسح.")}
               <br />
-              <span className="text-[hsl(var(--sky))]">{t("tells a story.", "يحكي قصة.")}</span>
+              <span className="text-[hsl(var(--sky))]">{t("Track. Done.", "تابع. انجز.")}</span>
             </motion.h1>
 
             <motion.p
@@ -316,7 +316,7 @@ const FeatureQRCodes = () => {
               <Link to="/signup">
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                   {t("Create free QR code", "أنشئ كود QR مجاناً")}
-                  <ArrowRight size={16} className="ms-1.5" />
+                  <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
                 </Button>
               </Link>
             </motion.div>
@@ -512,7 +512,7 @@ const FeatureQRCodes = () => {
                     <span className="font-mono text-[10px] text-[hsl(var(--navy))]/35">snip.sa/...</span>
                   </motion.div>
                   <motion.div animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                    <ArrowRight className="w-5 h-5 text-[hsl(var(--sky))]/50" />
+                    <ArrowRight className="w-5 h-5 text-[hsl(var(--sky))]/50 rtl:rotate-180" />
                   </motion.div>
                   <motion.div
                     initial={{ scale: 0.85 }}
@@ -556,7 +556,7 @@ const FeatureQRCodes = () => {
             <Link to="/signup">
               <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-7 text-lg hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                 {t("Get started", "ابدأ الحين")}
-                <ArrowRight size={18} className="ms-2" />
+                <ArrowRight size={18} className="ms-2 rtl:rotate-180" />
               </Button>
             </Link>
           </motion.div>
