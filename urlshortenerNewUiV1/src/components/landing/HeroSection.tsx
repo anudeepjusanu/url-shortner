@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { urlsAPI } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
 
 const INTERVAL = 4000;
 const SCREENS = 3;
 
+const isValidUrl = (value: string) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const HeroSection = () => {
   const [url, setUrl] = useState("");
+  const [urlError, setUrlError] = useState("");
+  const [checking, setChecking] = useState(false);
   const { t } = useLanguage();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
@@ -19,11 +30,34 @@ const HeroSection = () => {
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
 
-  const handleShorten = () => {
+  const handleShorten = async () => {
     const trimmed = url.trim();
     if (!trimmed) {
-      toast.error(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
+      setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
       return;
+    }
+    if (!isValidUrl(trimmed)) {
+      setUrlError(t("Please enter a valid URL (e.g. https://example.com)", "الرجاء إدخال رابط صحيح (مثال: https://example.com)"));
+      return;
+    }
+    setUrlError("");
+    setChecking(true);
+    try {
+      const result = await urlsAPI.checkSafety(trimmed);
+      if (!result.isSafe) {
+        setUrlError(
+          result.message ||
+          t(
+            "This URL has been flagged as unsafe (phishing or malware). Please use a different link.",
+            "تم تصنيف هذا الرابط على أنه غير آمن (تصيد أو برامج ضارة). الرجاء استخدام رابط مختلف."
+          )
+        );
+        return;
+      }
+    } catch {
+      // Safety check failed — fail open and let the user continue
+    } finally {
+      setChecking(false);
     }
     navigate("/shorten", { state: { url: trimmed } });
   };
@@ -112,25 +146,38 @@ const HeroSection = () => {
               className="max-w-xl mx-auto lg:mx-0 lg:max-w-none"
             >
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 flex items-center gap-3 px-6 bg-white rounded-full shadow-soft border-none">
+                <div className={`flex-1 flex items-center gap-3 px-6 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400" : "border-transparent"}`}>
                   <Link2 size={20} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
                   <input
                     type="url"
                     placeholder={t("Paste your link here...", "الصق رابطك هنا...")}
                     value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    onChange={(e) => { setUrl(e.target.value); if (urlError) setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
                     className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-5 font-body text-base"
                   />
                 </div>
                 <Button
                   onClick={handleShorten}
-                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base"
+                  disabled={checking}
+                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {t("Shorten it now Free", "اختصره الآن مجاناً")}
-                  <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+                  {checking ? (
+                    <>
+                      <Loader2 size={16} className="ms-1.5 animate-spin" />
+                      {t("Checking...", "جارٍ الفحص...")}
+                    </>
+                  ) : (
+                    <>
+                      {t("Shorten it now Free", "اختصره الآن مجاناً")}
+                      <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+                    </>
+                  )}
                 </Button>
               </div>
+              {urlError && (
+                <p className="mt-2 text-sm font-body text-red-500 ps-3">{urlError}</p>
+              )}
 
               {shortened && (
                 <motion.div

@@ -4,22 +4,61 @@ import CTASection from "@/components/landing/CTASection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Link2, ArrowRight, Zap, BarChart3, Shield, Globe, MousePointerClick, Smartphone, Check, Tag, Copy, TrendingUp, Mail, MessageSquare } from "lucide-react";
+import { Link2, ArrowRight, Zap, BarChart3, Shield, Globe, MousePointerClick, Smartphone, Check, Tag, Copy, TrendingUp, Mail, MessageSquare, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { LinksPreview } from "@/components/landing/PreviewMockups";
 import { UTMPreview } from "@/components/landing/UTMPreviewMockup";
 import { useState } from "react";
 import { toast } from "sonner";
+import { urlsAPI } from "@/services/api";
+
+const isValidUrl = (value: string) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
 
 const FeatureUrlShortening = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [inputUrl, setInputUrl] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
+  const [urlError, setUrlError] = useState("");
+  const [checking, setChecking] = useState(false);
 
-  const handleShorten = () => {
-    if (!inputUrl.trim()) return;
-    navigate("/shorten", { state: { url: inputUrl.trim() } });
+  const handleShorten = async () => {
+    const trimmed = inputUrl.trim();
+    if (!trimmed) {
+      setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
+      return;
+    }
+    if (!isValidUrl(trimmed)) {
+      setUrlError(t("Please enter a valid URL (e.g. https://example.com)", "الرجاء إدخال رابط صحيح (مثال: https://example.com)"));
+      return;
+    }
+    setUrlError("");
+    setChecking(true);
+    try {
+      const result = await urlsAPI.checkSafety(trimmed);
+      if (!result.isSafe) {
+        setUrlError(
+          result.message ||
+          t(
+            "This URL has been flagged as unsafe (phishing or malware). Please use a different link.",
+            "تم تصنيف هذا الرابط على أنه غير آمن (تصيد أو برامج ضارة). الرجاء استخدام رابط مختلف."
+          )
+        );
+        return;
+      }
+    } catch {
+      // Safety check failed — fail open
+    } finally {
+      setChecking(false);
+    }
+    navigate("/shorten", { state: { url: trimmed } });
   };
 
   const handleCopy = () => {
@@ -141,18 +180,26 @@ const FeatureUrlShortening = () => {
                   <input
                     type="url"
                     value={inputUrl}
-                    onChange={(e) => { setInputUrl(e.target.value); setShortenedUrl(""); }}
+                    onChange={(e) => { setInputUrl(e.target.value); setShortenedUrl(""); if (urlError) setUrlError(""); }}
                     placeholder={t("Paste your long URL here...", "الصق رابطك الطويل هنا...")}
-                    className="flex-1 bg-[hsl(var(--navy))]/4 rounded-xl px-4 py-3 text-sm font-body text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/30 outline-none focus:ring-2 focus:ring-[hsl(var(--sky))]/30 transition-all"
+                    className={`flex-1 bg-[hsl(var(--navy))]/4 rounded-xl px-4 py-3 text-sm font-body text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/30 outline-none focus:ring-2 transition-all ${urlError ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-[hsl(var(--sky))]/30"}`}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
                   />
                   <Button
                     onClick={handleShorten}
-                    className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-xl px-6 py-3 text-sm hover:brightness-110 transition-all shadow-md shadow-[hsl(var(--sky))]/20 shrink-0"
+                    disabled={checking}
+                    className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-xl px-6 py-3 text-sm hover:brightness-110 transition-all shadow-md shadow-[hsl(var(--sky))]/20 shrink-0 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {t("Shorten", "اختصر")}
+                    {checking ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      t("Shorten", "اختصر")
+                    )}
                   </Button>
                 </div>
+                {urlError && (
+                  <p className="mt-2 text-xs font-body text-red-500 ps-1">{urlError}</p>
+                )}
 
                 {shortenedUrl && (
                   <motion.div
