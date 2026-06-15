@@ -2,9 +2,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const BioPricing = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   const plans = [
     {
@@ -104,7 +106,7 @@ const BioPricing = () => {
                 className={`w-full ${plan.popular ? "bg-primary text-primary-foreground" : ""}`}
                 variant={plan.popular ? "default" : "outline"}
               >
-                <Link to="/signup">
+                <Link to={smartLink("/signup")}>
                   {plan.cta}
                   <ArrowRight className="w-4 h-4 ms-1.5 rtl:rotate-180" />
                 </Link>

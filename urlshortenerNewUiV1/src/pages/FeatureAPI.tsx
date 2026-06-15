@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 import { toast } from "sonner";
 import {
   Code2,
@@ -88,6 +89,7 @@ echo $res["data"]["domain"]["shortUrl"] . "/" . $res["data"]["url"]["shortCode"]
 
 const FeatureAPI = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
   const [tab, setTab] = useState<keyof typeof SNIPPETS>("node");
   const [copied, setCopied] = useState(false);
 
@@ -208,7 +210,7 @@ const FeatureAPI = () => {
 
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 text-base px-7 py-6">
-                  <Link to="/signup">
+                  <Link to={smartLink("/signup", "/dashboard/api")}>
                     <KeyRound className="w-4 h-4 me-1.5" />
                     {t("Get your API key", "احصل على مفتاحك")}
                   </Link>

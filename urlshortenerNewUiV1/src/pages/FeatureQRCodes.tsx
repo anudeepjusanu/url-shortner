@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 /* ── Animated QR Grid ── */
 const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: number; color?: string }) => {
@@ -74,6 +75,7 @@ const OrbitDot = ({ radius, duration, delay, size = 6 }: { radius: number; durat
 
 const FeatureQRCodes = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
   const [activeUseCase, setActiveUseCase] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const bentoRef = useRef<HTMLDivElement>(null);
@@ -313,7 +315,7 @@ const FeatureQRCodes = () => {
               transition={{ delay: 0.5 }}
               className="flex flex-wrap gap-4 items-center justify-center"
             >
-              <Link to="/signup">
+              <Link to={smartLink("/signup", "/dashboard/qr-codes")}>
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                   {t("Create free QR code", "أنشئ كود QR مجاناً")}
                   <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
@@ -553,7 +555,7 @@ const FeatureQRCodes = () => {
             <p className="font-body text-base md:text-lg text-[hsl(var(--navy))]/40 mb-10">
               {t("No credit card. No limits. Start now.", "بدون بطاقة ائتمان. بدون حدود. ابدأ الحين.")}
             </p>
-            <Link to="/signup">
+            <Link to={smartLink("/signup", "/dashboard/qr-codes")}>
               <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-7 text-lg hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                 {t("Get started", "ابدأ الحين")}
                 <ArrowRight size={18} className="ms-2 rtl:rotate-180" />

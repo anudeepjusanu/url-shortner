@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const CTASection = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   return (
     <section className="section-cream-rose py-28 md:py-36 overflow-x-clip">
@@ -35,7 +37,7 @@ const CTASection = () => {
             size="lg"
             className="bg-[hsl(var(--sky))] text-white font-body font-bold text-sm sm:text-base px-5 sm:px-9 py-5 sm:py-6 rounded-full hover:brightness-110 transition-all max-w-full h-auto whitespace-normal text-center leading-tight"
           >
-            <Link to="/signup">
+            <Link to={smartLink("/signup")}>
               <span className="inline-flex items-center gap-1.5 flex-wrap justify-center">
                 {t("Start free now no credit card", "ابدأ مجاناً الآن بدون بطاقة بنكية")}
                 <ArrowRight size={16} className="rtl:rotate-180 shrink-0" />

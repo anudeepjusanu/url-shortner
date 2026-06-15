@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Eye, MousePointerClick, TrendingUp, Smartphone, Sparkles, Blocks, Zap, Star, Youtube, Instagram, Briefcase, PlayCircle, UtensilsCrossed, CalendarCheck, MessageCircle, MapPin, ShoppingBag, Music2, BadgeCheck, ChevronRight, Wifi, BatteryFull, Signal, Globe, BarChart3, Palette, Languages, Link2, Phone } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 import { BioPreview } from "@/components/landing/BioPreviewMockup";
 import brewHouseLogo from "@/assets/brew-house-logo.png";
 import bgCreators from "@/assets/bg-creators.jpg";
@@ -434,6 +435,7 @@ const ThemeShowcaseSection = ({ features, t }: { features: string[]; t: (en: str
    STEPS ANIMATION (Ready in 60 seconds)
    ═══════════════════════════════════════════════════════════════════ */
 const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: string; title: string; desc: string }[]; t: (en: string, ar: string) => string }) => {
+  const { smartLink } = useSmartLink();
   const stepData = [
     { gradient: "from-[hsl(var(--sky))] to-[hsl(280,60%,55%)]", bgAccent: "bg-[hsl(var(--sky))]/6", iconBg: "hsl(var(--sky))" },
     { gradient: "from-[hsl(var(--navy))] to-[hsl(var(--sky))]", bgAccent: "bg-[hsl(var(--navy))]/5", iconBg: "hsl(var(--navy))" },
@@ -531,7 +533,7 @@ const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: stri
           transition={{ delay: 0.5 }}
           className="text-center mt-14"
         >
-          <Link to="/signup">
+          <Link to={smartLink("/signup", "/dashboard/bio-pages")}>
             <Button className="bg-gradient-to-r from-[hsl(var(--sky))] to-[hsl(var(--navy))] text-white font-body font-bold rounded-full px-10 py-4 h-auto text-base shadow-xl shadow-[hsl(var(--sky))]/25 hover:shadow-2xl hover:shadow-[hsl(var(--sky))]/35 hover:scale-105 transition-all duration-300">
               {t("Start building now", "ابدأ البناء الآن")}
               <ArrowRight size={16} className="ms-2 rtl:rotate-180" />
@@ -548,6 +550,7 @@ const StepsAnimationSection = ({ steps, t }: { steps: { num: string; emoji: stri
    ═══════════════════════════════════════════════════════════════════ */
 const FeatureLinkInBio = () => {
   const { t, isAr } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   const features = [
     t("Full Arabic & RTL support", "دعم كامل للعربية و RTL"),
@@ -745,7 +748,7 @@ const FeatureLinkInBio = () => {
                     className="bg-transparent outline-none text-sm font-body text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/20 w-full ms-0.5"
                   />
                 </div>
-                <Link to="/signup">
+                <Link to={smartLink("/signup", "/dashboard/bio-pages")}>
                   <Button className="bg-gradient-to-r from-[hsl(var(--sky))] to-[hsl(var(--navy))] text-white font-body font-bold rounded-e-full rounded-s-none px-7 py-4 h-auto text-sm hover:brightness-110 transition-all whitespace-nowrap shadow-xl shadow-[hsl(var(--sky))]/25 hover:shadow-2xl hover:scale-[1.02]">
                     {t("Claim it free", "احجزه مجاناً")}
                     <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
@@ -889,7 +892,7 @@ const FeatureLinkInBio = () => {
                       {uc.title}
                     </motion.h3>
                     <p className="font-body text-white/75 text-base leading-relaxed max-w-sm mb-5">{uc.desc}</p>
-                    <Link to="/signup">
+                    <Link to={smartLink("/signup", "/dashboard/bio-pages")}>
                       <Button variant="ghost" className="text-white/90 hover:text-white hover:bg-white/15 font-body font-bold text-sm px-5 py-2.5 h-auto gap-2 rounded-full border border-white/20 backdrop-blur-sm">
                         {t("Get started", "ابدأ الآن")}
                         <ArrowRight size={14} className="rtl:rotate-180" />

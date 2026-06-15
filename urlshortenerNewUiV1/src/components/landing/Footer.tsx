@@ -2,9 +2,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-dark.png";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const Footer = () => {
   const { t } = useLanguage();
+  const { isAuthenticated } = useSmartLink();
 
   return (
     <footer className="section-navy py-10 md:py-14">
@@ -63,12 +65,20 @@ const Footer = () => {
 
         <div className="border-t border-[hsl(var(--cream))]/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-[hsl(var(--cream))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--cream))]/20 hover:bg-[hsl(var(--cream))]/10" asChild>
-              <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
-            </Button>
-            <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110" asChild>
-              <Link to="/signup">{t("Get started for free", "ابدأ مجاناً")}</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110" asChild>
+                <Link to="/dashboard">{t("Go to Dashboard", "لوحة التحكم")}</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-[hsl(var(--cream))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--cream))]/20 hover:bg-[hsl(var(--cream))]/10" asChild>
+                  <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
+                </Button>
+                <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110" asChild>
+                  <Link to="/signup">{t("Get started for free", "ابدأ مجاناً")}</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           <p className="text-[hsl(var(--cream))]/30 text-sm font-body text-center md:text-end max-w-md">

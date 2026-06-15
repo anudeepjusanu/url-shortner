@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Copy, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const codeExample = `// Shorten a URL with one API call
 const response = await axios.post('https://snip.sa/api/urls', {
@@ -22,6 +23,7 @@ const DeveloperSection = () => {
   const [copied, setCopied] = useState(false);
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { isAuthenticated } = useSmartLink();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(codeExample);
@@ -84,7 +86,7 @@ const DeveloperSection = () => {
                 {t("Read API Documentation", "شوف الـ API Docs")}
                 <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
               </Button>
-              <Button onClick={() => navigate("/dashboard/api")} variant="outline" className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] hover:bg-[hsl(var(--sky))] bg-transparent py-6 px-8">
+              <Button onClick={() => navigate(isAuthenticated ? "/dashboard/api" : "/signup")} variant="outline" className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] hover:bg-[hsl(var(--sky))] bg-transparent py-6 px-8">
                 {t("Get Your API Key", "احصل على مفتاح API")}
               </Button>
             </div>
