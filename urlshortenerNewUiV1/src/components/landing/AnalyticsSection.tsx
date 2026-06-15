@@ -3,9 +3,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { AnalyticsPreview } from "./PreviewMockups";
+import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const AnalyticsSection = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   const stats = [
     { value: t("> 2s", "> 2 ثانية"), label: t("Data delay", "وصول البيانات") },
@@ -33,9 +36,11 @@ const AnalyticsSection = () => {
               "كل رابط تختصره يصير مصدر بيانات. تتبع الضغطات حسب الدولة، المدينة، الجهاز، المتصفح، والمصدر."
             )}
           </p>
-          <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all">
-            {t("Get started for free", "ابدأ مجاناً")}
-            <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+          <Button asChild className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all">
+            <Link to={smartLink("/signup", "/dashboard/analytics")}>
+              {t("Get started for free", "ابدأ مجاناً")}
+              <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+            </Link>
           </Button>
         </motion.div>
 

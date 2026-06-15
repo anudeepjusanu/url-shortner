@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Tag, ArrowRight, BarChart3, Layers, Target, TrendingUp, Copy, Check, Mail, Megaphone, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const FeatureUTMTracking = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
   const [copied, setCopied] = useState(false);
 
   const params = [
@@ -77,7 +79,7 @@ const FeatureUTMTracking = () => {
                   "أضف معلمات UTM لأي رابط قصير عبر أداتنا البصرية. اعرف بالضبط أي الحملات والمصادر والمحتوى تجيب أكثر ضغطات."
                 )}
               </p>
-              <Link to="/signup">
+              <Link to={smartLink("/signup", "/dashboard/utm-builder")}>
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                   {t("Try the UTM builder", "جرّب منشئ UTM")}
                   <ArrowRight size={16} className="ms-1.5" />

@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const FreePricingSection = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   const perks = [
     t("All features included", "جميع الميزات"),
@@ -62,7 +64,7 @@ const FreePricingSection = () => {
           </ul>
 
           <Button asChild size="lg" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 hover:brightness-110">
-            <Link to="/signup">
+            <Link to={smartLink("/signup")}>
               {t("Start free now", "ابدأ مجاناً الآن")}
               <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
             </Link>

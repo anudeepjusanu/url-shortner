@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Globe, ArrowRight, Zap, KeyRound, Timer, Building2, ArrowLeftRight, Check, Settings, Rocket } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -18,6 +19,7 @@ const fadeUp = {
 
 const FeatureCustomDomains = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   const steps = [
     {
@@ -97,7 +99,7 @@ const FeatureCustomDomains = () => {
                   "توقف عن استخدام روابط قصيرة عامة. استخدم نطاقك الخاص لبناء الثقة والتعرف على علامتك مع كل رابط تشاركه."
                 )}
               </p>
-              <Link to="/signup">
+              <Link to={smartLink("/signup", "/dashboard/domains")}>
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                   {t("Add your domain", "أضف نطاقك")}
                   <ArrowRight size={16} className="ms-1.5" />
@@ -221,7 +223,7 @@ const FeatureCustomDomains = () => {
             transition={{ delay: 0.5, duration: 0.4 }}
             className="text-center mt-12"
           >
-            <Link to="/dashboard/domains/add">
+            <Link to={smartLink("/signup", "/dashboard/domains/add")}>
               <Button className="bg-[hsl(var(--sky))] text-white hover:bg-[hsl(var(--sky))]/90 rounded-full px-8 h-11 text-sm font-display font-bold">
                 {t("Add your domain now", "أضف نطاقك الآن")}
                 <ArrowRight className="w-4 h-4 ms-2" />

@@ -6,6 +6,7 @@ import { ArrowRight, Calendar, Briefcase, MessageCircle, UtensilsCrossed, Truck,
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const iconMap: Record<string, any> = {
   calendar: Calendar,
@@ -55,6 +56,7 @@ const socialIconMap = {
 
 const BioShowcase = () => {
   const { t, lang } = useLanguage();
+  const { smartLink } = useSmartLink();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -366,7 +368,7 @@ const BioShowcase = () => {
             </div>
 
             <Button asChild className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/20">
-              <Link to="/signup">
+              <Link to={smartLink("/signup")}>
                 {t("Create Your Bio Page Free", "أنشئ صفحتك مجاناً")}
                 <ArrowRight size={16} className="ms-1.5" />
               </Link>

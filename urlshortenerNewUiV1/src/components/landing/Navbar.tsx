@@ -4,14 +4,14 @@ import { Menu, X, Globe, ChevronDown, Link2, QrCode, User, Tag, Globe2, Code2 } 
 import logoFull from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [mobileFeatures, setMobileFeatures] = useState(false);
   const { lang, setLang, t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSmartLink();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();

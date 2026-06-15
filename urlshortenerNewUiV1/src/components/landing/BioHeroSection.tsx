@@ -2,9 +2,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, QrCode, Link, BarChart3, MessageCircle } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
+import { useSmartLink } from "@/hooks/useSmartLink";
 
 const BioHeroSection = () => {
   const { t } = useLanguage();
+  const { smartLink } = useSmartLink();
 
   return (
     <section className="section-cream py-20 md:py-32 overflow-hidden">
@@ -32,7 +34,7 @@ const BioHeroSection = () => {
 
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-primary text-primary-foreground font-medium">
-                <RouterLink to="/signup">
+                <RouterLink to={smartLink("/signup")}>
                   {t("Create Your Bio Page Free", "أنشئ صفحتك مجاناً")}
                   <ArrowRight className="w-4 h-4 ms-1.5 rtl:rotate-180" />
                 </RouterLink>
