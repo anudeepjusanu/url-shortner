@@ -570,7 +570,7 @@ class AnalyticsService {
           ],
           operatingSystems: [
             {
-              $match: { 'device.os.name': { $nin: [null, ''] } }
+              $match: { 'device.os.name': { $exists: true, $nin: [null, ''] } }
             },
             {
               $group: {
@@ -887,7 +887,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.browser.name': { $nin: [null, ''] }
+          'device.browser.name': { $exists: true, $nin: [null, ''] }
         }
       },
       {
@@ -913,7 +913,7 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.os.name': { $nin: [null, ''] }
+          'device.os.name': { $exists: true, $nin: [null, ''] }
         }
       },
       {
