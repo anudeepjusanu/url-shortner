@@ -7,11 +7,15 @@ import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 
 // Below-the-fold sections lazy-loaded — they only need to render after scroll
+const ProblemSection = lazy(() => import("@/components/landing/ProblemSection"));
+const SolutionSection = lazy(() => import("@/components/landing/SolutionSection"));
 const FeaturesSection = lazy(() => import("@/components/landing/FeaturesSection"));
+const HowItWorks = lazy(() => import("@/components/landing/HowItWorks"));
 const AnalyticsSection = lazy(() => import("@/components/landing/AnalyticsSection"));
 const DeveloperSection = lazy(() => import("@/components/landing/DeveloperSection"));
 const ComparisonSection = lazy(() => import("@/components/landing/ComparisonSection"));
-const BlogSection = lazy(() => import("@/components/landing/BlogSection"));
+const SocialProofSection = lazy(() => import("@/components/landing/SocialProofSection"));
+const FreePricingSection = lazy(() => import("@/components/landing/FreePricingSection"));
 const FAQSection = lazy(() => import("@/components/landing/FAQSection"));
 const CTASection = lazy(() => import("@/components/landing/CTASection"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
@@ -72,11 +76,15 @@ const Index = () => {
       <main>
         <HeroSection />
         <Suspense fallback={<SectionFallback />}>
+          <ProblemSection />
+          <SolutionSection />
           <FeaturesSection />
+          <HowItWorks />
           <AnalyticsSection />
           <DeveloperSection />
           <ComparisonSection />
-          <BlogSection />
+          <SocialProofSection />
+          <FreePricingSection />
           <FAQSection />
           <CTASection />
         </Suspense>

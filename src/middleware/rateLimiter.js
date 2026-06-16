@@ -81,14 +81,20 @@ const apiLimiter = createRateLimiter({
   }
 });
 
-const redirectLimiter = createRateLimiter({
+const redirectLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
-  message: 'Too many redirect requests',
+  standardHeaders: true,
+  legacyHeaders: false,
   keyGenerator: (req) => `redirect:${ipKeyGenerator(req)}`,
   skip: (req) => {
     const userAgent = req.get('User-Agent') || '';
     return /bot|crawler|spider/i.test(userAgent);
+  },
+  handler: (req, res) => {
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:8080';
+    const shortCode = req.params.shortCode || req.params.code || '';
+    res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
   }
 });
 

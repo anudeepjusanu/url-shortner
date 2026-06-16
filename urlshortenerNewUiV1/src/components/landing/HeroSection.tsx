@@ -1,67 +1,65 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { motion, AnimatePresence } from "framer-motion";
 import { urlsAPI } from "@/services/api";
+import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
 
 const INTERVAL = 4000;
 const SCREENS = 3;
 
+const isValidUrl = (value: string) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const HeroSection = () => {
   const [url, setUrl] = useState("");
-  const { t, isAr } = useLanguage();
+  const [urlError, setUrlError] = useState("");
+  const [checking, setChecking] = useState(false);
+  const { t } = useLanguage();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
-  const [urlError, setUrlError] = useState("");
-  const [isChecking, setIsChecking] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
 
-  const validateUrl = (value: string) => {
-    if (!value.trim()) return t("Please enter a URL", "الرجاء إدخال رابط");
-    try {
-      new URL(value.startsWith("http") ? value : `https://${value}`);
-      return "";
-    } catch {
-      return t("Please enter a valid URL", "الرجاء إدخال رابط صحيح");
-    }
-  };
-
   const handleShorten = async () => {
-    if (isChecking) return;
-
-    const error = validateUrl(url);
-    setUrlError(error);
-    if (error) return;
-
-    const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
-
-    // Run the malware/phishing check here on the landing page so unsafe links
-    // are rejected before the user enters the auth flow.
-    setIsChecking(true);
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
+      return;
+    }
+    if (!isValidUrl(trimmed)) {
+      setUrlError(t("Please enter a valid URL (e.g. https://example.com)", "الرجاء إدخال رابط صحيح (مثال: https://example.com)"));
+      return;
+    }
+    setUrlError("");
+    setChecking(true);
     try {
-      const safety = await urlsAPI.checkSafety(normalizedUrl);
-      if (!safety.isSafe) {
+      const result = await urlsAPI.checkSafety(trimmed);
+      if (!result.isSafe) {
         setUrlError(
-          safety.message ||
-            t(
-              "This URL has been flagged as unsafe and cannot be shortened.",
-              "تم تحديد هذا الرابط كغير آمن ولا يمكن اختصاره."
-            )
+          result.message ||
+          t(
+            "This URL has been flagged as unsafe (phishing or malware). Please use a different link.",
+            "تم تصنيف هذا الرابط على أنه غير آمن (تصيد أو برامج ضارة). الرجاء استخدام رابط مختلف."
+          )
         );
         return;
       }
     } catch {
-      // Network/unknown failure — fail open so the flow still works.
+      // Safety check failed — fail open and let the user continue
     } finally {
-      setIsChecking(false);
+      setChecking(false);
     }
-
-    navigate("/shorten", { state: { url: normalizedUrl } });
+    navigate("/shorten", { state: { url: trimmed } });
   };
 
   const handleCopy = () => {
@@ -91,80 +89,94 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative section-cream min-h-[100vh] flex items-center pt-24 pb-8 md:pb-24 overflow-x-hidden">
+    <section className="relative section-cream flex items-center pt-28 pb-16 md:pt-32 md:pb-20 overflow-x-hidden">
       <div className="container mx-auto px-6 relative">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-20 items-center">
-          <div className="text-center lg:text-start">
+        <div className="grid lg:grid-cols-[1.45fr_1fr] gap-6 lg:gap-8 items-center">
+          <div className="text-center lg:text-start lg:max-w-none">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(158,55%,95%)] border border-[hsl(158,55%,40%)]/25 mb-6"
+            >
+              <ShieldCheck size={14} className="text-[hsl(158,55%,32%)]" />
+              <span className="text-base leading-none">🇸🇦</span>
+              <span className="font-body text-xs sm:text-sm font-semibold text-[hsl(158,55%,22%)]">
+                {t(
+                  "100% Saudi platform your data stays in the Kingdom",
+                  "منصة سعودية 100% بياناتك تبقى في المملكة"
+                )}
+              </span>
+            </motion.div>
+
             <motion.h1
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] mb-4 sm:mb-6 tracking-tight text-[hsl(var(--navy))]"
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.02] mb-4 tracking-tight text-[hsl(var(--navy))]"
             >
-              {t("Every click", "كل ضغطة")}
-              <br />
-              {t("tells a story.", "تحكي قصة.")}
+              {t("Shorten. Track. Done.", "اختصر. تابع. انجز.")}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="font-body text-lg md:text-xl font-semibold mb-8 sm:mb-12 text-[hsl(var(--navy))]/80"
+            >
+              {t("The #1 link management platform in Saudi Arabia", "منصة إدارة الروابط الأولى في السعودية")}
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-sm md:text-xl font-body leading-relaxed mb-6 sm:mb-10 max-w-lg mx-auto lg:mx-0 text-[hsl(var(--navy))]/70"
+              className="text-base md:text-2xl font-body leading-relaxed mb-10 sm:mb-14 max-w-2xl mx-auto lg:mx-0 lg:max-w-none text-[hsl(var(--navy))]/70"
             >
               {t(
-                "Short links with real time analytics. Hosted in Saudi Arabia.",
-                "روابط مختصرة مع تحليلات لحظية. مستضاف في السعودية."
+                "Don't guess, know. Every link you share gives you data to build your decisions on.",
+                "بدل ما تخمّن، اعرف. كل رابط تشاركه يعطيك بيانات تبني عليها قراراتك."
               )}
-              <span className="hidden md:inline">
-                {" "}{t(
-                  "Whether you're running Instagram ads, Snapchat stories, or need a developer API, we've got you covered.",
-                  "سواء تدير حملات على الإنستقرام أو سناب شات، أو تبي API يشتغل لك، كل شي موجود."
-                )}
-              </span>
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="max-w-lg mx-auto lg:mx-0"
+              className="max-w-xl mx-auto lg:mx-0 lg:max-w-none"
             >
-                <div className="flex flex-col sm:flex-row gap-3">
-                <div className={`flex-1 flex items-center gap-2 px-5 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400 ring-1 ring-red-400" : "border-none"}`}>
-                  <Link2 size={16} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" aria-hidden="true" />
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className={`flex-1 flex items-center gap-3 px-6 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400" : "border-transparent"}`}>
+                  <Link2 size={20} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
                   <input
-                    id="hero-url-input"
                     type="url"
-                    aria-label={t("Enter URL to shorten", "أدخل الرابط للاختصار")}
-                    placeholder={t("Paste your campaign link here...", "الصق رابط الحملة هنا...")}
+                    placeholder={t("Paste your link here...", "الصق رابطك هنا...")}
                     value={url}
-                    onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
+                    onChange={(e) => { setUrl(e.target.value); if (urlError) setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
-                    className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-3.5 font-body text-sm"
-                    dir="ltr"
+                    className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-5 font-body text-base"
                   />
                 </div>
                 <Button
                   onClick={handleShorten}
-                  disabled={isChecking}
-                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-8 shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-80"
+                  disabled={checking}
+                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isChecking ? (
+                  {checking ? (
                     <>
-                      <Loader2 size={16} className="me-1.5 animate-spin" />
-                      {t("Checking...", "جاري التحقق...")}
+                      <Loader2 size={16} className="ms-1.5 animate-spin" />
+                      {t("Checking...", "جارٍ الفحص...")}
                     </>
                   ) : (
                     <>
-                      {t("Shorten Link for Free", "اختصر الرابط مجاناً")}
-                      {isAr ? <ArrowLeft size={16} className="ms-1.5" /> : <ArrowRight size={16} className="ms-1.5" />}
+                      {t("Shorten it now Free", "اختصره الآن مجاناً")}
+                      <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
                     </>
                   )}
                 </Button>
               </div>
               {urlError && (
-                <p className="text-sm text-red-500 font-body ms-5">{urlError}</p>
+                <p className="mt-2 text-sm font-body text-red-500 ps-3">{urlError}</p>
               )}
 
               {shortened && (
@@ -184,79 +196,35 @@ const HeroSection = () => {
                 </motion.div>
               )}
 
-              <p className="mt-5 text-sm font-body text-[hsl(var(--navy))]/75">
-                {t(
-                  "Free to try · No credit card · Hosted in Saudi Arabia",
-                  "مجاني للتجربة · بدون بطاقة ائتمانية · مستضاف في السعودية"
-                )}
-              </p>
+              <div className="mt-8 sm:mt-10 flex flex-wrap justify-center lg:justify-start gap-2.5">
+                {[
+                  { icon: Sparkles, en: "Completely free", ar: "مجاني تماماً" },
+                  { icon: CreditCard, en: "No credit card", ar: "بدون بطاقة بنكية" },
+                  { icon: MapPin, en: "Ready in 30 seconds", ar: "جاهز في 30 ثانية" },
+                ].map((badge, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white shadow-soft border border-[hsl(var(--navy))]/5"
+                  >
+                    <badge.icon size={14} className="text-[hsl(var(--sky))]" />
+                    <span className="text-sm font-body font-medium text-[hsl(var(--navy))]/75">
+                      {t(badge.en, badge.ar)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
 
-          {/* Auto-scrolling dashboard card */}
+
+          {/* URL morph + live analytics */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative max-w-[320px] sm:max-w-md mx-auto lg:max-w-none"
+            className="relative max-w-[360px] sm:max-w-md mx-auto lg:max-w-none lg:scale-[1.1] lg:translate-x-8 rtl:lg:-translate-x-8 origin-center"
           >
-            <div className="bg-white rounded-2xl lg:rounded-3xl shadow-elevated overflow-hidden">
-              {/* Tab header */}
-              <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[hsl(var(--navy))]/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-1">
-                    {labels.map((label, i) => (
-                      <button
-                        key={i}
-                        onClick={() => { setDirection(i > activeIndex ? 1 : -1); setActiveIndex(i); }}
-                        className={`font-body text-[10px] sm:text-xs font-bold px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all ${
-                          activeIndex === i
-                            ? "bg-[hsl(var(--sky))] text-white"
-                            : "text-[hsl(var(--navy))]/50 hover:text-[hsl(var(--navy))]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex gap-1 mt-2.5">
-                  {[0, 1, 2].map((i) => (
-                    <div key={i} className="relative flex-1 h-1 rounded-full bg-[hsl(var(--navy))]/10 overflow-hidden">
-                      {activeIndex === i && (
-                        <motion.div
-                          key={`bar-${activeIndex}`}
-                          initial={{ width: "0%" }}
-                          animate={{ width: "100%" }}
-                          transition={{ duration: INTERVAL / 1000, ease: "linear" }}
-                          className="h-full bg-[hsl(var(--sky))] rounded-full"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Scrolling content */}
-              <div className="relative h-[300px] sm:h-[430px] overflow-hidden">
-                <AnimatePresence mode="popLayout" custom={direction}>
-                  <motion.div
-                    key={activeIndex}
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                    className="absolute inset-0 p-4 sm:p-6"
-                  >
-                    {activeIndex === 0 && <LinksScreen />}
-                    {activeIndex === 1 && <QRScreen />}
-                    {activeIndex === 2 && <AnalyticsScreen />}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
+            <UrlMorphCard />
           </motion.div>
         </div>
       </div>
@@ -264,215 +232,143 @@ const HeroSection = () => {
   );
 };
 
-/* ─── Screen contents ─── */
+/* ─── URL morph + live analytics card ─── */
 
-const LinksScreen = () => (
-  <div className="space-y-3">
-    {[
-      { short: "snip.sa/ramadan", original: "myshop.sa/ramadan-offers", clicks: "2,847" },
-      { short: "snip.sa/menu", original: "restaurant.sa/full-menu", clicks: "1,203" },
-      { short: "snip.sa/app", original: "apps.apple.com/sa/myapp", clicks: "956" },
-      { short: "snip.sa/sale", original: "brand.sa/summer-sale", clicks: "734" },
-      { short: "snip.sa/event", original: "events.sa/riyadh-season", clicks: "512" },
-    ].map((link, i) => (
-      <motion.div
-        key={i}
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.05 + i * 0.06 }}
-        className="flex items-center gap-3 p-3 rounded-xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5"
-      >
-        <div className="w-9 h-9 rounded-lg bg-[hsl(var(--sky))]/15 flex items-center justify-center shrink-0">
-          <Link2 size={15} className="text-[hsl(var(--sky))]" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-sm text-[hsl(var(--navy))] truncate">{link.short}</p>
-          <p className="text-xs text-[hsl(var(--navy))]/40 truncate font-body">{link.original}</p>
-        </div>
-        <span className="text-xs font-bold text-[hsl(var(--navy))]/60 bg-white px-3 py-1 rounded-full flex items-center gap-1 shrink-0 font-body">
-          <MousePointerClick size={10} /> {link.clicks}
-        </span>
-      </motion.div>
-    ))}
-  </div>
-);
+const UrlMorphCard = () => {
+  const { t } = useLanguage();
+  const [step, setStep] = useState(0); // 0 = long, 1 = morphing, 2 = short + analytics
+  const [clicks, setClicks] = useState(1247);
+  const [scans, setScans] = useState(312);
 
-const QRScreen = () => (
-  <div className="grid grid-cols-2 gap-3">
-    {[
-      { name: "Restaurant Menu", scans: "412" },
-      { name: "Product Page", scans: "287" },
-      { name: "Event Booth", scans: "198" },
-      { name: "Business Card", scans: "156" },
-    ].map((qr, i) => (
-      <motion.div
-        key={i}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.05 + i * 0.08 }}
-        className="p-3 sm:p-5 rounded-2xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5 text-center"
-      >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 rounded-xl bg-white border border-[hsl(var(--navy))]/10 p-1.5 sm:p-2">
-          <img src={qrImage} alt="QR Code" width="512" height="512" className="w-full h-full object-contain" loading="lazy" />
-        </div>
-        <p className="font-display font-bold text-xs sm:text-sm text-[hsl(var(--navy))]">{qr.name}</p>
-        <p className="text-[10px] sm:text-xs text-[hsl(var(--navy))]/50 mt-1 flex items-center justify-center gap-1 font-body">
-          <Eye size={10} /> {qr.scans} scans
-        </p>
-      </motion.div>
-    ))}
-  </div>
-);
+  useEffect(() => {
+    const loop = setInterval(() => {
+      setStep((s) => (s + 1) % 3);
+    }, 2600);
+    return () => clearInterval(loop);
+  }, []);
 
-const AnalyticsScreen = () => {
-  const chartPoints = [
-    { clicks: 8, visitors: 5, qr: 2 },
-    { clicks: 15, visitors: 10, qr: 7 },
-    { clicks: 12, visitors: 8, qr: 5 },
-    { clicks: 22, visitors: 15, qr: 10 },
-    { clicks: 18, visitors: 12, qr: 8 },
-    { clicks: 25, visitors: 16, qr: 12 },
-    { clicks: 30, visitors: 20, qr: 14 },
-  ];
-  const maxVal = 32;
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setClicks((c) => c + Math.floor(Math.random() * 3) + 1);
+      if (Math.random() > 0.6) setScans((s) => s + 1);
+    }, 1400);
+    return () => clearInterval(ticker);
+  }, []);
 
-  const toPath = (key: "clicks" | "visitors" | "qr") => {
-    const w = 280;
-    const h = 70;
-    return chartPoints.map((p, i) => {
-      const x = (i / (chartPoints.length - 1)) * w;
-      const y = h - (p[key] / maxVal) * h;
-      return `${i === 0 ? "M" : "L"}${x},${y}`;
-    }).join(" ");
-  };
+  const longUrl =
+    "https://www.myshop.sa/collections/ramadan-2026?utm_source=instagram&utm_medium=story&utm_campaign=ramadan_launch&ref=hero";
 
   return (
-    <div className="space-y-3">
-      {/* Stat cards — matching real analytics */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: "Clicks", value: "437", color: "hsl(217, 71%, 30%)", icon: MousePointerClick },
-          { label: "Visitors", value: "284", color: "hsl(var(--navy))", icon: Eye },
-          { label: "QR Scans", value: "156", color: "hsl(25, 95%, 53%)", icon: QrCode },
-        ].map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 + i * 0.06 }}
-            className="p-2.5 rounded-xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5"
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
-                <stat.icon size={10} style={{ color: stat.color }} />
-              </div>
-              <span className="text-[9px] text-[hsl(var(--navy))]/50 font-body">{stat.label}</span>
-            </div>
-            <p className="font-display font-bold text-sm text-[hsl(var(--navy))]">{stat.value}</p>
-          </motion.div>
-        ))}
+    <div className="bg-white rounded-3xl shadow-elevated overflow-hidden border border-[hsl(var(--navy))]/5">
+      {/* Browser chrome */}
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[hsl(var(--navy))]/5 bg-[hsl(var(--cream))]/60">
+        <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
+        <span className="ms-3 text-[10px] font-body text-[hsl(var(--navy))]/40">snip.sa · dashboard</span>
       </div>
 
-      {/* Line chart — matching real analytics */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
-        className="p-4 rounded-2xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-display font-bold text-xs text-[hsl(var(--navy))]">Clicks Over Time</p>
-          <div className="flex items-center gap-3">
-            {[
-              { label: "Clicks", color: "hsl(217, 71%, 30%)" },
-              { label: "Visitors", color: "hsl(var(--navy))" },
-              { label: "QR", color: "hsl(25, 95%, 53%)" },
-            ].map((l, i) => (
-              <div key={i} className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: l.color }} />
-                <span className="text-[8px] text-[hsl(var(--navy))]/40 font-body">{l.label}</span>
-              </div>
-            ))}
+      <div className="p-5 sm:p-6 space-y-5">
+        {/* Long URL */}
+        <div>
+          <p className="text-[10px] font-body font-bold uppercase tracking-wider text-[hsl(var(--navy))]/40 mb-2">
+            {t("From long link", "من الرابط الطويل")}
+          </p>
+          <div className="px-3 py-2.5 rounded-xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5 text-[11px] font-mono text-[hsl(var(--navy))]/55 break-all leading-relaxed h-[60px] overflow-hidden">
+            {longUrl}
           </div>
         </div>
-        <svg viewBox="0 0 280 90" className="w-full" style={{ height: 80 }}>
-          {/* Grid lines */}
-          {[0, 1, 2, 3].map(i => (
-            <line key={i} x1="0" y1={i * 23.3} x2="280" y2={i * 23.3} stroke="hsl(214, 32%, 91%)" strokeWidth="0.5" strokeDasharray="3 3" />
-          ))}
-          {/* Lines */}
-          <motion.path
-            d={toPath("clicks")}
-            fill="none"
-            stroke="hsl(217, 71%, 30%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          />
-          <motion.path
-            d={toPath("visitors")}
-            fill="none"
-            stroke="hsl(220, 50%, 15%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.4 }}
-          />
-          <motion.path
-            d={toPath("qr")}
-            fill="none"
-            stroke="hsl(25, 95%, 53%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-          />
-          {/* X axis labels */}
-          {days.map((d, i) => (
-            <text key={i} x={(i / 6) * 280} y="88" fontSize="7" fill="hsl(215, 16%, 47%)" textAnchor="middle" fontFamily="sans-serif">{d}</text>
-          ))}
-        </svg>
-      </motion.div>
 
-      {/* Top countries — matching real analytics */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="p-3 rounded-2xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5"
-      >
-        <p className="font-display font-bold text-xs text-[hsl(var(--navy))] mb-2">Top Countries</p>
-        {[
-          { name: "Saudi Arabia", pct: 68 },
-          { name: "India", pct: 20 },
-          { name: "France", pct: 7 },
-        ].map((c, i) => (
-          <div key={i} className="flex items-center justify-between py-1 border-b border-[hsl(var(--navy))]/5 last:border-0">
-            <span className="text-[10px] text-[hsl(var(--navy))] font-body">{c.name}</span>
-            <div className="flex items-center gap-2">
-              <div className="w-14 h-1.5 rounded-full bg-[hsl(var(--navy))]/10 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${c.pct}%` }}
-                  transition={{ duration: 0.5, delay: 0.55 + i * 0.08 }}
-                  className="h-full rounded-full bg-[hsl(var(--sky))]"
-                />
+        {/* Arrow / morph indicator */}
+        <div className="flex justify-center">
+          <motion.div
+            animate={{ y: step === 1 ? [0, 4, 0] : 0, scale: step === 1 ? [1, 1.15, 1] : 1 }}
+            transition={{ duration: 0.6, repeat: step === 1 ? Infinity : 0 }}
+            className="w-9 h-9 rounded-full bg-[hsl(var(--sky))] flex items-center justify-center shadow-soft"
+          >
+            <ArrowDown size={18} className="text-white" strokeWidth={2.5} />
+          </motion.div>
+        </div>
+
+        {/* Short URL */}
+        <div>
+          <p className="text-[10px] font-body font-bold uppercase tracking-wider text-[hsl(var(--navy))]/40 mb-2">
+            {t("To short link", "الى الرابط القصير")}
+          </p>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step >= 2 ? "short" : "empty"}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35 }}
+              className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-[hsl(var(--sky))]/8 border border-[hsl(var(--sky))]/25"
+            >
+              <span className="font-display font-bold text-base sm:text-lg text-[hsl(var(--navy))]">
+                snip.sa/<span className="text-[hsl(var(--sky))]">ramadan</span>
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-body font-bold text-[hsl(var(--sky))] bg-white px-2.5 py-1 rounded-full">
+                <Copy size={11} />
+                {t("Copy", "نسخ")}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Live analytics numbers */}
+        <div className="grid grid-cols-3 gap-2.5 pt-1">
+          {[
+            {
+              label: t("Clicks", "نقرات"),
+              value: clicks.toLocaleString("en-US"),
+              icon: MousePointerClick,
+              live: true,
+            },
+            {
+              label: t("QR scans", "قراءات QR"),
+              value: scans.toLocaleString("en-US"),
+              icon: QrCode,
+              live: true,
+            },
+            {
+              label: t("Countries", "دول"),
+              value: "12",
+              icon: MapPin,
+              live: false,
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="p-3 rounded-xl bg-[hsl(var(--cream))] border border-[hsl(var(--navy))]/5"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <stat.icon size={11} className="text-[hsl(var(--sky))]" />
+                {stat.live && (
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--sky))] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[hsl(var(--sky))]" />
+                  </span>
+                )}
               </div>
-              <span className="text-[9px] font-bold text-[hsl(var(--navy))]/50 font-body w-5 text-end">{c.pct}%</span>
+              <motion.p
+                key={stat.value}
+                initial={{ opacity: 0.6, y: -3 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="font-display font-bold text-base text-[hsl(var(--navy))] leading-none"
+              >
+                {stat.value}
+              </motion.p>
+              <p className="text-xs font-body text-[hsl(var(--navy))]/60 mt-1">{stat.label}</p>
             </div>
-          </div>
-        ))}
-      </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
+
+
+
 
 export default HeroSection;

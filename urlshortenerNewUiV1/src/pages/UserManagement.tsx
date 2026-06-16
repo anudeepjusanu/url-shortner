@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Users, UserPlus, Link2, CalendarDays, Trash2, Search,
-  BarChart3, Loader2, MapPin, Globe, Phone, ChevronLeft, ChevronRight, LogIn,
+  BarChart3, Loader2, MapPin, Globe, Phone, ChevronLeft, ChevronRight, LogIn, QrCode, Code2,
 } from "lucide-react";
 import { adminService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
@@ -72,6 +72,7 @@ const UserManagement = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [linksSort, setLinksSort] = useState<"default" | "most" | "least" | "latest">("default");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
@@ -82,6 +83,9 @@ const UserManagement = () => {
 
   const [globalStats, setGlobalStats] = useState({
     totalDomains: 0,
+    totalQRCodes: 0,
+    apiUsers: 0,
+    linkSources: { landing: 0, dashboard: 0, api: 0, bulk: 0 },
   });
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; name: string }>({
@@ -120,7 +124,17 @@ const UserManagement = () => {
 
       setUsers(allUsers);
       const overview = statsRes?.data?.overview ?? {};
-      setGlobalStats({ totalDomains: overview.totalDomains ?? 0 });
+      setGlobalStats({
+        totalDomains: overview.totalDomains ?? 0,
+        totalQRCodes: overview.totalQRCodes ?? 0,
+        apiUsers: overview.apiUsers ?? 0,
+        linkSources: {
+          landing: overview.linkSources?.landing ?? 0,
+          dashboard: overview.linkSources?.dashboard ?? 0,
+          api: overview.linkSources?.api ?? 0,
+          bulk: overview.linkSources?.bulk ?? 0,
+        },
+      });
     } catch {
       setIsError(true);
     } finally {
@@ -130,10 +144,10 @@ const UserManagement = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, fromDate, toDate]);
+  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, linksSort, fromDate, toDate]);
 
   const filtered = useMemo(() => {
-    return users.filter((u) => {
+    const result = users.filter((u) => {
       const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
       const matchSearch =
         name.toLowerCase().includes(search.toLowerCase()) ||
@@ -158,7 +172,25 @@ const UserManagement = () => {
 
       return matchSearch && matchRole && matchDate;
     });
-  }, [users, search, roleFilter, fromDate, toDate]);
+
+    if (linksSort === "most") {
+      result.sort((a, b) => {
+        const aLinks = a.usage?.urlsCreatedTotal ?? a.urlCount ?? 0;
+        const bLinks = b.usage?.urlsCreatedTotal ?? b.urlCount ?? 0;
+        return bLinks - aLinks;
+      });
+    } else if (linksSort === "least") {
+      result.sort((a, b) => {
+        const aLinks = a.usage?.urlsCreatedTotal ?? a.urlCount ?? 0;
+        const bLinks = b.usage?.urlsCreatedTotal ?? b.urlCount ?? 0;
+        return aLinks - bLinks;
+      });
+    } else if (linksSort === "latest") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return result;
+  }, [users, search, roleFilter, linksSort, fromDate, toDate]);
 
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -224,9 +256,11 @@ const UserManagement = () => {
     { label: t("Number of Signups", "عدد المُسجّلين"), value: filteredStats.totalUsers, icon: Users },
     { label: t("Users With Links", "مستخدمون لديهم روابط"), value: filteredStats.usersWithLinks, icon: Link2 },
     { label: t("Avg Links per User", "متوسط الروابط لكل مستخدم"), value: filteredStats.avgLinksPerUser, icon: BarChart3 },
-    { label: t("Active Users", "المستخدمون النشطون"), value: filteredStats.activeUsers, icon: UserPlus },
+    // { label: t("Active Users", "المستخدمون النشطون"), value: filteredStats.activeUsers, icon: UserPlus },
     { label: t("Total Domains", "إجمالي النطاقات"), value: globalStats.totalDomains, icon: Globe },
     { label: t("Google SSO Users", "مستخدمو Google SSO"), value: filteredStats.googleSSOUsers, icon: LogIn },
+    { label: t("Total QR Codes Created", "إجمالي QR Codes المُنشأة"), value: globalStats.totalQRCodes, icon: QrCode },
+    { label: t("Users Using API", "المستخدمون عبر API"), value: globalStats.apiUsers, icon: Code2 },
   ];
 
   return (
@@ -290,6 +324,52 @@ const UserManagement = () => {
         ))}
       </div>
 
+      {/* Link Creation Sources Breakdown */}
+      {(() => {
+        const sources = [
+          { key: "landing",   label: t("Landing Page", "الصفحة الرئيسية"),  color: "bg-[hsl(var(--sky))]" },
+          { key: "dashboard", label: t("My Links (Dashboard)", "روابطي"),    color: "bg-[hsl(var(--navy))]" },
+          { key: "api",       label: t("API", "API"),                         color: "bg-violet-500" },
+          { key: "bulk",      label: t("Bulk Import", "استيراد مجمّع"),       color: "bg-amber-500" },
+        ] as const;
+        const data = globalStats.linkSources;
+        const total = data.landing + data.dashboard + data.api + data.bulk;
+        return (
+          <div className="bg-background border border-border rounded-xl p-5 mb-6">
+            <p className="text-sm font-body font-semibold text-foreground mb-4">
+              {t("Link Creation Sources", "مصادر إنشاء الروابط")}
+              <span className="ms-2 text-xs font-normal text-muted-foreground">
+                {t("unique users per channel", "مستخدمون فريدون لكل قناة")}
+              </span>
+            </p>
+            <div className="space-y-3">
+              {sources.map(({ key, label, color }) => {
+                const count = data[key];
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                return (
+                  <div key={key} className="flex items-center gap-3">
+                    <span className="w-36 shrink-0 text-xs font-body text-muted-foreground truncate">{label}</span>
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${color}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-xs font-body font-semibold text-foreground tabular-nums">{pct}%</span>
+                    <span className="w-10 text-right text-xs font-body text-muted-foreground tabular-nums">{count.toLocaleString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {total === 0 && (
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                {t("No data yet — links created going forward will appear here.", "لا توجد بيانات بعد — الروابط المُنشأة من الآن ستظهر هنا.")}
+              </p>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
@@ -311,6 +391,17 @@ const UserManagement = () => {
             <SelectItem value="admin">{t("Admin", "مدير")}</SelectItem>
             <SelectItem value="user">{t("User", "مستخدم")}</SelectItem>
             <SelectItem value="viewer">{t("Viewer", "مشاهد")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={linksSort} onValueChange={(v) => setLinksSort(v as typeof linksSort)}>
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder={t("Sort by links", "رتّب حسب الروابط")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">{t("Default Order", "الترتيب الافتراضي")}</SelectItem>
+            <SelectItem value="most">{t("Most Links", "الأكثر روابط")}</SelectItem>
+            <SelectItem value="latest">{t("Latest Links", "أحدث الروابط")}</SelectItem>
+            <SelectItem value="least">{t("Least Links", "الأقل روابط")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

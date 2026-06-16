@@ -15,8 +15,8 @@ const StatsSection = () => {
       name: t("Mohammed Al Otaibi", "محمد العتيبي"),
       role: t("Marketing Manager, Riyadh", "مدير تسويق، الرياض"),
       quote: t(
-        "We used 4r for our Ramadan campaign and knew exactly which ad brought sales. We saved 40% of our ad budget.",
-        "استخدمنا 4r لحملة رمضان وعرفنا بالضبط أي إعلان جاب مبيعات. وفرنا 40% من ميزانية الإعلانات."
+        "We used snip for our Ramadan campaign and knew exactly which ad brought sales. We saved 40% of our ad budget.",
+        "استخدمنا snip لحملة رمضان وعرفنا بالضبط أي إعلان جاب مبيعات. وفرنا 40% من ميزانية الإعلانات."
       ),
     },
     {
@@ -36,8 +36,8 @@ const StatsSection = () => {
       ),
     },
     {
-      name: t("Sara Al Qahtani", "سارة القحطاني"),
-      role: t("Restaurant Owner, Riyadh", "صاحبة مطعم، الرياض"),
+      name: t("Khalid Al Qahtani", "خالد القحطاني"),
+      role: t("Restaurant Owner, Riyadh", "صاحب مطعم، الرياض"),
       quote: t(
         "QR codes on our menu increased online orders by 60%. We can see which items people scan the most.",
         "QR Codes على قائمة الطعام زادت الطلبات الأونلاين 60%. نشوف أي أصناف الناس تمسحها أكثر."
@@ -48,15 +48,15 @@ const StatsSection = () => {
   return (
     <section className="py-16 bg-foreground">
       <div className="container mx-auto px-6">
-        <p className="text-center text-background/75 font-body text-sm mb-8">
+        <p className="text-center text-background/50 font-body text-sm mb-8">
           {t("Trusted by marketers and developers across Saudi Arabia", "يثق فينا مسوقين ومطورين من كل السعودية")}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
               <p className="font-display text-3xl md:text-4xl font-bold text-background">{stat.value}</p>
-              <p className="text-background/75 font-body text-sm mt-1">{stat.label}</p>
-              <p className="text-background/70 font-body text-xs mt-0.5">{stat.note}</p>
+              <p className="text-background/60 font-body text-sm mt-1">{stat.label}</p>
+              <p className="text-background/40 font-body text-xs mt-0.5">{stat.note}</p>
             </div>
           ))}
         </div>
@@ -69,7 +69,7 @@ const StatsSection = () => {
               </p>
               <div>
                 <p className="text-background font-display font-semibold text-sm">{testimonial.name}</p>
-                <p className="text-background/70 font-body text-xs">{testimonial.role}</p>
+                <p className="text-background/50 font-body text-xs">{testimonial.role}</p>
               </div>
             </div>
           ))}

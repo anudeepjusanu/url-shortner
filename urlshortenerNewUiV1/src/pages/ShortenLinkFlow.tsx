@@ -196,7 +196,7 @@ const ShortenLinkFlow = () => {
     if (hasCreatedUrlRef.current) return shortUrl || `${import.meta.env.VITE_BASE_URL || "https://snip.sa"}/${previewShortCode}`;
     hasCreatedUrlRef.current = true;
 
-    const response = await urlsAPI.createUrl({ originalUrl: originalUrl, customCode: previewShortCode });
+    const response = await urlsAPI.createUrl({ originalUrl: originalUrl, customCode: previewShortCode, source: "landing" });
     if (response.success && response.data) {
       const shortCode = response.data.shortCode || response.data.shortUrl || previewShortCode;
       const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";

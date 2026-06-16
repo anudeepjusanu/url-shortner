@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check, X, ShieldCheck, Zap, Globe, Languages } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 
@@ -32,12 +32,76 @@ const ComparisonSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-14"
+          className="text-center max-w-3xl mx-auto mb-14"
         >
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
-            {t("How snip.sa compares to Bitly and others", "كيف snip.sa يتفوق على Bitly وغيرهم")}
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
+            {t("Built for the Saudi market not just translated", "مبني للسوق السعودي مو مجرد ترجمة")}
           </h2>
+          <p className="mt-5 font-body text-base md:text-lg text-[hsl(var(--navy))]/65">
+            {t(
+              "Sites like Bitly and other foreign platforms are generic. snip.sa is built from the ground up for the Saudi user.",
+              "مواقع مثل Bitly وغيرها منصات أجنبية عامة. أما snip.sa مبني من الصفر للمستخدم السعودي."
+            )}
+          </p>
         </motion.div>
+
+        {/* Differentiation cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-6xl mx-auto">
+          {[
+            {
+              icon: ShieldCheck,
+              title: t("Your data protected inside the Kingdom", "بياناتك محمية داخل المملكة"),
+              desc: t(
+                "Our servers are in Saudi Arabia, PDPL compliant. Your data never leaves the Kingdom or gets shared with any external party.",
+                "سيرفراتنا في السعودية، ممتثلون لنظام حماية البيانات الشخصية PDPL. بياناتك ما تطلع من المملكة ولا تُشارك مع أي جهة خارجية."
+              ),
+            },
+            {
+              icon: Zap,
+              title: t("Fastest redirect from inside the Kingdom", "أسرع إعادة توجيه من داخل المملكة"),
+              desc: t(
+                "Less than 30ms redirect time from Saudi Arabia your Saudi audience doesn't wait, faster than any foreign platform.",
+                "أقل من 30 ميلي ثانية لإعادة التوجيه من السعودية جمهورك السعودي لا ينتظر، وذلك أسرع من أي منصة أجنبية."
+              ),
+            },
+            {
+              icon: Globe,
+              title: t("Saudi .sa domain support", "دعم النطاقات السعودية .sa"),
+              desc: t(
+                "Use your Saudi .sa domain in your short links a feature you won't find on any foreign platform.",
+                "استخدم نطاقك السعودي .sa في روابطك المختصرة ميزة لا تجدها في أي منصة أجنبية."
+              ),
+            },
+            {
+              icon: Languages,
+              title: t("Fully Arabic interface", "واجهة عربية كاملة"),
+              desc: t(
+                "The full platform in Arabic, built for right-to-left reading not just a Google translation.",
+                "المنصة كاملة بالعربي، مبنية للقراءة من اليمين لليسار مش مجرد ترجمة جوجل."
+              ),
+            },
+          ].map((card, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="bg-white rounded-2xl p-6 shadow-soft border border-[hsl(var(--navy))]/5"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[hsl(var(--sky))]/10 flex items-center justify-center mb-4">
+                <card.icon className="w-5 h-5 text-[hsl(var(--sky))]" />
+              </div>
+              <h3 className="font-display font-bold text-base text-[hsl(var(--navy))] mb-2 leading-snug">
+                {card.title}
+              </h3>
+              <p className="font-body text-sm leading-relaxed text-[hsl(var(--navy))]/65">
+                {card.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
 
         {/* Desktop table */}
         <motion.div
