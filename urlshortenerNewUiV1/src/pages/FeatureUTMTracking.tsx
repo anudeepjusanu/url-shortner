@@ -82,7 +82,7 @@ const FeatureUTMTracking = () => {
               <Link to={smartLink("/signup", "/dashboard/utm-builder")}>
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
                   {t("Try the UTM builder", "جرّب منشئ UTM")}
-                  <ArrowRight size={16} className="ms-1.5" />
+                  <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
                 </Button>
               </Link>
             </motion.div>
