@@ -62,7 +62,7 @@ const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: num
 /* ── Orbiting dot ── */
 const OrbitDot = ({ radius, duration, delay, size = 6 }: { radius: number; duration: number; delay: number; size?: number }) => (
   <motion.div
-    className="absolute rounded-full bg-[hsl(var(--sky))]"
+    className="absolute rounded-full bg-[hsl(var(--sky))] pointer-events-none"
     style={{ width: size, height: size, top: "50%", left: "50%", marginTop: -size / 2, marginLeft: -size / 2 }}
     animate={{
       x: [radius, 0, -radius, 0, radius],
@@ -263,8 +263,8 @@ const FeatureQRCodes = () => {
               className="relative inline-flex items-center justify-center mb-14"
             >
               {/* Orbit ring */}
-              <div className="absolute w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full border border-[hsl(var(--sky))]/12" />
-              <div className="absolute w-[380px] h-[380px] md:w-[480px] md:h-[480px] rounded-full border border-dashed border-[hsl(var(--sky))]/8" />
+              <div className="absolute w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full border border-[hsl(var(--sky))]/12 pointer-events-none" />
+              <div className="absolute w-[380px] h-[380px] md:w-[480px] md:h-[480px] rounded-full border border-dashed border-[hsl(var(--sky))]/8 pointer-events-none" />
 
               <OrbitDot radius={160} duration={8} delay={0} size={8} />
               <OrbitDot radius={200} duration={12} delay={2} size={5} />
@@ -283,7 +283,7 @@ const FeatureQRCodes = () => {
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1.2, type: "spring" }}
-                className="absolute top-4 -end-2 md:top-6 md:-end-16 bg-white rounded-xl px-4 py-2.5 shadow-card border border-[hsl(var(--navy))]/5 flex items-center gap-2.5"
+                className="absolute top-4 -end-2 md:top-6 md:-end-16 bg-white rounded-xl px-4 py-2.5 shadow-card border border-[hsl(var(--navy))]/5 flex items-center gap-2.5 pointer-events-none"
               >
                 <div className="w-7 h-7 rounded-full bg-[hsl(var(--sky))]/10 flex items-center justify-center">
                   <Scan className="w-3.5 h-3.5 text-[hsl(var(--sky))]" />
@@ -299,7 +299,7 @@ const FeatureQRCodes = () => {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1.6, type: "spring" }}
-                className="absolute bottom-8 -start-2 md:bottom-12 md:-start-20 bg-[hsl(var(--navy))] rounded-xl px-4 py-2.5 shadow-lg flex items-center gap-2.5"
+                className="absolute bottom-8 -start-2 md:bottom-12 md:-start-20 bg-[hsl(var(--navy))] rounded-xl px-4 py-2.5 shadow-lg flex items-center gap-2.5 pointer-events-none"
               >
                 <BarChart3 className="w-4 h-4 text-[hsl(var(--sky))]" />
                 <div>
@@ -313,7 +313,7 @@ const FeatureQRCodes = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-wrap gap-4 items-center justify-center"
+              className="flex flex-wrap gap-4 items-center justify-center relative z-10"
             >
               <Link to={smartLink("/signup", "/dashboard/qr-codes")}>
                 <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">
