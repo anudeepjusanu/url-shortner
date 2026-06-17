@@ -16,6 +16,7 @@ const DeveloperSection = lazy(() => import("@/components/landing/DeveloperSectio
 const ComparisonSection = lazy(() => import("@/components/landing/ComparisonSection"));
 const SocialProofSection = lazy(() => import("@/components/landing/SocialProofSection"));
 const FreePricingSection = lazy(() => import("@/components/landing/FreePricingSection"));
+const BlogSection = lazy(() => import("@/components/landing/BlogSection"));
 const FAQSection = lazy(() => import("@/components/landing/FAQSection"));
 const CTASection = lazy(() => import("@/components/landing/CTASection"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
@@ -85,6 +86,7 @@ const Index = () => {
           <ComparisonSection />
           <SocialProofSection />
           <FreePricingSection />
+          <BlogSection />
           <FAQSection />
           <CTASection />
         </Suspense>
