@@ -33,4 +33,6 @@ router.delete('/bio-pages/:id', validateObjectId, adminController.deleteBioPage)
 
 router.get('/organizations', validatePagination, adminController.getOrganizations);
 
+router.get('/stats/api-users', adminController.getApiUsers);
+
 module.exports = router;

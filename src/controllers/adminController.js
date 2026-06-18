@@ -758,6 +758,57 @@ const getOrganizations = async (req, res) => {
   }
 };
 
+const getApiUsers = async (req, res) => {
+  try {
+    const results = await Url.aggregate([
+      { $match: { source: 'api' } },
+      {
+        $group: {
+          _id: '$creator',
+          apiLinkCount: { $sum: 1 },
+          lastCreatedAt: { $max: '$createdAt' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          userId: '$_id',
+          email: '$user.email',
+          firstName: '$user.firstName',
+          lastName: '$user.lastName',
+          plan: '$user.plan',
+          apiLinkCount: 1,
+          lastCreatedAt: 1
+        }
+      },
+      { $sort: { apiLinkCount: -1 } }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        total: results.length,
+        users: results
+      }
+    });
+  } catch (error) {
+    console.error('Get API users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch API users'
+    });
+  }
+};
+
 module.exports = {
   getSystemStats,
   getUsers,
@@ -770,5 +821,6 @@ module.exports = {
   getAllBioPages,
   updateBioPage,
   deleteBioPage,
-  getOrganizations
+  getOrganizations,
+  getApiUsers
 };
