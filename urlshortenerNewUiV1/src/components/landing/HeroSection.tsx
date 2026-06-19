@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { urlsAPI } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
@@ -24,6 +25,7 @@ const HeroSection = () => {
   const [urlError, setUrlError] = useState("");
   const [checking, setChecking] = useState(false);
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -59,7 +61,11 @@ const HeroSection = () => {
     } finally {
       setChecking(false);
     }
-    navigate("/shorten", { state: { url: trimmed } });
+    if (user) {
+      navigate("/dashboard", { state: { prefillUrl: trimmed } });
+    } else {
+      navigate("/shorten", { state: { url: trimmed } });
+    }
   };
 
   const handleCopy = () => {

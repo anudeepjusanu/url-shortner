@@ -11,6 +11,7 @@ import { UTMPreview } from "@/components/landing/UTMPreviewMockup";
 import { useState } from "react";
 import { toast } from "sonner";
 import { urlsAPI } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const isValidUrl = (value: string) => {
   try {
@@ -24,6 +25,7 @@ const isValidUrl = (value: string) => {
 const FeatureUrlShortening = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [inputUrl, setInputUrl] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [urlError, setUrlError] = useState("");
@@ -58,7 +60,11 @@ const FeatureUrlShortening = () => {
     } finally {
       setChecking(false);
     }
-    navigate("/shorten", { state: { url: trimmed } });
+    if (user) {
+      navigate("/dashboard", { state: { prefillUrl: trimmed } });
+    } else {
+      navigate("/shorten", { state: { url: trimmed } });
+    }
   };
 
   const handleCopy = () => {
