@@ -24,7 +24,6 @@ const getSystemStats = async (req, res) => {
       topUrls,
       totalStaticQRCodes,
       totalDynamicQRCodes,
-      apiUsers,
       sourceLanding,
       sourceDashboard,
       sourceApi,
@@ -46,12 +45,12 @@ const getSystemStats = async (req, res) => {
         .select('title shortCode clickCount createdAt'),
       QRCode.countDocuments(),
       DynamicQRCode.countDocuments(),
-      User.countDocuments({ 'apiKeys': { $elemMatch: { isActive: true } } }),
       Url.distinct('creator', { source: 'landing' }).then(ids => ids.length),
       Url.distinct('creator', { source: 'dashboard' }).then(ids => ids.length),
       Url.distinct('creator', { source: 'api' }).then(ids => ids.length),
       Url.distinct('creator', { source: 'bulk' }).then(ids => ids.length)
     ]);
+    const apiUsers = sourceApi;
     const avgLinksPerUser = totalUsers > 0
       ? Math.round((totalUrls / totalUsers) * 10) / 10
       : 0;

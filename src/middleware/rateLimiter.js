@@ -43,20 +43,17 @@ const authLimiter = createRateLimiter({
 
 const urlCreationLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 100,
+  max: (req) => {
+    if (req.user) {
+      const roleMultiplier = { 'admin': 10, 'premium': 5, 'user': 1 };
+      return 100 * (roleMultiplier[req.user.role] || 1);
+    }
+    return 100;
+  },
   message: 'Too many URLs created, please try again later',
   keyGenerator: (req) => {
     if (req.user) {
-      const userKey = `url_creation:user:${req.user.id}`;
-      const roleMultiplier = {
-        'admin': 10,
-        'premium': 5,
-        'user': 1
-      };
-      return {
-        key: userKey,
-        max: 100 * (roleMultiplier[req.user.role] || 1)
-      };
+      return `url_creation:user:${req.user.id}`;
     }
     return `url_creation:ip:${ipKeyGenerator(req)}`;
   }

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
@@ -16,9 +16,18 @@ import { useToast } from "@/hooks/use-toast";
 const Dashboard = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [longUrl, setLongUrl] = useState("");
   const [shortened, setShortened] = useState("");
+
+  useEffect(() => {
+    const prefillUrl = (location.state as { prefillUrl?: string } | null)?.prefillUrl;
+    if (prefillUrl) {
+      setLongUrl(prefillUrl);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []);
   const [copied, setCopied] = useState(false);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [geoTab, setGeoTab] = useState<"countries" | "cities">("countries");
