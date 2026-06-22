@@ -287,7 +287,7 @@ const createUrl = async (req, res) => {
       } while (await Url.findOne({ shortCode }));
     }
     
-    const resolvedSource = req.apiKey ? 'api' : (['landing', 'dashboard', 'bulk'].includes(bodySource) ? bodySource : 'dashboard');
+    const resolvedSource = req.user.apiKey ? 'api' : (['landing', 'dashboard', 'bulk'].includes(bodySource) ? bodySource : 'dashboard');
 
     const urlData = {
       originalUrl: urlValidation.cleanUrl,
