@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -27,6 +27,7 @@ import {
   Edit2,
   AlertTriangle,
   Layers,
+  Globe,
 } from "lucide-react";
 import {
   Dialog,
@@ -56,6 +57,7 @@ const MyLinks = () => {
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">(
     "latest",
   );
+  const [domainFilter, setDomainFilter] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedUtmId, setCopiedUtmId] = useState<string | null>(null);
   const [expandedDest, setExpandedDest] = useState<Set<string>>(new Set());
@@ -246,7 +248,22 @@ const MyLinks = () => {
     }
   };
 
+  const domainOptions = useMemo(() => {
+    const custom = new Set<string>();
+    let hasDefault = false;
+    urls.forEach((url) => {
+      if (url.domain) custom.add(url.domain);
+      else hasDefault = true;
+    });
+    return { custom: Array.from(custom).sort(), hasDefault };
+  }, [urls]);
+
   const filtered = urls
+    .filter((url) => {
+      if (domainFilter === "all") return true;
+      if (domainFilter === "__default__") return !url.domain;
+      return url.domain === domainFilter;
+    })
     .filter((url) => {
       const name = url.title || url.shortCode || "";
       const short = getShortUrl(url);
@@ -366,6 +383,23 @@ const MyLinks = () => {
             className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none py-3 font-body text-sm"
           />
         </div>
+        {(domainOptions.custom.length > 0 || domainOptions.hasDefault) && (
+          <Select value={domainFilter} onValueChange={setDomainFilter}>
+            <SelectTrigger className="w-auto shrink-0 gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("All Domains", "كل النطاقات")}</SelectItem>
+              {domainOptions.hasDefault && (
+                <SelectItem value="__default__">{t("Default Domain", "النطاق الافتراضي")}</SelectItem>
+              )}
+              {domainOptions.custom.map((d) => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select
           value={sort}
           onValueChange={(v) =>
