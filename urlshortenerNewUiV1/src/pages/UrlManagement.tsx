@@ -42,7 +42,7 @@ import DateRangeFilter, { DatePreset } from "@/components/DateRangeFilter";
 import {
   Link2, MousePointer, CalendarDays, Search,
   Eye, Trash2, ExternalLink, Power, Loader2, BarChart3, ArrowUpDown,
-  ChevronLeft, ChevronRight, Layout, FileText,
+  ChevronLeft, ChevronRight, Layout, FileText, Globe,
 } from "lucide-react";
 
 type ContentType = "url" | "bio";
@@ -101,6 +101,7 @@ const UrlManagement = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState<ContentType | "all">("all");
+  const [domainFilter, setDomainFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -137,7 +138,7 @@ const UrlManagement = () => {
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 400);
   };
 
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, typeFilter, sortBy, fromDate, toDate]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, creatorFilter, typeFilter, domainFilter, sortBy, fromDate, toDate]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -318,10 +319,24 @@ const UrlManagement = () => {
 
   const creators = Array.from(allCreators.entries()).sort(([, a], [, b]) => a.localeCompare(b));
 
+  const domainOptions = useMemo(() => {
+    const custom = new Set<string>();
+    let hasDefault = false;
+    content.forEach((c) => {
+      if (c.type !== "url") return;
+      if (c.domain) custom.add(c.domain);
+      else hasDefault = true;
+    });
+    return { custom: Array.from(custom).sort(), hasDefault };
+  }, [content]);
+
   const typeFilteredContent = useMemo(() => {
-    if (typeFilter === "all") return content;
-    return content.filter((c) => c.type === typeFilter);
-  }, [content, typeFilter]);
+    let result = content;
+    if (typeFilter !== "all") result = result.filter((c) => c.type === typeFilter);
+    if (domainFilter === "__default__") result = result.filter((c) => !c.domain);
+    else if (domainFilter !== "all") result = result.filter((c) => c.domain === domainFilter);
+    return result;
+  }, [content, typeFilter, domainFilter]);
 
   const paginatedContent = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -513,6 +528,21 @@ const UrlManagement = () => {
             <SelectItem value="all">{t("All Types", "جميع الأنواع")}</SelectItem>
             {(Object.keys(typeLabels) as ContentType[]).map((type) => (
               <SelectItem key={type} value={type}>{getTypeLabel(type)}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={domainFilter} onValueChange={setDomainFilter}>
+          <SelectTrigger className="w-full sm:w-44">
+            <Globe className="w-3.5 h-3.5 text-muted-foreground me-1.5 shrink-0" />
+            <SelectValue placeholder={t("Filter by domain", "فلتر بالنطاق")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("All Domains", "كل النطاقات")}</SelectItem>
+            {domainOptions.hasDefault && (
+              <SelectItem value="__default__">{t("Default Domain", "النطاق الافتراضي")}</SelectItem>
+            )}
+            {domainOptions.custom.map((d) => (
+              <SelectItem key={d} value={d}>{d}</SelectItem>
             ))}
           </SelectContent>
         </Select>
