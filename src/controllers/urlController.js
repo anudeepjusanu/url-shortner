@@ -48,7 +48,8 @@ const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
   // Handle HTTP status codes
   if (status && status >= 400) {
     // Allow authentication/authorization errors - the URL exists but requires credentials
-    if (status === 401 || status === 403 || status === 405) return { allowed: true };
+    // 429 = rate-limited by the target (e.g. Instagram blocks datacenter IPs) — URL still exists
+    if (status === 401 || status === 403 || status === 405 || status === 429) return { allowed: true };
     
     // 404 - Page not found
     if (status === 404) return { allowed: false, message: 'URL not found (HTTP 404). The page does not exist. Please check the URL.' };
