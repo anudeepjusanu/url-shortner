@@ -343,6 +343,10 @@ const validateAdminUserUpdate = [
     .optional()
     .isEmail()
     .withMessage('Please enter a valid email'),
+  body('plan')
+    .optional()
+    .isIn(['free', 'pro', 'enterprise'])
+    .withMessage('Plan must be one of: free, pro, enterprise'),
   body('limits.monthlyUrls')
     .optional()
     .isInt({ min: 0 })

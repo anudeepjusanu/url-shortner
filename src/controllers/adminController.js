@@ -198,7 +198,7 @@ const getUsers = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role, isActive, limits, email } = req.body;
+    const { role, isActive, limits, email, plan } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -221,6 +221,12 @@ const updateUser = async (req, res) => {
     if (isActive !== undefined) updateData.isActive = isActive;
     if (limits !== undefined) updateData.limits = { ...user.limits, ...limits };
     if (email !== undefined) updateData.email = normalizeEmail(email);
+    if (plan !== undefined) {
+      updateData.plan = plan;
+      updateData['subscription.status'] = 'active';
+      updateData['subscription.currentPeriodStart'] = new Date();
+      updateData['subscription.currentPeriodEnd'] = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    }
 
     const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true })
       .populate('organization', 'name slug');
