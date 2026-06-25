@@ -174,22 +174,23 @@ const checkResourceLimits = (resourceType) => {
 const checkFeatureAccess = (feature) => {
   return (req, res, next) => {
     const featurePermissions = {
-      'custom_domains': ['premium', 'admin'],
-      'analytics_export': ['premium', 'admin'],
-      'bulk_operations': ['user', 'admin', 'super_admin'],
-      'api_access': ['premium', 'admin'],
-      'password_protection': ['premium', 'admin'],
-      'utm_parameters': ['premium', 'admin'],
-      'geo_restrictions': ['premium', 'admin'],
-      'custom_branding': ['premium', 'admin']
+      'custom_domains': ['pro', 'enterprise'],
+      'analytics_export': ['pro', 'enterprise'],
+      'bulk_operations': ['pro', 'enterprise'],
+      'api_access': ['pro', 'enterprise'],
+      'password_protection': ['pro', 'enterprise'],
+      'utm_parameters': ['pro', 'enterprise'],
+      'geo_restrictions': ['pro', 'enterprise'],
+      'custom_branding': ['enterprise']
     };
-    
-    const requiredRoles = featurePermissions[feature];
-    
-    if (!requiredRoles || requiredRoles.includes(req.user.role)) {
+
+    const adminRoles = ['admin', 'super_admin'];
+    const requiredPlans = featurePermissions[feature];
+
+    if (!requiredPlans || adminRoles.includes(req.user.role) || requiredPlans.includes(req.user.plan)) {
       return next();
     }
-    
+
     return res.status(403).json({
       success: false,
       message: `Feature '${feature}' requires premium subscription`,
