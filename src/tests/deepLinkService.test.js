@@ -167,4 +167,14 @@ describe('buildAndroidIntentPage', () => {
     const html = buildAndroidIntentPage(intentUrl, fallback, '');
     expect(html).toContain('the app');
   });
+
+  test('escapes </script> in URLs to prevent script-tag injection', () => {
+    const maliciousUrl = 'intent://x</script><script>alert(document.cookie)</script>';
+    const html = buildAndroidIntentPage(maliciousUrl, fallback, appName);
+    // Extract the legitimate script block — the regex terminates at the REAL </script>
+    // (after the fix, the malicious one is Unicode-escaped so the parser never sees it)
+    const scriptBlock = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] ?? '';
+    expect(scriptBlock).not.toContain('</script>');
+    expect(scriptBlock).toContain('\\u003c/script\\u003e');
+  });
 });

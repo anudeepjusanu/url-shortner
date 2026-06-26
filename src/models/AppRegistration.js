@@ -73,6 +73,19 @@ const appRegistrationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Platform coverage invariant — enforced atomically during every save() so
+// concurrent updates cannot both pass a controller-level read-before-check and
+// leave the document with neither iOS nor Android coverage.
+appRegistrationSchema.pre('validate', function (next) {
+  if (!this.bundleId && !this.packageName) {
+    this.invalidate(
+      'bundleId',
+      'At least one of bundleId (iOS) or packageName (Android) is required'
+    );
+  }
+  next();
+});
+
 // Auto-generate API key on first save
 appRegistrationSchema.pre('save', function (next) {
   if (this.isNew && !this.apiKey) {

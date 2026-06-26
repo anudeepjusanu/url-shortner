@@ -74,9 +74,13 @@ const buildAndroidIntentPage = (intentUrl, webFallbackUrl, appName) => {
   const attrFallbackUrl = webFallbackUrl
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;');
-  // JSON.stringify for <script> string literals — handles \, ", </script>, newlines etc.
-  const scriptIntentUrl = JSON.stringify(intentUrl);
-  const scriptFallbackUrl = JSON.stringify(webFallbackUrl);
+  // JSON.stringify handles " and \ but the HTML parser treats </script> as a tag
+  // terminator regardless of JS string context. Unicode-escape < and > so the HTML
+  // parser never sees the sequence, while the JS engine decodes it correctly at runtime.
+  const safeForScript = (val) =>
+    JSON.stringify(val).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+  const scriptIntentUrl   = safeForScript(intentUrl);
+  const scriptFallbackUrl = safeForScript(webFallbackUrl);
 
   return `<!DOCTYPE html>
 <html lang="en">

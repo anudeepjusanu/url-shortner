@@ -127,44 +127,33 @@ const update = async (req, res) => {
       'sha256Fingerprint', 'androidStoreUrl', 'webFallbackUrl',
       'screenMappings', 'isActive'
     ];
-    const updates = {};
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) updates[key] = req.body[key];
-    }
 
-    // Fetch current state so we can validate the resulting platform coverage
-    const existing = await AppRegistration.findOne(ownerFilter(req, req.params.id))
-      .select('bundleId packageName')
-      .lean();
-    if (!existing) {
-      return res.status(404).json({ success: false, message: 'App registration not found' });
-    }
-
-    const resultingBundleId  = 'bundleId'     in updates ? updates.bundleId     : existing.bundleId;
-    const resultingPackageName = 'packageName' in updates ? updates.packageName  : existing.packageName;
-    if (!resultingBundleId && !resultingPackageName) {
-      return res.status(400).json({
-        success: false,
-        message: 'At least one of bundleId (iOS) or packageName (Android) must remain set'
-      });
-    }
-
-    const app = await AppRegistration.findOneAndUpdate(
-      ownerFilter(req, req.params.id),
-      updates,
-      { new: true, runValidators: true }
-    ).select('+apiKey').lean();
-
+    // Load a full Mongoose document (not lean) so that .save() triggers the
+    // pre('validate') hook in the schema, which enforces the bundleId||packageName
+    // invariant atomically — no separate read-before-check that can race.
+    const app = await AppRegistration.findOne(ownerFilter(req, req.params.id))
+      .select('+apiKey');
     if (!app) {
       return res.status(404).json({ success: false, message: 'App registration not found' });
     }
 
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) app[key] = req.body[key];
+    }
+
+    await app.save();
+
+    const obj = app.toObject();
     return res.json({
       success: true,
-      data: { ...app, apiKey: app.apiKey ? `••••••••${app.apiKey.slice(-6)}` : '••••••••' }
+      data: { ...obj, apiKey: obj.apiKey ? `••••••••${obj.apiKey.slice(-6)}` : '••••••••' }
     });
   } catch (err) {
     console.error('[appReg] update error:', err.message);
+    if (err.name === 'ValidationError') {
+      const msg = Object.values(err.errors).map(e => e.message).join(', ');
+      return res.status(400).json({ success: false, message: msg });
+    }
     if (err.code === 11000) {
       return res.status(409).json({ success: false, message: 'An app with this bundle ID or package name already exists' });
     }
