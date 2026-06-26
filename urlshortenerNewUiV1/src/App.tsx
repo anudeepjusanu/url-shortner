@@ -85,6 +85,10 @@ const FeatureLinkInBio = lazy(() => import("./pages/FeatureLinkInBio"));
 const FeatureUTMTracking = lazy(() => import("./pages/FeatureUTMTracking"));
 const FeatureCustomDomains = lazy(() => import("./pages/FeatureCustomDomains"));
 const FeatureAPI = lazy(() => import("./pages/FeatureAPI"));
+const DeepLinks = lazy(() => import("./pages/DeepLinks"));
+const AppRegistrations = lazy(() => import("./pages/AppRegistrations"));
+const CreateAppRegistration = lazy(() => import("./pages/CreateAppRegistration"));
+const CreateDeepLink = lazy(() => import("./pages/CreateDeepLink"));
 
 const queryClient = new QueryClient();
 
@@ -144,6 +148,12 @@ const App = () => (
             <Route path="/dashboard/dynamic-qr/create" element={<ProtectedRoute><CreateDynamicQRCode /></ProtectedRoute>} />
             <Route path="/dashboard/utm-builder" element={<ProtectedRoute><UTMBuilder /></ProtectedRoute>} />
             <Route path="/dashboard/utm-builder/create" element={<ProtectedRoute><CreateUTMLink /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links" element={<ProtectedRoute><DeepLinks /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links/apps" element={<ProtectedRoute><AppRegistrations /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links/register-app" element={<ProtectedRoute><CreateAppRegistration /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links/register-app/:id/edit" element={<ProtectedRoute><CreateAppRegistration /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links/create" element={<ProtectedRoute><CreateDeepLink /></ProtectedRoute>} />
+            <Route path="/dashboard/deep-links/:urlId/edit" element={<ProtectedRoute><CreateDeepLink /></ProtectedRoute>} />
             <Route path="/bio/:username" element={<PublicBioPage />} />
             {/* Public error page for failed dynamic QR scans — no auth required */}
             <Route path="/qr-error" element={<QRErrorPage />} />

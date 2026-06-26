@@ -435,11 +435,116 @@ const redirectFromQRCode = async (req, res) => {
   }
 };
 
+/**
+ * GET /dl/:shortCode
+ *
+ * Deep link redirect handler. Three paths:
+ *   Flow A — iOS/Android, app installed     → OS intercepts BEFORE this runs (AASA/assetlinks).
+ *            Any request that reaches here  → app NOT installed → Flow B.
+ *   Flow B — app not installed              → store deferred payload + redirect to store.
+ *   Flow C — desktop or in-app browser     → redirect to web fallback URL.
+ */
+const handleDeepLinkRedirect = async (req, res) => {
+  const ua = req.get('User-Agent') || '';
+  const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const deepLinkService = require('../services/deepLinkService');
+  const deferredLinkService = require('../services/deferredLinkService');
+  const Url = require('../models/Url');
+  const analyticsService = require('../services/analyticsService');
+  const geoLocation = require('../utils/geoLocation');
+
+  // decodeURIComponent can throw URIError on malformed segments — guard it first
+  let shortCode = '';
+  try {
+    shortCode = decodeURIComponent(req.params.shortCode || '');
+  } catch {
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/link-not-found`);
+  }
+
+  try {
+    const clientIP = deepLinkService.getClientIP(req);
+    const platform = deepLinkService.detectPlatform(ua);
+    const safeCode = escapeRegex(shortCode);
+
+    // Look up the deep link record
+    const url = await Url.findOne({
+      $or: [
+        { shortCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } },
+        { customCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } }
+      ],
+      'deepLink.enabled': true,
+      isActive: true
+    }).populate('deepLink.appRegistration');
+
+    if (!url || !url.deepLink?.appRegistration) {
+      const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
+    }
+
+    const app = url.deepLink.appRegistration;
+    // Priority: per-link override → app-level fallback → original URL destination
+    const webFallback = url.deepLink.webFallbackUrl || app.webFallbackUrl || url.originalUrl;
+
+    // Track the click (non-fatal)
+    try {
+      let country = 'US';
+      try { const loc = await geoLocation.getLocationFromIP(clientIP); country = loc?.country || 'US'; } catch {}
+      await analyticsService.recordClick(shortCode, {
+        ipAddress: clientIP,
+        userAgent: ua,
+        referer: req.get('Referer') || '',
+        language: req.get('Accept-Language') || '',
+        country,
+        deviceType: platform === 'ios' || platform === 'android' ? 'mobile' : 'desktop',
+        clickSource: 'deep_link'
+      });
+    } catch (analyticsErr) {
+      console.error('[deepLink] analytics error:', analyticsErr.message);
+    }
+
+    // ── Flow C — desktop or in-app browser ───────────────────────────────────
+    if (platform === 'desktop' || platform === 'in-app-browser') {
+      return res.redirect(webFallback);
+    }
+
+    // ── Flow B — iOS request reached server = app not installed ──────────────
+    if (platform === 'ios') {
+      const storeUrl = app.iosStoreUrl || webFallback;
+      await deferredLinkService.storePayload(clientIP, ua, req, url);
+      return res.redirect(storeUrl);
+    }
+
+    // ── Flow B — Android: serve intent page (tries to open app, falls to store) ─
+    if (platform === 'android') {
+      await deferredLinkService.storePayload(clientIP, ua, req, url);
+
+      if (app.packageName && app.androidStoreUrl) {
+        const storeEncoded = encodeURIComponent(app.androidStoreUrl);
+        const intentUrl = `intent://${req.hostname}/dl/${encodeURIComponent(shortCode)}#Intent;scheme=https;package=${app.packageName};S.browser_fallback_url=${storeEncoded};end`;
+        const html = deepLinkService.buildAndroidIntentPage(intentUrl, app.androidStoreUrl, app.name);
+        return res.send(html);
+      }
+
+      return res.redirect(webFallback);
+    }
+
+    // Fallback
+    return res.redirect(webFallback);
+  } catch (err) {
+    console.error('[deepLink] redirect error:', err.message);
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`);
+  }
+};
+
 module.exports = {
   redirectToOriginalUrl,
   redirectFromQRCode,
   getPreview,
   getRedirectStats,
   checkUrlSafety,
-  generateQRCode
+  generateQRCode,
+  handleDeepLinkRedirect
 };

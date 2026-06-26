@@ -82,7 +82,7 @@ const clickSchema = new mongoose.Schema({
   },
   clickSource: {
     type: String,
-    enum: ['browser', 'qr_code', 'api', 'direct', 'unknown'],
+    enum: ['browser', 'qr_code', 'api', 'direct', 'deep_link', 'unknown'],
     default: 'unknown',
     index: true
   },

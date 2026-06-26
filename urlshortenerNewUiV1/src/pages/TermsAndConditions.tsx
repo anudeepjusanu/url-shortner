@@ -429,8 +429,8 @@ const TermsAndConditions = () => {
               <ul className="space-y-1 ps-2">
                 <li>
                   {t("Email:", "البريد الإلكتروني:")}{" "}
-                  <a href="mailto:support@nawah.sa" className="text-primary hover:underline">
-                    support@nawah.sa
+                  <a href="mailto:support@snip.sa" className="text-primary hover:underline">
+                    support@snip.sa
                   </a>
                 </li>
                 <li>
