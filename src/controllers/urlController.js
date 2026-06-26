@@ -1254,16 +1254,38 @@ const updateDeepLink = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
+    const isEnabling = enabled === true || enabled === 'true';
+    const isDisabling = enabled === false || enabled === 'false';
+
+    // Disabling: flip the flag only — preserve the rest of the config so it's reversible
+    if (isDisabling) {
+      url.set('deepLink.enabled', false);
+      await url.save();
+      return res.json({ success: true, data: url });
+    }
+
+    // Enabling: appRegistration is required
+    if (isEnabling && !appRegistration) {
+      return res.status(400).json({ success: false, message: 'appRegistration is required when enabling deep links' });
+    }
+
     const AppRegistration = require('../models/AppRegistration');
-    if (enabled && appRegistration) {
-      const app = await AppRegistration.findOne({ _id: appRegistration, isActive: true });
+    if (isEnabling && appRegistration) {
+      // Scope the lookup to the caller's tenant — prevents cross-tenant attachment
+      const ownerFilter = { _id: appRegistration, isActive: true };
+      if (req.user.organization) {
+        ownerFilter.$or = [{ creator: req.user.id }, { organization: req.user.organization }];
+      } else {
+        ownerFilter.creator = req.user.id;
+      }
+      const app = await AppRegistration.findOne(ownerFilter);
       if (!app) {
-        return res.status(400).json({ success: false, message: 'App registration not found or inactive' });
+        return res.status(400).json({ success: false, message: 'App registration not found or access denied' });
       }
     }
 
     url.deepLink = {
-      enabled: !!enabled,
+      enabled: isEnabling,
       appRegistration: appRegistration || null,
       screen: screen || null,
       params: params || null,

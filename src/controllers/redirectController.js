@@ -445,8 +445,8 @@ const redirectFromQRCode = async (req, res) => {
  *   Flow C — desktop or in-app browser     → redirect to web fallback URL.
  */
 const handleDeepLinkRedirect = async (req, res) => {
-  const shortCode = decodeURIComponent(req.params.shortCode || '');
   const ua = req.get('User-Agent') || '';
+  const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   const deepLinkService = require('../services/deepLinkService');
   const deferredLinkService = require('../services/deferredLinkService');
@@ -454,15 +454,25 @@ const handleDeepLinkRedirect = async (req, res) => {
   const analyticsService = require('../services/analyticsService');
   const geoLocation = require('../utils/geoLocation');
 
+  // decodeURIComponent can throw URIError on malformed segments — guard it first
+  let shortCode = '';
+  try {
+    shortCode = decodeURIComponent(req.params.shortCode || '');
+  } catch {
+    const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/link-not-found`);
+  }
+
   try {
     const clientIP = deepLinkService.getClientIP(req);
     const platform = deepLinkService.detectPlatform(ua);
+    const safeCode = escapeRegex(shortCode);
 
     // Look up the deep link record
     const url = await Url.findOne({
       $or: [
-        { shortCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } },
-        { customCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } }
+        { shortCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } },
+        { customCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } }
       ],
       'deepLink.enabled': true,
       isActive: true

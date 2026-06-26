@@ -70,14 +70,26 @@ export default function CreateDeepLink() {
   const [webFallbackOverride, setWebFallbackOverride] = useState("");
   const [formError, setFormError] = useState("");
 
-  // Load existing URLs (non-deep-linked for create, all for edit)
+  // In create mode: only show URLs that don't already have deep linking enabled.
+  // In edit mode: fetch the specific URL by ID (avoids pagination misses).
   const { data: urlsData, isLoading: urlsLoading } = useQuery({
-    queryKey: ["urls-for-deep-link", isEdit],
-    queryFn: () => urlsAPI.list({ limit: 100 }),
+    queryKey: ["urls-for-deep-link-create"],
+    queryFn: () => urlsAPI.list({ limit: 100, deepLinkEnabled: false }),
+    enabled: !isEdit,
     staleTime: 30_000,
   });
 
-  const urls: ShortUrl[] = (urlsData as any)?.data?.urls ?? (urlsData as any)?.data ?? [];
+  const { data: editUrlData, isLoading: editUrlLoading } = useQuery({
+    queryKey: ["url-by-id", urlId],
+    queryFn: () => urlsAPI.get(urlId!),
+    enabled: isEdit,
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+  const createUrls: ShortUrl[] = (urlsData as any)?.data?.urls ?? [];
+  const editUrl: ShortUrl | null = isEdit ? ((editUrlData as any)?.data?.url ?? null) : null;
+  const urls: ShortUrl[] = isEdit ? (editUrl ? [editUrl] : []) : createUrls;
 
   // Load app registrations
   const { data: appsData, isLoading: appsLoading } = useQuery({
@@ -87,21 +99,20 @@ export default function CreateDeepLink() {
   });
   const apps: AppRegistration[] = (appsData as any)?.data ?? [];
 
-  // Pre-fill form when editing
+  // Pre-fill form when editing — driven by the targeted URL fetch, not the list
   useEffect(() => {
-    if (!isEdit || !urlId || urls.length === 0) return;
-    const url = urls.find((u) => u._id === urlId);
-    if (!url?.deepLink?.enabled) return;
-    setSelectedUrlId(urlId);
-    setSelectedAppId((url.deepLink.appRegistration as any)?._id ?? url.deepLink.appRegistration ?? "");
-    setSelectedScreen(url.deepLink.screen ?? "");
-    setWebFallbackOverride(url.deepLink.webFallbackUrl ?? "");
-    if (url.deepLink.params && Object.keys(url.deepLink.params).length > 0) {
+    if (!isEdit || !editUrl?.deepLink?.enabled) return;
+    setSelectedUrlId(urlId!);
+    setSelectedAppId((editUrl.deepLink.appRegistration as any)?._id ?? editUrl.deepLink.appRegistration ?? "");
+    // Map null/undefined screen back to empty string for the Select control
+    setSelectedScreen(editUrl.deepLink.screen ?? "");
+    setWebFallbackOverride(editUrl.deepLink.webFallbackUrl ?? "");
+    if (editUrl.deepLink.params && Object.keys(editUrl.deepLink.params).length > 0) {
       setParams(
-        Object.entries(url.deepLink.params).map(([key, value]) => ({ key, value: String(value) }))
+        Object.entries(editUrl.deepLink.params).map(([key, value]) => ({ key, value: String(value) }))
       );
     }
-  }, [urls, urlId, isEdit]);
+  }, [editUrl, urlId, isEdit]);
 
   const selectedApp = apps.find((a) => a._id === selectedAppId);
   const screenOptions = selectedApp?.screenMappings ?? [];
@@ -164,7 +175,8 @@ export default function CreateDeepLink() {
       payload: {
         enabled: true,
         appRegistration: selectedAppId,
-        screen: selectedScreen || null,
+        // "_home" is a UI sentinel meaning "open home screen" — translate to null before saving
+        screen: (selectedScreen && selectedScreen !== "_home") ? selectedScreen : null,
         params: Object.keys(paramsRecord).length > 0 ? paramsRecord : null,
         webFallbackUrl: webFallbackOverride.trim() || null,
       },
@@ -181,7 +193,7 @@ export default function CreateDeepLink() {
     return url.title ? `${url.title} (/${code})` : `/${code} — ${url.originalUrl.slice(0, 50)}`;
   };
 
-  const isLoading = urlsLoading || appsLoading;
+  const isLoading = (isEdit ? editUrlLoading : urlsLoading) || appsLoading;
 
   return (
     <DashboardLayout>
@@ -243,7 +255,7 @@ export default function CreateDeepLink() {
               <Label>{t("Short URL", "الرابط المختصر")} *</Label>
               {isEdit ? (
                 <div className="bg-muted rounded-lg px-3 py-2.5 text-sm font-mono">
-                  {getUrlLabel(urls.find((u) => u._id === urlId) ?? ({} as ShortUrl))}
+                  {editUrl ? getUrlLabel(editUrl) : (urlId ?? "…")}
                 </div>
               ) : (
                 <Select value={selectedUrlId} onValueChange={setSelectedUrlId}>

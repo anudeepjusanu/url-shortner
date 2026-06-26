@@ -197,7 +197,17 @@ const urlSchema = new mongoose.Schema({
   },
   // Deep linking configuration — only populated when this URL is a deep link
   deepLink: {
-    enabled: { type: Boolean, default: false },
+    enabled: {
+      type: Boolean,
+      default: false,
+      validate: {
+        validator: function (v) {
+          if (v === true && !this.deepLink?.appRegistration) return false;
+          return true;
+        },
+        message: 'deepLink.appRegistration is required when deep linking is enabled'
+      }
+    },
     appRegistration: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'AppRegistration',

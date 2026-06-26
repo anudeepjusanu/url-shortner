@@ -1,11 +1,29 @@
 const AppRegistration = require('../models/AppRegistration');
 
+// Escape regex metacharacters from user-supplied strings before using in RegExp.
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Build a MongoDB filter that restricts to the caller's creator OR organization.
+// list() already uses both fields; all other handlers use this helper so the
+// ownership check is consistent across the whole controller.
+const ownerFilter = (req, id) => {
+  const filter = {};
+  if (id) filter._id = id;
+  if (req.user.organization) {
+    filter.$or = [{ creator: req.user.id }, { organization: req.user.organization }];
+  } else {
+    filter.creator = req.user.id;
+  }
+  return filter;
+};
+
 // POST /api/v1/app-registrations
 const create = async (req, res) => {
   try {
     const {
       name,
       bundleId,
+      teamId,
       iosStoreUrl,
       packageName,
       sha256Fingerprint,
@@ -28,6 +46,7 @@ const create = async (req, res) => {
     const registration = await AppRegistration.create({
       name,
       bundleId: bundleId || null,
+      teamId: teamId || null,
       iosStoreUrl: iosStoreUrl || null,
       packageName: packageName || null,
       sha256Fingerprint: sha256Fingerprint || null,
@@ -38,11 +57,12 @@ const create = async (req, res) => {
       organization: req.user.organization || null
     });
 
+    // apiKey is select:false in the schema; access it directly on the new document
+    // and surface it once here — the client must copy it now, it won't be shown again.
     return res.status(201).json({
       success: true,
       data: {
-        ...registration.toJSON(),
-        // Surface the API key once clearly; client should copy it now
+        ...registration.toObject(),
         apiKey: registration.apiKey
       }
     });
@@ -58,17 +78,17 @@ const create = async (req, res) => {
 // GET /api/v1/app-registrations
 const list = async (req, res) => {
   try {
-    const filter = { creator: req.user.id };
-    if (req.user.organization) filter.organization = req.user.organization;
+    const filter = ownerFilter(req);
 
     const apps = await AppRegistration.find(filter)
+      .select('+apiKey')
       .sort({ createdAt: -1 })
       .lean();
 
     // Mask the full API key in list view — show only last 6 chars
     const masked = apps.map(a => ({
       ...a,
-      apiKey: `••••••••${a.apiKey.slice(-6)}`
+      apiKey: a.apiKey ? `••••••••${a.apiKey.slice(-6)}` : '••••••••'
     }));
 
     return res.json({ success: true, data: masked });
@@ -81,10 +101,9 @@ const list = async (req, res) => {
 // GET /api/v1/app-registrations/:id
 const getOne = async (req, res) => {
   try {
-    const app = await AppRegistration.findOne({
-      _id: req.params.id,
-      creator: req.user.id
-    }).lean();
+    const app = await AppRegistration.findOne(ownerFilter(req, req.params.id))
+      .select('+apiKey')
+      .lean();
 
     if (!app) {
       return res.status(404).json({ success: false, message: 'App registration not found' });
@@ -92,7 +111,7 @@ const getOne = async (req, res) => {
 
     return res.json({
       success: true,
-      data: { ...app, apiKey: `••••••••${app.apiKey.slice(-6)}` }
+      data: { ...app, apiKey: app.apiKey ? `••••••••${app.apiKey.slice(-6)}` : '••••••••' }
     });
   } catch (err) {
     console.error('[appReg] getOne error:', err.message);
@@ -104,7 +123,7 @@ const getOne = async (req, res) => {
 const update = async (req, res) => {
   try {
     const allowed = [
-      'name', 'bundleId', 'iosStoreUrl', 'packageName',
+      'name', 'bundleId', 'teamId', 'iosStoreUrl', 'packageName',
       'sha256Fingerprint', 'androidStoreUrl', 'webFallbackUrl',
       'screenMappings', 'isActive'
     ];
@@ -113,11 +132,28 @@ const update = async (req, res) => {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
 
+    // Fetch current state so we can validate the resulting platform coverage
+    const existing = await AppRegistration.findOne(ownerFilter(req, req.params.id))
+      .select('bundleId packageName')
+      .lean();
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'App registration not found' });
+    }
+
+    const resultingBundleId  = 'bundleId'     in updates ? updates.bundleId     : existing.bundleId;
+    const resultingPackageName = 'packageName' in updates ? updates.packageName  : existing.packageName;
+    if (!resultingBundleId && !resultingPackageName) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one of bundleId (iOS) or packageName (Android) must remain set'
+      });
+    }
+
     const app = await AppRegistration.findOneAndUpdate(
-      { _id: req.params.id, creator: req.user.id },
+      ownerFilter(req, req.params.id),
       updates,
       { new: true, runValidators: true }
-    ).lean();
+    ).select('+apiKey').lean();
 
     if (!app) {
       return res.status(404).json({ success: false, message: 'App registration not found' });
@@ -125,10 +161,13 @@ const update = async (req, res) => {
 
     return res.json({
       success: true,
-      data: { ...app, apiKey: `••••••••${app.apiKey.slice(-6)}` }
+      data: { ...app, apiKey: app.apiKey ? `••••••••${app.apiKey.slice(-6)}` : '••••••••' }
     });
   } catch (err) {
     console.error('[appReg] update error:', err.message);
+    if (err.code === 11000) {
+      return res.status(409).json({ success: false, message: 'An app with this bundle ID or package name already exists' });
+    }
     return res.status(500).json({ success: false, message: 'Failed to update app registration' });
   }
 };
@@ -136,10 +175,7 @@ const update = async (req, res) => {
 // DELETE /api/v1/app-registrations/:id
 const remove = async (req, res) => {
   try {
-    const app = await AppRegistration.findOneAndDelete({
-      _id: req.params.id,
-      creator: req.user.id
-    });
+    const app = await AppRegistration.findOneAndDelete(ownerFilter(req, req.params.id));
 
     if (!app) {
       return res.status(404).json({ success: false, message: 'App registration not found' });
@@ -160,7 +196,7 @@ const rotateKey = async (req, res) => {
     const newKey = crypto.randomBytes(24).toString('hex');
 
     const app = await AppRegistration.findOneAndUpdate(
-      { _id: req.params.id, creator: req.user.id },
+      ownerFilter(req, req.params.id),
       { apiKey: newKey },
       { new: true }
     );
@@ -180,18 +216,37 @@ const rotateKey = async (req, res) => {
   }
 };
 
-// GET /api/v1/deep-link/resolve/:shortCode
+// GET /api/v1/resolve/:shortCode
 // Called by the mobile app after receiving a Universal Link URL.
-// Returns the screen and params for the given short code.
+// Requires Bearer {apiKey} — the same key the mobile SDK uses for deferred linking.
 const resolveDeepLink = async (req, res) => {
   try {
+    // Authenticate via API key (same auth as the deferred-link endpoint)
+    const authHeader = req.get('Authorization') || '';
+    const apiKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+    if (!apiKey) {
+      return res.status(401).json({ success: false, message: 'Missing Authorization header' });
+    }
+    const callerApp = await AppRegistration.findOne({ apiKey, isActive: true }).select('+apiKey').lean();
+    if (!callerApp) {
+      return res.status(401).json({ success: false, message: 'Invalid API key' });
+    }
+
     const Url = require('../models/Url');
-    const shortCode = decodeURIComponent(req.params.shortCode);
+
+    let shortCode;
+    try {
+      shortCode = decodeURIComponent(req.params.shortCode);
+    } catch {
+      return res.status(400).json({ success: false, message: 'Invalid shortCode' });
+    }
+
+    const safeCode = escapeRegex(shortCode);
 
     const url = await Url.findOne({
       $or: [
-        { shortCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } },
-        { customCode: { $regex: new RegExp(`^${shortCode}$`, 'i') } }
+        { shortCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } },
+        { customCode: { $regex: new RegExp(`^${safeCode}$`, 'i') } }
       ],
       'deepLink.enabled': true,
       isActive: true

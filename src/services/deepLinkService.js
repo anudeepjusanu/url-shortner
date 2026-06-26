@@ -64,13 +64,19 @@ const getClientIP = (req) => {
  * installs from the store and opens the app, the payload is waiting.
  */
 const buildAndroidIntentPage = (intentUrl, webFallbackUrl, appName) => {
+  // HTML-encode for use in text content and attribute values
   const safeAppName = (appName || 'the app')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-  const safeIntentUrl = intentUrl.replace(/"/g, '&quot;');
-  const safeFallbackUrl = webFallbackUrl.replace(/"/g, '&quot;');
+  // HTML-encode for href attribute (prevents attribute breakout)
+  const attrFallbackUrl = webFallbackUrl
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
+  // JSON.stringify for <script> string literals — handles \, ", </script>, newlines etc.
+  const scriptIntentUrl = JSON.stringify(intentUrl);
+  const scriptFallbackUrl = JSON.stringify(webFallbackUrl);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -92,14 +98,14 @@ const buildAndroidIntentPage = (intentUrl, webFallbackUrl, appName) => {
   <div class="card">
     <h2>Opening ${safeAppName}…</h2>
     <p>If the app doesn't open automatically, tap the button below.</p>
-    <a href="${safeFallbackUrl}">Continue in Browser</a>
+    <a href="${attrFallbackUrl}">Continue in Browser</a>
   </div>
   <script>
     // Try to open the app via intent URI; fall through to store if not installed
-    try { window.location.replace("${safeIntentUrl}"); } catch(e) {}
+    try { window.location.replace(${scriptIntentUrl}); } catch(e) {}
     // Fallback: if still here after 2s, user probably doesn't have the app
     setTimeout(function() {
-      window.location.replace("${safeFallbackUrl}");
+      window.location.replace(${scriptFallbackUrl});
     }, 2500);
   </script>
 </body>

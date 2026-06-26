@@ -52,14 +52,15 @@ const handleDeferredLink = async (req, res) => {
     // Derive the client IP — same logic used at click time
     const clientIP = deepLinkService.getClientIP(req);
 
-    // ── 3. Match against stored payloads ─────────────────────────────────────
+    // ── 3. Match against stored payloads scoped to this app ──────────────────
     const result = await deferredLinkService.matchPayload({
       ip: clientIP,
       platform,
       osVersion: os_version || null,
       screenWidth: screen_width ? parseInt(screen_width) : null,
       screenHeight: screen_height ? parseInt(screen_height) : null,
-      installTime: install_time || null
+      installTime: install_time || null,
+      appRegistrationId: app._id.toString()
     });
 
     if (!result.matched) {

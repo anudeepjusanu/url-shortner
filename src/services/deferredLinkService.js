@@ -30,6 +30,9 @@ const storePayload = async (clientIP, userAgent, req, urlDoc) => {
     const entry = {
       // Fingerprint fields used for matching on app first launch
       ip: clientIP,
+      appRegistrationId: urlDoc.deepLink?.appRegistration?._id?.toString()
+                      || urlDoc.deepLink?.appRegistration?.toString()
+                      || null,
       platform: /iphone|ipad|ipod/i.test(ua) ? 'ios' : 'android',
       osVersion: extractOSVersion(ua),
       screenWidth: parseInt(req.query.sw) || null,
@@ -44,7 +47,8 @@ const storePayload = async (clientIP, userAgent, req, urlDoc) => {
     };
 
     await cacheSet(key, entry, DEFERRED_TTL_SECONDS);
-    console.log(`[deferred] stored payload key=${key} screen=${entry.screen}`);
+    // Log only non-PII diagnostics
+    console.log(`[deferred] stored payload screen=${entry.screen}`);
     return key;
   } catch (err) {
     // Non-fatal — deferred linking degrades gracefully to home screen
@@ -59,7 +63,7 @@ const storePayload = async (clientIP, userAgent, req, urlDoc) => {
  */
 const matchPayload = async (incoming) => {
   try {
-    const { ip, platform, osVersion, screenWidth, screenHeight, installTime } = incoming;
+    const { ip, platform, osVersion, screenWidth, screenHeight, installTime, appRegistrationId } = incoming;
 
     if (!ip) return { matched: false };
 
@@ -83,6 +87,10 @@ const matchPayload = async (incoming) => {
       // Skip entries older than 72h (Redis TTL handles cleanup, but be safe)
       if (entry.storedAt < cutoff) continue;
 
+      // Scope to the calling app — prevents App B from claiming App A's payload
+      if (appRegistrationId && entry.appRegistrationId &&
+          entry.appRegistrationId !== appRegistrationId) continue;
+
       const score = scoreMatch(entry, { platform, osVersion, screenWidth, screenHeight, installTime });
 
       if (score > bestScore) {
@@ -92,11 +100,11 @@ const matchPayload = async (incoming) => {
     }
 
     if (!best || bestScore < CONFIDENCE_THRESHOLD) {
-      console.log(`[deferred] no match for ip=${ip} best=${bestScore.toFixed(2)}`);
+      console.log(`[deferred] no match best=${bestScore.toFixed(2)}`);
       return { matched: false };
     }
 
-    console.log(`[deferred] matched ip=${ip} confidence=${bestScore.toFixed(2)} screen=${best.screen}`);
+    console.log(`[deferred] matched confidence=${bestScore.toFixed(2)} screen=${best.screen}`);
 
     // Clean up the matched key so it can't be claimed twice
     await redis.del(`${KEY_PREFIX}${ip}:${best.storedAt}`);
@@ -119,6 +127,10 @@ const matchPayload = async (incoming) => {
  * Score how well a stored fingerprint matches an incoming first-launch fingerprint.
  * IP match is assumed (we already filtered by IP prefix in the key scan).
  * Returns a number in [0, 1].
+ *
+ * maxScore is computed dynamically — optional dimensions (screen width/height)
+ * only contribute to maxScore when both stored and incoming values are present,
+ * so missing dimensions never penalise an otherwise strong match.
  */
 const scoreMatch = (stored, incoming) => {
   let score = 0;
@@ -142,17 +154,17 @@ const scoreMatch = (stored, incoming) => {
     }
   }
 
-  // Screen width
-  maxScore += 1.5;
+  // Screen width — only included in maxScore when both values are present
   if (stored.screenWidth && incoming.screenWidth) {
+    maxScore += 1.5;
     const diff = Math.abs(stored.screenWidth - incoming.screenWidth);
     if (diff === 0) score += 1.5;
     else if (diff <= 10) score += 1;
   }
 
-  // Screen height
-  maxScore += 1.5;
+  // Screen height — only included in maxScore when both values are present
   if (stored.screenHeight && incoming.screenHeight) {
+    maxScore += 1.5;
     const diff = Math.abs(stored.screenHeight - incoming.screenHeight);
     if (diff === 0) score += 1.5;
     else if (diff <= 10) score += 1;

@@ -12,10 +12,10 @@ const serveAASA = async (req, res) => {
     const apps = await AppRegistration.find({
       isActive: true,
       bundleId: { $ne: null }
-    }).select('bundleId').lean();
+    }).select('bundleId teamId').lean();
 
     const details = apps.map(app => ({
-      appID: app.bundleId,
+      appID: app.teamId ? `${app.teamId}.${app.bundleId}` : app.bundleId,
       paths: ['/dl/*']
     }));
 
@@ -31,9 +31,11 @@ const serveAASA = async (req, res) => {
     return res.json(aasa);
   } catch (err) {
     console.error('[wellKnown] AASA error:', err.message);
-    // Return an empty but valid AASA so iOS doesn't permanently cache a failure
+    // 503 with no-store: a transient DB error must never be cached as "no apps"
+    // because iOS CDN/device caches could break Universal Links for up to an hour.
     res.setHeader('Content-Type', 'application/json');
-    return res.json({ applinks: { apps: [], details: [] } });
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(503).json({ applinks: { apps: [], details: [] } });
   }
 };
 
@@ -67,7 +69,8 @@ const serveAssetLinks = async (req, res) => {
   } catch (err) {
     console.error('[wellKnown] assetlinks error:', err.message);
     res.setHeader('Content-Type', 'application/json');
-    return res.json([]);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(503).json([]);
   }
 };
 

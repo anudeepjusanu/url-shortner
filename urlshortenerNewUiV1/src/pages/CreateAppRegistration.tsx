@@ -55,6 +55,7 @@ export default function CreateAppRegistration() {
   // Form state
   const [name, setName] = useState("");
   const [bundleId, setBundleId] = useState("");
+  const [teamId, setTeamId] = useState("");
   const [iosStoreUrl, setIosStoreUrl] = useState("");
   const [packageName, setPackageName] = useState("");
   const [sha256, setSha256] = useState("");
@@ -81,6 +82,7 @@ export default function CreateAppRegistration() {
     if (!app) return;
     setName(app.name ?? "");
     setBundleId(app.bundleId ?? "");
+    setTeamId(app.teamId ?? "");
     setIosStoreUrl(app.iosStoreUrl ?? "");
     setPackageName(app.packageName ?? "");
     setSha256(app.sha256Fingerprint ?? "");
@@ -150,6 +152,7 @@ export default function CreateAppRegistration() {
     createMutation.mutate({
       name: name.trim(),
       bundleId: bundleId.trim() || undefined,
+      teamId: teamId.trim() || undefined,
       iosStoreUrl: iosStoreUrl.trim() || undefined,
       packageName: packageName.trim() || undefined,
       sha256Fingerprint: sha256.trim() || undefined,
@@ -302,6 +305,24 @@ export default function CreateAppRegistration() {
                     {t(
                       "Found in Xcode → Targets → General → Bundle Identifier",
                       "موجود في Xcode → Targets → General → Bundle Identifier"
+                    )}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>
+                    {t("Apple Team ID", "معرف فريق Apple")}
+                  </Label>
+                  <Input
+                    value={teamId}
+                    onChange={(e) => setTeamId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                    placeholder="ABCDE12345"
+                    maxLength={10}
+                    dir="ltr"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      "10-character ID from Apple Developer → Membership. Required for Universal Links to work.",
+                      "المعرف المكون من 10 أحرف من Apple Developer → Membership. مطلوب لعمل Universal Links."
                     )}
                   </p>
                 </div>

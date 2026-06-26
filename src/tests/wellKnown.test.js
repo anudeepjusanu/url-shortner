@@ -46,8 +46,8 @@ beforeEach(() => AppRegistration.find.mockReset());
 describe('GET /.well-known/apple-app-site-association', () => {
   test('returns valid AASA JSON with registered iOS app', async () => {
     AppRegistration.find.mockReturnValueOnce(makeChain([
-      { bundleId: 'com.test.app', isActive: true },
-      { bundleId: 'com.other.app', isActive: true },
+      { bundleId: 'com.test.app', teamId: 'ABCDE12345', isActive: true },
+      { bundleId: 'com.other.app', teamId: 'FGHIJ67890', isActive: true },
     ]));
 
     const res = await request(app)
@@ -57,7 +57,9 @@ describe('GET /.well-known/apple-app-site-association', () => {
 
     expect(res.body).toHaveProperty('applinks');
     expect(res.body.applinks.details).toHaveLength(2);
-    expect(res.body.applinks.details[0].appID).toBe('com.test.app');
+    // appID must be TeamID.BundleID — Apple rejects bare bundle IDs
+    expect(res.body.applinks.details[0].appID).toBe('ABCDE12345.com.test.app');
+    expect(res.body.applinks.details[1].appID).toBe('FGHIJ67890.com.other.app');
     expect(res.body.applinks.details[0].paths).toContain('/dl/*');
   });
 
@@ -72,13 +74,15 @@ describe('GET /.well-known/apple-app-site-association', () => {
     expect(res.body.applinks.apps).toEqual([]);
   });
 
-  test('returns empty valid JSON on DB error — never 500', async () => {
+  test('returns 503 without caching on DB error', async () => {
     AppRegistration.find.mockReturnValueOnce(makeErrorChain(new Error('DB down')));
 
     const res = await request(app)
       .get('/.well-known/apple-app-site-association')
-      .expect(200);
+      .expect(503);
 
+    // Must not be cached — a transient outage should never persist as "no apps"
+    expect(res.headers['cache-control']).toBe('no-store');
     expect(res.body).toHaveProperty('applinks');
     expect(res.body.applinks.details).toEqual([]);
   });
@@ -88,6 +92,16 @@ describe('GET /.well-known/apple-app-site-association', () => {
     const res = await request(app)
       .get('/.well-known/apple-app-site-association');
     expect(res.headers['cache-control']).toContain('public');
+  });
+
+  test('falls back to bare bundleId when teamId is not set', async () => {
+    AppRegistration.find.mockReturnValueOnce(makeChain([
+      { bundleId: 'com.legacy.app', teamId: null, isActive: true },
+    ]));
+    const res = await request(app)
+      .get('/.well-known/apple-app-site-association')
+      .expect(200);
+    expect(res.body.applinks.details[0].appID).toBe('com.legacy.app');
   });
 
   test('filters out apps without bundleId', async () => {
@@ -133,11 +147,12 @@ describe('GET /.well-known/assetlinks.json', () => {
     expect(res.body).toEqual([]);
   });
 
-  test('returns empty array on DB error — never 500', async () => {
+  test('returns 503 without caching on DB error', async () => {
     AppRegistration.find.mockReturnValueOnce(makeErrorChain(new Error('DB down')));
     const res = await request(app)
       .get('/.well-known/assetlinks.json')
-      .expect(200);
+      .expect(503);
+    expect(res.headers['cache-control']).toBe('no-store');
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body).toHaveLength(0);
   });

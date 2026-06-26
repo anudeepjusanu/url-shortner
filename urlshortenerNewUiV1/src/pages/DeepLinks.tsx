@@ -88,8 +88,15 @@ export default function DeepLinks() {
     : allItems;
 
   const disableMutation = useMutation({
-    mutationFn: (urlId: string) =>
-      deepLinkAPI.updateDeepLink(urlId, { enabled: false }),
+    mutationFn: (item: DeepLinkedUrl) =>
+      deepLinkAPI.updateDeepLink(item._id, {
+        enabled: false,
+        // Preserve the existing config so "Disable" is a reversible toggle
+        appRegistration: item.deepLink.appRegistration?._id ?? null,
+        screen: item.deepLink.screen ?? null,
+        params: item.deepLink.params ?? null,
+        webFallbackUrl: item.deepLink.webFallbackUrl ?? null,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deep-linked-urls"] });
       setDisableTarget(null);
@@ -359,7 +366,7 @@ export default function DeepLinks() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => disableTarget && disableMutation.mutate(disableTarget._id)}
+              onClick={() => disableTarget && disableMutation.mutate(disableTarget)}
               className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {disableMutation.isPending ? (
