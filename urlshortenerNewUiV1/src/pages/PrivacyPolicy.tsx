@@ -213,19 +213,19 @@ const PrivacyPolicy = () => {
                     <li className="font-body text-muted-foreground">
                       {t("Email:", "البريد الإلكتروني:")}{" "}
                       <a
-                        href="mailto:support@nawah.sa"
+                        href="mailto:support@snip.sa"
                         className="text-primary hover:underline"
                       >
-                        support@nawah.sa
+                        support@snip.sa
                       </a>
                     </li>
                     <li className="font-body text-muted-foreground">
                       {t("Phone:", "الهاتف:")}{" "}
                       <a
-                        href="tel:+966539100295"
+                        href="tel:+966553364377"
                         className="text-primary hover:underline"
                       >
-                        +966539100295
+                        +966553364377
                       </a>
                     </li>
                   </ul>

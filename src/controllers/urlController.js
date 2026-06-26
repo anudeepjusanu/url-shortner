@@ -429,22 +429,27 @@ const getUrls = async (req, res) => {
       tags,
       sortBy = 'createdAt',
       sortOrder = 'desc',
-      isActive
+      isActive,
+      deepLinkEnabled
     } = req.query;
-    
+
     const skip = (page - 1) * limit;
-    
+
     const filter = {
       creator: req.user.id
     };
-    
+
     if (req.user.organization) {
       filter.$or = [
         { creator: req.user.id },
         { organization: req.user.organization }
       ];
     }
-    
+
+    if (deepLinkEnabled !== undefined) {
+      filter['deepLink.enabled'] = deepLinkEnabled === 'true';
+    }
+
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -469,6 +474,7 @@ const getUrls = async (req, res) => {
       Url.find(filter)
         .populate('creator', 'firstName lastName email')
         .populate('organization', 'name slug')
+        .populate('deepLink.appRegistration', 'name bundleId packageName')
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
@@ -1230,6 +1236,49 @@ const checkUrlSafety = async (req, res) => {
   }
 };
 
+// PUT /api/urls/:id/deep-link
+// Set or clear deep link configuration on an existing short URL.
+const updateDeepLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { enabled, appRegistration, screen, params, webFallbackUrl } = req.body;
+
+    const url = await Url.findById(id);
+    if (!url) {
+      return res.status(404).json({ success: false, message: 'URL not found' });
+    }
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())
+    ) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    const AppRegistration = require('../models/AppRegistration');
+    if (enabled && appRegistration) {
+      const app = await AppRegistration.findOne({ _id: appRegistration, isActive: true });
+      if (!app) {
+        return res.status(400).json({ success: false, message: 'App registration not found or inactive' });
+      }
+    }
+
+    url.deepLink = {
+      enabled: !!enabled,
+      appRegistration: appRegistration || null,
+      screen: screen || null,
+      params: params || null,
+      webFallbackUrl: webFallbackUrl || null
+    };
+
+    await url.save();
+
+    return res.json({ success: true, data: url });
+  } catch (err) {
+    console.error('[updateDeepLink] error:', err.message);
+    return res.status(500).json({ success: false, message: 'Failed to update deep link configuration' });
+  }
+};
+
 module.exports = {
   createUrl,
   getUrls,
@@ -1241,5 +1290,6 @@ module.exports = {
   bulkCreateTemplate,
   getUrlStats,
   getAvailableDomains,
-  checkUrlSafety
+  checkUrlSafety,
+  updateDeepLink
 };

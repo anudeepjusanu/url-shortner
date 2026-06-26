@@ -194,6 +194,18 @@ const urlSchema = new mongoose.Schema({
     type: String,
     enum: ['landing', 'dashboard', 'api', 'bulk'],
     default: 'dashboard'
+  },
+  // Deep linking configuration — only populated when this URL is a deep link
+  deepLink: {
+    enabled: { type: Boolean, default: false },
+    appRegistration: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AppRegistration',
+      default: null
+    },
+    screen: { type: String, trim: true, default: null },       // screen identifier, e.g. 'product'
+    params: { type: mongoose.Schema.Types.Mixed, default: null }, // { id: '123', color: 'navy' }
+    webFallbackUrl: { type: String, trim: true, default: null } // per-link override; falls back to app registration default
   }
 }, {
   timestamps: true,
@@ -320,5 +332,7 @@ urlSchema.index({ domain: 1 });
 urlSchema.index({ qrCodeGenerated: 1 });
 urlSchema.index({ qrScanCount: -1 });
 urlSchema.index({ qrCodeGeneratedAt: -1 });
+urlSchema.index({ 'deepLink.enabled': 1 });
+urlSchema.index({ 'deepLink.appRegistration': 1 });
 
 module.exports = mongoose.model('Url', urlSchema);

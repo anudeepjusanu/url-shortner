@@ -162,6 +162,10 @@ if (process.env.NODE_ENV === 'production') {
   }, { timezone: 'UTC' });
 }
 
+// /.well-known routes MUST be registered before auth middleware and API routes.
+// iOS and Android fetch these unauthenticated to verify domain ownership.
+app.use('/.well-known', require('./routes/wellKnown'));
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/country-codes', require('./routes/countryCodes'));
 app.use('/api/urls', require('./routes/urls'));
@@ -176,6 +180,8 @@ app.use('/api/users', require('./routes/userManagement'));
 app.use('/api/google-analytics', require('./routes/googleAnalytics'));
 app.use('/api/bio-pages', require('./routes/bioPages'));
 app.use('/api/dynamic-qr', require('./routes/dynamicQRCodes'));
+app.use('/api/v1/app-registrations', require('./routes/appRegistrations'));
+app.use('/api/v1', require('./routes/deepLinks'));
 
 // SEO routes - sitemap.xml and robots.txt (MUST come before catch-all routes)
 app.use('/', require('./routes/sitemapRoutes'));
@@ -193,6 +199,9 @@ const { redirectLimiter } = require('./middleware/rateLimiter');
 // Dynamic QR scan redirect — must come before the regular /:shortCode catch-all
 const dynamicQRCodeController = require('./controllers/dynamicQRCodeController');
 app.get('/dqr/:code', redirectLimiter, dynamicQRCodeController.handleScan);
+
+// Deep link redirect — /dl/:shortCode — must come before the /:shortCode catch-all
+app.get('/dl/:shortCode', redirectLimiter, redirectController.handleDeepLinkRedirect);
 
 // QR Code generation endpoint (e.g., /qr/mbtw7f) - for generating QR code images
 app.get('/qr/:shortCode', redirectController.generateQRCode);

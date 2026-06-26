@@ -687,6 +687,38 @@ export const bioPageAPI = {
 };
 
 // Dynamic QR Code API methods
+export const appRegistrationAPI = {
+  list: () => apiClient.get('/v1/app-registrations'),
+  get: (id: string) => apiClient.get(`/v1/app-registrations/${id}`),
+  create: (data: {
+    name: string;
+    bundleId?: string;
+    iosStoreUrl?: string;
+    packageName?: string;
+    sha256Fingerprint?: string;
+    androidStoreUrl?: string;
+    webFallbackUrl: string;
+    screenMappings?: Array<{ name: string; path: string; params?: Array<{ key: string; description: string }> }>;
+  }) => apiClient.post('/v1/app-registrations', data),
+  update: (id: string, data: Record<string, unknown>) => apiClient.put(`/v1/app-registrations/${id}`, data),
+  remove: (id: string) => apiClient.delete(`/v1/app-registrations/${id}`),
+  rotateKey: (id: string) => apiClient.post(`/v1/app-registrations/${id}/rotate-key`, {}),
+};
+
+export const deepLinkAPI = {
+  resolveLink: (shortCode: string) => apiClient.get(`/v1/resolve/${shortCode}`),
+  updateDeepLink: (
+    urlId: string,
+    data: {
+      enabled: boolean;
+      appRegistration?: string | null;
+      screen?: string | null;
+      params?: Record<string, string> | null;
+      webFallbackUrl?: string | null;
+    }
+  ) => apiClient.put(`/urls/${urlId}/deep-link`, data),
+};
+
 export const dynamicQRCodeAPI = {
   list: (params?: { page?: number; limit?: number; search?: string }) =>
     apiClient.get('/dynamic-qr', params),
