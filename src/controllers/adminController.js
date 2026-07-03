@@ -1,13 +1,13 @@
-const User = require('../models/User');
-const Url = require('../models/Url');
-const Domain = require('../models/Domain');
-const BioPage = require('../models/BioPage');
-const Organization = require('../models/Organization');
-const { Click } = require('../models/Analytics');
-const QRCode = require('../models/QRCode');
-const DynamicQRCode = require('../models/DynamicQRCode');
-const { cacheDel } = require('../config/redis');
-const { normalizeEmail } = require('../utils/normalizeEmail');
+const User = require("../models/User");
+const Url = require("../models/Url");
+const Domain = require("../models/Domain");
+const BioPage = require("../models/BioPage");
+const Organization = require("../models/Organization");
+const { Click } = require("../models/Analytics");
+const QRCode = require("../models/QRCode");
+const DynamicQRCode = require("../models/DynamicQRCode");
+const { cacheDel } = require("../config/redis");
+const { normalizeEmail } = require("../utils/normalizeEmail");
 
 const getSystemStats = async (req, res) => {
   try {
@@ -27,7 +27,7 @@ const getSystemStats = async (req, res) => {
       sourceLanding,
       sourceDashboard,
       sourceApi,
-      sourceBulk
+      sourceBulk,
     ] = await Promise.all([
       User.countDocuments(),
       Url.countDocuments(),
@@ -36,40 +36,48 @@ const getSystemStats = async (req, res) => {
       Domain.countDocuments(),
       BioPage.countDocuments(),
       User.countDocuments({
-        lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       }),
-      Url.distinct('creator').then(ids => User.countDocuments({ _id: { $in: ids } })),
-      User.find().sort({ createdAt: -1 }).limit(10).select('firstName lastName email createdAt'),
-      Url.find().sort({ clickCount: -1 }).limit(10)
-        .populate('creator', 'firstName lastName email')
-        .select('title shortCode clickCount createdAt'),
+      Url.distinct("creator").then((ids) =>
+        User.countDocuments({ _id: { $in: ids } }),
+      ),
+      User.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select("firstName lastName email createdAt"),
+      Url.find()
+        .sort({ clickCount: -1 })
+        .limit(10)
+        .populate("creator", "firstName lastName email")
+        .select("title shortCode clickCount createdAt"),
       QRCode.countDocuments(),
       DynamicQRCode.countDocuments(),
-      Url.distinct('creator', { source: 'landing' }).then(ids => ids.length),
-      Url.distinct('creator', { source: 'dashboard' }).then(ids => ids.length),
-      Url.distinct('creator', { source: 'api' }).then(ids => ids.length),
-      Url.distinct('creator', { source: 'bulk' }).then(ids => ids.length)
+      Url.distinct("creator", { source: "landing" }).then((ids) => ids.length),
+      Url.distinct("creator", { source: "dashboard" }).then(
+        (ids) => ids.length,
+      ),
+      Url.distinct("creator", { source: "api" }).then((ids) => ids.length),
+      Url.distinct("creator", { source: "bulk" }).then((ids) => ids.length),
     ]);
     const apiUsers = sourceApi;
-    const avgLinksPerUser = totalUsers > 0
-      ? Math.round((totalUrls / totalUsers) * 10) / 10
-      : 0;
-    
+    const avgLinksPerUser =
+      totalUsers > 0 ? Math.round((totalUrls / totalUsers) * 10) / 10 : 0;
+
     const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
+
     const [
       newUsersLast30Days,
       newUrlsLast30Days,
       newBioPagesLast30Days,
-      clicksLast30Days
+      clicksLast30Days,
     ] = await Promise.all([
       User.countDocuments({ createdAt: { $gte: last30Days } }),
       Url.countDocuments({ createdAt: { $gte: last30Days } }),
       BioPage.countDocuments({ createdAt: { $gte: last30Days } }),
       Click.countDocuments({
         timestamp: { $gte: last30Days },
-        isBot: { $ne: true }
-      })
+        isBot: { $ne: true },
+      }),
     ]);
 
     res.json({
@@ -91,24 +99,24 @@ const getSystemStats = async (req, res) => {
             landing: sourceLanding,
             dashboard: sourceDashboard,
             api: sourceApi,
-            bulk: sourceBulk
-          }
+            bulk: sourceBulk,
+          },
         },
         growth: {
           newUsersLast30Days,
           newUrlsLast30Days,
           newBioPagesLast30Days,
-          clicksLast30Days
+          clicksLast30Days,
         },
         recentUsers,
-        topUrls
-      }
+        topUrls,
+      },
     });
   } catch (error) {
-    console.error('Get system stats error:', error);
+    console.error("Get system stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch system statistics'
+      message: "Failed to fetch system statistics",
     });
   }
 };
@@ -123,49 +131,49 @@ const getUsers = async (req, res) => {
       isActive,
       startDate,
       endDate,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
-    
+
     const skip = (page - 1) * limit;
     const filter = {};
-    
+
     if (search) {
       filter.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
       ];
     }
-    
+
     if (role) {
       filter.role = role;
     }
-    
+
     if (isActive !== undefined) {
-      filter.isActive = isActive === 'true';
+      filter.isActive = isActive === "true";
     }
-    
+
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
-    
+
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-    
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
     const [users, total] = await Promise.all([
       User.find(filter)
-        .populate('organization', 'name slug')
+        .populate("organization", "name slug")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      User.countDocuments(filter)
+      User.countDocuments(filter),
     ]);
-    
+
     // Map users to include fallback lastLogin (use createdAt if never logged in)
-    const usersWithLastLogin = users.map(user => {
+    const usersWithLastLogin = users.map((user) => {
       const userObj = user.toObject();
       // If lastLogin is null, use createdAt (registration date)
       if (!userObj.lastLogin) {
@@ -173,7 +181,7 @@ const getUsers = async (req, res) => {
       }
       return userObj;
     });
-    
+
     res.json({
       success: true,
       data: {
@@ -182,15 +190,15 @@ const getUsers = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get users error:', error);
+    console.error("Get users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch users'
+      message: "Failed to fetch users",
     });
   }
 };
@@ -204,15 +212,15 @@ const updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Only super admins can edit another super admin's profile
-    if (user.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    if (user.role === "super_admin" && req.user?.role !== "super_admin") {
       return res.status(403).json({
         success: false,
-        message: 'Only super admins can edit super admin profiles'
+        message: "Only super admins can edit super admin profiles",
       });
     }
 
@@ -223,24 +231,27 @@ const updateUser = async (req, res) => {
     if (email !== undefined) updateData.email = normalizeEmail(email);
     if (plan !== undefined) {
       updateData.plan = plan;
-      updateData['subscription.status'] = 'active';
-      updateData['subscription.currentPeriodStart'] = new Date();
-      updateData['subscription.currentPeriodEnd'] = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      updateData["subscription.status"] = "active";
+      updateData["subscription.currentPeriodStart"] = new Date();
+      updateData["subscription.currentPeriodEnd"] = new Date(
+        Date.now() + 365 * 24 * 60 * 60 * 1000,
+      );
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('organization', 'name slug');
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    }).populate("organization", "name slug");
 
     res.json({
       success: true,
-      message: 'User updated successfully',
-      data: { user: updatedUser }
+      message: "User updated successfully",
+      data: { user: updatedUser },
     });
   } catch (error) {
-    console.error('Update user error:', error);
+    console.error("Update user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user'
+      message: "Failed to update user",
     });
   }
 };
@@ -253,31 +264,31 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
-    if (user.role === 'super_admin') {
+    if (user.role === "super_admin") {
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete super admin user'
+        message: "Cannot delete super admin user",
       });
     }
 
     await Promise.all([
       User.findByIdAndDelete(id),
-      Url.updateMany({ creator: id }, { isActive: false })
+      Url.updateMany({ creator: id }, { isActive: false }),
     ]);
 
     res.json({
       success: true,
-      message: 'User deleted successfully'
+      message: "User deleted successfully",
     });
   } catch (error) {
-    console.error('Delete user error:', error);
+    console.error("Delete user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete user'
+      message: "Failed to delete user",
     });
   }
 };
@@ -298,7 +309,7 @@ const bulkDeleteUsers = async (req, res) => {
         if (user) {
           targetIds.add(String(user._id));
         } else {
-          notFound.push({ type: 'email', value: email });
+          notFound.push({ type: "email", value: email });
         }
       }
     }
@@ -310,7 +321,7 @@ const bulkDeleteUsers = async (req, res) => {
         if (user) {
           targetIds.add(String(user._id));
         } else {
-          notFound.push({ type: 'id', value: id });
+          notFound.push({ type: "id", value: id });
         }
       }
     }
@@ -318,8 +329,8 @@ const bulkDeleteUsers = async (req, res) => {
     if (targetIds.size === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No valid users found to delete',
-        data: { notFound }
+        message: "No valid users found to delete",
+        data: { notFound },
       });
     }
 
@@ -329,19 +340,23 @@ const bulkDeleteUsers = async (req, res) => {
       try {
         const user = await User.findById(userId);
         if (!user) {
-          notFound.push({ type: 'id', value: userId });
+          notFound.push({ type: "id", value: userId });
           continue;
         }
 
-        if (user.role === 'super_admin') {
-          errors.push({ id: userId, email: user.email, reason: 'Cannot delete super admin user' });
+        if (user.role === "super_admin") {
+          errors.push({
+            id: userId,
+            email: user.email,
+            reason: "Cannot delete super admin user",
+          });
           continue;
         }
 
         await Promise.all([
           User.findByIdAndDelete(userId),
           Url.updateMany({ creator: userId }, { isActive: false }),
-          BioPage.updateMany({ owner: userId }, { isActive: false })
+          BioPage.updateMany({ owner: userId }, { isActive: false }),
         ]);
 
         deleted.push({ id: userId, email: user.email });
@@ -356,15 +371,15 @@ const bulkDeleteUsers = async (req, res) => {
       data: {
         deleted,
         notFound,
-        errors
-      }
+        errors,
+      },
     });
   } catch (error) {
-    console.error('Bulk delete users error:', error);
+    console.error("Bulk delete users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to bulk delete users',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Failed to bulk delete users",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -379,94 +394,101 @@ const getAllUrls = async (req, res) => {
       creator,
       startDate,
       endDate,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
-    
+
     const skip = (page - 1) * limit;
     let filter = {};
-    
+
     // Search across URL fields AND creator name/email
     if (search && search.trim()) {
       const searchTerm = search.trim();
       // Escape special regex characters to prevent regex injection
-      const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       // Create a version with optional spaces between characters for flexible matching
       // This allows "JohnDoe" to match "John Doe" and vice versa
-      const flexibleSearch = escapedSearch.split(/\s+/).join('\\s*');
+      const flexibleSearch = escapedSearch.split(/\s+/).join("\\s*");
       // Also create a version without any spaces for matching concatenated names
-      const noSpaceSearch = searchTerm.replace(/\s+/g, '');
-      const escapedNoSpaceSearch = noSpaceSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      
+      const noSpaceSearch = searchTerm.replace(/\s+/g, "");
+      const escapedNoSpaceSearch = noSpaceSearch.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
+
       // First, find users matching the search term (search in full name or email)
       const matchingUsers = await User.find({
         $or: [
-          { firstName: { $regex: escapedSearch, $options: 'i' } },
-          { lastName: { $regex: escapedSearch, $options: 'i' } },
-          { email: { $regex: escapedSearch, $options: 'i' } },
+          { firstName: { $regex: escapedSearch, $options: "i" } },
+          { lastName: { $regex: escapedSearch, $options: "i" } },
+          { email: { $regex: escapedSearch, $options: "i" } },
           // Search by combining first and last name with space (for "John Doe" type searches)
-          { $expr: { 
-            $regexMatch: { 
-              input: { $concat: ['$firstName', ' ', '$lastName'] }, 
-              regex: flexibleSearch, 
-              options: 'i' 
-            } 
-          }},
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $concat: ["$firstName", " ", "$lastName"] },
+                regex: flexibleSearch,
+                options: "i",
+              },
+            },
+          },
           // Search by combining first and last name without space (for "JohnDoe" type searches)
-          { $expr: { 
-            $regexMatch: { 
-              input: { $concat: ['$firstName', '$lastName'] }, 
-              regex: escapedNoSpaceSearch, 
-              options: 'i' 
-            } 
-          }}
-        ]
-      }).select('_id');
-      
-      const userIds = matchingUsers.map(u => u._id);
-      
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $concat: ["$firstName", "$lastName"] },
+                regex: escapedNoSpaceSearch,
+                options: "i",
+              },
+            },
+          },
+        ],
+      }).select("_id");
+
+      const userIds = matchingUsers.map((u) => u._id);
+
       // Build filter to search URL fields OR match creator
       filter.$or = [
-        { title: { $regex: escapedSearch, $options: 'i' } },
-        { originalUrl: { $regex: escapedSearch, $options: 'i' } },
-        { shortCode: { $regex: escapedSearch, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: "i" } },
+        { originalUrl: { $regex: escapedSearch, $options: "i" } },
+        { shortCode: { $regex: escapedSearch, $options: "i" } },
       ];
-      
+
       // Add creator filter if matching users found
       if (userIds.length > 0) {
         filter.$or.push({ creator: { $in: userIds } });
       }
     }
-    
+
     // Filter by specific creator ID (from dropdown)
     if (creator) {
       filter.creator = creator;
     }
-    
+
     // Filter by status
     if (isActive !== undefined) {
-      filter.isActive = isActive === 'true';
+      filter.isActive = isActive === "true";
     }
-    
+
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
-    
+
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-    
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
     const [urls, total] = await Promise.all([
       Url.find(filter)
-        .populate('creator', 'firstName lastName email')
-        .populate('organization', 'name slug')
+        .populate("creator", "firstName lastName email")
+        .populate("organization", "name slug")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      Url.countDocuments(filter)
+      Url.countDocuments(filter),
     ]);
-    
+
     res.json({
       success: true,
       data: {
@@ -475,15 +497,15 @@ const getAllUrls = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get all URLs error:', error);
+    console.error("Get all URLs error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch URLs'
+      message: "Failed to fetch URLs",
     });
   }
 };
@@ -492,61 +514,137 @@ const updateUrl = async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive, title, description } = req.body;
-    
+
     const url = await Url.findById(id);
     if (!url) {
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
-    
-    console.log('🔄 Admin updating URL:', {
+
+    console.log("🔄 Admin updating URL:", {
       id,
       shortCode: url.shortCode,
       customCode: url.customCode,
       currentIsActive: url.isActive,
-      newIsActive: isActive
+      newIsActive: isActive,
     });
-    
+
     const updateData = {};
     if (isActive !== undefined) updateData.isActive = isActive;
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    
-    const updatedUrl = await Url.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('creator', 'firstName lastName email')
-      .populate('organization', 'name slug');
-    
+
+    const updatedUrl = await Url.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("creator", "firstName lastName email")
+      .populate("organization", "name slug");
+
     // Clear cache for this URL so deactivation takes effect immediately
     // Use lowercase for case-insensitive consistency
     const lowerShortCode = url.shortCode.toLowerCase();
-    console.log('🗑️ Clearing cache for:', `url:${lowerShortCode}`);
+    console.log("🗑️ Clearing cache for:", `url:${lowerShortCode}`);
     const cacheDelResult1 = await cacheDel(`url:${lowerShortCode}`);
-    console.log('🗑️ Cache delete result for shortCode:', cacheDelResult1);
-    
+    console.log("🗑️ Cache delete result for shortCode:", cacheDelResult1);
+
     if (url.customCode) {
       const lowerCustomCode = url.customCode.toLowerCase();
-      console.log('🗑️ Clearing cache for customCode:', `url:${lowerCustomCode}`);
+      console.log(
+        "🗑️ Clearing cache for customCode:",
+        `url:${lowerCustomCode}`,
+      );
       const cacheDelResult2 = await cacheDel(`url:${lowerCustomCode}`);
-      console.log('🗑️ Cache delete result for customCode:', cacheDelResult2);
+      console.log("🗑️ Cache delete result for customCode:", cacheDelResult2);
     }
-    
-    console.log('✅ URL updated successfully:', {
+
+    console.log("✅ URL updated successfully:", {
       shortCode: updatedUrl.shortCode,
-      isActive: updatedUrl.isActive
+      isActive: updatedUrl.isActive,
     });
-    
+
     res.json({
       success: true,
-      message: 'URL updated successfully',
-      data: { url: updatedUrl }
+      message: "URL updated successfully",
+      data: { url: updatedUrl },
     });
   } catch (error) {
-    console.error('Update URL error:', error);
+    console.error("Update URL error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update URL'
+      message: "Failed to update URL",
+    });
+  }
+};
+
+// PUT /admin/urls/:id/moderation
+// Admin decision on a link flagged 'suspicious' by the url-scanner pipeline.
+const updateUrlModeration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body;
+
+    if (!["ALLOW", "BLOCK"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "action must be 'ALLOW' or 'BLOCK'",
+      });
+    }
+
+    const url = await Url.findById(id);
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        message: "URL not found",
+      });
+    }
+
+    const moderationStatus = action === "ALLOW" ? "safe" : "blocked";
+
+    const updatedUrl = await Url.findByIdAndUpdate(
+      id,
+      {
+        moderationStatus,
+        moderationVerdict: {
+          ...(url.moderationVerdict || {}),
+          adminReview: {
+            action,
+            reviewedBy: req.user.id,
+            reviewedAt: new Date(),
+          },
+        },
+        moderationCheckedAt: new Date(),
+      },
+      { new: true },
+    )
+      .populate("creator", "firstName lastName email")
+      .populate("organization", "name slug");
+
+    const lowerShortCode = url.shortCode.toLowerCase();
+    await cacheDel(`url:${lowerShortCode}`);
+    if (url.customCode) {
+      await cacheDel(`url:${url.customCode.toLowerCase()}`);
+    }
+
+    console.log("🔍 Admin moderation decision:", {
+      id,
+      shortCode: url.shortCode,
+      action,
+      moderationStatus,
+      reviewedBy: req.user.id,
+    });
+
+    res.json({
+      success: true,
+      message: `Link ${moderationStatus === "safe" ? "allowed" : "blocked"} successfully`,
+      data: { url: updatedUrl },
+    });
+  } catch (error) {
+    console.error("Update URL moderation error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update moderation status",
     });
   }
 };
@@ -554,26 +652,26 @@ const updateUrl = async (req, res) => {
 const deleteUrl = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const url = await Url.findById(id);
     if (!url) {
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
-    
+
     await Url.findByIdAndDelete(id);
-    
+
     res.json({
       success: true,
-      message: 'URL deleted successfully'
+      message: "URL deleted successfully",
     });
   } catch (error) {
-    console.error('Delete URL error:', error);
+    console.error("Delete URL error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete URL'
+      message: "Failed to delete URL",
     });
   }
 };
@@ -587,18 +685,20 @@ const getAllBioPages = async (req, res) => {
       owner,
       startDate,
       endDate,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
 
     const skip = (page - 1) * limit;
     const filter = {};
 
     if (search && search.trim()) {
-      const escapedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedSearch = search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
-        { title: { $regex: escapedSearch, $options: 'i' } },
-        { username: { $regex: escapedSearch, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: "i" } },
+        { username: { $regex: escapedSearch, $options: "i" } },
       ];
     }
 
@@ -613,15 +713,15 @@ const getAllBioPages = async (req, res) => {
     }
 
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     const [bioPages, total] = await Promise.all([
       BioPage.find(filter)
-        .populate('owner', 'firstName lastName email')
+        .populate("owner", "firstName lastName email")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      BioPage.countDocuments(filter)
+      BioPage.countDocuments(filter),
     ]);
 
     res.json({
@@ -632,15 +732,15 @@ const getAllBioPages = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get all bio pages error:', error);
+    console.error("Get all bio pages error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch bio pages'
+      message: "Failed to fetch bio pages",
     });
   }
 };
@@ -654,26 +754,27 @@ const updateBioPage = async (req, res) => {
     if (!bioPage) {
       return res.status(404).json({
         success: false,
-        message: 'Bio page not found'
+        message: "Bio page not found",
       });
     }
 
     const updateData = {};
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    const updatedBioPage = await BioPage.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('owner', 'firstName lastName email');
+    const updatedBioPage = await BioPage.findByIdAndUpdate(id, updateData, {
+      new: true,
+    }).populate("owner", "firstName lastName email");
 
     res.json({
       success: true,
-      message: 'Bio page updated successfully',
-      data: { bioPage: updatedBioPage }
+      message: "Bio page updated successfully",
+      data: { bioPage: updatedBioPage },
     });
   } catch (error) {
-    console.error('Update bio page error:', error);
+    console.error("Update bio page error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update bio page'
+      message: "Failed to update bio page",
     });
   }
 };
@@ -686,7 +787,7 @@ const deleteBioPage = async (req, res) => {
     if (!bioPage) {
       return res.status(404).json({
         success: false,
-        message: 'Bio page not found'
+        message: "Bio page not found",
       });
     }
 
@@ -694,13 +795,13 @@ const deleteBioPage = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Bio page deleted successfully'
+      message: "Bio page deleted successfully",
     });
   } catch (error) {
-    console.error('Delete bio page error:', error);
+    console.error("Delete bio page error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete bio page'
+      message: "Failed to delete bio page",
     });
   }
 };
@@ -712,36 +813,36 @@ const getOrganizations = async (req, res) => {
       limit = 20,
       search,
       isActive,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
-    
+
     const skip = (page - 1) * limit;
     const filter = {};
-    
+
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { slug: { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { slug: { $regex: search, $options: "i" } },
       ];
     }
-    
+
     if (isActive !== undefined) {
-      filter.isActive = isActive === 'true';
+      filter.isActive = isActive === "true";
     }
-    
+
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-    
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
     const [organizations, total] = await Promise.all([
       Organization.find(filter)
-        .populate('owner', 'firstName lastName email')
+        .populate("owner", "firstName lastName email")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      Organization.countDocuments(filter)
+      Organization.countDocuments(filter),
     ]);
-    
+
     res.json({
       success: true,
       data: {
@@ -750,15 +851,15 @@ const getOrganizations = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get organizations error:', error);
+    console.error("Get organizations error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch organizations'
+      message: "Failed to fetch organizations",
     });
   }
 };
@@ -766,50 +867,50 @@ const getOrganizations = async (req, res) => {
 const getApiUsers = async (req, res) => {
   try {
     const results = await Url.aggregate([
-      { $match: { source: 'api' } },
+      { $match: { source: "api" } },
       {
         $group: {
-          _id: '$creator',
+          _id: "$creator",
           apiLinkCount: { $sum: 1 },
-          lastCreatedAt: { $max: '$createdAt' }
-        }
+          lastCreatedAt: { $max: "$createdAt" },
+        },
       },
       {
         $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
       },
-      { $unwind: '$user' },
+      { $unwind: "$user" },
       {
         $project: {
           _id: 0,
-          userId: '$_id',
-          email: '$user.email',
-          firstName: '$user.firstName',
-          lastName: '$user.lastName',
-          plan: '$user.plan',
+          userId: "$_id",
+          email: "$user.email",
+          firstName: "$user.firstName",
+          lastName: "$user.lastName",
+          plan: "$user.plan",
           apiLinkCount: 1,
-          lastCreatedAt: 1
-        }
+          lastCreatedAt: 1,
+        },
       },
-      { $sort: { apiLinkCount: -1 } }
+      { $sort: { apiLinkCount: -1 } },
     ]);
 
     res.json({
       success: true,
       data: {
         total: results.length,
-        users: results
-      }
+        users: results,
+      },
     });
   } catch (error) {
-    console.error('Get API users error:', error);
+    console.error("Get API users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch API users'
+      message: "Failed to fetch API users",
     });
   }
 };
@@ -822,10 +923,11 @@ module.exports = {
   bulkDeleteUsers,
   getAllUrls,
   updateUrl,
+  updateUrlModeration,
   deleteUrl,
   getAllBioPages,
   updateBioPage,
   deleteBioPage,
   getOrganizations,
-  getApiUsers
+  getApiUsers,
 };
