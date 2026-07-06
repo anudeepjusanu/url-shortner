@@ -233,9 +233,20 @@ const urlSchema = new mongoose.Schema(
     },
     // Destination content moderation — populated by the async url-scanner pipeline
     // after creation. Only 'blocked' halts the redirect; other statuses pass through.
+    // 'not_scanned' marks links that predate the scanner (backfilled once via
+    // scripts/backfill-legacy-url-moderation.js) — deliberately excluded from
+    // scheduledTasks.reScanActiveLinks() so legacy links are never swept into
+    // the periodic re-scan, only newly created ones are.
     moderationStatus: {
       type: String,
-      enum: ["pending", "safe", "suspicious", "blocked", "could_not_verify"],
+      enum: [
+        "pending",
+        "safe",
+        "suspicious",
+        "blocked",
+        "could_not_verify",
+        "not_scanned",
+      ],
       default: "pending",
     },
     moderationVerdict: {
