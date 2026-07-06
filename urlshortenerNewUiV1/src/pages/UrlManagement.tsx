@@ -66,7 +66,8 @@ type ModerationStatus =
   | "safe"
   | "suspicious"
   | "blocked"
-  | "could_not_verify";
+  | "could_not_verify"
+  | "not_scanned";
 
 interface ContentItem {
   _id: string;
@@ -958,6 +959,9 @@ const UrlManagement = () => {
                   <TableHead className="text-center">
                     {t("Status", "الحالة")}
                   </TableHead>
+                  <TableHead className="text-center">
+                    {t("Content Scan", "فحص المحتوى")}
+                  </TableHead>
                   <TableHead>{t("Created", "الإنشاء")}</TableHead>
                   <TableHead className="text-center">
                     {t("Actions", "الإجراءات")}
@@ -1012,22 +1016,25 @@ const UrlManagement = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <Badge
-                          variant={item.isActive ? "default" : "secondary"}
-                          className="text-[10px]"
-                        >
-                          {item.isActive
-                            ? t("Active", "نشط")
-                            : t("Inactive", "غير نشط")}
-                        </Badge>
-                        {item.type === "url" && (
-                          <ModerationBadge
-                            status={item.moderationStatus}
-                            t={t}
-                          />
-                        )}
-                      </div>
+                      <Badge
+                        variant={item.isActive ? "default" : "secondary"}
+                        className="text-[10px]"
+                      >
+                        {item.isActive
+                          ? t("Active", "نشط")
+                          : t("Inactive", "غير نشط")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.type === "url" ? (
+                        <ModerationBadge
+                          status={item.moderationStatus}
+                          t={t}
+                          showSafe
+                        />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-muted-foreground font-body">
@@ -1496,16 +1503,30 @@ const MODERATION_LABELS: Record<
     ar: "غير مؤكد",
     className: "bg-muted text-muted-foreground",
   },
+  not_scanned: {
+    en: "Not Scanned",
+    ar: "لم يُفحص",
+    className: "bg-muted text-muted-foreground",
+  },
 };
 
+// showSafe: the compact badge next to the Active/Inactive pill hides "safe"
+// on purpose (nothing to flag). The dedicated Content Scan column passes
+// showSafe so "Safe"/"Not Scanned" are visible there instead of blank cells.
 const ModerationBadge = ({
   status,
   t,
+  showSafe = false,
 }: {
   status?: ModerationStatus;
   t: (en: string, ar: string) => string;
+  showSafe?: boolean;
 }) => {
-  if (!status || status === "safe") return null;
+  if (!status)
+    return showSafe ? (
+      <span className="text-xs text-muted-foreground">—</span>
+    ) : null;
+  if (status === "safe" && !showSafe) return null;
   const info = MODERATION_LABELS[status];
   return (
     <Badge className={`text-[10px] border-0 ${info.className}`}>
