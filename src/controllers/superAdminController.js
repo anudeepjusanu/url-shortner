@@ -1,6 +1,7 @@
-const User = require('../models/User');
-const Url = require('../models/Url');
-const Domain = require('../models/Domain');
+const User = require("../models/User");
+const Url = require("../models/Url");
+const Domain = require("../models/Domain");
+const logger = require("../config/logger");
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -9,40 +10,38 @@ const getDashboardStats = async (req, res) => {
       totalUrls,
       totalClicks,
       activeSubscriptions,
-      recentUsers
+      recentUsers,
     ] = await Promise.all([
       User.countDocuments(),
       Url.countDocuments(),
-      Url.aggregate([{ $group: { _id: null, total: { $sum: '$clickCount' } } }]),
-      User.countDocuments({ 'subscription.status': 'active' }),
+      Url.aggregate([
+        { $group: { _id: null, total: { $sum: "$clickCount" } } },
+      ]),
+      User.countDocuments({ "subscription.status": "active" }),
       User.find()
         .sort({ createdAt: -1 })
         .limit(10)
-        .select('firstName lastName email plan createdAt usage subscription')
+        .select("firstName lastName email plan createdAt usage subscription"),
     ]);
 
     // Calculate monthly revenue (mock calculation)
     const monthlyRevenue = await User.aggregate([
       {
         $match: {
-          plan: { $in: ['pro', 'enterprise'] },
-          'subscription.status': 'active'
-        }
+          plan: { $in: ["pro", "enterprise"] },
+          "subscription.status": "active",
+        },
       },
       {
         $group: {
           _id: null,
           total: {
             $sum: {
-              $cond: [
-                { $eq: ['$plan', 'pro'] },
-                9,
-                29
-              ]
-            }
-          }
-        }
-      }
+              $cond: [{ $eq: ["$plan", "pro"] }, 9, 29],
+            },
+          },
+        },
+      },
     ]);
 
     // Calculate growth rate (last 30 days vs previous 30 days)
@@ -52,13 +51,16 @@ const getDashboardStats = async (req, res) => {
     const [recentSignups, previousSignups] = await Promise.all([
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
       User.countDocuments({
-        createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
-      })
+        createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      }),
     ]);
 
-    const growthRate = previousSignups > 0
-      ? ((recentSignups - previousSignups) / previousSignups * 100).toFixed(1)
-      : 0;
+    const growthRate =
+      previousSignups > 0
+        ? (((recentSignups - previousSignups) / previousSignups) * 100).toFixed(
+            1,
+          )
+        : 0;
 
     res.json({
       success: true,
@@ -69,9 +71,9 @@ const getDashboardStats = async (req, res) => {
           totalClicks: totalClicks[0]?.total || 0,
           revenue: monthlyRevenue[0]?.total || 0,
           growthRate: parseFloat(growthRate),
-          activeSubscriptions
+          activeSubscriptions,
         },
-        recentUsers: recentUsers.map(user => ({
+        recentUsers: recentUsers.map((user) => ({
           id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -79,15 +81,15 @@ const getDashboardStats = async (req, res) => {
           plan: user.plan,
           createdAt: user.createdAt,
           usage: user.usage,
-          subscription: user.subscription
-        }))
-      }
+          subscription: user.subscription,
+        })),
+      },
     });
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
+    logger.error("Get dashboard stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch dashboard statistics'
+      message: "Failed to fetch dashboard statistics",
     });
   }
 };
@@ -100,8 +102,8 @@ const getAllUsers = async (req, res) => {
       search,
       plan,
       status,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
 
     const skip = (page - 1) * limit;
@@ -110,32 +112,32 @@ const getAllUsers = async (req, res) => {
     const filter = {};
     if (search) {
       filter.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
       ];
     }
     if (plan) {
       filter.plan = plan;
     }
     if (status) {
-      filter['subscription.status'] = status;
+      filter["subscription.status"] = status;
     }
 
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     const [users, total] = await Promise.all([
       User.find(filter)
-        .select('-password -passwordResetToken -emailVerificationToken')
+        .select("-password -passwordResetToken -emailVerificationToken")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      User.countDocuments(filter)
+      User.countDocuments(filter),
     ]);
 
     // Map users to include fallback lastLogin (use createdAt if never logged in)
-    const usersWithLastLogin = users.map(user => {
+    const usersWithLastLogin = users.map((user) => {
       const userObj = user.toObject();
       // If lastLogin is null, use createdAt (registration date)
       if (!userObj.lastLogin) {
@@ -152,15 +154,15 @@ const getAllUsers = async (req, res) => {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get all users error:', error);
+    logger.error("Get all users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch users'
+      message: "Failed to fetch users",
     });
   }
 };
@@ -171,32 +173,30 @@ const updateUserStatus = async (req, res) => {
     const { isActive, plan } = req.body;
 
     const updateData = {};
-    if (typeof isActive === 'boolean') updateData.isActive = isActive;
+    if (typeof isActive === "boolean") updateData.isActive = isActive;
     if (plan) updateData.plan = plan;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true }
-    ).select('-password -passwordResetToken -emailVerificationToken');
+    const user = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }).select("-password -passwordResetToken -emailVerificationToken");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     res.json({
       success: true,
-      message: 'User updated successfully',
-      data: { user }
+      message: "User updated successfully",
+      data: { user },
     });
   } catch (error) {
-    console.error('Update user status error:', error);
+    logger.error("Update user status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user'
+      message: "Failed to update user",
     });
   }
 };
@@ -210,7 +210,7 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
@@ -225,13 +225,13 @@ const deleteUser = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User and associated data deleted successfully'
+      message: "User and associated data deleted successfully",
     });
   } catch (error) {
-    console.error('Delete user error:', error);
+    logger.error("Delete user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete user'
+      message: "Failed to delete user",
     });
   }
 };
@@ -240,84 +240,80 @@ const getSystemHealth = async (req, res) => {
   try {
     // Basic system health checks
     const health = {
-      status: 'healthy',
+      status: "healthy",
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      database: 'connected',
+      database: "connected",
       services: {
-        redis: 'connected',
-        email: 'operational',
-        stripe: 'operational'
-      }
+        redis: "connected",
+        email: "operational",
+        stripe: "operational",
+      },
     };
 
     res.json({
       success: true,
-      data: { health }
+      data: { health },
     });
   } catch (error) {
-    console.error('Get system health error:', error);
+    logger.error("Get system health error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch system health'
+      message: "Failed to fetch system health",
     });
   }
 };
 
 const getAnalytics = async (req, res) => {
   try {
-    const { period = '30d' } = req.query;
+    const { period = "30d" } = req.query;
 
     // Calculate date range
     let startDate;
     switch (period) {
-      case '7d':
+      case "7d":
         startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         break;
-      case '30d':
+      case "30d":
         startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         break;
-      case '90d':
+      case "90d":
         startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
         break;
       default:
         startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    const [
-      userSignups,
-      urlCreations,
-      planDistribution
-    ] = await Promise.all([
+    const [userSignups, urlCreations, planDistribution] = await Promise.all([
       User.aggregate([
         { $match: { createdAt: { $gte: startDate } } },
         {
           $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            count: { $sum: 1 }
-          }
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 },
+          },
         },
-        { $sort: { _id: 1 } }
+        { $sort: { _id: 1 } },
       ]),
       Url.aggregate([
         { $match: { createdAt: { $gte: startDate } } },
         {
           $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            count: { $sum: 1 }
-          }
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 },
+          },
         },
-        { $sort: { _id: 1 } }
+        { $sort: { _id: 1 } },
       ]),
       User.aggregate([
         {
           $group: {
-            _id: '$plan',
-            count: { $sum: 1 }
-          }
-        }
-      ])
+            _id: "$plan",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
     ]);
 
     res.json({
@@ -325,14 +321,14 @@ const getAnalytics = async (req, res) => {
       data: {
         userSignups,
         urlCreations,
-        planDistribution
-      }
+        planDistribution,
+      },
     });
   } catch (error) {
-    console.error('Get analytics error:', error);
+    logger.error("Get analytics error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch analytics'
+      message: "Failed to fetch analytics",
     });
   }
 };
@@ -343,5 +339,5 @@ module.exports = {
   updateUserStatus,
   deleteUser,
   getSystemHealth,
-  getAnalytics
+  getAnalytics,
 };

@@ -53,4 +53,7 @@ router.get(
 
 router.get("/stats/api-users", adminController.getApiUsers);
 
+router.get("/export/links", adminController.exportLinks);
+router.get("/export/users", adminController.exportUsers);
+
 module.exports = router;

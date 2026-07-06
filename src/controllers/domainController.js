@@ -1,10 +1,11 @@
-const Domain = require('../models/Domain');
-const Url = require('../models/Url');
-const domainService = require('../services/domainService');
-const sslProvisioningService = require('../services/sslProvisioningService');
-const sslCertificateService = require('../services/sslCertificateService');
-const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
-const config = require('../config/environment');
+const Domain = require("../models/Domain");
+const Url = require("../models/Url");
+const domainService = require("../services/domainService");
+const sslProvisioningService = require("../services/sslProvisioningService");
+const sslCertificateService = require("../services/sslCertificateService");
+const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
+const config = require("../config/environment");
+const logger = require("../config/logger");
 
 // Helper function to clear domain cache for a user
 const clearDomainCache = async (userId) => {
@@ -14,7 +15,7 @@ const clearDomainCache = async (userId) => {
     // Note: Redis pattern deletion would require a different approach
     // For now, we'll just clear the main cache key
   } catch (error) {
-    console.error('Cache clear error:', error);
+    logger.error("Cache clear error:", error);
   }
 };
 
@@ -25,14 +26,14 @@ const checkDomainAccess = (domain, user) => {
   const userOrgId = user.organization?.toString();
   const domainOrgId = domain.organization?.toString();
 
-  console.log('Domain access check:', {
+  logger.info("Domain access check:", {
     domainOwnerId,
     userId,
     userOrgId,
     domainOrgId,
     isOwner: domainOwnerId === userId,
     isSameOrg: userOrgId && domainOrgId && userOrgId === domainOrgId,
-    isAdmin: user.role === 'admin'
+    isAdmin: user.role === "admin",
   });
 
   // User owns the domain
@@ -46,7 +47,7 @@ const checkDomainAccess = (domain, user) => {
   }
 
   // Admin users can access all domains
-  if (user.role === 'admin') {
+  if (user.role === "admin") {
     return true;
   }
 
@@ -60,18 +61,18 @@ const addDomain = async (req, res) => {
     if (!domain) {
       return res.status(400).json({
         success: false,
-        message: 'Domain name is required'
+        message: "Domain name is required",
       });
     }
 
     // Validate domain format using Punycode-aware validator
-    const { validateDomain, domainToASCII } = require('../utils/punycode');
+    const { validateDomain, domainToASCII } = require("../utils/punycode");
     const validation = validateDomain(domain);
 
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
-        message: validation.message
+        message: validation.message,
       });
     }
 
@@ -84,19 +85,22 @@ const addDomain = async (req, res) => {
     const existingDomain = await Domain.findOne({
       $or: [
         { fullDomain: fullDomain.toLowerCase() },
-        { domain: domain.toLowerCase() }
-      ]
+        { domain: domain.toLowerCase() },
+      ],
     });
 
     if (existingDomain) {
       return res.status(400).json({
         success: false,
-        message: 'Domain is already registered in the system'
+        message: "Domain is already registered in the system",
       });
     }
 
     // Generate CNAME record details
-    const cnameRecord = await domainService.generateCNAMERecord(domain, subdomain);
+    const cnameRecord = await domainService.generateCNAMERecord(
+      domain,
+      subdomain,
+    );
 
     // Create domain
     const domainData = {
@@ -107,61 +111,64 @@ const addDomain = async (req, res) => {
       organization: req.user.organization,
       isDefault,
       verificationRecord: {
-        type: 'CNAME',
+        type: "CNAME",
         name: fullDomain.toLowerCase(),
         value: cnameRecord.value,
-        verified: false
+        verified: false,
       },
       metadata: {
-        addedBy: req.user.id
-      }
+        addedBy: req.user.id,
+      },
     };
 
     const newDomain = new Domain(domainData);
     await newDomain.save();
 
-    console.log('Domain saved successfully:', {
+    logger.info("Domain saved successfully:", {
       id: newDomain._id,
       fullDomain: newDomain.fullDomain,
-      owner: newDomain.owner
+      owner: newDomain.owner,
     });
 
     const populatedDomain = await Domain.findById(newDomain._id)
-      .populate('owner', 'firstName lastName email')
-      .populate('organization', 'name slug')
-      .populate('metadata.addedBy', 'firstName lastName email');
+      .populate("owner", "firstName lastName email")
+      .populate("organization", "name slug")
+      .populate("metadata.addedBy", "firstName lastName email");
 
     // Clear user domains cache
     await clearDomainCache(req.user.id);
 
     res.status(201).json({
       success: true,
-      message: 'Domain added successfully',
+      message: "Domain added successfully",
       data: {
         domain: populatedDomain,
         cnameTarget: domainService.cnameTarget,
-        setupInstructions: domainService.getSetupInstructions(fullDomain, 'CNAME')
-      }
+        setupInstructions: domainService.getSetupInstructions(
+          fullDomain,
+          "CNAME",
+        ),
+      },
     });
   } catch (error) {
-    console.error('Add domain error:', error);
+    logger.error("Add domain error:", error);
 
     // Handle MongoDB duplicate key error
     if (error.code === 11000) {
-      let field = 'domain';
+      let field = "domain";
       if (error.keyValue) {
         field = Object.keys(error.keyValue)[0];
       }
       return res.status(400).json({
         success: false,
-        message: `This ${field} is already registered in the system`
+        message: `This ${field} is already registered in the system`,
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Failed to add domain',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Failed to add domain",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -174,8 +181,8 @@ const getDomains = async (req, res) => {
       search,
       status,
       verificationStatus,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
 
     // Temporarily disable caching for debugging
@@ -192,25 +199,25 @@ const getDomains = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = {
-      owner: req.user.id
+      owner: req.user.id,
     };
 
     if (req.user.organization) {
       filter.$or = [
         { owner: req.user.id },
-        { organization: req.user.organization }
+        { organization: req.user.organization },
       ];
     }
 
-    console.log('getDomains filter:', filter);
-    console.log('User ID:', req.user.id);
-    console.log('User org:', req.user.organization);
+    logger.info("getDomains filter:", filter);
+    logger.info("User ID:", req.user.id);
+    logger.info("User org:", req.user.organization);
 
     if (search) {
       filter.$or = [
-        { domain: { $regex: search, $options: 'i' } },
-        { subdomain: { $regex: search, $options: 'i' } },
-        { fullDomain: { $regex: search, $options: 'i' } }
+        { domain: { $regex: search, $options: "i" } },
+        { subdomain: { $regex: search, $options: "i" } },
+        { fullDomain: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -223,24 +230,28 @@ const getDomains = async (req, res) => {
     }
 
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     const [domains, total] = await Promise.all([
       Domain.find(filter)
-        .populate('owner', 'firstName lastName email')
-        .populate('organization', 'name slug')
-        .populate('metadata.addedBy', 'firstName lastName email')
-        .populate('metadata.verifiedBy', 'firstName lastName email')
+        .populate("owner", "firstName lastName email")
+        .populate("organization", "name slug")
+        .populate("metadata.addedBy", "firstName lastName email")
+        .populate("metadata.verifiedBy", "firstName lastName email")
         .sort(sortOptions)
         .skip(skip)
         .limit(parseInt(limit)),
-      Domain.countDocuments(filter)
+      Domain.countDocuments(filter),
     ]);
 
-    console.log('getDomains result:', {
+    logger.info("getDomains result:", {
       totalFound: total,
       domainsCount: domains.length,
-      domains: domains.map(d => ({ id: d._id, fullDomain: d.fullDomain, owner: d.owner }))
+      domains: domains.map((d) => ({
+        id: d._id,
+        fullDomain: d.fullDomain,
+        owner: d.owner,
+      })),
     });
 
     const result = {
@@ -249,8 +260,8 @@ const getDomains = async (req, res) => {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
 
     // Temporarily disable caching for debugging
@@ -258,13 +269,13 @@ const getDomains = async (req, res) => {
 
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
-    console.error('Get domains error:', error);
+    logger.error("Get domains error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch domains'
+      message: "Failed to fetch domains",
     });
   }
 };
@@ -274,31 +285,35 @@ const getDomain = async (req, res) => {
     const { id } = req.params;
 
     const domain = await Domain.findById(id)
-      .populate('owner', 'firstName lastName email')
-      .populate('organization', 'name slug')
-      .populate('metadata.addedBy', 'firstName lastName email')
-      .populate('metadata.verifiedBy', 'firstName lastName email');
+      .populate("owner", "firstName lastName email")
+      .populate("organization", "name slug")
+      .populate("metadata.addedBy", "firstName lastName email")
+      .populate("metadata.verifiedBy", "firstName lastName email");
 
     if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain not found'
+        message: "Domain not found",
       });
     }
 
     // Check access permissions
-    if (domain.owner._id.toString() !== req.user.id &&
-        (!req.user.organization || domain.organization?._id.toString() !== req.user.organization.toString())) {
+    if (
+      domain.owner._id.toString() !== req.user.id &&
+      (!req.user.organization ||
+        domain.organization?._id.toString() !==
+          req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Get additional domain info
     const [domainInfo, urlCount] = await Promise.all([
       domainService.getDomainInfo(domain.fullDomain),
-      Url.countDocuments({ domain: domain.fullDomain })
+      Url.countDocuments({ domain: domain.fullDomain }),
     ]);
 
     res.json({
@@ -307,14 +322,17 @@ const getDomain = async (req, res) => {
         domain,
         domainInfo,
         urlCount,
-        setupInstructions: domainService.getSetupInstructions(domain.fullDomain, domain.verificationRecord.type)
-      }
+        setupInstructions: domainService.getSetupInstructions(
+          domain.fullDomain,
+          domain.verificationRecord.type,
+        ),
+      },
     });
   } catch (error) {
-    console.error('Get domain error:', error);
+    logger.error("Get domain error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch domain'
+      message: "Failed to fetch domain",
     });
   }
 };
@@ -329,7 +347,7 @@ const updateDomain = async (req, res) => {
     if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain not found'
+        message: "Domain not found",
       });
     }
 
@@ -337,7 +355,8 @@ const updateDomain = async (req, res) => {
     if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied - You do not have permission to access this domain'
+        message:
+          "Access denied - You do not have permission to access this domain",
       });
     }
 
@@ -350,40 +369,42 @@ const updateDomain = async (req, res) => {
         await Domain.updateMany(
           {
             owner: req.user.id,
-            _id: { $ne: id }
+            _id: { $ne: id },
           },
-          { isDefault: false }
+          { isDefault: false },
         );
       }
     }
 
     if (notes !== undefined) {
-      updateData['metadata.notes'] = notes;
+      updateData["metadata.notes"] = notes;
     }
 
     if (configuration !== undefined) {
       updateData.configuration = { ...domain.configuration, ...configuration };
     }
 
-    const updatedDomain = await Domain.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('owner', 'firstName lastName email')
-      .populate('organization', 'name slug')
-      .populate('metadata.addedBy', 'firstName lastName email')
-      .populate('metadata.verifiedBy', 'firstName lastName email');
+    const updatedDomain = await Domain.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("owner", "firstName lastName email")
+      .populate("organization", "name slug")
+      .populate("metadata.addedBy", "firstName lastName email")
+      .populate("metadata.verifiedBy", "firstName lastName email");
 
     // Clear cache
     await cacheDel(`domains:user:${req.user.id}`);
 
     res.json({
       success: true,
-      message: 'Domain updated successfully',
-      data: { domain: updatedDomain }
+      message: "Domain updated successfully",
+      data: { domain: updatedDomain },
     });
   } catch (error) {
-    console.error('Update domain error:', error);
+    logger.error("Update domain error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update domain'
+      message: "Failed to update domain",
     });
   }
 };
@@ -397,7 +418,7 @@ const deleteDomain = async (req, res) => {
     if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain not found'
+        message: "Domain not found",
       });
     }
 
@@ -406,7 +427,7 @@ const deleteDomain = async (req, res) => {
     if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied - You can only delete domains that you own'
+        message: "Access denied - You can only delete domains that you own",
       });
     }
 
@@ -415,7 +436,7 @@ const deleteDomain = async (req, res) => {
     if (urlCount > 0) {
       return res.status(400).json({
         success: false,
-        message: `Cannot delete domain. ${urlCount} URLs are using this domain. Please move or delete them first.`
+        message: `Cannot delete domain. ${urlCount} URLs are using this domain. Please move or delete them first.`,
       });
     }
 
@@ -426,13 +447,13 @@ const deleteDomain = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Domain deleted successfully'
+      message: "Domain deleted successfully",
     });
   } catch (error) {
-    console.error('Delete domain error:', error);
+    logger.error("Delete domain error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete domain'
+      message: "Failed to delete domain",
     });
   }
 };
@@ -440,15 +461,15 @@ const deleteDomain = async (req, res) => {
 const verifyDomain = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('Verifying domain ID:', id);
+    logger.info("Verifying domain ID:", id);
 
     const domain = await Domain.findById(id);
-    console.log('Found domain:', domain);
+    logger.info("Found domain:", domain);
 
     if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain not found'
+        message: "Domain not found",
       });
     }
 
@@ -456,7 +477,8 @@ const verifyDomain = async (req, res) => {
     if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied - You do not have permission to verify this domain'
+        message:
+          "Access denied - You do not have permission to verify this domain",
       });
     }
 
@@ -468,27 +490,27 @@ const verifyDomain = async (req, res) => {
     if (verificationResult.success) {
       res.json({
         success: true,
-        message: 'Domain verification successful',
+        message: "Domain verification successful",
         data: {
           verified: verificationResult.verified,
-          domain: verificationResult.domain
-        }
+          domain: verificationResult.domain,
+        },
       });
     } else {
       res.status(400).json({
         success: false,
-        message: verificationResult.error || 'Domain verification failed',
+        message: verificationResult.error || "Domain verification failed",
         data: {
           verified: false,
-          details: verificationResult.details
-        }
+          details: verificationResult.details,
+        },
       });
     }
   } catch (error) {
-    console.error('Verify domain error:', error);
+    logger.error("Verify domain error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to verify domain'
+      message: "Failed to verify domain",
     });
   }
 };
@@ -502,7 +524,7 @@ const setDefaultDomain = async (req, res) => {
     if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain not found'
+        message: "Domain not found",
       });
     }
 
@@ -510,14 +532,15 @@ const setDefaultDomain = async (req, res) => {
     if (!checkDomainAccess(domain, req.user)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied - You do not have permission to access this domain'
+        message:
+          "Access denied - You do not have permission to access this domain",
       });
     }
 
     if (!domain.isVerified) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot set unverified domain as default'
+        message: "Cannot set unverified domain as default",
       });
     }
 
@@ -528,14 +551,14 @@ const setDefaultDomain = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Default domain updated successfully',
-      data: { domain }
+      message: "Default domain updated successfully",
+      data: { domain },
     });
   } catch (error) {
-    console.error('Set default domain error:', error);
+    logger.error("Set default domain error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to set default domain'
+      message: "Failed to set default domain",
     });
   }
 };
@@ -546,27 +569,20 @@ const getDomainStats = async (req, res) => {
     const organizationId = req.user.organization;
 
     const filter = {
-      owner: userId
+      owner: userId,
     };
 
     if (organizationId) {
-      filter.$or = [
-        { owner: userId },
-        { organization: organizationId }
-      ];
+      filter.$or = [{ owner: userId }, { organization: organizationId }];
     }
 
-    const [
-      totalDomains,
-      verifiedDomains,
-      activeDomains,
-      pendingDomains
-    ] = await Promise.all([
-      Domain.countDocuments(filter),
-      Domain.countDocuments({ ...filter, verificationStatus: 'verified' }),
-      Domain.countDocuments({ ...filter, status: 'active' }),
-      Domain.countDocuments({ ...filter, verificationStatus: 'pending' })
-    ]);
+    const [totalDomains, verifiedDomains, activeDomains, pendingDomains] =
+      await Promise.all([
+        Domain.countDocuments(filter),
+        Domain.countDocuments({ ...filter, verificationStatus: "verified" }),
+        Domain.countDocuments({ ...filter, status: "active" }),
+        Domain.countDocuments({ ...filter, verificationStatus: "pending" }),
+      ]);
 
     res.json({
       success: true,
@@ -575,15 +591,15 @@ const getDomainStats = async (req, res) => {
           totalDomains,
           verifiedDomains,
           activeDomains,
-          pendingDomains
-        }
-      }
+          pendingDomains,
+        },
+      },
     });
   } catch (error) {
-    console.error('Get domain stats error:', error);
+    logger.error("Get domain stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch domain statistics'
+      message: "Failed to fetch domain statistics",
     });
   }
 };
@@ -601,14 +617,14 @@ const getDomainInfo = async (req, res) => {
         domain,
         info: domainInfo,
         providers: dnsProviders,
-        setupInstructions: domainService.getSetupInstructions(domain, 'CNAME')
-      }
+        setupInstructions: domainService.getSetupInstructions(domain, "CNAME"),
+      },
     });
   } catch (error) {
-    console.error('Get domain info error:', error);
+    logger.error("Get domain info error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch domain information'
+      message: "Failed to fetch domain information",
     });
   }
 };
@@ -622,24 +638,26 @@ const provisionSSL = async (req, res) => {
 
     const domain = await Domain.findById(id);
     if (!domain) {
-      return res.status(404).json({ success: false, message: 'Domain not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
     }
 
     if (!checkDomainAccess(domain, req.user)) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    if (domain.verificationStatus !== 'verified') {
+    if (domain.verificationStatus !== "verified") {
       return res.status(400).json({
         success: false,
-        message: 'Domain must be verified before SSL can be provisioned'
+        message: "Domain must be verified before SSL can be provisioned",
       });
     }
 
-    if (domain.ssl.status === 'active') {
+    if (domain.ssl.status === "active") {
       return res.status(400).json({
         success: false,
-        message: 'SSL is already active for this domain'
+        message: "SSL is already active for this domain",
       });
     }
 
@@ -647,17 +665,22 @@ const provisionSSL = async (req, res) => {
     // Client should poll GET /api/domains/:id/ssl-status.
     res.status(202).json({
       success: true,
-      message: 'SSL provisioning started. Poll /ssl-status to track progress.',
-      data: { domainId: id, domain: domain.fullDomain }
+      message: "SSL provisioning started. Poll /ssl-status to track progress.",
+      data: { domainId: id, domain: domain.fullDomain },
     });
 
     // Fire-and-forget provisioning in background.
-    sslProvisioningService.provision(id).catch(err => {
-      console.error(`[SSL] Background provisioning failed for ${domain.fullDomain}:`, err.message);
+    sslProvisioningService.provision(id).catch((err) => {
+      logger.error(
+        `[SSL] Background provisioning failed for ${domain.fullDomain}:`,
+        err.message,
+      );
     });
   } catch (error) {
-    console.error('Provision SSL error:', error);
-    res.status(500).json({ success: false, message: 'Failed to start SSL provisioning' });
+    logger.error("Provision SSL error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to start SSL provisioning" });
   }
 };
 
@@ -669,17 +692,21 @@ const getSSLStatus = async (req, res) => {
 
     const domain = await Domain.findById(id);
     if (!domain) {
-      return res.status(404).json({ success: false, message: 'Domain not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
     }
 
     if (!checkDomainAccess(domain, req.user)) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
 
     // If cert is active, also read live expiry from disk (catches renewals not yet in DB).
     let liveCertInfo = null;
-    if (domain.ssl.status === 'active') {
-      liveCertInfo = sslCertificateService.checkCertificateStatus(domain.fullDomain);
+    if (domain.ssl.status === "active") {
+      liveCertInfo = sslCertificateService.checkCertificateStatus(
+        domain.fullDomain,
+      );
     }
 
     res.json({
@@ -694,14 +721,16 @@ const getSSLStatus = async (req, res) => {
           daysRemaining: liveCertInfo?.daysRemaining ?? null,
           lastRenewal: domain.ssl.lastRenewal,
           autoRenewal: domain.ssl.autoRenewal,
-          error: domain.ssl.error || null
+          error: domain.ssl.error || null,
         },
-        url: domain.shortUrl
-      }
+        url: domain.shortUrl,
+      },
     });
   } catch (error) {
-    console.error('Get SSL status error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch SSL status' });
+    logger.error("Get SSL status error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch SSL status" });
   }
 };
 
@@ -710,27 +739,29 @@ const getSSLStatus = async (req, res) => {
 // The hourly cron will then retry provisioning for all of them automatically.
 const resetPendingSSL = async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin access required' });
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Admin access required" });
     }
 
     const result = await Domain.updateMany(
       {
-        verificationStatus: 'verified',
-        'ssl.status': { $in: ['failed', 'pending'] }
+        verificationStatus: "verified",
+        "ssl.status": { $in: ["failed", "pending"] },
       },
       {
         $set: {
-          'ssl.status': 'pending',
-          'ssl.enabled': true,
-          'ssl.error': null
-        }
-      }
+          "ssl.status": "pending",
+          "ssl.enabled": true,
+          "ssl.error": null,
+        },
+      },
     );
 
     const domains = await Domain.find(
-      { verificationStatus: 'verified', 'ssl.status': 'pending' },
-      { fullDomain: 1, 'ssl.status': 1 }
+      { verificationStatus: "verified", "ssl.status": "pending" },
+      { fullDomain: 1, "ssl.status": 1 },
     );
 
     res.json({
@@ -738,12 +769,14 @@ const resetPendingSSL = async (req, res) => {
       message: `Reset ${result.modifiedCount} domain(s). Hourly cron will provision them automatically.`,
       data: {
         resetCount: result.modifiedCount,
-        domains: domains.map(d => d.fullDomain)
-      }
+        domains: domains.map((d) => d.fullDomain),
+      },
     });
   } catch (error) {
-    console.error('Reset pending SSL error:', error);
-    res.status(500).json({ success: false, message: 'Failed to reset SSL status' });
+    logger.error("Reset pending SSL error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to reset SSL status" });
   }
 };
 
@@ -759,5 +792,5 @@ module.exports = {
   getDomainInfo,
   provisionSSL,
   getSSLStatus,
-  resetPendingSSL
+  resetPendingSSL,
 };

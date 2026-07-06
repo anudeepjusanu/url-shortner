@@ -1,10 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const amplitudeMiddleware = require('./middleware/amplitudeMiddleware');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const rateLimit = require("express-rate-limit");
+const amplitudeMiddleware = require("./middleware/amplitudeMiddleware");
+const logger = require("./config/logger");
+require("dotenv").config();
 
 const app = express();
 
@@ -17,93 +18,112 @@ app.use((req, res, next) => {
 
 // Trust only the first proxy hop (nginx/load balancer). Using `true` allows
 // clients to spoof X-Forwarded-For and bypass IP-based rate limiting.
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // Enable compression
-const compression = require('compression');
+const compression = require("compression");
 app.use(compression());
 
 // Add response caching headers
 app.use((req, res, next) => {
   // Only cache GET requests for read-only endpoints
   // Don't cache POST, PUT, DELETE or list endpoints that need fresh data
-  if (req.path.startsWith('/api/') && req.method === 'GET') {
+  if (req.path.startsWith("/api/") && req.method === "GET") {
     // Don't cache dynamic list endpoints that need fresh data
-    const noCachePaths = ['/api/urls', '/api/analytics', '/api/admin', '/api/auth'];
-    const shouldNotCache = noCachePaths.some(path => req.path.startsWith(path));
-    
+    const noCachePaths = [
+      "/api/urls",
+      "/api/analytics",
+      "/api/admin",
+      "/api/auth",
+    ];
+    const shouldNotCache = noCachePaths.some((path) =>
+      req.path.startsWith(path),
+    );
+
     if (shouldNotCache) {
-      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.set('Pragma', 'no-cache');
-      res.set('Expires', '0');
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
     } else {
       // Cache static/read-only resources for 5 minutes
-      res.set('Cache-Control', 'public, max-age=300');
+      res.set("Cache-Control", "public, max-age=300");
     }
-  } else if (req.path.startsWith('/api/')) {
+  } else if (req.path.startsWith("/api/")) {
     // Never cache POST, PUT, DELETE requests
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
   }
   next();
 });
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
     },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
 
 // Trust proxy already set to 1 above (single hop — safe for rate limiting)
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
     },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
-  .split(',')
-  .map(origin => origin.trim())
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Cache-Control', 'Pragma']
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-API-Key",
+      "Cache-Control",
+      "Pragma",
+    ],
+  }),
+);
 
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Global rate limiting
 const limiter = rateLimit({
@@ -111,7 +131,7 @@ const limiter = rateLimit({
   max: process.env.RATE_LIMIT || 500,
   message: {
     success: false,
-    error: 'Too many requests from this IP, please try again later.'
+    error: "Too many requests from this IP, please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -124,140 +144,153 @@ app.use(amplitudeMiddleware);
 
 app.use((req, res, next) => {
   res.set({
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
-    'Referrer-Policy': 'strict-origin-when-cross-origin'
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
   });
   next();
 });
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).json({
-    status: 'OK',
+    status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || "development",
   });
 });
 
 // Simple test endpoint without middleware
-app.post('/test-register', async (req, res) => {
-  console.log('Test register hit:', req.body);
-  res.json({ success: true, message: 'Test endpoint working' });
+app.post("/test-register", async (req, res) => {
+  logger.info("Test register hit:", req.body);
+  res.json({ success: true, message: "Test endpoint working" });
 });
 
 // SSL certificate renewal — runs at 03:00 on the 1st of each month.
 // certbot renew is idempotent: skips certs not within 30 days of expiry.
-if (process.env.NODE_ENV === 'production') {
-  const cron = require('node-cron');
-  const sslProvisioningService = require('./services/sslProvisioningService');
-  cron.schedule('0 3 1 * *', async () => {
-    console.log('[SSL] Monthly renewal cron triggered');
-    try {
-      await sslProvisioningService.renewAll();
-    } catch (err) {
-      console.error('[SSL] Monthly renewal cron failed:', err.message);
-    }
-  }, { timezone: 'UTC' });
+if (process.env.NODE_ENV === "production") {
+  const cron = require("node-cron");
+  const sslProvisioningService = require("./services/sslProvisioningService");
+  cron.schedule(
+    "0 3 1 * *",
+    async () => {
+      logger.info("[SSL] Monthly renewal cron triggered");
+      try {
+        await sslProvisioningService.renewAll();
+      } catch (err) {
+        logger.error("[SSL] Monthly renewal cron failed:", err.message);
+      }
+    },
+    { timezone: "UTC" },
+  );
 }
 
 // /.well-known routes MUST be registered before auth middleware and API routes.
 // iOS and Android fetch these unauthenticated to verify domain ownership.
-app.use('/.well-known', require('./routes/wellKnown'));
+app.use("/.well-known", require("./routes/wellKnown"));
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/country-codes', require('./routes/countryCodes'));
-app.use('/api/urls', require('./routes/urls'));
-app.use('/api/domains', require('./routes/domains'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/qr-codes', require('./routes/qrCodes'));
-app.use('/api/roles', require('./routes/roles'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/subscriptions', require('./routes/subscriptions'));
-app.use('/api/super-admin', require('./routes/superAdmin'));
-app.use('/api/users', require('./routes/userManagement'));
-app.use('/api/google-analytics', require('./routes/googleAnalytics'));
-app.use('/api/bio-pages', require('./routes/bioPages'));
-app.use('/api/dynamic-qr', require('./routes/dynamicQRCodes'));
-app.use('/api/v1/app-registrations', require('./routes/appRegistrations'));
-app.use('/api/v1', require('./routes/deepLinks'));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/country-codes", require("./routes/countryCodes"));
+app.use("/api/urls", require("./routes/urls"));
+app.use("/api/domains", require("./routes/domains"));
+app.use("/api/analytics", require("./routes/analytics"));
+app.use("/api/qr-codes", require("./routes/qrCodes"));
+app.use("/api/roles", require("./routes/roles"));
+app.use("/api/admin", require("./routes/admin"));
+app.use("/api/subscriptions", require("./routes/subscriptions"));
+app.use("/api/super-admin", require("./routes/superAdmin"));
+app.use("/api/users", require("./routes/userManagement"));
+app.use("/api/google-analytics", require("./routes/googleAnalytics"));
+app.use("/api/bio-pages", require("./routes/bioPages"));
+app.use("/api/dynamic-qr", require("./routes/dynamicQRCodes"));
+app.use("/api/v1/app-registrations", require("./routes/appRegistrations"));
+app.use("/api/v1", require("./routes/deepLinks"));
 
 // SEO routes - sitemap.xml and robots.txt (MUST come before catch-all routes)
-app.use('/', require('./routes/sitemapRoutes'));
+app.use("/", require("./routes/sitemapRoutes"));
 
 // Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
-const frontendUrl = process.env.BASE_URL || 'http://localhost:5173';
-app.get('/bio/:username', (req, res) => {
+const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+app.get("/bio/:username", (req, res) => {
   res.redirect(`${frontendUrl}/bio/${req.params.username}`);
 });
 
 // Redirect route - must be after API routes but before 404 handler
-const redirectController = require('./controllers/redirectController');
-const { redirectLimiter } = require('./middleware/rateLimiter');
+const redirectController = require("./controllers/redirectController");
+const { redirectLimiter } = require("./middleware/rateLimiter");
 
 // Dynamic QR scan redirect — must come before the regular /:shortCode catch-all
-const dynamicQRCodeController = require('./controllers/dynamicQRCodeController');
-app.get('/dqr/:code', redirectLimiter, dynamicQRCodeController.handleScan);
+const dynamicQRCodeController = require("./controllers/dynamicQRCodeController");
+app.get("/dqr/:code", redirectLimiter, dynamicQRCodeController.handleScan);
 
 // Deep link redirect — /dl/:shortCode — must come before the /:shortCode catch-all
-app.get('/dl/:shortCode', redirectLimiter, redirectController.handleDeepLinkRedirect);
+app.get(
+  "/dl/:shortCode",
+  redirectLimiter,
+  redirectController.handleDeepLinkRedirect,
+);
 
 // QR Code generation endpoint (e.g., /qr/mbtw7f) - for generating QR code images
-app.get('/qr/:shortCode', redirectController.generateQRCode);
+app.get("/qr/:shortCode", redirectController.generateQRCode);
 
 // QR Code scan redirect endpoint (e.g., /q/mbtw7f) - for QR code scans
 // This route is specifically for QR codes and will track as QR scan
-app.get('/q/:shortCode', redirectController.redirectFromQRCode);
+app.get("/q/:shortCode", redirectController.redirectFromQRCode);
 // app.get('/q/:shortCode/*', redirectController.redirectFromQRCode); // Handle extra paths
 
 // Optional: Preview endpoint (e.g., /preview/mbtw7f)
-app.get('/preview/:shortCode', redirectController.getPreview);
+app.get("/preview/:shortCode", redirectController.getPreview);
 
 // Handle shortened URL redirects (e.g., /mbtw7f) - MUST be last to avoid catching other routes
-app.get('/:shortCode', redirectLimiter, redirectController.redirectToOriginalUrl);
+app.get(
+  "/:shortCode",
+  redirectLimiter,
+  redirectController.redirectToOriginalUrl,
+);
 // app.get('/:shortCode/*', /* redirectLimiter, */ redirectController.redirectToOriginalUrl); // Handle extra paths
 
 app.use((req, res) => {
   res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found on this server.',
-    path: req.path
+    error: "Not Found",
+    message: "The requested resource was not found on this server.",
+    path: req.path,
   });
 });
 
 app.use((err, req, res, next) => {
-  console.error('Error:', {
+  logger.error("Error:", {
     message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     url: req.url,
     method: req.method,
     ip: req.ip,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
-  if (err.type === 'entity.parse.failed') {
+  if (err.type === "entity.parse.failed") {
     return res.status(400).json({
-      error: 'Bad Request',
-      message: 'Invalid JSON payload'
+      error: "Bad Request",
+      message: "Invalid JSON payload",
     });
   }
 
-  if (err.type === 'entity.too.large') {
+  if (err.type === "entity.too.large") {
     return res.status(413).json({
-      error: 'Payload Too Large',
-      message: 'Request payload exceeds maximum size limit'
+      error: "Payload Too Large",
+      message: "Request payload exceeds maximum size limit",
     });
   }
 
   const status = err.statusCode || err.status || 500;
-  const message = process.env.NODE_ENV === 'production' && status === 500 
-    ? 'Internal Server Error' 
-    : err.message;
+  const message =
+    process.env.NODE_ENV === "production" && status === 500
+      ? "Internal Server Error"
+      : err.message;
 
   res.status(status).json({
-    error: status >= 500 ? 'Internal Server Error' : 'Client Error',
-    message
+    error: status >= 500 ? "Internal Server Error" : "Client Error",
+    message,
   });
 });
 

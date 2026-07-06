@@ -1,24 +1,25 @@
-const Url = require('../models/Url');
-const QRCode = require('qrcode');
-const QRCodeModel = require('../models/QRCode');
-const sharp = require('sharp');
-const PDFDocument = require('pdfkit');
-const { domainToASCII } = require('../utils/punycode');
+const Url = require("../models/Url");
+const QRCode = require("qrcode");
+const QRCodeModel = require("../models/QRCode");
+const sharp = require("sharp");
+const PDFDocument = require("pdfkit");
+const { domainToASCII } = require("../utils/punycode");
+const logger = require("../config/logger");
 
 // Helper function to get the correct protocol for a domain
 const getProtocolForDomain = (domain) => {
   // If domain already has protocol, don't add one
-  if (domain.startsWith('http://') || domain.startsWith('https://')) {
-    return '';
+  if (domain.startsWith("http://") || domain.startsWith("https://")) {
+    return "";
   }
 
   // For localhost or domains with ports (development), use http://
-  if (domain.includes('localhost') || domain.match(/:\d+$/)) {
-    return 'http://';
+  if (domain.includes("localhost") || domain.match(/:\d+$/)) {
+    return "http://";
   }
 
   // For production domains, use https://
-  return 'https://';
+  return "https://";
 };
 
 // Helper function to convert PNG buffer to other image formats
@@ -26,14 +27,14 @@ const convertImageFormat = async (pngBuffer, format) => {
   const sharpInstance = sharp(pngBuffer);
 
   switch (format.toLowerCase()) {
-    case 'jpeg':
-    case 'jpg':
+    case "jpeg":
+    case "jpg":
       return await sharpInstance.jpeg({ quality: 92 }).toBuffer();
-    case 'gif':
+    case "gif":
       return await sharpInstance.gif().toBuffer();
-    case 'webp':
+    case "webp":
       return await sharpInstance.webp({ quality: 92 }).toBuffer();
-    case 'png':
+    case "png":
     default:
       return pngBuffer;
   }
@@ -42,15 +43,15 @@ const convertImageFormat = async (pngBuffer, format) => {
 // Helper function to get content type for format
 const getContentType = (format) => {
   const contentTypes = {
-    'png': 'image/png',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'gif': 'image/gif',
-    'webp': 'image/webp',
-    'svg': 'image/svg+xml',
-    'pdf': 'application/pdf'
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    pdf: "application/pdf",
   };
-  return contentTypes[format.toLowerCase()] || 'image/png';
+  return contentTypes[format.toLowerCase()] || "image/png";
 };
 
 // Helper function to generate PDF with QR code
@@ -59,23 +60,23 @@ const generateQRCodePDF = async (qrCodeBuffer, shortCode, size) => {
     try {
       const doc = new PDFDocument({
         size: [size + 100, size + 100],
-        margins: { top: 50, bottom: 50, left: 50, right: 50 }
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
 
       // Add title
-      doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: 'center' });
+      doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: "center" });
       doc.moveDown();
 
       // Add QR code image
       doc.image(qrCodeBuffer, {
         fit: [size, size],
-        align: 'center',
-        valign: 'center'
+        align: "center",
+        valign: "center",
       });
 
       doc.end();
@@ -88,60 +89,70 @@ const generateQRCodePDF = async (qrCodeBuffer, shortCode, size) => {
 // Generate QR Code for a URL
 const generateQRCode = async (req, res) => {
   try {
-    console.log('===== QR CODE GENERATION START =====');
+    logger.info("===== QR CODE GENERATION START =====");
     const { id } = req.params;
     const {
       size = 300,
-      format = 'png',
-      errorCorrection = 'M',
-      foregroundColor = '#000000',
-      backgroundColor = '#FFFFFF',
-      includeMargin = true
+      format = "png",
+      errorCorrection = "M",
+      foregroundColor = "#000000",
+      backgroundColor = "#FFFFFF",
+      includeMargin = true,
     } = req.body;
 
-    console.log('📥 QR Generation Request:', {
+    logger.info("📥 QR Generation Request:", {
       urlId: id,
-      params: { size, format, errorCorrection, foregroundColor, backgroundColor, includeMargin },
-      userId: req.user?.id
+      params: {
+        size,
+        format,
+        errorCorrection,
+        foregroundColor,
+        backgroundColor,
+        includeMargin,
+      },
+      userId: req.user?.id,
     });
 
     // Find the URL
     const url = await Url.findById(id);
 
     if (!url) {
-      console.error('❌ URL not found:', { urlId: id });
+      logger.error("❌ URL not found:", { urlId: id });
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
 
-    console.log('✅ URL found:', {
+    logger.info("✅ URL found:", {
       shortCode: url.shortCode,
       customCode: url.customCode,
       domain: url.domain,
-      originalUrl: url.originalUrl
+      originalUrl: url.originalUrl,
     });
 
     // Check if user owns this URL
-    if (url.creator.toString() !== req.user.id &&
-        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
     const urlCode = url.customCode || url.shortCode;
     const shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
 
-    console.log('📱 Generating QR Code:', {
+    logger.info("📱 Generating QR Code:", {
       urlId: id,
       shortCode: url.shortCode,
       customCode: url.customCode,
@@ -149,37 +160,44 @@ const generateQRCode = async (req, res) => {
       domain: url.domain,
       asciiDomain: asciiDomain,
       shortUrl: shortUrl,
-      hasQrParam: shortUrl.includes('?qr=1')
+      hasQrParam: shortUrl.includes("?qr=1"),
     });
 
     // Generate QR Code options
     const qrOptions = {
       errorCorrectionLevel: errorCorrection,
-      type: format === 'svg' ? 'svg' : 'image/png',
+      type: format === "svg" ? "svg" : "image/png",
       quality: 0.92,
       margin: includeMargin ? 4 : 0,
       color: {
         dark: foregroundColor,
-        light: backgroundColor
+        light: backgroundColor,
       },
-      width: parseInt(size)
+      width: parseInt(size),
     };
 
     // Generate QR Code
     let qrCodeData;
-    if (format === 'svg') {
-      qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
-    } else if (format === 'pdf') {
+    if (format === "svg") {
+      qrCodeData = await QRCode.toString(shortUrl, {
+        ...qrOptions,
+        type: "svg",
+      });
+    } else if (format === "pdf") {
       // For PDF, generate PNG buffer first, convert to PDF, then to base64
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
-      const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
-      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+      const pdfBuffer = await generateQRCodePDF(
+        pngBuffer,
+        url.shortCode,
+        parseInt(size),
+      );
+      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString("base64")}`;
     } else {
       // For other image formats, generate PNG first then convert
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
       const convertedBuffer = await convertImageFormat(pngBuffer, format);
       const mimeType = getContentType(format);
-      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
+      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString("base64")}`;
     }
 
     // Save QR customization to QRCode model
@@ -191,10 +209,10 @@ const generateQRCode = async (req, res) => {
         errorCorrection,
         foregroundColor,
         backgroundColor,
-        includeMargin
+        includeMargin,
       },
       req.user.id,
-      req.user.organization
+      req.user.organization,
     );
 
     // Update URL with QR code info and save the QR code data
@@ -207,37 +225,37 @@ const generateQRCode = async (req, res) => {
       errorCorrection,
       foregroundColor,
       backgroundColor,
-      includeMargin
+      includeMargin,
     };
     await url.save();
 
-    console.log('✅ QR Code generated successfully:', {
+    logger.info("✅ QR Code generated successfully:", {
       urlId: id,
       format,
       size,
       qrDataLength: qrCodeData?.length,
-      shortUrl
+      shortUrl,
     });
-    console.log('===== QR CODE GENERATION END =====\n');
+    logger.info("===== QR CODE GENERATION END =====\n");
 
     res.json({
       success: true,
       data: {
         qrCode: qrCodeData,
         url: shortUrl,
-        format: format
-      }
+        format: format,
+      },
     });
   } catch (error) {
-    console.error('❌ Generate QR Code ERROR:');
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('URL ID:', req.params.id);
-    console.log('===== QR CODE GENERATION FAILED =====\n');
+    logger.error("❌ Generate QR Code ERROR:");
+    logger.error("Error message:", error.message);
+    logger.error("Error stack:", error.stack);
+    logger.error("URL ID:", req.params.id);
+    logger.info("===== QR CODE GENERATION FAILED =====\n");
 
     res.status(500).json({
       success: false,
-      message: 'Failed to generate QR Code'
+      message: "Failed to generate QR Code",
     });
   }
 };
@@ -245,118 +263,137 @@ const generateQRCode = async (req, res) => {
 // Download QR Code
 const downloadQRCode = async (req, res) => {
   try {
-    console.log('===== QR CODE DOWNLOAD START =====');
+    logger.info("===== QR CODE DOWNLOAD START =====");
     const { id } = req.params;
-    const { format = 'png', size = 300 } = req.query;
+    const { format = "png", size = 300 } = req.query;
 
-    console.log('📥 QR Download Request:', {
+    logger.info("📥 QR Download Request:", {
       urlId: id,
       format,
       size,
-      userId: req.user?.id
+      userId: req.user?.id,
     });
 
     // Find the URL
     const url = await Url.findById(id);
 
     if (!url) {
-      console.error('❌ URL not found:', { urlId: id });
+      logger.error("❌ URL not found:", { urlId: id });
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
 
-    console.log('✅ URL found:', {
+    logger.info("✅ URL found:", {
       shortCode: url.shortCode,
       customCode: url.customCode,
-      domain: url.domain
+      domain: url.domain,
     });
 
     // Check if user owns this URL
-    if (url.creator.toString() !== req.user.id &&
-        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
-      console.error('❌ Access denied:', {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
+      logger.error("❌ Access denied:", {
         urlCreator: url.creator.toString(),
-        requestUser: req.user.id
+        requestUser: req.user.id,
       });
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
-    console.log('✅ Access granted');
+    logger.info("✅ Access granted");
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
     const urlCode = url.customCode || url.shortCode;
     const shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
 
-    console.log('🔗 Building QR URL:', {
+    logger.info("🔗 Building QR URL:", {
       urlCode,
       shortUrl,
-      asciiDomain
+      asciiDomain,
     });
 
     // Create a safe filename (replace non-ASCII characters with URL ID)
     // This prevents issues with Arabic/international characters in HTTP headers
     const safeFilename = url._id.toString();
 
-    console.log('📁 Filename:', {
+    logger.info("📁 Filename:", {
       originalCode: url.shortCode,
       customCode: url.customCode,
-      safeFilename
+      safeFilename,
     });
 
     // Generate QR Code
     const qrOptions = {
-      errorCorrectionLevel: 'M',
-      type: format === 'svg' ? 'svg' : 'image/png',
+      errorCorrectionLevel: "M",
+      type: format === "svg" ? "svg" : "image/png",
       quality: 0.92,
       margin: 4,
-      width: parseInt(size)
+      width: parseInt(size),
     };
 
-    console.log('⚙️  QR Options:', qrOptions);
+    logger.info("⚙️  QR Options:", qrOptions);
 
     let finalBuffer;
     let fileExtension = format.toLowerCase();
 
-    console.log('🎨 Generating QR code...');
+    logger.info("🎨 Generating QR code...");
 
-    if (format === 'svg') {
+    if (format === "svg") {
       // Handle SVG format
-      const svg = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
-      console.log('✅ SVG generated, length:', svg.length);
-      res.setHeader('Content-Type', 'image/svg+xml');
-      res.setHeader('Content-Disposition', `attachment; filename="qr-${safeFilename}.svg"`);
+      const svg = await QRCode.toString(shortUrl, {
+        ...qrOptions,
+        type: "svg",
+      });
+      logger.info("✅ SVG generated, length:", svg.length);
+      res.setHeader("Content-Type", "image/svg+xml");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="qr-${safeFilename}.svg"`,
+      );
       res.send(svg);
-    } else if (format === 'pdf') {
+    } else if (format === "pdf") {
       // Handle PDF format
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
-      console.log('✅ PNG buffer generated for PDF, size:', pngBuffer.length);
-      finalBuffer = await generateQRCodePDF(pngBuffer, safeFilename, parseInt(size));
-      console.log('✅ PDF generated, size:', finalBuffer.length);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="qr-${safeFilename}.pdf"`);
+      logger.info("✅ PNG buffer generated for PDF, size:", pngBuffer.length);
+      finalBuffer = await generateQRCodePDF(
+        pngBuffer,
+        safeFilename,
+        parseInt(size),
+      );
+      logger.info("✅ PDF generated, size:", finalBuffer.length);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="qr-${safeFilename}.pdf"`,
+      );
       res.send(finalBuffer);
     } else {
       // Handle image formats (PNG, JPEG, GIF, WebP)
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
-      console.log('✅ PNG buffer generated, size:', pngBuffer.length);
+      logger.info("✅ PNG buffer generated, size:", pngBuffer.length);
       finalBuffer = await convertImageFormat(pngBuffer, format);
-      console.log('✅ Image converted to', format, 'size:', finalBuffer.length);
+      logger.info("✅ Image converted to", format, "size:", finalBuffer.length);
 
       // Normalize extension for JPEG
-      if (format === 'jpg') fileExtension = 'jpeg';
+      if (format === "jpg") fileExtension = "jpeg";
 
-      res.setHeader('Content-Type', getContentType(format));
-      res.setHeader('Content-Disposition', `attachment; filename="qr-${safeFilename}.${fileExtension}"`);
+      res.setHeader("Content-Type", getContentType(format));
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="qr-${safeFilename}.${fileExtension}"`,
+      );
       res.send(finalBuffer);
     }
 
@@ -365,8 +402,8 @@ const downloadQRCode = async (req, res) => {
     url.lastQRCodeDownload = new Date();
     await url.save();
 
-    console.log('📊 Download tracked:', {
-      totalDownloads: url.qrCodeDownloads
+    logger.info("📊 Download tracked:", {
+      totalDownloads: url.qrCodeDownloads,
     });
 
     // Track download in QRCode model
@@ -375,22 +412,21 @@ const downloadQRCode = async (req, res) => {
       await qrCodeDoc.incrementDownload();
     }
 
-    console.log('✅ QR Code download successful');
-    console.log('===== QR CODE DOWNLOAD END =====\n');
-
+    logger.info("✅ QR Code download successful");
+    logger.info("===== QR CODE DOWNLOAD END =====\n");
   } catch (error) {
-    console.error('❌ QR CODE DOWNLOAD ERROR:');
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('URL ID:', req.params.id);
-    console.error('Format:', req.query.format);
-    console.error('Size:', req.query.size);
-    console.log('===== QR CODE DOWNLOAD FAILED =====\n');
+    logger.error("❌ QR CODE DOWNLOAD ERROR:");
+    logger.error("Error message:", error.message);
+    logger.error("Error stack:", error.stack);
+    logger.error("URL ID:", req.params.id);
+    logger.error("Format:", req.query.format);
+    logger.error("Size:", req.query.size);
+    logger.info("===== QR CODE DOWNLOAD FAILED =====\n");
 
     res.status(500).json({
       success: false,
-      message: 'Failed to download QR Code',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Failed to download QR Code",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -406,22 +442,25 @@ const getUrlQRCode = async (req, res) => {
     if (!url) {
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
 
     // Check if user owns this URL
-    if (url.creator.toString() !== req.user.id &&
-        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
@@ -433,10 +472,10 @@ const getUrlQRCode = async (req, res) => {
 
     // Generate QR Code as data URL
     const qrCodeData = await QRCode.toDataURL(shortUrl, {
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: "M",
       quality: 0.92,
       margin: 4,
-      width: 300
+      width: 300,
     });
 
     res.json({
@@ -453,14 +492,14 @@ const getUrlQRCode = async (req, res) => {
         lastQRScanAt: url.lastQrScanAt,
         customization: qrCodeDoc?.customization || null,
         scanCount: qrCodeDoc?.scanCount || 0,
-        uniqueScanCount: qrCodeDoc?.uniqueScanCount || 0
-      }
+        uniqueScanCount: qrCodeDoc?.uniqueScanCount || 0,
+      },
     });
   } catch (error) {
-    console.error('Get URL QR Code error:', error);
+    logger.error("Get URL QR Code error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get QR Code'
+      message: "Failed to get QR Code",
     });
   }
 };
@@ -473,60 +512,66 @@ const bulkGenerateQRCodes = async (req, res) => {
     if (!urlIds || !Array.isArray(urlIds) || urlIds.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'URL IDs array is required'
+        message: "URL IDs array is required",
       });
     }
 
-    const {
-      size = 300,
-      format = 'png',
-      errorCorrection = 'M'
-    } = options;
+    const { size = 300, format = "png", errorCorrection = "M" } = options;
 
     // Find all URLs
     const urls = await Url.find({
       _id: { $in: urlIds },
       $or: [
         { creator: req.user.id },
-        ...(req.user.organization ? [{ organization: req.user.organization }] : [])
-      ]
+        ...(req.user.organization
+          ? [{ organization: req.user.organization }]
+          : []),
+      ],
     });
 
     if (urls.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No URLs found'
+        message: "No URLs found",
       });
     }
 
     // Generate QR codes for all URLs
     const qrCodes = await Promise.all(
       urls.map(async (url) => {
-        const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+        const urlDomain =
+          url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
         const asciiDomain = domainToASCII(urlDomain);
         const protocol = getProtocolForDomain(asciiDomain);
         const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
 
         const qrOptions = {
           errorCorrectionLevel: errorCorrection,
-          type: format === 'svg' ? 'svg' : 'image/png',
+          type: format === "svg" ? "svg" : "image/png",
           quality: 0.92,
           margin: 4,
-          width: parseInt(size)
+          width: parseInt(size),
         };
 
         let qrCodeData;
-        if (format === 'svg') {
-          qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
-        } else if (format === 'pdf') {
+        if (format === "svg") {
+          qrCodeData = await QRCode.toString(shortUrl, {
+            ...qrOptions,
+            type: "svg",
+          });
+        } else if (format === "pdf") {
           const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
-          const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
-          qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+          const pdfBuffer = await generateQRCodePDF(
+            pngBuffer,
+            url.shortCode,
+            parseInt(size),
+          );
+          qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString("base64")}`;
         } else {
           const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
           const convertedBuffer = await convertImageFormat(pngBuffer, format);
           const mimeType = getContentType(format);
-          qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
+          qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString("base64")}`;
         }
 
         // Save QR customization to QRCode model
@@ -535,10 +580,10 @@ const bulkGenerateQRCodes = async (req, res) => {
           {
             size: parseInt(size),
             format,
-            errorCorrection
+            errorCorrection,
           },
           req.user.id,
-          req.user.organization
+          req.user.organization,
         );
 
         // Update URL with QR code data
@@ -548,7 +593,7 @@ const bulkGenerateQRCodes = async (req, res) => {
         url.qrCodeSettings = {
           size: parseInt(size),
           format,
-          errorCorrection
+          errorCorrection,
         };
         await url.save();
 
@@ -556,23 +601,23 @@ const bulkGenerateQRCodes = async (req, res) => {
           urlId: url._id,
           shortCode: url.shortCode,
           qrCode: qrCodeData,
-          url: shortUrl
+          url: shortUrl,
         };
-      })
+      }),
     );
 
     res.json({
       success: true,
       data: {
         qrCodes,
-        count: qrCodes.length
-      }
+        count: qrCodes.length,
+      },
     });
   } catch (error) {
-    console.error('Bulk generate QR codes error:', error);
+    logger.error("Bulk generate QR codes error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate QR codes'
+      message: "Failed to generate QR codes",
     });
   }
 };
@@ -586,8 +631,8 @@ const getQRCodeStats = async (req, res) => {
     const filter = {
       $or: [
         { creator: userId },
-        ...(organizationId ? [{ organization: organizationId }] : [])
-      ]
+        ...(organizationId ? [{ organization: organizationId }] : []),
+      ],
     };
 
     const [
@@ -595,57 +640,59 @@ const getQRCodeStats = async (req, res) => {
       totalScans,
       uniqueScans,
       activeQRCodes,
-      downloadsToday
+      downloadsToday,
     ] = await Promise.all([
       // Total QR codes generated
       Url.countDocuments({
         ...filter,
-        qrCodeGenerated: true
+        qrCodeGenerated: true,
       }),
 
       // Total QR scans (NOT regular clicks)
       Url.aggregate([
         { $match: filter },
-        { $group: { _id: null, total: { $sum: '$qrScanCount' } } }
-      ]).then(result => result[0]?.total || 0),
+        { $group: { _id: null, total: { $sum: "$qrScanCount" } } },
+      ]).then((result) => result[0]?.total || 0),
 
       // Unique QR scans
       Url.aggregate([
         { $match: filter },
-        { $group: { _id: null, total: { $sum: '$uniqueQrScanCount' } } }
-      ]).then(result => result[0]?.total || 0),
+        { $group: { _id: null, total: { $sum: "$uniqueQrScanCount" } } },
+      ]).then((result) => result[0]?.total || 0),
 
       // Active QR codes (generated in last 30 days)
       Url.countDocuments({
         ...filter,
         qrCodeGenerated: true,
-        qrCodeGeneratedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        qrCodeGeneratedAt: {
+          $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        },
       }),
 
       // Downloads today
       Url.countDocuments({
         ...filter,
         lastQRCodeDownload: {
-          $gte: new Date(new Date().setHours(0, 0, 0, 0))
-        }
-      })
+          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        },
+      }),
     ]);
 
     res.json({
       success: true,
       data: {
         totalQRCodes,
-        totalScans,        // Now shows ONLY QR scans
-        uniqueScans,       // NEW: Unique QR scans
+        totalScans, // Now shows ONLY QR scans
+        uniqueScans, // NEW: Unique QR scans
         activeQRCodes,
-        downloadsToday
-      }
+        downloadsToday,
+      },
     });
   } catch (error) {
-    console.error('Get QR code stats error:', error);
+    logger.error("Get QR code stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get QR code statistics'
+      message: "Failed to get QR code statistics",
     });
   }
 };
@@ -656,11 +703,11 @@ const updateQRCodeCustomization = async (req, res) => {
     const { id } = req.params;
     const {
       size = 300,
-      format = 'png',
-      errorCorrection = 'M',
-      foregroundColor = '#000000',
-      backgroundColor = '#FFFFFF',
-      includeMargin = true
+      format = "png",
+      errorCorrection = "M",
+      foregroundColor = "#000000",
+      backgroundColor = "#FFFFFF",
+      includeMargin = true,
     } = req.body;
 
     // Find the URL
@@ -669,22 +716,25 @@ const updateQRCodeCustomization = async (req, res) => {
     if (!url) {
       return res.status(404).json({
         success: false,
-        message: 'URL not found'
+        message: "URL not found",
       });
     }
 
     // Check if user owns this URL
-    if (url.creator.toString() !== req.user.id &&
-        (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())) {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || 'laghhu.link';
+    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
@@ -694,29 +744,36 @@ const updateQRCodeCustomization = async (req, res) => {
     // Generate QR Code options
     const qrOptions = {
       errorCorrectionLevel: errorCorrection,
-      type: format === 'svg' ? 'svg' : 'image/png',
+      type: format === "svg" ? "svg" : "image/png",
       quality: 0.92,
       margin: includeMargin ? 4 : 0,
       color: {
         dark: foregroundColor,
-        light: backgroundColor
+        light: backgroundColor,
       },
-      width: parseInt(size)
+      width: parseInt(size),
     };
 
     // Generate new QR Code with updated settings
     let qrCodeData;
-    if (format === 'svg') {
-      qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
-    } else if (format === 'pdf') {
+    if (format === "svg") {
+      qrCodeData = await QRCode.toString(shortUrl, {
+        ...qrOptions,
+        type: "svg",
+      });
+    } else if (format === "pdf") {
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
-      const pdfBuffer = await generateQRCodePDF(pngBuffer, url.shortCode, parseInt(size));
-      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+      const pdfBuffer = await generateQRCodePDF(
+        pngBuffer,
+        url.shortCode,
+        parseInt(size),
+      );
+      qrCodeData = `data:application/pdf;base64,${pdfBuffer.toString("base64")}`;
     } else {
       const pngBuffer = await QRCode.toBuffer(shortUrl, qrOptions);
       const convertedBuffer = await convertImageFormat(pngBuffer, format);
       const mimeType = getContentType(format);
-      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString('base64')}`;
+      qrCodeData = `data:${mimeType};base64,${convertedBuffer.toString("base64")}`;
     }
 
     // Find existing QR code document
@@ -730,7 +787,7 @@ const updateQRCodeCustomization = async (req, res) => {
         errorCorrection,
         foregroundColor,
         backgroundColor,
-        includeMargin
+        includeMargin,
       };
       qrCodeDoc.updatedAt = new Date();
       await qrCodeDoc.save();
@@ -744,10 +801,10 @@ const updateQRCodeCustomization = async (req, res) => {
           errorCorrection,
           foregroundColor,
           backgroundColor,
-          includeMargin
+          includeMargin,
         },
         req.user.id,
-        req.user.organization
+        req.user.organization,
       );
     }
 
@@ -761,25 +818,25 @@ const updateQRCodeCustomization = async (req, res) => {
       errorCorrection,
       foregroundColor,
       backgroundColor,
-      includeMargin
+      includeMargin,
     };
     await url.save();
 
     res.json({
       success: true,
-      message: 'QR Code customization updated successfully',
+      message: "QR Code customization updated successfully",
       data: {
         qrCode: qrCodeData,
         url: shortUrl,
         format: format,
-        customization: qrCodeDoc.customization
-      }
+        customization: qrCodeDoc.customization,
+      },
     });
   } catch (error) {
-    console.error('Update QR Code customization error:', error);
+    logger.error("Update QR Code customization error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update QR Code customization'
+      message: "Failed to update QR Code customization",
     });
   }
 };
@@ -792,14 +849,15 @@ const deleteQRCode = async (req, res) => {
     const url = await Url.findById(id);
 
     if (!url) {
-      return res.status(404).json({ success: false, message: 'URL not found' });
+      return res.status(404).json({ success: false, message: "URL not found" });
     }
 
     if (
       url.creator.toString() !== req.user.id &&
-      (!req.user.organization || url.organization?.toString() !== req.user.organization.toString())
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
     ) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
 
     // Clear QR fields on the URL document
@@ -812,10 +870,12 @@ const deleteQRCode = async (req, res) => {
     // Remove the QR code customization document if it exists
     await QRCodeModel.findOneAndDelete({ url: id });
 
-    res.json({ success: true, message: 'QR code deleted successfully' });
+    res.json({ success: true, message: "QR code deleted successfully" });
   } catch (error) {
-    console.error('Delete QR Code error:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete QR code' });
+    logger.error("Delete QR Code error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete QR code" });
   }
 };
 
@@ -826,5 +886,5 @@ module.exports = {
   bulkGenerateQRCodes,
   getQRCodeStats,
   updateQRCodeCustomization,
-  deleteQRCode
+  deleteQRCode,
 };

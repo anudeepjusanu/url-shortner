@@ -12,6 +12,7 @@ const { UsageTracker } = require("../middleware/usageTracker");
 const config = require("../config/environment");
 const safeBrowsingService = require("../services/safeBrowsingService");
 const { triggerUrlScan } = require("../services/urlScanner/scanTrigger");
+const logger = require("../config/logger");
 
 // Single source of truth for the public short-link base URL.
 // BASE_URL takes precedence; otherwise it is derived from BASE_DOMAIN so that
@@ -91,7 +92,7 @@ const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
   // For all other errors (timeout, connection reset, bad response, etc.)
   // Allow the URL since these could be temporary network issues or strict server configs
   // The URL format is already validated, so we trust it exists
-  console.log(
+  logger.info(
     `URL accessibility check inconclusive for ${cleanUrl}: ${errorMsg}. Allowing URL.`,
   );
   return { allowed: true };
@@ -296,7 +297,7 @@ const createUrl = async (req, res) => {
       urlValidation.cleanUrl,
     );
     if (!safetyCheck.isSafe) {
-      console.log(
+      logger.info(
         "🚨 Blocked unsafe URL creation attempt:",
         urlValidation.cleanUrl,
       );
@@ -314,7 +315,7 @@ const createUrl = async (req, res) => {
     const reachabilityCheck = await checkUrlReachability(
       urlValidation.cleanUrl,
     );
-    console.log("Accessibility check result:", reachabilityCheck);
+    logger.info("Accessibility check result:", reachabilityCheck);
     if (!reachabilityCheck.allowed) {
       return res
         .status(400)
@@ -329,7 +330,7 @@ const createUrl = async (req, res) => {
       // Check if user selected the base/system domain
       if (domainId === "base") {
         useBaseDomain = true;
-        console.log("Using base domain for URL creation");
+        logger.info("Using base domain for URL creation");
       } else {
         selectedDomain = await Domain.findById(domainId);
         if (!selectedDomain) {
@@ -370,7 +371,7 @@ const createUrl = async (req, res) => {
       // If no default domain is set, use base domain
       if (!selectedDomain) {
         useBaseDomain = true;
-        console.log("No default domain found, using base domain");
+        logger.info("No default domain found, using base domain");
       }
     }
 
@@ -521,9 +522,9 @@ const createUrl = async (req, res) => {
         };
         await populatedUrl.save();
 
-        console.log("✅ QR code auto-generated for URL:", shortCode);
+        logger.info("✅ QR code auto-generated for URL:", shortCode);
       } catch (qrError) {
-        console.error("⚠️ Failed to auto-generate QR code:", qrError.message);
+        logger.error("⚠️ Failed to auto-generate QR code:", qrError.message);
         // Continue without QR code - don't fail the URL creation
       }
     }
@@ -563,7 +564,7 @@ const createUrl = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create URL error:", error);
+    logger.error("Create URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create URL",
@@ -646,7 +647,7 @@ const getUrls = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get URLs error:", error);
+    logger.error("Get URLs error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URLs",
@@ -685,7 +686,7 @@ const getUrl = async (req, res) => {
       data: { url },
     });
   } catch (error) {
-    console.error("Get URL error:", error);
+    logger.error("Get URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URL",
@@ -745,7 +746,7 @@ const updateUrl = async (req, res) => {
         urlValidation.cleanUrl,
       );
       if (!safetyCheck.isSafe) {
-        console.log(
+        logger.info(
           "🚨 Blocked unsafe URL update attempt:",
           urlValidation.cleanUrl,
         );
@@ -763,7 +764,7 @@ const updateUrl = async (req, res) => {
       const reachabilityCheck = await checkUrlReachability(
         urlValidation.cleanUrl,
       );
-      console.log("Update URL accessibility check result:", reachabilityCheck);
+      logger.info("Update URL accessibility check result:", reachabilityCheck);
       if (!reachabilityCheck.allowed) {
         return res
           .status(400)
@@ -896,7 +897,7 @@ const updateUrl = async (req, res) => {
       data: { url: updatedUrl },
     });
   } catch (error) {
-    console.error("Update URL error:", error);
+    logger.error("Update URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update URL",
@@ -939,7 +940,7 @@ const deleteUrl = async (req, res) => {
       message: "URL deleted successfully",
     });
   } catch (error) {
-    console.error("Delete URL error:", error);
+    logger.error("Delete URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete URL",
@@ -994,7 +995,7 @@ const bulkDelete = async (req, res) => {
       message: `${urls.length} URLs deleted successfully`,
     });
   } catch (error) {
-    console.error("Bulk delete error:", error);
+    logger.error("Bulk delete error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete URLs",
@@ -1120,7 +1121,7 @@ const getUrlStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get URL stats error:", error);
+    logger.error("Get URL stats error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URL statistics",
@@ -1398,7 +1399,7 @@ const bulkCreate = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Bulk create error:", error);
+    logger.error("Bulk create error:", error);
     res
       .status(500)
       .json({ success: false, message: "Failed to process bulk creation" });
@@ -1499,7 +1500,7 @@ const getAvailableDomains = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get available domains error:", error);
+    logger.error("Get available domains error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch available domains",
@@ -1554,7 +1555,7 @@ const checkUrlSafety = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("checkUrlSafety error:", error);
+    logger.error("checkUrlSafety error:", error);
     // Fail open — never block the user on infrastructure errors
     return res.json({
       success: true,
@@ -1638,7 +1639,7 @@ const updateDeepLink = async (req, res) => {
 
     return res.json({ success: true, data: url });
   } catch (err) {
-    console.error("[updateDeepLink] error:", err.message);
+    logger.error("[updateDeepLink] error:", err.message);
     return res.status(500).json({
       success: false,
       message: "Failed to update deep link configuration",

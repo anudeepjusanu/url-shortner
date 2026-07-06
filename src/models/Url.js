@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { domainToASCII } = require("../utils/punycode");
+const logger = require("../config/logger");
 
 const urlSchema = new mongoose.Schema(
   {
@@ -292,7 +293,7 @@ urlSchema.pre("save", function (next) {
     try {
       this.domain = domainToASCII(this.domain.toLowerCase());
     } catch (error) {
-      console.error("Error converting domain to ASCII:", error);
+      logger.error("Error converting domain to ASCII:", error);
     }
   }
 

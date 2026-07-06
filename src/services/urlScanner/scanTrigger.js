@@ -1,6 +1,7 @@
 const Url = require("../../models/Url");
 const { cacheDel } = require("../../config/redis");
 const { moderateUrl } = require("./urlModeration");
+const { logger } = require("./logger");
 
 const DECISION_TO_STATUS = {
   ALLOW: "safe",
@@ -54,10 +55,7 @@ async function applyModerationResult(
       await cacheDel(`url:${urlDoc.customCode.toLowerCase()}`);
     }
   } catch (error) {
-    console.error(
-      "[urlScanner] Failed to persist moderation result:",
-      error.message,
-    );
+    logger.error({ err: error.message }, "Failed to persist moderation result");
   }
 }
 

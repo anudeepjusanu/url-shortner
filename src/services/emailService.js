@@ -1,5 +1,6 @@
-const nodemailer = require('nodemailer');
-const config = require('../config/environment');
+const nodemailer = require("nodemailer");
+const config = require("../config/environment");
+const logger = require("../config/logger");
 
 class EmailService {
   constructor() {
@@ -15,24 +16,24 @@ class EmailService {
         secure: config.SMTP_PORT == 465,
         auth: {
           user: config.SMTP_USER,
-          pass: config.SMTP_PASS
-        }
+          pass: config.SMTP_PASS,
+        },
       });
     } else {
-      console.log('Email service not configured - SMTP settings missing');
+      logger.info("Email service not configured - SMTP settings missing");
     }
   }
 
   async sendWelcomeEmail(user) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
     const mailOptions = {
       from: `"LaghhuLink" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: 'Welcome to LaghhuLink! 🚀',
+      subject: "Welcome to LaghhuLink! 🚀",
       html: `
         <!DOCTYPE html>
         <html>
@@ -88,14 +89,14 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log('Welcome email sent to:', user.email);
+      logger.info("Welcome email sent to:", user.email);
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      logger.error("Failed to send welcome email:", error);
     }
   }
 
@@ -104,8 +105,8 @@ class EmailService {
 
     const mailOptions = {
       from: `"LaghhuLink System" <${config.SMTP_USER}>`,
-      to: 'info@syberviz.com',
-      subject: '🎉 New User Registration - LaghhuLink',
+      to: "info@syberviz.com",
+      subject: "🎉 New User Registration - LaghhuLink",
       html: `
         <!DOCTYPE html>
         <html>
@@ -132,7 +133,7 @@ class EmailService {
                 👤 <strong>Name:</strong> ${user.firstName} ${user.lastName}<br>
                 📧 <strong>Email:</strong> ${user.email}<br>
                 📅 <strong>Registered:</strong> ${new Date().toLocaleString()}<br>
-                🎯 <strong>Plan:</strong> ${user.plan || 'Free'}<br>
+                🎯 <strong>Plan:</strong> ${user.plan || "Free"}<br>
                 🆔 <strong>User ID:</strong> ${user._id}
               </div>
 
@@ -144,14 +145,14 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log('Admin notification sent for new user:', user.email);
+      logger.info("Admin notification sent for new user:", user.email);
     } catch (error) {
-      console.error('Failed to send admin notification:', error);
+      logger.error("Failed to send admin notification:", error);
     }
   }
 
@@ -181,9 +182,10 @@ class EmailService {
               <p>You've used <strong>${usagePercentage}%</strong> of your monthly URL creation limit.</p>
               <p>Current usage: <strong>${user.usage.urlsCreatedThisMonth}/100 URLs</strong></p>
 
-              ${usagePercentage >= 90 ?
-                '<p><strong style="color: #DC2626;">You\'re running low on URLs!</strong> Consider upgrading to Pro for unlimited URLs.</p>' :
-                '<p>No action needed yet, but consider upgrading if you need more URLs.</p>'
+              ${
+                usagePercentage >= 90
+                  ? '<p><strong style="color: #DC2626;">You\'re running low on URLs!</strong> Consider upgrading to Pro for unlimited URLs.</p>'
+                  : "<p>No action needed yet, but consider upgrading if you need more URLs.</p>"
               }
 
               <a href="https://laghhu.link/pricing" class="button">Upgrade to Pro</a>
@@ -191,13 +193,13 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send usage warning:', error);
+      logger.error("Failed to send usage warning:", error);
     }
   }
 
@@ -233,20 +235,24 @@ class EmailService {
 
               <div class="features">
                 <h3>🚀 Your new features include:</h3>
-                ${plan === 'pro' ? `
+                ${
+                  plan === "pro"
+                    ? `
                   <div>✅ <strong>Unlimited URLs</strong></div>
                   <div>✅ <strong>Custom domains</strong></div>
                   <div>✅ <strong>Advanced analytics</strong></div>
                   <div>✅ <strong>Priority support</strong></div>
                   <div>✅ <strong>Bulk operations</strong></div>
                   <div>✅ <strong>Password protection</strong></div>
-                ` : `
+                `
+                    : `
                   <div>✅ <strong>Everything in Pro</strong></div>
                   <div>✅ <strong>Team collaboration</strong></div>
                   <div>✅ <strong>API access</strong></div>
                   <div>✅ <strong>White-label solution</strong></div>
                   <div>✅ <strong>Dedicated support</strong></div>
-                `}
+                `
+                }
               </div>
 
               <p>Start using your new features right away!</p>
@@ -255,19 +261,19 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send upgrade confirmation:', error);
+      logger.error("Failed to send upgrade confirmation:", error);
     }
   }
 
   async sendPaymentReminder(user, daysUntilDue, amount) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
@@ -306,26 +312,26 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send payment reminder:', error);
+      logger.error("Failed to send payment reminder:", error);
     }
   }
 
   async sendPaymentFailedNotification(user, amount) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
     const mailOptions = {
       from: `"LaghhuLink" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: 'Action Required - Payment Failed',
+      subject: "Action Required - Payment Failed",
       html: `
         <!DOCTYPE html>
         <html>
@@ -360,26 +366,26 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send payment failed notification:', error);
+      logger.error("Failed to send payment failed notification:", error);
     }
   }
 
   async sendSubscriptionPausedNotification(user) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
     const mailOptions = {
       from: `"LaghhuLink" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: 'Your Subscription Has Been Paused',
+      subject: "Your Subscription Has Been Paused",
       html: `
         <!DOCTYPE html>
         <html>
@@ -415,26 +421,26 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send subscription paused notification:', error);
+      logger.error("Failed to send subscription paused notification:", error);
     }
   }
 
   async sendSubscriptionResumedNotification(user) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
     const mailOptions = {
       from: `"LaghhuLink" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: 'Welcome Back! Subscription Resumed',
+      subject: "Welcome Back! Subscription Resumed",
       html: `
         <!DOCTYPE html>
         <html>
@@ -469,28 +475,33 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send subscription resumed notification:', error);
+      logger.error("Failed to send subscription resumed notification:", error);
     }
   }
 
   async sendOverageNotification(user, type, amount, chargeAmount) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
-    const typeDisplay = type === 'urls' ? 'URL creations' : type === 'api_calls' ? 'API calls' : type;
+    const typeDisplay =
+      type === "urls"
+        ? "URL creations"
+        : type === "api_calls"
+          ? "API calls"
+          : type;
 
     const mailOptions = {
       from: `"LaghhuLink" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: 'Usage Overage Notification',
+      subject: "Usage Overage Notification",
       html: `
         <!DOCTYPE html>
         <html>
@@ -527,19 +538,19 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send overage notification:', error);
+      logger.error("Failed to send overage notification:", error);
     }
   }
 
   async sendTrialEndingNotification(user, daysRemaining) {
     if (!this.transporter) {
-      console.log('Email service not available');
+      logger.info("Email service not available");
       return;
     }
 
@@ -585,13 +596,13 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
+      `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Failed to send trial ending notification:', error);
+      logger.error("Failed to send trial ending notification:", error);
     }
   }
 }

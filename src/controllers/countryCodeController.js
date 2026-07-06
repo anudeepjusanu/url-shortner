@@ -1,4 +1,5 @@
-const CountryCode = require('../models/CountryCode');
+const CountryCode = require("../models/CountryCode");
+const logger = require("../config/logger");
 
 /**
  * Get all active country codes sorted by priority then name.
@@ -13,12 +14,12 @@ exports.getCountryCodes = async (req, res) => {
     const now = Date.now();
 
     // Serve from cache if still valid
-    if (cachedCodes && (now - cacheTimestamp) < CACHE_TTL) {
+    if (cachedCodes && now - cacheTimestamp < CACHE_TTL) {
       return res.json({ success: true, data: cachedCodes });
     }
 
     const codes = await CountryCode.find({ isActive: true })
-      .select('name code dialCode flag priority')
+      .select("name code dialCode flag priority")
       .sort({ priority: -1, name: 1 })
       .lean();
 
@@ -26,11 +27,13 @@ exports.getCountryCodes = async (req, res) => {
     cacheTimestamp = now;
 
     // Allow browser caching for 1 hour
-    res.set('Cache-Control', 'public, max-age=3600');
+    res.set("Cache-Control", "public, max-age=3600");
     res.json({ success: true, data: codes });
   } catch (error) {
-    console.error('Error fetching country codes:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch country codes' });
+    logger.error("Error fetching country codes:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch country codes" });
   }
 };
 
@@ -42,13 +45,25 @@ exports.upsertCountryCode = async (req, res) => {
     const { name, code, dialCode, flag, isActive, priority } = req.body;
 
     if (!name || !code || !dialCode) {
-      return res.status(400).json({ success: false, message: 'name, code, and dialCode are required' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "name, code, and dialCode are required",
+        });
     }
 
     const countryCode = await CountryCode.findOneAndUpdate(
       { code: code.toUpperCase() },
-      { name, code: code.toUpperCase(), dialCode, flag, isActive, priority: priority || 0 },
-      { upsert: true, new: true, runValidators: true }
+      {
+        name,
+        code: code.toUpperCase(),
+        dialCode,
+        flag,
+        isActive,
+        priority: priority || 0,
+      },
+      { upsert: true, new: true, runValidators: true },
     );
 
     // Invalidate cache
@@ -57,7 +72,9 @@ exports.upsertCountryCode = async (req, res) => {
 
     res.json({ success: true, data: countryCode });
   } catch (error) {
-    console.error('Error upserting country code:', error);
-    res.status(500).json({ success: false, message: 'Failed to update country code' });
+    logger.error("Error upserting country code:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update country code" });
   }
 };
