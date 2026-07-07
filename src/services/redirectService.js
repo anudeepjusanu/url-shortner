@@ -345,14 +345,19 @@ class RedirectService {
       return { allowed: false, reason: "URL not found" };
     }
 
-    if (!url.isActive) {
-      console.log("❌ URL is deactivated, blocking redirect");
-      return { allowed: false, reason: "URL is deactivated" };
-    }
-
+    // Checked before the generic isActive gate: a moderation block deactivates
+    // the link (see adminController.updateUrlModeration), so without this
+    // ordering every blocked link would report "URL is deactivated" instead
+    // of "CONTENT_BLOCKED" and land on the generic link-not-found page
+    // instead of the dedicated block page.
     if (url.moderationStatus === "blocked") {
       console.log("❌ URL blocked by content moderation, blocking redirect");
       return { allowed: false, reason: "CONTENT_BLOCKED" };
+    }
+
+    if (!url.isActive) {
+      console.log("❌ URL is deactivated, blocking redirect");
+      return { allowed: false, reason: "URL is deactivated" };
     }
 
     if (url.expiresAt && new Date() > new Date(url.expiresAt)) {
