@@ -730,6 +730,14 @@ const updateUrl = async (req, res) => {
       });
     }
 
+    if (isActive === true && url.moderationStatus === "blocked") {
+      return res.status(403).json({
+        success: false,
+        message:
+          "This link was blocked by content moderation and cannot be reactivated. Contact support if you believe this is a mistake.",
+      });
+    }
+
     // Validate and check accessibility of new originalUrl if provided
     if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
       const urlValidation = validateUrl(originalUrl);

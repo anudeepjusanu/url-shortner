@@ -495,8 +495,11 @@ const UrlManagement = () => {
       await adminService.updateUrlModeration(item._id, action);
       const moderationStatus: ModerationStatus =
         action === "ALLOW" ? "safe" : "blocked";
+      const isActive = action === "ALLOW";
       setContent((prev) =>
-        prev.map((c) => (c._id === item._id ? { ...c, moderationStatus } : c)),
+        prev.map((c) =>
+          c._id === item._id ? { ...c, moderationStatus, isActive } : c,
+        ),
       );
       toast({
         title:
@@ -836,7 +839,12 @@ const UrlManagement = () => {
                         : t("Inactive", "غير نشط")}
                     </Badge>
                     {item.type === "url" && (
-                      <ModerationBadge status={item.moderationStatus} t={t} />
+                      <ModerationBadge
+                        status={item.moderationStatus}
+                        t={t}
+                        showSafe
+                        onClick={() => setReviewItem(item)}
+                      />
                     )}
                   </div>
                 </div>
@@ -873,7 +881,22 @@ const UrlManagement = () => {
                       size="icon"
                       className="h-7 w-7"
                       onClick={() => handleToggleStatus(item)}
-                      disabled={togglingId === item._id}
+                      disabled={
+                        togglingId === item._id ||
+                        (item.type === "url" &&
+                          !item.isActive &&
+                          item.moderationStatus === "blocked")
+                      }
+                      title={
+                        item.type === "url" &&
+                        !item.isActive &&
+                        item.moderationStatus === "blocked"
+                          ? t(
+                              "Blocked by content moderation — use the content scan review to allow it",
+                              "محظور بواسطة مراجعة المحتوى — استخدم مراجعة فحص المحتوى للسماح به",
+                            )
+                          : undefined
+                      }
                     >
                       {togglingId === item._id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -895,21 +918,25 @@ const UrlManagement = () => {
                         <BarChart3 className="w-3.5 h-3.5 text-primary" />
                       </Button>
                     )}
-                    {item.type === "url" &&
-                      item.moderationStatus === "suspicious" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => setReviewItem(item)}
-                          title={t(
-                            "Review flagged link",
-                            "مراجعة الرابط المشتبه به",
-                          )}
-                        >
-                          <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
-                        </Button>
-                      )}
+                    {item.type === "url" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setReviewItem(item)}
+                        title={t("Review content scan", "مراجعة فحص المحتوى")}
+                      >
+                        <ShieldAlert
+                          className={`w-3.5 h-3.5 ${
+                            item.moderationStatus === "suspicious"
+                              ? "text-amber-500"
+                              : item.moderationStatus === "blocked"
+                                ? "text-red-500"
+                                : "text-muted-foreground"
+                          }`}
+                        />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -1031,6 +1058,7 @@ const UrlManagement = () => {
                           status={item.moderationStatus}
                           t={t}
                           showSafe
+                          onClick={() => setReviewItem(item)}
                         />
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
@@ -1056,11 +1084,23 @@ const UrlManagement = () => {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => handleToggleStatus(item)}
-                          disabled={togglingId === item._id}
+                          disabled={
+                            togglingId === item._id ||
+                            (item.type === "url" &&
+                              !item.isActive &&
+                              item.moderationStatus === "blocked")
+                          }
                           title={
-                            item.isActive
-                              ? t("Deactivate", "تعطيل")
-                              : t("Activate", "تفعيل")
+                            item.type === "url" &&
+                            !item.isActive &&
+                            item.moderationStatus === "blocked"
+                              ? t(
+                                  "Blocked by content moderation — use the content scan review to allow it",
+                                  "محظور بواسطة مراجعة المحتوى — استخدم مراجعة فحص المحتوى للسماح به",
+                                )
+                              : item.isActive
+                                ? t("Deactivate", "تعطيل")
+                                : t("Activate", "تفعيل")
                           }
                         >
                           {togglingId === item._id ? (
@@ -1084,21 +1124,28 @@ const UrlManagement = () => {
                             <BarChart3 className="w-4 h-4 text-secondary" />
                           </Button>
                         )}
-                        {item.type === "url" &&
-                          item.moderationStatus === "suspicious" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setReviewItem(item)}
-                              title={t(
-                                "Review flagged link",
-                                "مراجعة الرابط المشتبه به",
-                              )}
-                            >
-                              <ShieldAlert className="w-4 h-4 text-amber-500" />
-                            </Button>
-                          )}
+                        {item.type === "url" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setReviewItem(item)}
+                            title={t(
+                              "Review content scan",
+                              "مراجعة فحص المحتوى",
+                            )}
+                          >
+                            <ShieldAlert
+                              className={`w-4 h-4 ${
+                                item.moderationStatus === "suspicious"
+                                  ? "text-amber-500"
+                                  : item.moderationStatus === "blocked"
+                                    ? "text-red-500"
+                                    : "text-muted-foreground"
+                              }`}
+                            />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -1339,7 +1386,7 @@ const UrlManagement = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {t("Review Flagged Link", "مراجعة الرابط المشتبه به")}
+              {t("Review Content Scan", "مراجعة فحص المحتوى")}
             </DialogTitle>
           </DialogHeader>
           {reviewItem && (
@@ -1353,6 +1400,17 @@ const UrlManagement = () => {
                   label={t("Destination", "الوجهة")}
                   value={reviewItem.originalUrl || "—"}
                   truncate
+                />
+                <Row
+                  label={t("Current Status", "الحالة الحالية")}
+                  value={
+                    reviewItem.moderationStatus
+                      ? t(
+                          MODERATION_LABELS[reviewItem.moderationStatus].en,
+                          MODERATION_LABELS[reviewItem.moderationStatus].ar,
+                        )
+                      : "—"
+                  }
                 />
               </Section>
               <Section label={t("Scan Verdict", "نتيجة الفحص")}>
@@ -1510,17 +1568,19 @@ const MODERATION_LABELS: Record<
   },
 };
 
-// showSafe: the compact badge next to the Active/Inactive pill hides "safe"
-// on purpose (nothing to flag). The dedicated Content Scan column passes
-// showSafe so "Safe"/"Not Scanned" are visible there instead of blank cells.
+// Every status is clickable when onClick is passed, so admins can open the
+// review dialog and allow/block a link manually regardless of its current
+// scan verdict, not just when it's flagged "suspicious".
 const ModerationBadge = ({
   status,
   t,
   showSafe = false,
+  onClick,
 }: {
   status?: ModerationStatus;
   t: (en: string, ar: string) => string;
   showSafe?: boolean;
+  onClick?: () => void;
 }) => {
   if (!status)
     return showSafe ? (
@@ -1528,8 +1588,30 @@ const ModerationBadge = ({
     ) : null;
   if (status === "safe" && !showSafe) return null;
   const info = MODERATION_LABELS[status];
+  if (!onClick) {
+    return (
+      <Badge className={`text-[10px] border-0 ${info.className}`}>
+        {t(info.en, info.ar)}
+      </Badge>
+    );
+  }
   return (
-    <Badge className={`text-[10px] border-0 ${info.className}`}>
+    <Badge
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      title={t(
+        "Click to review and allow/block this link",
+        "انقر للمراجعة والسماح/الحظر لهذا الرابط",
+      )}
+      className={`text-[10px] border-0 cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring ${info.className}`}
+    >
       {t(info.en, info.ar)}
     </Badge>
   );
