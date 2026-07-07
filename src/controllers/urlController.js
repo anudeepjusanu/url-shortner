@@ -157,6 +157,10 @@ const RESERVED_ALIASES = [
   "url-management",
   "management",
   "admin-urls",
+  "blocked",
+  "qr-error",
+  "shorten",
+  "terms",
 
   // Backend/API routes
   "api",
