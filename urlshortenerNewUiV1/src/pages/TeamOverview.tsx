@@ -1,0 +1,210 @@
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, UserPlus, Users } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useProject } from "@/contexts/ProjectContext";
+import { accountMembersAPI } from "@/services/api";
+import InviteUserDialog from "@/components/team/InviteUserDialog";
+
+interface MemberRow {
+  userId: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
+  projectCount: number;
+  roles: { projectId: string; projectName: string; role: string }[];
+}
+
+interface PendingInvitation {
+  id: string;
+  email: string;
+  role: string;
+  projects: { id: string; name: string }[];
+}
+
+const TeamOverview = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { isEnterpriseAccount, isPersonalActive, canManageUsers, isAccountOwner, sharedProjects, isLoading: projectsLoading } =
+    useProject();
+
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await accountMembersAPI.getOverview();
+      if (response.success) {
+        setMembers(response.data.members || []);
+        setPendingInvitations(response.data.pendingInvitations || []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (canManageUsers) load();
+  }, [canManageUsers, load]);
+
+  useEffect(() => {
+    if (!projectsLoading && (!isEnterpriseAccount || (!isPersonalActive && !canManageUsers))) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [projectsLoading, isEnterpriseAccount, isPersonalActive, canManageUsers, navigate]);
+
+  if (projectsLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isPersonalActive) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-lg mx-auto text-center py-20">
+          <Users className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">
+            {t(
+              "Personal projects don't have team members or roles — switch to a shared project to manage users.",
+              "المشاريع الشخصية لا تحتوي على أعضاء فريق أو أدوار — قم بالتبديل إلى مشروع مشترك لإدارة المستخدمين."
+            )}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!canManageUsers) {
+    return null;
+  }
+
+  const administerableProjects = sharedProjects.filter((p) => p.role === "owner" || p.role === "admin");
+  const assignableRoles = isAccountOwner ? ["admin", "editor", "viewer"] : ["editor", "viewer"];
+
+  return (
+    <DashboardLayout>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("Team", "الفريق")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("Manage who has access to your projects", "إدارة من لديه حق الوصول إلى مشاريعك")}
+          </p>
+        </div>
+        <Button onClick={() => setInviteOpen(true)} className="gap-2">
+          <UserPlus className="w-4 h-4" />
+          {t("Invite user", "دعوة مستخدم")}
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="bg-background border border-border rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide">
+                <tr>
+                  <th className="text-start px-4 py-3">{t("Member", "العضو")}</th>
+                  <th className="text-start px-4 py-3">{t("Roles", "الأدوار")}</th>
+                  <th className="text-start px-4 py-3">{t("Projects", "المشاريع")}</th>
+                  <th className="text-end px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {members.map((member) => (
+                  <tr key={member.userId}>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-foreground">
+                        {member.firstName} {member.lastName || ""}
+                      </div>
+                      <div className="text-muted-foreground text-xs">{member.email}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {member.roles.map((r) => (
+                          <Badge key={r.projectId} variant="secondary" className="text-[10px]">
+                            {r.projectName}: {r.role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{member.projectCount}</td>
+                    <td className="px-4 py-3 text-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/dashboard/team/${member.userId}`)}
+                      >
+                        {t("Manage", "إدارة")}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {members.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                      {t("No team members yet", "لا يوجد أعضاء فريق بعد")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {pendingInvitations.length > 0 && (
+            <div className="bg-background border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border">
+                <h2 className="text-sm font-semibold text-foreground">{t("Pending invitations", "الدعوات المعلقة")}</h2>
+              </div>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  {pendingInvitations.map((invitation) => (
+                    <tr key={invitation.id}>
+                      <td className="px-4 py-3">{invitation.email}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="text-[10px]">
+                          {invitation.role}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {invitation.projects.map((p) => p.name).join(", ")}
+                      </td>
+                      <td className="px-4 py-3 text-end">
+                        <Badge variant="secondary" className="text-[10px]">
+                          {t("Pending", "معلق")}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <InviteUserDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        availableProjects={administerableProjects.map((p) => ({ id: p.id, name: p.name }))}
+        assignableRoles={assignableRoles}
+        onInvited={load}
+      />
+    </DashboardLayout>
+  );
+};
+
+export default TeamOverview;

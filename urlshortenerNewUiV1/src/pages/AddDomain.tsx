@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAddDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
 import amplitudeService from "@/services/amplitude";
 
 type Step = "enter" | "dns" | "done";
@@ -24,6 +25,7 @@ const AddDomain = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  useRequireEditAccess("/dashboard/domains");
   const [step, setStep] = useState<Step>("enter");
   const [domain, setDomain] = useState("");
   const [subdomain, setSubdomain] = useState("");

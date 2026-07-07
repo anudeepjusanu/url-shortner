@@ -548,6 +548,56 @@ class EmailService {
     }
   }
 
+  async sendInvitationEmail({ toEmail, inviterName, role, token }) {
+    if (!this.transporter) {
+      logger.info("Email service not available");
+      return;
+    }
+
+    const acceptUrl = `${config.BASE_URL}/invite/accept?token=${token}`;
+    const roleDisplay = role.charAt(0).toUpperCase() + role.slice(1);
+
+    const mailOptions = {
+      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      to: toEmail,
+      subject: `${inviterName || "Someone"} invited you to join their Snip account`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #3B82F6; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>You've been invited</h1>
+            </div>
+            <div class="content">
+              <p><strong>${inviterName || "A team admin"}</strong> invited you to join their Snip enterprise account as a <strong>${roleDisplay}</strong>.</p>
+              <a href="${acceptUrl}" class="button">Accept Invitation</a>
+              <p><small>This invitation expires in 7 days. If you weren't expecting this, you can ignore this email.</small></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      logger.info("Invitation email sent to:", toEmail);
+    } catch (error) {
+      logger.error("Failed to send invitation email:", error);
+    }
+  }
+
   async sendTrialEndingNotification(user, daysRemaining) {
     if (!this.transporter) {
       logger.info("Email service not available");

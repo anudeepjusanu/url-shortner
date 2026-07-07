@@ -36,13 +36,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  QrCode, Download, Trash2, Plus, ExternalLink,
-  Search, Loader2, RefreshCw, AlertTriangle,
+  QrCode,
+  Download,
+  Trash2,
+  Plus,
+  ExternalLink,
+  Search,
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 interface QROptions {
@@ -67,6 +75,7 @@ const QRCodes = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { canEdit } = useProject();
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get("urlId");
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -130,14 +139,18 @@ const QRCodes = () => {
       if (!document.hidden) fetchUrls();
     };
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, [fetchUrls]);
 
   // Scroll to highlighted card when data loads
   useEffect(() => {
     if (highlightId && highlightRef.current) {
       setTimeout(() => {
-        highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlightRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 300);
     }
   }, [highlightId, allUrls.length]);
@@ -149,19 +162,22 @@ const QRCodes = () => {
       const results = await Promise.allSettled(
         missing.map(async (url) => {
           const res = await qrCodeService.get(url._id);
-          return { id: url._id, qrCode: res?.data?.qrCode as string | undefined };
-        })
+          return {
+            id: url._id,
+            qrCode: res?.data?.qrCode as string | undefined,
+          };
+        }),
       );
       setAllUrls((prev) =>
         prev.map((url) => {
           const match = results.find(
-            (r) => r.status === "fulfilled" && r.value.id === url._id
+            (r) => r.status === "fulfilled" && r.value.id === url._id,
           );
           if (match && match.status === "fulfilled" && match.value.qrCode) {
             return { ...url, qrCode: match.value.qrCode };
           }
           return url;
-        })
+        }),
       );
     };
     fetchMissing();
@@ -217,7 +233,7 @@ const QRCodes = () => {
               backgroundColor: customization.backgroundColor || "#FFFFFF",
               includeMargin: customization.includeMargin ?? true,
             }
-          : { ...DEFAULT_QR_OPTIONS }
+          : { ...DEFAULT_QR_OPTIONS },
       );
     } catch {
       setQrOptions({ ...DEFAULT_QR_OPTIONS });
@@ -249,15 +265,18 @@ const QRCodes = () => {
           prev.map((u) =>
             u._id === selectedLink._id
               ? { ...u, qrCode: res.data.qrCode, qrCodeGenerated: true }
-              : u
-          )
+              : u,
+          ),
         );
       }
 
       try {
-        amplitudeService.trackQRCodeGenerated(selectedLink._id, { format: qrOptions.format, customStyle: true });
+        amplitudeService.trackQRCodeGenerated(selectedLink._id, {
+          format: qrOptions.format,
+          customStyle: true,
+        });
       } catch (trackError) {
-        console.error('Analytics error:', trackError);
+        console.error("Analytics error:", trackError);
       }
       setShowModal(false);
       setSelectedLink(null);
@@ -282,7 +301,10 @@ const QRCodes = () => {
   const handleDownload = async (url: any) => {
     setDownloadingId(url._id);
     try {
-      const blob = await qrCodeService.download(url._id, qrOptions.format || "png");
+      const blob = await qrCodeService.download(
+        url._id,
+        qrOptions.format || "png",
+      );
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
@@ -290,9 +312,12 @@ const QRCodes = () => {
       a.click();
       URL.revokeObjectURL(blobUrl);
       try {
-        amplitudeService.trackQRCodeDownloaded(url._id, qrOptions.format || "png");
+        amplitudeService.trackQRCodeDownloaded(
+          url._id,
+          qrOptions.format || "png",
+        );
       } catch (trackError) {
-        console.error('Analytics error:', trackError);
+        console.error("Analytics error:", trackError);
       }
     } catch (err: any) {
       toast({
@@ -321,10 +346,12 @@ const QRCodes = () => {
         prev.map((u) =>
           u._id === deleteDialog.id
             ? { ...u, qrCode: undefined, qrCodeGenerated: false }
-            : u
-        )
+            : u,
+        ),
       );
-      toast({ title: t("QR code deleted successfully", "تم حذف كود QR بنجاح") });
+      toast({
+        title: t("QR code deleted successfully", "تم حذف كود QR بنجاح"),
+      });
     } catch (err: any) {
       toast({
         title: t("Delete failed", "فشل الحذف"),
@@ -358,17 +385,22 @@ const QRCodes = () => {
     const trimmed = changeDestUrl.trim();
     if (!validateDestUrl(trimmed)) {
       setChangeDestError(
-        t("Enter a valid http/https URL", "أدخل رابطاً صحيحاً يبدأ بـ http أو https")
+        t(
+          "Enter a valid http/https URL",
+          "أدخل رابطاً صحيحاً يبدأ بـ http أو https",
+        ),
       );
       return;
     }
     setChangeDestSaving(true);
     try {
-      await myLinksService.update(changeDestTarget._id, { originalUrl: trimmed });
+      await myLinksService.update(changeDestTarget._id, {
+        originalUrl: trimmed,
+      });
       setAllUrls((prev) =>
         prev.map((u) =>
-          u._id === changeDestTarget._id ? { ...u, originalUrl: trimmed } : u
-        )
+          u._id === changeDestTarget._id ? { ...u, originalUrl: trimmed } : u,
+        ),
       );
       setChangeDestTarget(null);
       toast({ title: t("Destination updated", "تم تحديث الوجهة") });
@@ -396,11 +428,13 @@ const QRCodes = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete QR Code", "حذف كود QR")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("Delete QR Code", "حذف كود QR")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 `This will remove the QR code for "${deleteDialog.shortUrl}". The short link will remain active.`,
-                `سيتم حذف كود QR للرابط "${deleteDialog.shortUrl}". سيبقى الرابط المختصر نشطاً.`
+                `سيتم حذف كود QR للرابط "${deleteDialog.shortUrl}". سيبقى الرابط المختصر نشطاً.`,
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -417,10 +451,15 @@ const QRCodes = () => {
       </AlertDialog>
 
       {/* Change Destination dialog */}
-      <Dialog open={!!changeDestTarget} onOpenChange={(open) => !open && setChangeDestTarget(null)}>
+      <Dialog
+        open={!!changeDestTarget}
+        onOpenChange={(open) => !open && setChangeDestTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("Change Destination URL", "تغيير رابط الوجهة")}</DialogTitle>
+            <DialogTitle>
+              {t("Change Destination URL", "تغيير رابط الوجهة")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             {/* Prominent warning */}
@@ -429,7 +468,7 @@ const QRCodes = () => {
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {t(
                   "Both the QR code and its associated short link will point to the new destination immediately — anyone scanning the QR code or visiting the short link directly will be redirected to the new URL.",
-                  "سيشير كل من كود QR والرابط المختصر المرتبط به إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يمسح الكود أو يزور الرابط المختصر مباشرةً إلى الرابط الجديد."
+                  "سيشير كل من كود QR والرابط المختصر المرتبط به إلى الوجهة الجديدة فوراً — سيُوجَّه أي شخص يمسح الكود أو يزور الرابط المختصر مباشرةً إلى الرابط الجديد.",
                 )}
               </p>
             </div>
@@ -460,7 +499,7 @@ const QRCodes = () => {
               <span className="text-sm text-foreground">
                 {t(
                   "I understand that both the QR code and the short link will redirect to the new destination immediately",
-                  "أفهم أن كلاً من كود QR والرابط المختصر سيُوجَّهان إلى الوجهة الجديدة فوراً"
+                  "أفهم أن كلاً من كود QR والرابط المختصر سيُوجَّهان إلى الوجهة الجديدة فوراً",
                 )}
               </span>
             </label>
@@ -473,7 +512,9 @@ const QRCodes = () => {
               onClick={handleSaveChangeDest}
               disabled={changeDestSaving || !changeDestAcknowledged}
             >
-              {changeDestSaving && <Loader2 className="w-4 h-4 animate-spin me-2" />}
+              {changeDestSaving && (
+                <Loader2 className="w-4 h-4 animate-spin me-2" />
+              )}
               {t("Save", "حفظ")}
             </Button>
           </DialogFooter>
@@ -511,7 +552,10 @@ const QRCodes = () => {
               <Select
                 value={qrOptions.format}
                 onValueChange={(v) =>
-                  setQrOptions((o) => ({ ...o, format: v as QROptions["format"] }))
+                  setQrOptions((o) => ({
+                    ...o,
+                    format: v as QROptions["format"],
+                  }))
                 }
               >
                 <SelectTrigger className="h-9 text-sm">
@@ -556,7 +600,10 @@ const QRCodes = () => {
                 type="color"
                 value={qrOptions.foregroundColor}
                 onChange={(e) =>
-                  setQrOptions((o) => ({ ...o, foregroundColor: e.target.value }))
+                  setQrOptions((o) => ({
+                    ...o,
+                    foregroundColor: e.target.value,
+                  }))
                 }
                 className="h-9 w-full rounded-md border border-border cursor-pointer"
               />
@@ -568,7 +615,10 @@ const QRCodes = () => {
                 type="color"
                 value={qrOptions.backgroundColor}
                 onChange={(e) =>
-                  setQrOptions((o) => ({ ...o, backgroundColor: e.target.value }))
+                  setQrOptions((o) => ({
+                    ...o,
+                    backgroundColor: e.target.value,
+                  }))
                 }
                 className="h-9 w-full rounded-md border border-border cursor-pointer"
               />
@@ -582,7 +632,9 @@ const QRCodes = () => {
                   setQrOptions((o) => ({ ...o, includeMargin: !!checked }))
                 }
               />
-              <Label htmlFor="includeMargin">{t("Include Margin", "تضمين الهامش")}</Label>
+              <Label htmlFor="includeMargin">
+                {t("Include Margin", "تضمين الهامش")}
+              </Label>
             </div>
           </div>
 
@@ -591,7 +643,9 @@ const QRCodes = () => {
               {t("Cancel", "إلغاء")}
             </Button>
             <Button onClick={handleGenerateOrUpdate} disabled={generateLoading}>
-              {generateLoading && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+              {generateLoading && (
+                <Loader2 className="w-4 h-4 me-2 animate-spin" />
+              )}
               {isUpdating ? t("Update", "تحديث") : t("Generate", "إنشاء")}
             </Button>
           </DialogFooter>
@@ -603,13 +657,15 @@ const QRCodes = () => {
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t("QR Codes", "أكواد QR")}
         </h1>
-        <Button
-          className="bg-primary text-primary-foreground"
-          onClick={() => navigate("/dashboard/qr-codes/create")}
-        >
-          <Plus className="w-4 h-4 me-1.5" />
-          {t("New QR Code", "كود QR جديد")}
-        </Button>
+        {canEdit && (
+          <Button
+            className="bg-primary text-primary-foreground"
+            onClick={() => navigate("/dashboard/qr-codes/create")}
+          >
+            <Plus className="w-4 h-4 me-1.5" />
+            {t("New QR Code", "كود QR جديد")}
+          </Button>
+        )}
       </div>
 
       {/* ── Tab bar + search ── */}
@@ -625,7 +681,10 @@ const QRCodes = () => {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 px-3 bg-background border border-border rounded-lg ms-auto mb-3" style={{ minWidth: 220 }}>
+        <div
+          className="flex items-center gap-2 px-3 bg-background border border-border rounded-lg ms-auto mb-3"
+          style={{ minWidth: 220 }}
+        >
           <Search size={14} className="text-muted-foreground shrink-0" />
           <input
             type="text"
@@ -650,7 +709,7 @@ const QRCodes = () => {
           <p className="text-sm text-destructive font-body">
             {t(
               "Failed to load QR codes. Please try again.",
-              "فشل تحميل أكواد QR. حاول مرة أخرى."
+              "فشل تحميل أكواد QR. حاول مرة أخرى.",
             )}
           </p>
         </div>
@@ -662,7 +721,10 @@ const QRCodes = () => {
           <QrCode className="w-12 h-12 text-muted-foreground/25" />
           <p className="text-sm text-muted-foreground font-body">
             {allUrls.length === 0
-              ? t("No links yet. Create a link first!", "لا توجد روابط بعد. أنشئ رابطاً أولاً!")
+              ? t(
+                  "No links yet. Create a link first!",
+                  "لا توجد روابط بعد. أنشئ رابطاً أولاً!",
+                )
               : t("No QR codes found", "لا توجد أكواد QR")}
           </p>
           {allUrls.length === 0 && (
@@ -695,7 +757,7 @@ const QRCodes = () => {
                   "bg-background border rounded-xl overflow-hidden hover:shadow-md transition-shadow",
                   url._id === highlightId
                     ? "border-primary ring-2 ring-primary/30"
-                    : "border-border"
+                    : "border-border",
                 )}
               >
                 {/* QR preview area */}
@@ -715,11 +777,15 @@ const QRCodes = () => {
                         className="text-xs"
                         onClick={() =>
                           // If qrCodeGenerated is true but image is missing, customize (not duplicate)
-                          hasQR ? openCustomizeModal(url) : openGenerateModal(url)
+                          hasQR
+                            ? openCustomizeModal(url)
+                            : openGenerateModal(url)
                         }
                       >
                         <QrCode className="w-3.5 h-3.5 me-1.5" />
-                        {hasQR ? t("Regenerate", "إعادة إنشاء") : t("Generate", "إنشاء")}
+                        {hasQR
+                          ? t("Regenerate", "إعادة إنشاء")
+                          : t("Generate", "إنشاء")}
                       </Button>
                     </div>
                   )}
@@ -738,7 +804,10 @@ const QRCodes = () => {
                           <span className="truncate">{shortUrl}</span>
                         </p>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs break-all">
+                      <TooltipContent
+                        side="bottom"
+                        className="max-w-xs break-all"
+                      >
                         {shortUrl}
                       </TooltipContent>
                     </Tooltip>
@@ -768,7 +837,7 @@ const QRCodes = () => {
                       {t("Download", "تحميل")}
                     </Button>
                   )}
-                  {hasQR && (
+                  {hasQR && canEdit && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -778,7 +847,7 @@ const QRCodes = () => {
                       {t("Edit", "تعديل")}
                     </Button>
                   )}
-                  {hasQR && (
+                  {hasQR && canEdit && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -790,19 +859,21 @@ const QRCodes = () => {
                       {t("Dest.", "الوجهة")}
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-3 text-destructive hover:text-destructive hover:bg-destructive/10 ms-auto"
-                    onClick={() => openDeleteDialog(url)}
-                    disabled={deletingId === url._id}
-                  >
-                    {deletingId === url._id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
-                    )}
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 px-3 text-destructive hover:text-destructive hover:bg-destructive/10 ms-auto"
+                      onClick={() => openDeleteDialog(url)}
+                      disabled={deletingId === url._id}
+                    >
+                      {deletingId === url._id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             );

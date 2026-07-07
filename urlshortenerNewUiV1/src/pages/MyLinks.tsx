@@ -47,12 +47,14 @@ import {
 import { myLinksService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const MyLinks = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { canEdit } = useProject();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">(
     "latest",
@@ -342,24 +344,26 @@ const MyLinks = () => {
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t("My Links", "روابطي")}
         </h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/dashboard/bulk-shorten")}
-            type="button"
-            className="gap-2"
-          >
-            <Layers className="w-4 h-4" />
-            {t("Bulk Shorten", "اختصار مجمّع")}
-          </Button>
-          <Button
-            className="bg-primary text-primary-foreground"
-            onClick={() => navigate("/dashboard/create-link")}
-            type="button"
-          >
-            + {t("New Link", "رابط جديد")}
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard/bulk-shorten")}
+              type="button"
+              className="gap-2"
+            >
+              <Layers className="w-4 h-4" />
+              {t("Bulk Shorten", "اختصار مجمّع")}
+            </Button>
+            <Button
+              className="bg-primary text-primary-foreground"
+              onClick={() => navigate("/dashboard/create-link")}
+              type="button"
+            >
+              + {t("New Link", "رابط جديد")}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Search + Total */}
@@ -390,12 +394,18 @@ const MyLinks = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("All Domains", "كل النطاقات")}</SelectItem>
+              <SelectItem value="all">
+                {t("All Domains", "كل النطاقات")}
+              </SelectItem>
               {domainOptions.hasDefault && (
-                <SelectItem value="__default__">{t("Default Domain", "النطاق الافتراضي")}</SelectItem>
+                <SelectItem value="__default__">
+                  {t("Default Domain", "النطاق الافتراضي")}
+                </SelectItem>
               )}
               {domainOptions.custom.map((d) => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -524,7 +534,7 @@ const MyLinks = () => {
                               rel="noopener noreferrer"
                               className="hover:underline truncate min-w-0"
                             >
-                             {shortUrl.replace(/^https?:\/\//, "")}
+                              {shortUrl.replace(/^https?:\/\//, "")}
                             </a>
                             <button
                               onClick={() => handleCopy(url)}
@@ -605,59 +615,63 @@ const MyLinks = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2.5"
-                            onClick={() => handleOpenEditDest(url)}
-                            title={t(
-                              "Change Destination URL",
-                              "تغيير رابط الوجهة",
-                            )}
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-                          <div className="relative">
+                          {canEdit && (
                             <Button
                               variant="outline"
                               size="sm"
-                              className={cn(
-                                "h-8 px-2.5",
-                                url.qrCodeGenerated
-                                  ? "text-primary border-primary/40 hover:bg-primary/5"
-                                  : "border-orange-300 hover:border-orange-400 hover:bg-orange-50 dark:border-orange-500/40 dark:hover:bg-orange-500/10",
+                              className="h-8 px-2.5"
+                              onClick={() => handleOpenEditDest(url)}
+                              title={t(
+                                "Change Destination URL",
+                                "تغيير رابط الوجهة",
                               )}
-                              onClick={() => {
-                                if (url.qrCodeGenerated) {
-                                  // QR already exists — go to QR codes page
-                                  navigate("/dashboard/qr-codes");
-                                } else {
-                                  // QR not yet created — go to creation page with this link pre-selected
-                                  navigate(
-                                    `/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`,
-                                  );
-                                }
-                              }}
-                              title={
-                                url.qrCodeGenerated
-                                  ? t("View QR Code", "عرض كود QR")
-                                  : t("Generate QR Code", "إنشاء كود QR")
-                              }
                             >
-                              <QrCode
-                                className={cn(
-                                  "w-3.5 h-3.5",
-                                  !url.qrCodeGenerated && "text-orange-400",
-                                )}
-                              />
+                              <Edit2 className="w-3.5 h-3.5" />
                             </Button>
-                            {!url.qrCodeGenerated && (
-                              <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-400" />
-                              </span>
-                            )}
-                          </div>
+                          )}
+                          {(url.qrCodeGenerated || canEdit) && (
+                            <div className="relative">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn(
+                                  "h-8 px-2.5",
+                                  url.qrCodeGenerated
+                                    ? "text-primary border-primary/40 hover:bg-primary/5"
+                                    : "border-orange-300 hover:border-orange-400 hover:bg-orange-50 dark:border-orange-500/40 dark:hover:bg-orange-500/10",
+                                )}
+                                onClick={() => {
+                                  if (url.qrCodeGenerated) {
+                                    // QR already exists — go to QR codes page
+                                    navigate("/dashboard/qr-codes");
+                                  } else {
+                                    // QR not yet created — go to creation page with this link pre-selected
+                                    navigate(
+                                      `/dashboard/qr-codes/create?urlId=${encodeURIComponent(url._id)}`,
+                                    );
+                                  }
+                                }}
+                                title={
+                                  url.qrCodeGenerated
+                                    ? t("View QR Code", "عرض كود QR")
+                                    : t("Generate QR Code", "إنشاء كود QR")
+                                }
+                              >
+                                <QrCode
+                                  className={cn(
+                                    "w-3.5 h-3.5",
+                                    !url.qrCodeGenerated && "text-orange-400",
+                                  )}
+                                />
+                              </Button>
+                              {!url.qrCodeGenerated && (
+                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-400" />
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -668,19 +682,21 @@ const MyLinks = () => {
                           >
                             <BarChart3 className="w-3.5 h-3.5" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => openDeleteDialog(url)}
-                            disabled={deletingId === url._id}
-                          >
-                            {deletingId === url._id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                          </Button>
+                          {canEdit && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => openDeleteDialog(url)}
+                              disabled={deletingId === url._id}
+                            >
+                              {deletingId === url._id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
