@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowDown, Link2, Check, Copy, MousePointerClick, QrCode, Eye, Sparkles, CreditCard, MapPin, ShieldCheck, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowDown,
+  Link2,
+  Check,
+  Copy,
+  MousePointerClick,
+  QrCode,
+  Eye,
+  Sparkles,
+  CreditCard,
+  MapPin,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { urlsAPI } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
 
@@ -23,7 +35,6 @@ const isValidUrl = (value: string) => {
 const HeroSection = () => {
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
-  const [checking, setChecking] = useState(false);
   const { t } = useLanguage();
   const { user } = useAuth();
   const [shortened, setShortened] = useState("");
@@ -32,35 +43,22 @@ const HeroSection = () => {
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
 
-  const handleShorten = async () => {
+  const handleShorten = () => {
     const trimmed = url.trim();
     if (!trimmed) {
       setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
       return;
     }
     if (!isValidUrl(trimmed)) {
-      setUrlError(t("Please enter a valid URL (e.g. https://example.com)", "الرجاء إدخال رابط صحيح (مثال: https://example.com)"));
+      setUrlError(
+        t(
+          "Please enter a valid URL (e.g. https://example.com)",
+          "الرجاء إدخال رابط صحيح (مثال: https://example.com)",
+        ),
+      );
       return;
     }
     setUrlError("");
-    setChecking(true);
-    try {
-      const result = await urlsAPI.checkSafety(trimmed);
-      if (!result.isSafe) {
-        setUrlError(
-          result.message ||
-          t(
-            "This URL has been flagged as unsafe (phishing or malware). Please use a different link.",
-            "تم تصنيف هذا الرابط على أنه غير آمن (تصيد أو برامج ضارة). الرجاء استخدام رابط مختلف."
-          )
-        );
-        return;
-      }
-    } catch {
-      // Safety check failed — fail open and let the user continue
-    } finally {
-      setChecking(false);
-    }
     if (user) {
       navigate("/dashboard", { state: { prefillUrl: trimmed } });
     } else {
@@ -110,7 +108,7 @@ const HeroSection = () => {
               <span className="font-body text-xs sm:text-sm font-semibold text-[hsl(158,55%,22%)]">
                 {t(
                   "100% Saudi platform your data stays in the Kingdom",
-                  "منصة سعودية 100% بياناتك تبقى في المملكة"
+                  "منصة سعودية 100% بياناتك تبقى في المملكة",
                 )}
               </span>
             </motion.div>
@@ -130,7 +128,10 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.05 }}
               className="font-body text-lg md:text-xl font-semibold mb-8 sm:mb-12 text-[hsl(var(--navy))]/80"
             >
-              {t("The #1 link management platform in Saudi Arabia", "منصة إدارة الروابط الأولى في السعودية")}
+              {t(
+                "The #1 link management platform in Saudi Arabia",
+                "منصة إدارة الروابط الأولى في السعودية",
+              )}
             </motion.p>
 
             <motion.p
@@ -141,7 +142,7 @@ const HeroSection = () => {
             >
               {t(
                 "Don't guess, know. Every link you share gives you data to build your decisions on.",
-                "بدل ما تخمّن، اعرف. كل رابط تشاركه يعطيك بيانات تبني عليها قراراتك."
+                "بدل ما تخمّن، اعرف. كل رابط تشاركه يعطيك بيانات تبني عليها قراراتك.",
               )}
             </motion.p>
 
@@ -152,37 +153,40 @@ const HeroSection = () => {
               className="max-w-xl mx-auto lg:mx-0 lg:max-w-none"
             >
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className={`flex-1 flex items-center gap-3 px-6 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400" : "border-transparent"}`}>
-                  <Link2 size={20} className="opacity-30 shrink-0 text-[hsl(var(--navy))]" />
+                <div
+                  className={`flex-1 flex items-center gap-3 px-6 bg-white rounded-full shadow-soft border ${urlError ? "border-red-400" : "border-transparent"}`}
+                >
+                  <Link2
+                    size={20}
+                    className="opacity-30 shrink-0 text-[hsl(var(--navy))]"
+                  />
                   <input
                     type="url"
-                    placeholder={t("Paste your link here...", "الصق رابطك هنا...")}
+                    placeholder={t(
+                      "Paste your link here...",
+                      "الصق رابطك هنا...",
+                    )}
                     value={url}
-                    onChange={(e) => { setUrl(e.target.value); if (urlError) setUrlError(""); }}
+                    onChange={(e) => {
+                      setUrl(e.target.value);
+                      if (urlError) setUrlError("");
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && handleShorten()}
                     className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-5 font-body text-base"
                   />
                 </div>
                 <Button
                   onClick={handleShorten}
-                  disabled={checking}
-                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base"
                 >
-                  {checking ? (
-                    <>
-                      <Loader2 size={16} className="ms-1.5 animate-spin" />
-                      {t("Checking...", "جارٍ الفحص...")}
-                    </>
-                  ) : (
-                    <>
-                      {t("Shorten it now Free", "اختصره الآن مجاناً")}
-                      <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
-                    </>
-                  )}
+                  {t("Shorten it now Free", "اختصره الآن مجاناً")}
+                  <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
                 </Button>
               </div>
               {urlError && (
-                <p className="mt-2 text-sm font-body text-red-500 ps-3">{urlError}</p>
+                <p className="mt-2 text-sm font-body text-red-500 ps-3">
+                  {urlError}
+                </p>
               )}
 
               {shortened && (
@@ -191,7 +195,9 @@ const HeroSection = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   className="mt-3 p-4 bg-[hsl(var(--navy))]/10 rounded-2xl flex items-center justify-between"
                 >
-                  <span className="font-display font-bold text-sm text-[hsl(var(--navy))]">{shortened}</span>
+                  <span className="font-display font-bold text-sm text-[hsl(var(--navy))]">
+                    {shortened}
+                  </span>
                   <button
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-opacity text-xs font-body bg-[hsl(var(--navy))]/10 px-3 py-1.5 rounded-full"
@@ -205,8 +211,16 @@ const HeroSection = () => {
               <div className="mt-8 sm:mt-10 flex flex-wrap justify-center lg:justify-start gap-2.5">
                 {[
                   { icon: Sparkles, en: "Completely free", ar: "مجاني تماماً" },
-                  { icon: CreditCard, en: "No credit card", ar: "بدون بطاقة بنكية" },
-                  { icon: MapPin, en: "Ready in 30 seconds", ar: "جاهز في 30 ثانية" },
+                  {
+                    icon: CreditCard,
+                    en: "No credit card",
+                    ar: "بدون بطاقة بنكية",
+                  },
+                  {
+                    icon: MapPin,
+                    en: "Ready in 30 seconds",
+                    ar: "جاهز في 30 ثانية",
+                  },
                 ].map((badge, i) => (
                   <div
                     key={i}
@@ -221,7 +235,6 @@ const HeroSection = () => {
               </div>
             </motion.div>
           </div>
-
 
           {/* URL morph + live analytics */}
           <motion.div
@@ -271,7 +284,9 @@ const UrlMorphCard = () => {
         <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
         <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
         <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
-        <span className="ms-3 text-[10px] font-body text-[hsl(var(--navy))]/40">snip.sa · dashboard</span>
+        <span className="ms-3 text-[10px] font-body text-[hsl(var(--navy))]/40">
+          snip.sa · dashboard
+        </span>
       </div>
 
       <div className="p-5 sm:p-6 space-y-5">
@@ -288,7 +303,10 @@ const UrlMorphCard = () => {
         {/* Arrow / morph indicator */}
         <div className="flex justify-center">
           <motion.div
-            animate={{ y: step === 1 ? [0, 4, 0] : 0, scale: step === 1 ? [1, 1.15, 1] : 1 }}
+            animate={{
+              y: step === 1 ? [0, 4, 0] : 0,
+              scale: step === 1 ? [1, 1.15, 1] : 1,
+            }}
             transition={{ duration: 0.6, repeat: step === 1 ? Infinity : 0 }}
             className="w-9 h-9 rounded-full bg-[hsl(var(--sky))] flex items-center justify-center shadow-soft"
           >
@@ -365,7 +383,9 @@ const UrlMorphCard = () => {
               >
                 {stat.value}
               </motion.p>
-              <p className="text-xs font-body text-[hsl(var(--navy))]/60 mt-1">{stat.label}</p>
+              <p className="text-xs font-body text-[hsl(var(--navy))]/60 mt-1">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -373,8 +393,5 @@ const UrlMorphCard = () => {
     </div>
   );
 };
-
-
-
 
 export default HeroSection;

@@ -1,90 +1,77 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ShieldAlert, Home, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, ShieldAlert } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import logoIcon from "@/assets/logo.png";
 
 const APPEAL_EMAIL = "support@snip.sa";
-
-const STRINGS = {
-  ar: {
-    title: "تم حظر هذا الرابط",
-    subtitle: "لا يمكن الوصول إلى هذا الرابط.",
-    body: "تم حظر هذا الرابط لمخالفته سياسات الاستخدام الخاصة بمنصة Snip. إذا كنت تعتقد أن هذا حدث عن طريق الخطأ، يمكنك التواصل معنا لتقديم طلب مراجعة.",
-    appeal: "تقديم طلب مراجعة",
-    goHome: "الصفحة الرئيسية",
-    code: "الرابط",
-    dir: "rtl" as const,
-    fontClass: "font-arabic",
-  },
-  en: {
-    title: "This Link Has Been Blocked",
-    subtitle: "This link is not accessible.",
-    body: "This link was blocked for violating Snip's usage policies. If you believe this is a mistake, you can contact us to request a review.",
-    appeal: "Request a Review",
-    goHome: "Go to Home",
-    code: "Link",
-    dir: "ltr" as const,
-    fontClass: "",
-  },
-} as const;
-
-type SupportedLang = keyof typeof STRINGS;
 
 export default function BlockedLinkPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
-  const rawLang = searchParams.get("lang") ?? "";
-  // Arabic primary: default to Arabic unless the visitor explicitly asked for English.
-  const lang: SupportedLang = rawLang === "en" ? "en" : "ar";
-
-  const s = STRINGS[lang];
   const code = searchParams.get("code");
-
   const appealHref = `mailto:${APPEAL_EMAIL}?subject=${encodeURIComponent(
-    `Link Review Request${code ? ` — ${code}` : ""}`
+    `Link Review Request${code ? ` — ${code}` : ""}`,
   )}`;
 
-  return (
-    <div
-      dir={s.dir}
-      lang={lang}
-      className={`min-h-screen bg-background flex items-center justify-center p-6 ${s.fontClass}`}
+  const emailLink = (
+    <a
+      href={appealHref}
+      className="font-semibold text-foreground underline underline-offset-2"
     >
-      <div className="max-w-md w-full text-center space-y-8">
-        <div className="flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center">
-            <ShieldAlert className="w-12 h-12 text-red-600" />
+      {APPEAL_EMAIL}
+    </a>
+  );
+
+  return (
+    <div className="min-h-screen bg-background flex items-center">
+      <div className="w-full max-w-6xl mx-auto px-6 md:px-12 py-16 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+        <div>
+          <div className="flex items-center gap-2 mb-10">
+            <img src={logoIcon} alt="Snip" className="h-6 w-6" />
+            <span className="font-display font-bold text-lg text-foreground">
+              Snip
+            </span>
+          </div>
+
+          <h1 className="font-display font-bold text-4xl md:text-5xl leading-tight text-foreground">
+            {t("This Link Has Been Blocked", "تم حظر هذا الرابط")}
+          </h1>
+
+          <p className="mt-4 font-semibold text-base md:text-lg text-foreground">
+            {t(
+              "This link violates Snip's acceptable use policy",
+              "هذا الرابط يخالف سياسة الاستخدام المقبول لـ Snip",
+            )}
+          </p>
+
+          <p className="mt-6 text-sm md:text-base text-muted-foreground leading-relaxed">
+            {t(
+              "We reviewed this link and found it violates our policies. If you believe this is a mistake, you can contact us at ",
+              "قمنا بمراجعة هذا الرابط ووجدنا أنه يخالف سياساتنا. إذا كنت تعتقد أن الرابط تم حظره عن طريق الخطأ، يمكنك التواصل معنا عبر ",
+            )}
+            {emailLink}
+            {t(".", "")}
+          </p>
+
+          <button
+            onClick={() => navigate("/")}
+            className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:underline"
+          >
+            <span>{t("Go to Homepage", "العودة للرئيسية")}</span>
+            <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+          </button>
+        </div>
+
+        <div className="relative flex items-center justify-center">
+          <span className="absolute top-4 left-8 w-2 h-2 rounded-full bg-secondary/20" />
+          <span className="absolute top-16 right-4 w-1.5 h-1.5 rounded-full bg-secondary/20" />
+          <span className="absolute bottom-8 left-4 w-2 h-2 rounded-full bg-secondary/20" />
+          <div className="w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full bg-secondary flex items-center justify-center">
+            <ShieldAlert className="w-20 h-20 md:w-24 md:h-24 text-secondary-foreground" />
           </div>
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-2xl font-bold text-foreground">{s.title}</h1>
-          <p className="text-base font-medium text-muted-foreground">{s.subtitle}</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
-        </div>
-
-        {code && (
-          <div className="bg-muted rounded-lg px-4 py-3 inline-block">
-            <p className="text-xs text-muted-foreground">
-              {s.code}: <span className="font-mono font-semibold text-foreground">{code}</span>
-            </p>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row justify-center gap-3">
-          <Button asChild variant="outline" className="gap-2">
-            <a href={appealHref}>
-              <Mail className="w-4 h-4" />
-              {s.appeal}
-            </a>
-          </Button>
-          <Button onClick={() => navigate("/")} className="gap-2">
-            <Home className="w-4 h-4" />
-            {s.goHome}
-          </Button>
-        </div>
-
-        <p className="text-xs text-muted-foreground/50">snip.sa</p>
       </div>
     </div>
   );
