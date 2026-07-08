@@ -190,31 +190,60 @@ class RedirectService {
         }
 
         if (url) {
-          // IMPORTANT: Always verify isActive status from database for cached URLs
-          // This ensures deactivated URLs don't redirect even if cached
-          const freshStatus = await Url.findOne({
-            $or: [
-              { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") } },
-              {
-                customCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") },
-              },
-            ],
-          })
-            .select("isActive")
-            .lean();
-
-          if (freshStatus && freshStatus.isActive !== url.isActive) {
-            console.log(
-              "⚠️ Cache stale! DB isActive:",
-              freshStatus.isActive,
-              "Cache isActive:",
-              url.isActive,
+          // IMPORTANT: Always verify isActive AND moderationStatus from the
+          // database for cached URLs. An admin Allow/Block decision (or the
+          // async scanner) updates both fields together and clears the
+          // cache — but if that cacheDel is ever missed (a transient Redis
+          // blip, a narrow race with an in-flight redirect), a cached copy
+          // can keep serving a stale moderationStatus indefinitely. Refreshing
+          // isActive alone isn't enough: a link blocked after being cached
+          // would show a corrected isActive:false but a stale
+          // moderationStatus of "suspicious"/"safe" — validateRedirect would
+          // then report "URL is deactivated" instead of "CONTENT_BLOCKED",
+          // which routes to the generic link-not-found page instead of the
+          // block page. Refreshing both fields together fixes that in both
+          // directions (newly blocked, or newly unblocked).
+          let freshStatus = null;
+          try {
+            freshStatus = await Url.findOne({
+              $or: [
+                {
+                  shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") },
+                },
+                {
+                  customCode: {
+                    $regex: new RegExp(`^${lowerShortCode}$`, "i"),
+                  },
+                },
+              ],
+            })
+              .select("isActive moderationStatus")
+              .lean();
+          } catch (freshCheckError) {
+            console.warn(
+              "⚠️  Freshness re-check failed, using cached status as-is:",
+              freshCheckError.message,
             );
-            url.isActive = freshStatus.isActive;
+          }
 
-            // If URL is now inactive, clear the cache
-            if (!freshStatus.isActive) {
-              console.log("🗑️ Clearing stale cache for deactivated URL");
+          if (freshStatus) {
+            const isStale =
+              freshStatus.isActive !== url.isActive ||
+              freshStatus.moderationStatus !== url.moderationStatus;
+
+            if (isStale) {
+              console.log("⚠️ Cache stale!", {
+                dbIsActive: freshStatus.isActive,
+                cacheIsActive: url.isActive,
+                dbModerationStatus: freshStatus.moderationStatus,
+                cacheModerationStatus: url.moderationStatus,
+              });
+              url.isActive = freshStatus.isActive;
+              url.moderationStatus = freshStatus.moderationStatus;
+
+              // Evict the now-confirmed-stale entry so the next lookup goes
+              // straight to the DB instead of re-hitting this same copy.
+              console.log("🗑️ Clearing stale cache entry");
               const { cacheDel } = require("../config/redis");
               await cacheDel(`url:${lowerShortCode}`);
               await cacheDel(`url:${originalShortCode}`);
