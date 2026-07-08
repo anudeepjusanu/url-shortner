@@ -91,7 +91,10 @@ const makeRow = (partial: Partial<BulkRow> = {}): BulkRow => ({
 // ─── File parsing ─────────────────────────────────────────────────────────────
 
 function normalizeHeader(h: string) {
-  return h.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+  return h
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .trim();
 }
 
 function parseSheetToBulkRows(sheetRows: string[][]): BulkRow[] {
@@ -103,8 +106,8 @@ function parseSheetToBulkRows(sheetRows: string[][]): BulkRow[] {
     idx("destination url") >= 0
       ? idx("destination url")
       : idx("original url") >= 0
-      ? idx("original url")
-      : 0;
+        ? idx("original url")
+        : 0;
 
   const col = {
     url: urlCol,
@@ -123,11 +126,16 @@ function parseSheetToBulkRows(sheetRows: string[][]): BulkRow[] {
     const url = String(row[col.url] || "").trim();
     if (!url) continue;
 
-    const utmSource = col.utmSource >= 0 ? String(row[col.utmSource] || "").trim() : "";
-    const utmMedium = col.utmMedium >= 0 ? String(row[col.utmMedium] || "").trim() : "";
-    const utmCampaign = col.utmCampaign >= 0 ? String(row[col.utmCampaign] || "").trim() : "";
-    const utmTerm = col.utmTerm >= 0 ? String(row[col.utmTerm] || "").trim() : "";
-    const utmContent = col.utmContent >= 0 ? String(row[col.utmContent] || "").trim() : "";
+    const utmSource =
+      col.utmSource >= 0 ? String(row[col.utmSource] || "").trim() : "";
+    const utmMedium =
+      col.utmMedium >= 0 ? String(row[col.utmMedium] || "").trim() : "";
+    const utmCampaign =
+      col.utmCampaign >= 0 ? String(row[col.utmCampaign] || "").trim() : "";
+    const utmTerm =
+      col.utmTerm >= 0 ? String(row[col.utmTerm] || "").trim() : "";
+    const utmContent =
+      col.utmContent >= 0 ? String(row[col.utmContent] || "").trim() : "";
 
     result.push(
       makeRow({
@@ -140,7 +148,7 @@ function parseSheetToBulkRows(sheetRows: string[][]): BulkRow[] {
         utmTerm,
         utmContent,
         enableUTM: !!(utmSource || utmMedium || utmCampaign),
-      })
+      }),
     );
   }
   return result;
@@ -199,9 +207,7 @@ function downloadCsvTemplate() {
     ["https://example.com/another-page", "", "", "", "", "", "", ""],
   ];
   const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
-  const csv = [headers, ...sample]
-    .map((r) => r.map(esc).join(","))
-    .join("\n");
+  const csv = [headers, ...sample].map((r) => r.map(esc).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -231,7 +237,11 @@ const BulkShorten = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [rows, setRows] = useState<BulkRow[]>([makeRow(), makeRow(), makeRow()]);
+  const [rows, setRows] = useState<BulkRow[]>([
+    makeRow(),
+    makeRow(),
+    makeRow(),
+  ]);
   const [isDragging, setIsDragging] = useState(false);
   const [domains, setDomains] = useState<DomainOption[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -247,13 +257,15 @@ const BulkShorten = () => {
   }, []);
 
   const defaultDomain =
-    domains.find((d) => d.id === "base")?.domain || "snip.sa";
+    domains.find((d) => d.id === "base")?.domain || window.location.host;
 
   const update = (id: string, patch: Partial<BulkRow>) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
   const remove = (id: string) =>
-    setRows((prev) => (prev.length === 1 ? prev : prev.filter((r) => r.id !== id)));
+    setRows((prev) =>
+      prev.length === 1 ? prev : prev.filter((r) => r.id !== id),
+    );
 
   const addRow = () => setRows((prev) => [...prev, makeRow()]);
 
@@ -269,7 +281,7 @@ const BulkShorten = () => {
           title: t("Unsupported file format", "صيغة الملف غير مدعومة"),
           description: t(
             "Please upload a CSV, XLSX, or XLS file.",
-            "يرجى رفع ملف بصيغة CSV أو XLSX أو XLS."
+            "يرجى رفع ملف بصيغة CSV أو XLSX أو XLS.",
           ),
         });
         return;
@@ -280,7 +292,7 @@ const BulkShorten = () => {
           title: t("File too large", "الملف كبير جداً"),
           description: t(
             "Maximum file size is 5 MB.",
-            "الحد الأقصى لحجم الملف هو 5 ميغابايت."
+            "الحد الأقصى لحجم الملف هو 5 ميغابايت.",
           ),
         });
         return;
@@ -293,7 +305,7 @@ const BulkShorten = () => {
             title: t("Empty file", "الملف فارغ"),
             description: t(
               "No data rows found. Make sure your file matches the template format.",
-              "لم يُعثر على صفوف بيانات. تأكد أن الملف يتطابق مع تنسيق القالب."
+              "لم يُعثر على صفوف بيانات. تأكد أن الملف يتطابق مع تنسيق القالب.",
             ),
           });
           return;
@@ -304,7 +316,7 @@ const BulkShorten = () => {
             title: t("Too many rows", "عدد صفوف كبير جداً"),
             description: t(
               `Maximum ${MAX_ROWS} URLs per batch.`,
-              `الحد الأقصى ${MAX_ROWS} رابط لكل دفعة.`
+              `الحد الأقصى ${MAX_ROWS} رابط لكل دفعة.`,
             ),
           });
           return;
@@ -314,11 +326,11 @@ const BulkShorten = () => {
         toast({
           title: t(
             `Imported ${parsed.length} URL${parsed.length !== 1 ? "s" : ""}`,
-            `تم استيراد ${parsed.length} رابط`
+            `تم استيراد ${parsed.length} رابط`,
           ),
           description: t(
             "Review and edit rows before shortening.",
-            "راجع وعدّل الصفوف قبل الاختصار."
+            "راجع وعدّل الصفوف قبل الاختصار.",
           ),
         });
       } catch (err: any) {
@@ -329,13 +341,13 @@ const BulkShorten = () => {
         });
       }
     },
-    [rows, toast, t]
+    [rows, toast, t],
   );
 
   // ─── Submit ─────────────────────────────────────────────────────────────────
 
   const validCount = rows.filter(
-    (r) => r.originalUrl.trim() && isValidUrl(r.originalUrl.trim())
+    (r) => r.originalUrl.trim() && isValidUrl(r.originalUrl.trim()),
   ).length;
   const filledCount = rows.filter((r) => r.originalUrl.trim()).length;
 
@@ -350,7 +362,7 @@ const BulkShorten = () => {
           ...r,
           urlError: t(
             "Enter a valid http/https URL",
-            "أدخل رابطاً صحيحاً يبدأ بـ http أو https"
+            "أدخل رابطاً صحيحاً يبدأ بـ http أو https",
           ),
         };
       }
@@ -358,7 +370,9 @@ const BulkShorten = () => {
     });
     setRows(validated);
 
-    const toProcess = validated.filter((r) => r.originalUrl.trim() && !r.urlError);
+    const toProcess = validated.filter(
+      (r) => r.originalUrl.trim() && !r.urlError,
+    );
     if (toProcess.length === 0) {
       if (!anyError) {
         toast({
@@ -366,7 +380,7 @@ const BulkShorten = () => {
           title: t("No URLs entered", "لا توجد روابط"),
           description: t(
             "Add at least one valid URL to continue.",
-            "أضف رابطاً صحيحاً واحداً على الأقل للمتابعة."
+            "أضف رابطاً صحيحاً واحداً على الأقل للمتابعة.",
           ),
         });
       }
@@ -407,12 +421,14 @@ const BulkShorten = () => {
       } catch (err: any) {
         // Extract detailed error message from validation errors if available
         let errorMessage = err.message || t("Failed", "فشل");
-        
+
         // Check if there are validation errors with more specific messages
         if (err.validationErrors && Array.isArray(err.validationErrors)) {
-          errorMessage = err.validationErrors.map((e: any) => e.message).join("; ");
+          errorMessage = err.validationErrors
+            .map((e: any) => e.message)
+            .join("; ");
         }
-        
+
         allResults.push({ row, error: errorMessage });
       }
       setProcessedCount(i + 1);
@@ -428,14 +444,14 @@ const BulkShorten = () => {
       try {
         amplitudeService.trackBulkLinksCreated(succeeded);
       } catch {}
-      fireConversion('bulk_shorten', { count: succeeded });
+      fireConversion("bulk_shorten", { count: succeeded });
     }
 
     toast({
       title: t("Batch complete", "اكتملت الدفعة"),
       description: t(
         `${succeeded} created, ${failed} failed.`,
-        `${succeeded} تم إنشاؤه، ${failed} فشل.`
+        `${succeeded} تم إنشاؤه، ${failed} فشل.`,
       ),
     });
   };
@@ -496,7 +512,7 @@ const BulkShorten = () => {
                 "rounded-xl border p-4",
                 failed.length > 0
                   ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30"
-                  : "border-border bg-background"
+                  : "border-border bg-background",
               )}
             >
               <p
@@ -504,7 +520,7 @@ const BulkShorten = () => {
                   "text-xs mb-1",
                   failed.length > 0
                     ? "text-red-600 dark:text-red-400"
-                    : "text-muted-foreground"
+                    : "text-muted-foreground",
                 )}
               >
                 {t("Failed", "فشل")}
@@ -514,7 +530,7 @@ const BulkShorten = () => {
                   "text-2xl font-bold",
                   failed.length > 0
                     ? "text-red-700 dark:text-red-300"
-                    : "text-foreground"
+                    : "text-foreground",
                 )}
               >
                 {failed.length}
@@ -601,9 +617,14 @@ const BulkShorten = () => {
                   </thead>
                   <tbody>
                     {failed.map((r, i) => (
-                      <tr key={i} className="border-t border-red-100 dark:border-red-900/40">
+                      <tr
+                        key={i}
+                        className="border-t border-red-100 dark:border-red-900/40"
+                      >
                         <td className="px-3 py-2 max-w-[240px]">
-                          <span className="block truncate">{r.row.originalUrl}</span>
+                          <span className="block truncate">
+                            {r.row.originalUrl}
+                          </span>
                         </td>
                         <td className="px-3 py-2 text-red-600 dark:text-red-400">
                           {r.error}
@@ -658,7 +679,7 @@ const BulkShorten = () => {
         <p className="text-muted-foreground font-body mb-8">
           {t(
             "Add multiple URLs and shorten them all at once. Expand any item to add advanced options.",
-            "أضف عدة روابط واختصرها دفعة واحدة. وسّع أي عنصر لإضافة خيارات متقدمة."
+            "أضف عدة روابط واختصرها دفعة واحدة. وسّع أي عنصر لإضافة خيارات متقدمة.",
           )}
         </p>
 
@@ -685,7 +706,7 @@ const BulkShorten = () => {
             "mb-5 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border-2 border-dashed px-4 py-4 cursor-pointer transition-colors",
             isDragging
               ? "border-primary bg-primary/10"
-              : "border-border bg-muted/20 hover:border-primary/40 hover:bg-muted/40"
+              : "border-border bg-muted/20 hover:border-primary/40 hover:bg-muted/40",
           )}
         >
           <input
@@ -703,7 +724,7 @@ const BulkShorten = () => {
               "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
               isDragging
                 ? "bg-primary text-primary-foreground"
-                : "bg-background text-primary border border-border"
+                : "bg-background text-primary border border-border",
             )}
           >
             <Upload className="w-5 h-5" />
@@ -714,13 +735,13 @@ const BulkShorten = () => {
                 ? t("Drop file to import", "أفلت الملف للاستيراد")
                 : t(
                     "Drag & drop a spreadsheet here, or click to browse",
-                    "اسحب وأفلت ملف هنا، أو اضغط للاختيار"
+                    "اسحب وأفلت ملف هنا، أو اضغط للاختيار",
                   )}
             </p>
             <p className="text-xs text-muted-foreground font-body mt-0.5">
               {t(
                 "Supports CSV, XLSX, XLS — optional shortcut for many URLs",
-                "يدعم CSV و XLSX و XLS — اختصار اختياري للروابط الكثيرة"
+                "يدعم CSV و XLSX و XLS — اختصار اختياري للروابط الكثيرة",
               )}
             </p>
           </div>
@@ -760,7 +781,7 @@ const BulkShorten = () => {
                     <Input
                       placeholder={t(
                         "https://example.com/your-long-url",
-                        "https://example.com/الرابط-الطويل"
+                        "https://example.com/الرابط-الطويل",
                       )}
                       value={row.originalUrl}
                       onChange={(e) =>
@@ -771,7 +792,7 @@ const BulkShorten = () => {
                       }
                       className={cn(
                         "h-10 border-0 shadow-none focus-visible:ring-0 px-2",
-                        row.urlError && "placeholder:text-destructive/50"
+                        row.urlError && "placeholder:text-destructive/50",
                       )}
                       dir="ltr"
                     />
@@ -863,7 +884,9 @@ const BulkShorten = () => {
                       </Label>
                       <div className="flex">
                         <div className="flex items-center px-3 bg-muted border border-e-0 border-border rounded-s-md text-xs text-muted-foreground font-body whitespace-nowrap">
-                          {domains.find((d) => d.id === row.domainId)?.domain || defaultDomain}/
+                          {domains.find((d) => d.id === row.domainId)?.domain ||
+                            defaultDomain}
+                          /
                         </div>
                         <Input
                           placeholder={t("mycustomlink", "رابطي_المخصص")}
@@ -1010,7 +1033,7 @@ const BulkShorten = () => {
           <p className="text-xs font-body text-foreground/70">
             {t(
               "Want to use your own brand domain?",
-              "تبي تستخدم دومين علامتك التجارية؟"
+              "تبي تستخدم دومين علامتك التجارية؟",
             )}{" "}
             <Link
               to="/dashboard/domains"
@@ -1028,7 +1051,7 @@ const BulkShorten = () => {
             <p className="text-sm font-medium text-foreground">
               {t(
                 `Processing ${processedCount} of ${rows.filter((r) => r.originalUrl.trim() && !r.urlError).length}…`,
-                `جارٍ معالجة ${processedCount} من ${rows.filter((r) => r.originalUrl.trim() && !r.urlError).length}…`
+                `جارٍ معالجة ${processedCount} من ${rows.filter((r) => r.originalUrl.trim() && !r.urlError).length}…`,
               )}
             </p>
           </div>
@@ -1039,7 +1062,7 @@ const BulkShorten = () => {
           <p className="text-sm font-body text-muted-foreground">
             {t(
               `${validCount} of ${rows.length} ready`,
-              `${validCount} من ${rows.length} جاهز`
+              `${validCount} من ${rows.length} جاهز`,
             )}
           </p>
           <Button

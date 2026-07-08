@@ -349,6 +349,7 @@ class RedirectService {
       "www.snip.sa",
       "shortener.snip.sa",
       "qa.snip.sa",
+      "qa.4r.sa",
       "localhost",
       "localhost:3015",
       "20.193.155.139",

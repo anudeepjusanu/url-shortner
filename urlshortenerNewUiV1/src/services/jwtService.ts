@@ -2,7 +2,7 @@
 // Import and use directly in UI pages instead of going through useApi hooks
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3015/api";
+  import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
 
 // ─── Token Management ────────────────────────────────────────────────────────
 
