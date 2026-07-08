@@ -1,11 +1,11 @@
-const { Click, DailySummary, MonthlySummary } = require('../models/Analytics');
-const Url = require('../models/Url');
-const QRCodeModel = require('../models/QRCode');
-const crypto = require('crypto');
-const axios = require('axios');
-const useragent = require('user-agent-parser');
-const { cacheGet, cacheSet } = require('../config/redis');
-const config = require('../config/environment');
+const { Click, DailySummary, MonthlySummary } = require("../models/Analytics");
+const Url = require("../models/Url");
+const QRCodeModel = require("../models/QRCode");
+const crypto = require("crypto");
+const axios = require("axios");
+const useragent = require("user-agent-parser");
+const { cacheGet, cacheSet } = require("../config/redis");
+const config = require("../config/environment");
 
 class AnalyticsService {
   // Helper method to check if a domain is a main/default domain
@@ -14,10 +14,11 @@ class AnalyticsService {
 
     const normalize = (url) => {
       if (!url) return null;
-      return url.toLowerCase()
-        .replace(/^https?:\/\//, '')   // strip protocol
-        .replace(/:\d+$/, '')          // strip port
-        .split('/')[0];                // strip path
+      return url
+        .toLowerCase()
+        .replace(/^https?:\/\//, "") // strip protocol
+        .replace(/:\d+$/, "") // strip port
+        .split("/")[0]; // strip path
     };
 
     const mainDomains = [
@@ -26,16 +27,17 @@ class AnalyticsService {
       normalize(process.env.BASE_DOMAIN),
       normalize(process.env.SHORT_DOMAIN),
       normalize(process.env.CNAME_TARGET),
-      'laghhu.link',
-      'www.laghhu.link',
-      'shortener.laghhu.link',
-      'snip.sa',
-      'www.snip.sa',
-      'shortener.snip.sa',
-      'qa.snip.sa',
-      'localhost',
-      'localhost:3015',
-      '20.193.155.139'
+      "laghhu.link",
+      "www.laghhu.link",
+      "shortener.laghhu.link",
+      "snip.sa",
+      "www.snip.sa",
+      "shortener.snip.sa",
+      "qa.snip.sa",
+      "qa.4r.sa",
+      "localhost",
+      "localhost:3015",
+      "20.193.155.139",
     ].filter(Boolean);
 
     return mainDomains.includes(domain.toLowerCase());
@@ -43,9 +45,9 @@ class AnalyticsService {
 
   async recordClick(shortCode, clickData) {
     try {
-      console.log('📊 Recording click for:', shortCode, {
+      console.log("📊 Recording click for:", shortCode, {
         ip: clickData.ipAddress,
-        trackingEnabled: config.ANALYTICS.TRACK_CLICKS
+        trackingEnabled: config.ANALYTICS.TRACK_CLICKS,
       });
 
       const {
@@ -55,13 +57,13 @@ class AnalyticsService {
         language,
         screenResolution,
         domain = null,
-        clickSource = 'unknown',
-        timestamp = new Date()
+        clickSource = "unknown",
+        timestamp = new Date(),
       } = clickData;
 
       // Build query with domain filtering for custom domains
       let query = {
-        $or: [{ shortCode }, { customCode: shortCode }]
+        $or: [{ shortCode }, { customCode: shortCode }],
       };
 
       // Add domain filtering for custom domains to prevent duplicate counting
@@ -70,29 +72,29 @@ class AnalyticsService {
       }
 
       const url = await Url.findOne(query);
-      
+
       if (!url) {
-        console.error('❌ URL not found for click recording:', shortCode);
-        throw new Error('URL not found');
+        console.error("❌ URL not found for click recording:", shortCode);
+        throw new Error("URL not found");
       }
-      
-      console.log('✅ Found URL for click:', {
+
+      console.log("✅ Found URL for click:", {
         id: url._id,
         shortCode: url.shortCode,
-        domain: url.domain
+        domain: url.domain,
       });
-      
+
       if (!config.ANALYTICS.TRACK_CLICKS) {
-        console.warn('⚠️ Click tracking is disabled');
+        console.warn("⚠️ Click tracking is disabled");
         return null;
       }
-      
+
       const ipHash = this.hashIP(ipAddress);
       const location = await this.getLocationFromIP(ipAddress);
       const device = this.parseUserAgent(userAgent);
       const isBot = this.detectBot(userAgent);
       const isUnique = await this.isUniqueClick(url._id, ipHash);
-      
+
       const clickRecord = {
         url: url._id,
         shortCode,
@@ -108,34 +110,34 @@ class AnalyticsService {
         isBot,
         language,
         screenResolution,
-        clickSource: clickSource
+        clickSource: clickSource,
       };
-      
+
       const click = await Click.createClick(clickRecord);
-      console.log('✅ Click recorded:', {
+      console.log("✅ Click recorded:", {
         clickId: click._id,
         urlId: url._id,
         isUnique,
         isBot,
-        clickSource
+        clickSource,
       });
 
       // Handle QR code scans separately
-      if (clickSource === 'qr_code') {
+      if (clickSource === "qr_code") {
         await url.updateOne({
           $inc: {
             clickCount: 1,
             qrScanCount: 1,
-            ...(isUnique && { uniqueClickCount: 1, uniqueQrScanCount: 1 })
+            ...(isUnique && { uniqueClickCount: 1, uniqueQrScanCount: 1 }),
           },
           lastClickedAt: new Date(),
-          lastQrScanAt: new Date()
+          lastQrScanAt: new Date(),
         });
 
-        console.log('✅ QR scan tracked:', {
+        console.log("✅ QR scan tracked:", {
           clickCount: url.clickCount + 1,
           qrScanCount: (url.qrScanCount || 0) + 1,
-          uniqueQrScanCount: (url.uniqueQrScanCount || 0) + (isUnique ? 1 : 0)
+          uniqueQrScanCount: (url.uniqueQrScanCount || 0) + (isUnique ? 1 : 0),
         });
 
         // Update QRCode model scan count
@@ -143,32 +145,35 @@ class AnalyticsService {
           const qrCode = await QRCodeModel.findOne({ url: url._id });
           if (qrCode) {
             await qrCode.incrementScan(isUnique);
-            console.log('✅ QRCode model scan count updated');
+            console.log("✅ QRCode model scan count updated");
           }
         } catch (qrError) {
-          console.error('❌ Error updating QRCode model scan count:', qrError);
+          console.error("❌ Error updating QRCode model scan count:", qrError);
         }
       } else {
         await url.incrementClick(isUnique);
-        console.log('✅ URL click count incremented:', {
+        console.log("✅ URL click count incremented:", {
           clickCount: url.clickCount + 1,
-          uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0)
+          uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0),
         });
       }
-      
+
       this.updateAnalyticsSummaries(url._id, shortCode, clickRecord);
-      
+
       return click;
     } catch (error) {
-      console.error('Error recording click:', error);
+      console.error("Error recording click:", error);
       throw error;
     }
   }
-  
+
   hashIP(ipAddress) {
-    return crypto.createHash('sha256').update(ipAddress + config.JWT_SECRET).digest('hex');
+    return crypto
+      .createHash("sha256")
+      .update(ipAddress + config.JWT_SECRET)
+      .digest("hex");
   }
-  
+
   async getLocationFromIP(ipAddress) {
     try {
       if (!config.ANALYTICS.TRACK_GEOLOCATION) {
@@ -176,7 +181,7 @@ class AnalyticsService {
       }
 
       // Clean IPv4-mapped IPv6 addresses (e.g. ::ffff:1.2.3.4 → 1.2.3.4)
-      const cleanIP = ipAddress ? ipAddress.replace(/^::ffff:/, '') : null;
+      const cleanIP = ipAddress ? ipAddress.replace(/^::ffff:/, "") : null;
 
       // Skip localhost/private IPs
       const privateRanges = [
@@ -186,9 +191,9 @@ class AnalyticsService {
         /^172\.(1[6-9]|2[0-9]|3[01])\./,
         /^::1$/,
         /^fc00::/,
-        /^fe80::/
+        /^fe80::/,
       ];
-      if (!cleanIP || privateRanges.some(r => r.test(cleanIP))) {
+      if (!cleanIP || privateRanges.some((r) => r.test(cleanIP))) {
         return {};
       }
 
@@ -205,8 +210,13 @@ class AnalyticsService {
       const response = await axios.get(apiUrl, { timeout: 5000 });
       const data = response.data;
 
-      if (data.status === 'fail') {
-        console.warn('⚠️ Geolocation lookup failed:', data.message, 'for IP:', cleanIP);
+      if (data.status === "fail") {
+        console.warn(
+          "⚠️ Geolocation lookup failed:",
+          data.message,
+          "for IP:",
+          cleanIP,
+        );
         return {};
       }
 
@@ -218,8 +228,8 @@ class AnalyticsService {
         timezone: data.timezone,
         coordinates: {
           latitude: data.lat,
-          longitude: data.lon
-        }
+          longitude: data.lon,
+        },
       };
 
       // Cache for 24 hours — IP locations rarely change
@@ -227,190 +237,198 @@ class AnalyticsService {
 
       return location;
     } catch (error) {
-      console.error('❌ Error getting location from IP:', ipAddress, error);
+      console.error("❌ Error getting location from IP:", ipAddress, error);
       return {};
     }
   }
-  
+
   parseUserAgent(userAgent) {
     try {
       if (!config.ANALYTICS.TRACK_USER_AGENT) {
         return {};
       }
-      
+
       const parsed = useragent(userAgent);
-      
+
       const deviceType = this.determineDeviceType(userAgent);
-      
+
       return {
         type: deviceType,
         os: {
           name: parsed.os?.name,
-          version: parsed.os?.version
+          version: parsed.os?.version,
         },
         browser: {
           name: parsed.browser?.name,
-          version: parsed.browser?.version
+          version: parsed.browser?.version,
         },
         model: parsed.device?.model,
-        vendor: parsed.device?.vendor
+        vendor: parsed.device?.vendor,
       };
     } catch (error) {
-      console.error('Error parsing user agent:', error);
-      return { type: 'unknown' };
+      console.error("Error parsing user agent:", error);
+      return { type: "unknown" };
     }
   }
-  
+
   determineDeviceType(userAgent) {
     const ua = userAgent.toLowerCase();
-    
+
     if (/bot|crawler|spider|scraper/i.test(ua)) {
-      return 'bot';
+      return "bot";
     }
-    
+
     if (/mobile|android|iphone|ipod|blackberry|nokia|opera mini/i.test(ua)) {
-      return 'mobile';
+      return "mobile";
     }
-    
+
     if (/tablet|ipad|android(?!.*mobile)/i.test(ua)) {
-      return 'tablet';
+      return "tablet";
     }
-    
-    return 'desktop';
+
+    return "desktop";
   }
-  
+
   detectBot(userAgent) {
     const botPatterns = [
-      /bot/i, /crawler/i, /spider/i, /scraper/i,
-      /googlebot/i, /bingbot/i, /facebookexternalhit/i,
-      /twitterbot/i, /linkedinbot/i, /whatsapp/i,
-      /curl/i, /wget/i, /python/i, /ruby/i, /php/i
+      /bot/i,
+      /crawler/i,
+      /spider/i,
+      /scraper/i,
+      /googlebot/i,
+      /bingbot/i,
+      /facebookexternalhit/i,
+      /twitterbot/i,
+      /linkedinbot/i,
+      /whatsapp/i,
+      /curl/i,
+      /wget/i,
+      /python/i,
+      /ruby/i,
+      /php/i,
     ];
-    
-    return botPatterns.some(pattern => pattern.test(userAgent));
+
+    return botPatterns.some((pattern) => pattern.test(userAgent));
   }
-  
+
   async isUniqueClick(urlId, ipHash) {
     try {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      
+
       const existingClick = await Click.findOne({
         url: urlId,
         ipHash,
-        timestamp: { $gte: twentyFourHoursAgo }
+        timestamp: { $gte: twentyFourHoursAgo },
       });
-      
+
       return !existingClick;
     } catch (error) {
-      console.error('Error checking unique click:', error);
+      console.error("Error checking unique click:", error);
       return false;
     }
   }
-  
+
   extractUTMParameters(referer) {
     try {
       if (!referer || !config.ANALYTICS.TRACK_REFERRER) {
         return {};
       }
-      
+
       const url = new URL(referer);
       const params = url.searchParams;
-      
+
       return {
-        source: params.get('utm_source'),
-        medium: params.get('utm_medium'),
-        campaign: params.get('utm_campaign'),
-        term: params.get('utm_term'),
-        content: params.get('utm_content')
+        source: params.get("utm_source"),
+        medium: params.get("utm_medium"),
+        campaign: params.get("utm_campaign"),
+        term: params.get("utm_term"),
+        content: params.get("utm_content"),
       };
     } catch (error) {
       return {};
     }
   }
-  
+
   async updateAnalyticsSummaries(urlId, shortCode, clickData) {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       await DailySummary.findOneAndUpdate(
         { url: urlId, date: today },
         {
           $inc: {
             totalClicks: 1,
-            uniqueClicks: clickData.isUnique ? 1 : 0
+            uniqueClicks: clickData.isUnique ? 1 : 0,
           },
-          $setOnInsert: { shortCode }
+          $setOnInsert: { shortCode },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
-      
+
       const year = today.getFullYear();
       const month = today.getMonth() + 1;
-      
+
       await MonthlySummary.findOneAndUpdate(
         { url: urlId, year, month },
         {
           $inc: {
             totalClicks: 1,
-            uniqueClicks: clickData.isUnique ? 1 : 0
+            uniqueClicks: clickData.isUnique ? 1 : 0,
           },
-          $setOnInsert: { shortCode }
+          $setOnInsert: { shortCode },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
     } catch (error) {
-      console.error('Error updating analytics summaries:', error);
+      console.error("Error updating analytics summaries:", error);
     }
   }
-  
+
   async getUrlAnalytics(urlId, options = {}) {
     try {
-      const {
-        period = '30d',
-        startDate,
-        endDate,
-        groupBy = 'day'
-      } = options;
-      
+      const { period = "30d", startDate, endDate, groupBy = "day" } = options;
+
       const cacheKey = `analytics:${urlId}:${period}:${groupBy}`;
       const cachedData = await cacheGet(cacheKey);
-      
+
       if (cachedData) {
         return cachedData;
       }
-      
+
       const url = await Url.findById(urlId);
       if (!url) {
-        throw new Error('URL not found');
+        throw new Error("URL not found");
       }
-      
+
       const dateRange = this.getDateRange(period, startDate, endDate);
 
-      const [clicks, topStats, timeSeriesData, clickCounts] = await Promise.all([
-        this.getClicksInRange(urlId, dateRange),
-        this.getTopStats(urlId, dateRange),
-        this.getTimeSeriesData(urlId, dateRange, groupBy),
-        // Get total and unique clicks within date range (Bug #17 fix)
-        Click.aggregate([
-          {
-            $match: {
-              url: urlId,
-              timestamp: dateRange,
-              isBot: { $ne: true }
-            }
-          },
-          {
-            $group: {
-              _id: null,
-              totalClicks: { $sum: 1 },
-              uniqueClicks: {
-                $sum: { $cond: [{ $eq: ['$isUnique', true] }, 1, 0] }
-              }
-            }
-          }
-        ])
-      ]);
+      const [clicks, topStats, timeSeriesData, clickCounts] = await Promise.all(
+        [
+          this.getClicksInRange(urlId, dateRange),
+          this.getTopStats(urlId, dateRange),
+          this.getTimeSeriesData(urlId, dateRange, groupBy),
+          // Get total and unique clicks within date range (Bug #17 fix)
+          Click.aggregate([
+            {
+              $match: {
+                url: urlId,
+                timestamp: dateRange,
+                isBot: { $ne: true },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalClicks: { $sum: 1 },
+                uniqueClicks: {
+                  $sum: { $cond: [{ $eq: ["$isUnique", true] }, 1, 0] },
+                },
+              },
+            },
+          ]),
+        ],
+      );
 
       const counts = clickCounts[0] || { totalClicks: 0, uniqueClicks: 0 };
 
@@ -418,62 +436,68 @@ class AnalyticsService {
         overview: {
           totalClicks: counts.totalClicks,
           uniqueClicks: counts.uniqueClicks,
-          averageClicksPerDay: this.calculateAverageClicksPerDay(clicks, dateRange),
-          lastClicked: url.lastClickedAt
+          averageClicksPerDay: this.calculateAverageClicksPerDay(
+            clicks,
+            dateRange,
+          ),
+          lastClicked: url.lastClickedAt,
         },
         timeSeries: timeSeriesData,
         topStats,
-        recentClicks: clicks.slice(0, 20).map(this.formatClickForResponse)
+        recentClicks: clicks.slice(0, 20).map(this.formatClickForResponse),
       };
-      
+
       await cacheSet(cacheKey, analyticsData, config.CACHE_TTL.ANALYTICS_CACHE);
-      
+
       return analyticsData;
     } catch (error) {
-      console.error('Error getting URL analytics:', error);
+      console.error("Error getting URL analytics:", error);
       throw error;
     }
   }
-  
+
   getDateRange(period, startDate, endDate) {
     if (startDate && endDate) {
       return {
         $gte: new Date(startDate),
-        $lte: new Date(endDate)
+        $lte: new Date(endDate),
       };
     }
 
     const now = new Date();
-    const days = {
-      '24h': 1,
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      '1y': 365
-    }[period] || 30;
+    const days =
+      {
+        "24h": 1,
+        "7d": 7,
+        "30d": 30,
+        "90d": 90,
+        "1y": 365,
+      }[period] || 30;
 
     const start = new Date(now);
     start.setDate(start.getDate() - days);
 
     return { $gte: start, $lte: now };
   }
-  
+
   async getClicksInRange(urlId, dateRange) {
     return await Click.find({
       url: urlId,
       timestamp: dateRange,
-      isBot: { $ne: true }
-    }).sort({ timestamp: -1 }).limit(1000);
+      isBot: { $ne: true },
+    })
+      .sort({ timestamp: -1 })
+      .limit(1000);
   }
-  
+
   async getTopStats(urlId, dateRange) {
     const pipeline = [
       {
         $match: {
           url: urlId,
           timestamp: dateRange,
-          isBot: { $ne: true }
-        }
+          isBot: { $ne: true },
+        },
       },
       {
         $facet: {
@@ -481,161 +505,167 @@ class AnalyticsService {
             {
               $match: {
                 $or: [
-                  { 'location.country': { $exists: true, $nin: [null, ''] } },
-                  { 'location.countryName': { $exists: true, $nin: [null, ''] } }
-                ]
-              }
+                  { "location.country": { $exists: true, $nin: [null, ""] } },
+                  {
+                    "location.countryName": { $exists: true, $nin: [null, ""] },
+                  },
+                ],
+              },
             },
             {
               $group: {
                 _id: {
-                  country: { $ifNull: ['$location.country', 'Unknown'] },
-                  countryName: { $ifNull: ['$location.countryName', '$location.country'] }
+                  country: { $ifNull: ["$location.country", "Unknown"] },
+                  countryName: {
+                    $ifNull: ["$location.countryName", "$location.country"],
+                  },
                 },
-                count: { $sum: 1 }
-              }
+                count: { $sum: 1 },
+              },
             },
             { $sort: { count: -1 } },
-            { $limit: 10 }
+            { $limit: 10 },
           ],
           cities: [
             {
               $match: {
-                'location.city': { $nin: [null, ''] },
-                'location.country': { $nin: [null, ''] }
-              }
+                "location.city": { $nin: [null, ""] },
+                "location.country": { $nin: [null, ""] },
+              },
             },
             {
               $group: {
                 _id: {
-                  city: '$location.city',
-                  region: '$location.region',
-                  country: '$location.countryName'
+                  city: "$location.city",
+                  region: "$location.region",
+                  country: "$location.countryName",
                 },
-                count: { $sum: 1 }
-              }
+                count: { $sum: 1 },
+              },
             },
             { $sort: { count: -1 } },
-            { $limit: 10 }
+            { $limit: 10 },
           ],
           referrers: [
             {
-              $match: { referer: { $ne: null, $ne: '' } }
+              $match: { referer: { $ne: null, $ne: "" } },
             },
             {
               $addFields: {
                 domain: {
                   $regexFind: {
-                    input: '$referer',
-                    regex: /https?:\/\/([^\/]+)/
-                  }
-                }
-              }
+                    input: "$referer",
+                    regex: /https?:\/\/([^\/]+)/,
+                  },
+                },
+              },
             },
             {
-              $match: { 'domain.match': { $ne: null } }
+              $match: { "domain.match": { $ne: null } },
             },
             {
               $group: {
-                _id: { $arrayElemAt: ['$domain.captures', 0] },
-                count: { $sum: 1 }
-              }
+                _id: { $arrayElemAt: ["$domain.captures", 0] },
+                count: { $sum: 1 },
+              },
             },
             { $sort: { count: -1 } },
-            { $limit: 10 }
+            { $limit: 10 },
           ],
           devices: [
             {
               $group: {
-                _id: { $ifNull: ['$device.type', 'unknown'] },
-                count: { $sum: 1 }
-              }
+                _id: { $ifNull: ["$device.type", "unknown"] },
+                count: { $sum: 1 },
+              },
             },
-            { $sort: { count: -1 } }
+            { $sort: { count: -1 } },
           ],
           browsers: [
             {
               $match: {
-                'device.browser.name': { $exists: true, $nin: [null, ''] }
-              }
+                "device.browser.name": { $exists: true, $nin: [null, ""] },
+              },
             },
             {
               $group: {
-                _id: '$device.browser.name',
-                count: { $sum: 1 }
-              }
+                _id: "$device.browser.name",
+                count: { $sum: 1 },
+              },
             },
             { $sort: { count: -1 } },
-            { $limit: 10 }
+            { $limit: 10 },
           ],
           operatingSystems: [
             {
-              $match: { 'device.os.name': { $exists: true, $nin: [null, ''] } }
+              $match: { "device.os.name": { $exists: true, $nin: [null, ""] } },
             },
             {
               $group: {
-                _id: '$device.os.name',
-                count: { $sum: 1 }
-              }
+                _id: "$device.os.name",
+                count: { $sum: 1 },
+              },
             },
             { $sort: { count: -1 } },
-            { $limit: 10 }
-          ]
-        }
-      }
+            { $limit: 10 },
+          ],
+        },
+      },
     ];
-    
+
     const results = await Click.aggregate(pipeline);
-    return results[0] || {
-      countries: [],
-      cities: [],
-      referrers: [],
-      devices: [],
-      browsers: [],
-      operatingSystems: []
-    };
+    return (
+      results[0] || {
+        countries: [],
+        cities: [],
+        referrers: [],
+        devices: [],
+        browsers: [],
+        operatingSystems: [],
+      }
+    );
   }
-  
+
   async getTimeSeriesData(urlId, dateRange, groupBy) {
-    const format = groupBy === 'hour' ? '%Y-%m-%d-%H' : '%Y-%m-%d';
-    
+    const format = groupBy === "hour" ? "%Y-%m-%d-%H" : "%Y-%m-%d";
+
     // Get actual click data from database
     const clickData = await Click.aggregate([
       {
         $match: {
           url: urlId,
           timestamp: dateRange,
-          isBot: { $ne: true }
-        }
+          isBot: { $ne: true },
+        },
       },
       {
         $group: {
           _id: {
-            $dateToString: { format, date: '$timestamp' }
+            $dateToString: { format, date: "$timestamp" },
           },
           clicks: { $sum: 1 },
           uniqueClicks: {
-            $addToSet: '$ipHash'
-          }
-        }
+            $addToSet: "$ipHash",
+          },
+        },
       },
       {
         $project: {
-          date: '$_id',
+          date: "$_id",
           clicks: 1,
-          uniqueClicks: { $size: '$uniqueClicks' }
-        }
+          uniqueClicks: { $size: "$uniqueClicks" },
+        },
       },
-      { $sort: { date: 1 } }
+      { $sort: { date: 1 } },
     ]);
 
     // Create a map of existing data for quick lookup
     const dataMap = new Map();
-    clickData.forEach(item => {
+    clickData.forEach((item) => {
       dataMap.set(item.date, {
         date: item.date,
         clicks: item.clicks,
-        uniqueClicks: item.uniqueClicks
+        uniqueClicks: item.uniqueClicks,
       });
     });
 
@@ -643,17 +673,17 @@ class AnalyticsService {
     const filledData = [];
     const startDate = dateRange.$gte || new Date();
     const endDate = dateRange.$lte || new Date();
-    
-    if (groupBy === 'hour') {
+
+    if (groupBy === "hour") {
       // Generate hourly data points
       const current = new Date(startDate);
       while (current <= endDate) {
-        const dateStr = current.toISOString().slice(0, 13).replace('T', '-');
+        const dateStr = current.toISOString().slice(0, 13).replace("T", "-");
         const existing = dataMap.get(dateStr);
         filledData.push({
           date: dateStr,
           clicks: existing ? existing.clicks : 0,
-          uniqueClicks: existing ? existing.uniqueClicks : 0
+          uniqueClicks: existing ? existing.uniqueClicks : 0,
         });
         current.setHours(current.getHours() + 1);
       }
@@ -663,14 +693,14 @@ class AnalyticsService {
       current.setHours(0, 0, 0, 0);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      
+
       while (current <= end) {
         const dateStr = current.toISOString().slice(0, 10);
         const existing = dataMap.get(dateStr);
         filledData.push({
           date: dateStr,
           clicks: existing ? existing.clicks : 0,
-          uniqueClicks: existing ? existing.uniqueClicks : 0
+          uniqueClicks: existing ? existing.uniqueClicks : 0,
         });
         current.setDate(current.getDate() + 1);
       }
@@ -678,45 +708,45 @@ class AnalyticsService {
 
     return filledData;
   }
-  
+
   calculateAverageClicksPerDay(clicks, dateRange) {
     if (clicks.length === 0) return 0;
-    
-    const startDate = dateRange.$gte || new Date(clicks[clicks.length - 1].timestamp);
+
+    const startDate =
+      dateRange.$gte || new Date(clicks[clicks.length - 1].timestamp);
     const endDate = dateRange.$lte || new Date();
     const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    
+
     return Math.round(clicks.length / Math.max(daysDiff, 1));
   }
-  
+
   formatClickForResponse(click) {
     return {
       timestamp: click.timestamp,
-      country: click.location?.countryName || '',
-      region: click.location?.region || '',
-      city: click.location?.city || '',
-      device: click.device?.type || '',
-      browser: click.device?.browser?.name || '',
-      os: click.device?.os?.name || '',
-      referer: click.referer || '',
-      language: click.language || ''
+      country: click.location?.countryName || "",
+      region: click.location?.region || "",
+      city: click.location?.city || "",
+      device: click.device?.type || "",
+      browser: click.device?.browser?.name || "",
+      os: click.device?.os?.name || "",
+      referer: click.referer || "",
+      language: click.language || "",
     };
   }
-  
+
   async getDashboardAnalytics(userId, organizationId, options = {}) {
     try {
-      const { period = '30d' } = options;
-      
+      const { period = "30d" } = options;
+
       const filter = { creator: userId };
       if (organizationId) {
-        filter.$or = [
-          { creator: userId },
-          { organization: organizationId }
-        ];
+        filter.$or = [{ creator: userId }, { organization: organizationId }];
       }
-      
-      const urls = await Url.find(filter).select('_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt');
-      const urlIds = urls.map(url => url._id);
+
+      const urls = await Url.find(filter).select(
+        "_id clickCount uniqueClickCount qrScanCount uniqueQrScanCount createdAt",
+      );
+      const urlIds = urls.map((url) => url._id);
 
       const dateRange = this.getDateRange(period);
 
@@ -729,12 +759,12 @@ class AnalyticsService {
         topDevices,
         topBrowsers,
         topOS,
-        topReferrers
+        topReferrers,
       ] = await Promise.all([
         Click.countDocuments({
           url: { $in: urlIds },
           timestamp: dateRange,
-          isBot: { $ne: true }
+          isBot: { $ne: true },
         }),
         // Count unique clicks within the date range (Bug #17 fix)
         Click.aggregate([
@@ -743,15 +773,15 @@ class AnalyticsService {
               url: { $in: urlIds },
               timestamp: dateRange,
               isBot: { $ne: true },
-              isUnique: true
-            }
+              isUnique: true,
+            },
           },
           {
             $group: {
               _id: null,
-              count: { $sum: 1 }
-            }
-          }
+              count: { $sum: 1 },
+            },
+          },
         ]),
         this.getClicksByDay(urlIds, dateRange),
         this.getTopCountriesForUrls(urlIds, dateRange),
@@ -759,28 +789,35 @@ class AnalyticsService {
         this.getTopDevicesForUrls(urlIds, dateRange),
         this.getTopBrowsersForUrls(urlIds, dateRange),
         this.getTopOSForUrls(urlIds, dateRange),
-        this.getTopReferrersForUrls(urlIds, dateRange)
+        this.getTopReferrersForUrls(urlIds, dateRange),
       ]);
 
       const totalUrls = urls.length;
       const totalUniqueClicks = uniqueClicksData[0]?.count || 0;
-      const totalQRScans = urls.reduce((sum, url) => sum + (url.qrScanCount || 0), 0);
-      const totalUniqueQRScans = urls.reduce((sum, url) => sum + (url.uniqueQrScanCount || 0), 0);
+      const totalQRScans = urls.reduce(
+        (sum, url) => sum + (url.qrScanCount || 0),
+        0,
+      );
+      const totalUniqueQRScans = urls.reduce(
+        (sum, url) => sum + (url.uniqueQrScanCount || 0),
+        0,
+      );
 
       return {
         overview: {
           totalUrls,
           totalClicks,
           totalUniqueClicks,
-          totalQRScans,           // NEW: Total QR scans
-          totalUniqueQRScans,     // NEW: Unique QR scans
-          averageClicksPerUrl: totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0
+          totalQRScans, // NEW: Total QR scans
+          totalUniqueQRScans, // NEW: Unique QR scans
+          averageClicksPerUrl:
+            totalUrls > 0 ? Math.round(totalClicks / totalUrls) : 0,
         },
         chartData: {
-          clicksByDay: clicksByDay.map(item => ({
+          clicksByDay: clicksByDay.map((item) => ({
             date: item._id,
-            clicks: item.clicks
-          }))
+            clicks: item.clicks,
+          })),
         },
         topStats: {
           countries: topCountries,
@@ -788,36 +825,36 @@ class AnalyticsService {
           devices: topDevices,
           browsers: topBrowsers,
           operatingSystems: topOS,
-          referrers: topReferrers
-        }
+          referrers: topReferrers,
+        },
       };
     } catch (error) {
-      console.error('Error getting dashboard analytics:', error);
+      console.error("Error getting dashboard analytics:", error);
       throw error;
     }
   }
-  
+
   async getClicksByDay(urlIds, dateRange) {
     return await Click.aggregate([
       {
         $match: {
           url: { $in: urlIds },
           timestamp: dateRange,
-          isBot: { $ne: true }
-        }
+          isBot: { $ne: true },
+        },
       },
       {
         $group: {
           _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$timestamp' }
+            $dateToString: { format: "%Y-%m-%d", date: "$timestamp" },
           },
-          clicks: { $sum: 1 }
-        }
+          clicks: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
   }
-  
+
   async getTopCountriesForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
@@ -825,29 +862,29 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'location.country': { $nin: [null, ''] }
-        }
+          "location.country": { $nin: [null, ""] },
+        },
       },
       {
         $group: {
           _id: {
-            country: '$location.country',
-            countryName: '$location.countryName'
+            country: "$location.country",
+            countryName: "$location.countryName",
           },
-          clicks: { $sum: 1 }
-        }
+          clicks: { $sum: 1 },
+        },
       },
       { $sort: { clicks: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       country: item._id.country,
       countryName: item._id.countryName || item._id.country,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async getTopCitiesForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
@@ -855,31 +892,31 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'location.city': { $nin: [null, ''] }
-        }
+          "location.city": { $nin: [null, ""] },
+        },
       },
       {
         $group: {
           _id: {
-            city: '$location.city',
-            region: '$location.region',
-            country: '$location.countryName'
+            city: "$location.city",
+            region: "$location.region",
+            country: "$location.countryName",
           },
-          clicks: { $sum: 1 }
-        }
+          clicks: { $sum: 1 },
+        },
       },
       { $sort: { clicks: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       city: item._id.city,
       region: item._id.region,
       country: item._id.country,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async getTopBrowsersForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
@@ -887,25 +924,25 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.browser.name': { $exists: true, $nin: [null, ''] }
-        }
+          "device.browser.name": { $exists: true, $nin: [null, ""] },
+        },
       },
       {
         $group: {
-          _id: '$device.browser.name',
-          clicks: { $sum: 1 }
-        }
+          _id: "$device.browser.name",
+          clicks: { $sum: 1 },
+        },
       },
       { $sort: { clicks: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       browser: item._id,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async getTopOSForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
@@ -913,49 +950,49 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          'device.os.name': { $exists: true, $nin: [null, ''] }
-        }
+          "device.os.name": { $exists: true, $nin: [null, ""] },
+        },
       },
       {
         $group: {
-          _id: '$device.os.name',
-          clicks: { $sum: 1 }
-        }
+          _id: "$device.os.name",
+          clicks: { $sum: 1 },
+        },
       },
       { $sort: { clicks: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       os: item._id,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async getTopDevicesForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
         $match: {
           url: { $in: urlIds },
           timestamp: dateRange,
-          isBot: { $ne: true }
-        }
+          isBot: { $ne: true },
+        },
       },
       {
         $group: {
-          _id: '$device.type',
-          clicks: { $sum: 1 }
-        }
+          _id: "$device.type",
+          clicks: { $sum: 1 },
+        },
       },
-      { $sort: { clicks: -1 } }
+      { $sort: { clicks: -1 } },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       type: item._id,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async getTopReferrersForUrls(urlIds, dateRange) {
     const results = await Click.aggregate([
       {
@@ -963,80 +1000,80 @@ class AnalyticsService {
           url: { $in: urlIds },
           timestamp: dateRange,
           isBot: { $ne: true },
-          referer: { $ne: null, $ne: '' }
-        }
+          referer: { $ne: null, $ne: "" },
+        },
       },
       {
         $addFields: {
           domain: {
             $regexFind: {
-              input: '$referer',
-              regex: /https?:\/\/([^\/]+)/
-            }
-          }
-        }
+              input: "$referer",
+              regex: /https?:\/\/([^\/]+)/,
+            },
+          },
+        },
       },
       {
-        $match: { 'domain.match': { $ne: null } }
+        $match: { "domain.match": { $ne: null } },
       },
       {
         $group: {
-          _id: { $arrayElemAt: ['$domain.captures', 0] },
-          clicks: { $sum: 1 }
-        }
+          _id: { $arrayElemAt: ["$domain.captures", 0] },
+          clicks: { $sum: 1 },
+        },
       },
       { $sort: { clicks: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
-    
-    return results.map(item => ({
+
+    return results.map((item) => ({
       domain: item._id,
-      clicks: item.clicks
+      clicks: item.clicks,
     }));
   }
-  
+
   async exportAnalytics(urlId, options = {}) {
     try {
-      const { period = '30d', format = 'json' } = options;
-      
+      const { period = "30d", format = "json" } = options;
+
       const url = await Url.findById(urlId);
       if (!url) {
-        throw new Error('URL not found');
+        throw new Error("URL not found");
       }
-      
+
       const dateRange = this.getDateRange(period);
       const clicks = await this.getClicksInRange(urlId, dateRange);
-      
+
       const exportData = {
         url: {
           shortCode: url.shortCode,
           originalUrl: url.originalUrl,
           title: url.title,
-          createdAt: url.createdAt
+          createdAt: url.createdAt,
         },
         period,
         totalClicks: clicks.length,
-        clicks: clicks.map(this.formatClickForExport)
+        clicks: clicks.map(this.formatClickForExport),
       };
-      
+
       return exportData;
     } catch (error) {
-      console.error('Error exporting analytics:', error);
+      console.error("Error exporting analytics:", error);
       throw error;
     }
   }
-  
+
   formatClickForExport(click) {
     return {
       timestamp: click.timestamp,
-      country: click.location?.countryName || '',
-      region: click.location?.region || '',
-      city: click.location?.city || '',
-      deviceType: click.device?.type || '',
-      browser: click.device?.browser?.name || '',
-      os: click.device?.os?.name || '',
-      referer: click.referer || '',
-      language: click.language || ''
+      country: click.location?.countryName || "",
+      region: click.location?.region || "",
+      city: click.location?.city || "",
+      deviceType: click.device?.type || "",
+      browser: click.device?.browser?.name || "",
+      os: click.device?.os?.name || "",
+      referer: click.referer || "",
+      language: click.language || "",
     };
   }
 }
