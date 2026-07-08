@@ -66,7 +66,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     // { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
     { label: t("Bio Pages", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
     { label: t("UTM Builder", "منشئ UTM"), icon: Tag, path: "/dashboard/utm-builder" },
-    { label: t("Deep Links", "الروابط العميقة"), icon: Smartphone, path: "/dashboard/deep-links" },
+    // { label: t("Deep Links", "الروابط العميقة"), icon: Smartphone, path: "/dashboard/deep-links" },
   ];
 
   const adminNav = [

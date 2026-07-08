@@ -495,11 +495,8 @@ const UrlManagement = () => {
       await adminService.updateUrlModeration(item._id, action);
       const moderationStatus: ModerationStatus =
         action === "ALLOW" ? "safe" : "blocked";
-      const isActive = action === "ALLOW";
       setContent((prev) =>
-        prev.map((c) =>
-          c._id === item._id ? { ...c, moderationStatus, isActive } : c,
-        ),
+        prev.map((c) => (c._id === item._id ? { ...c, moderationStatus } : c)),
       );
       toast({
         title:
@@ -881,22 +878,7 @@ const UrlManagement = () => {
                       size="icon"
                       className="h-7 w-7"
                       onClick={() => handleToggleStatus(item)}
-                      disabled={
-                        togglingId === item._id ||
-                        (item.type === "url" &&
-                          !item.isActive &&
-                          item.moderationStatus === "blocked")
-                      }
-                      title={
-                        item.type === "url" &&
-                        !item.isActive &&
-                        item.moderationStatus === "blocked"
-                          ? t(
-                              "Blocked by content moderation — use the content scan review to allow it",
-                              "محظور بواسطة مراجعة المحتوى — استخدم مراجعة فحص المحتوى للسماح به",
-                            )
-                          : undefined
-                      }
+                      disabled={togglingId === item._id}
                     >
                       {togglingId === item._id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1084,23 +1066,11 @@ const UrlManagement = () => {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => handleToggleStatus(item)}
-                          disabled={
-                            togglingId === item._id ||
-                            (item.type === "url" &&
-                              !item.isActive &&
-                              item.moderationStatus === "blocked")
-                          }
+                          disabled={togglingId === item._id}
                           title={
-                            item.type === "url" &&
-                            !item.isActive &&
-                            item.moderationStatus === "blocked"
-                              ? t(
-                                  "Blocked by content moderation — use the content scan review to allow it",
-                                  "محظور بواسطة مراجعة المحتوى — استخدم مراجعة فحص المحتوى للسماح به",
-                                )
-                              : item.isActive
-                                ? t("Deactivate", "تعطيل")
-                                : t("Activate", "تفعيل")
+                            item.isActive
+                              ? t("Deactivate", "تعطيل")
+                              : t("Activate", "تفعيل")
                           }
                         >
                           {togglingId === item._id ? (
