@@ -4,6 +4,7 @@ import blogDataResidency from "@/assets/blog-data-residency.jpg";
 import blogMarketing from "@/assets/blog-marketing.png";
 import blogRoi from "@/assets/blog-roi.png";
 import blogEfficiencyAnalytics from "@/assets/efficiency_analytics.png";
+import blogLatest from "@/assets/blog-latest.png";
 
 export interface BlogPost {
   slug: string;
@@ -19,6 +20,161 @@ export interface BlogPost {
 }
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "snip-sa-to-4r-sa-rebrand",
+    image: blogLatest,
+    title: {
+      en: "From snip.sa to 4r.sa: A Bold New Identity, Powered by Saudi Innovation and Blazing Speed!",
+      ar: "من snip.sa إلى 4r.sa: ثورة جديدة في عالم اختصار الروابط.. بهوية سعودية وسرعة فائقة!",
+    },
+    excerpt: {
+      en: "We are proudly announcing our official transition from snip.sa to 4r.sa — a bold new identity built for speed, simplicity, and Saudi digital leadership. Discover what this means for you.",
+      ar: "نعلن بفخر عن تحولنا الرسمي من snip.sa إلى 4r.sa — هوية جديدة مبتكرة صُممت للسرعة والبساطة وريادة المملكة الرقمية. اكتشف ما يعنيه ذلك لك.",
+    },
+    content: {
+      en: `In the heart of Saudi Arabia's rapidly accelerating digital transformation, evolution is more than just a cosmetic choice—it is our primary fuel for excellence and leadership. Today, we are writing a thrilling new chapter in our digital story; we proudly announce our official transition from snip.sa to our new, innovative identity: 4r.sa. This change represents a major leap forward, aimed at providing the most powerful URL shortener in the heart of the Kingdom, specifically engineered to match your digital ambitions with the highest international standards of quality and professionalism.
+
+## Why 4r.sa? Because Simplicity is the Core of Digital Innovation
+
+Our journey with snip.sa has been filled with successes and milestones. We have built a vast community of marketers, businesses, and creators who have placed their trust in us to manage their links. However, as a team that constantly strives for perfection, we were always asking ourselves: How can we make the user experience even more seamless? How can we make our brand reflect the very essence of our service? The answer lay in simplicity, and that is how 4r.sa was born.
+
+We chose this new name for one fundamental and simple reason: Because it is easier, shorter, and faster to remember. At 4r.sa, we believe our core mission is "brevity," and it was only natural that we start with our own brand and the way we present our service. The new name is not just a collection of characters; it is a business philosophy aimed at reducing complexity and increasing efficiency. In the internet world, every second and every character counts, and 4r.sa is the true embodiment of that value. It is the smartest and most professional choice for anyone seeking efficiency and simplicity in a URL shortener.
+
+## Proudly Saudi: Our Servers Stay Home for Your Performance and Security
+
+What sets 4r.sa apart from global services is not just the new name or the updated interface, but our deep and unwavering commitment to our Saudi roots. We take immense pride in being a URL shortener that is Saudi-born, Saudi-branded, and Saudi-managed. This commitment translates into tangible technical and security benefits for our clients:
+
+### 1. Local Hosting: Speed That Exceeds Expectations
+
+All your data and redirection processes at 4r.sa are handled through state-of-the-art data centers physically located within the Kingdom of Saudi Arabia. Why does this matter? Because geographical proximity means incredible response times. When one of your customers in Riyadh, Jeddah, or NEOM clicks a 4r.sa link, the redirection process happens in under 30 milliseconds. This speed is something no global competitor hosting their servers in the US or Europe can offer your audience within the Kingdom. In the age of speed, a delay means a lost customer, and with 4r.sa, we guarantee your customers stay on track without any lag.
+
+### 2. Data Security and PDPL Compliance
+
+By keeping our servers local, we ensure our clients full compliance with the Personal Data Protection Law (PDPL) effective in the Kingdom. We recognize the high sensitivity of data in the current era, and therefore, your data and your audience's data stay within national borders, protected by the highest Saudi security protocols and international encryption standards. By using 4r.sa as your URL shortener, you protect your business from the legal and technical risks associated with transferring data across borders, giving you and your audience complete peace of mind.
+
+## What This Transition Means for Our Existing Users
+
+We understand that change can raise questions, and we want to reassure all our loyal users that this transition has been meticulously planned to be completely seamless and automatic. Here are the key points ensuring your business continuity:
+
+- **Continuity of Previous Links:** All links created via snip.sa will continue to function perfectly and forever. We have set up automatic redirection systems ensuring visitors reach their destinations without any interruption. There is no need to change links in your current campaigns or old posts.
+- **User Accounts and Data:** All your account data, analytics, and shortened links have been securely migrated to the new platform. You can log in using the same credentials as before without any changes.
+- **The Same Great Features and More:** We will continue to provide the core features that made us the best URL shortener, while adding regular updates and new features that will be announced in the coming weeks.
+
+## Professional Features That Make 4r.sa the Top Choice in the Kingdom
+
+Whether you are a digital marketer, a startup owner, or a content creator striving for excellence, 4r.sa provides you with an arsenal of tools designed to enhance your digital presence:
+
+### Smart and Custom QR Codes
+
+In a world that bridges the tangible and digital, QR codes are the perfect communication bridge. At 4r.sa, you can create custom QR codes for every link you shorten. You can change colors, add your brand logo, and download high-quality codes for printing. Most importantly, every scan of the code is tracked and analyzed just like digital clicks, giving you a full view of your campaign performance in magazines, restaurants, or billboards.
+
+### Custom Branded Domains
+
+Trust is the key to success online. 4r.sa allows you to use your own domain (e.g., link.yourbrand.sa) instead of the generic domain. Using it as a URL shortener with your own domain boosts brand awareness and increases click-through rates (CTR) by up to 34%, as users feel much more secure dealing with links that carry a name they know and trust.
+
+### Real-Time, Precision Analytics
+
+Information is power. The 4r.sa platform provides you with detailed and real-time reports on your link performance. You can see the number of clicks, the precise geographic location of visitors, referral sources (whether from WhatsApp, X, or others), and the types of devices used. This data enables you to make marketing decisions based on facts and figures, not just guesses.
+
+## How to Start Your New Journey with 4r.sa
+
+Starting with 4r.sa is easier than you imagine. We believe that technology should serve people, not be an obstacle to them. You can follow these simple steps:
+
+1. **Log In or Sign Up:** Visit 4r.sa and register your new account in seconds, or use your previous snip.sa account.
+2. **Shorten and Customize:** Paste your long link, choose a custom alias for the shortened link if you wish, and hit the shorten button.
+3. **Share and Track:** Share your new link with your audience, then return to the dashboard to monitor engagement and success in real-time.
+
+We offer flexible plans that suit everyone, from individuals to major corporations, ensuring the highest levels of service and specialized Saudi technical support.
+
+## Our Vision for the Future: Toward Global Saudi Digital Leadership
+
+Our transition to 4r.sa is just the beginning. Our vision goes beyond just being a URL shortener; we aspire to be the premier digital platform in the Kingdom providing smart solutions for digital identity and marketing link management. We are committed to continuous innovation and adding AI-powered features to help our clients get the most out of every click.
+
+We thank you from the bottom of our hearts for the precious trust that was and remains the fuel for our journey. We invite you to join us for this bright and exciting new chapter with 4r.sa, where speed, security, and simplicity meet in one place to serve your ambitions.
+
+Don't wait to elevate your digital presence. Join the thousands of Saudi businesses already winning with 4r.sa.
+
+**Sign Up for 4r.sa Today – It's Free and Takes Seconds!**
+
+Join us today at 4r.sa... and make every link a new Saudi success story!`,
+      ar: `في قلب التحول الرقمي المتسارع الذي تعيشه المملكة العربية السعودية، التغيير ليس مجرد خيار تجميلي، بل هو وقودنا الأساسي نحو التميز والريادة. اليوم، نكتب فصلاً جديداً ومثيراً في مسيرتنا الرقمية؛ حيث نعلن بفخر واعتزاز عن تحولنا الرسمي من snip.sa إلى هويتنا الجديدة والمبتكرة: 4r.sa. هذا التغيير يمثل انطلاقة كبرى تهدف إلى تقديم أقوى موقع اختصار روابط في قلب المملكة، صُمم خصيصاً ليتناسب مع طموحاتكم الرقمية وبأعلى معايير الجودة والاحترافية العالمية.
+
+## لماذا 4r.sa؟ لأن البساطة هي جوهر الابتكار الرقمي
+
+لقد كانت رحلتنا مع snip.sa مليئة بالنجاحات والإنجازات، حيث استطعنا بناء قاعدة جماهيرية واسعة من المسوقين، الشركات، والمبدعين الذين وضعوا ثقتهم فينا لإدارة روابطهم. ولكن، كفريق عمل يسعى دائماً للكمال، كنا نسأل أنفسنا باستمرار: كيف يمكننا جعل تجربة المستخدم أكثر سلاسة؟ كيف يمكننا جعل علامتنا التجارية تعكس جوهر خدمتنا؟ الإجابة كانت تكمن في البساطة، ومن هنا جاء 4r.sa.
+
+لقد اخترنا هذا الاسم الجديد لسبب جوهري وبسيط: لأنه أسهل، أقصر، وأسرع في التذكر. نحن في 4r.sa نؤمن بأن مهمتنا الأساسية هي "الاختصار"، وكان لزاماً علينا أن نبدأ بأنفسنا وبطريقة تقديمنا لخدمتنا. الاسم الجديد ليس مجرد حروف، بل هو فلسفة عمل تهدف إلى تقليل التعقيد وزيادة الكفاءة. في عالم الإنترنت، كل ثانية وكل حرف له قيمته، و4r.sa هو التجسيد الحقيقي لهذه القيمة. إنه الخيار الأذكى والأكثر احترافية لكل من يبحث عن الكفاءة والسهولة في أي موقع اختصار روابط.
+
+## فخر الصناعة الرقمية السعودية: خوادمنا هنا لخدمتكم وبأمان كامل
+
+ما يميز 4r.sa عن غيره من الخدمات العالمية ليس فقط الاسم الجديد أو الواجهة المحدثة، بل هو التزامنا الراسخ والعميق بجذورنا السعودية. نحن نفتخر بأننا موقع اختصار روابط سعودي المنشأ، الهوية، والإدارة. هذا الالتزام يترجم إلى فوائد تقنية وأمنية ملموسة لعملائنا:
+
+### ١. الاستضافة المحلية: السرعة التي تسبق التوقعات
+
+جميع بياناتكم وعمليات إعادة التوجيه في 4r.sa تتم عبر مراكز بيانات متطورة وموجودة فعلياً داخل المملكة العربية السعودية. لماذا هذا الأمر مهم؟ لأن القرب الجغرافي يعني سرعة استجابة مذهلة. عندما ينقر أحد عملائك في الرياض أو جدة أو نيوم على رابط 4r.sa، فإن عملية التوجيه تتم في أقل من 30 مللي ثانية. هذه السرعة لا يمكن لأي منافس عالمي يستضيف خوادمه في أمريكا أو أوروبا أن يقدمها لجمهورك داخل المملكة. في عصر السرعة، التأخير يعني فقدان العميل، ومع 4r.sa، نحن نضمن لك بقاء عملائك في مسارهم الصحيح دون أي تأخير.
+
+### ٢. أمان البيانات والامتثال لنظام PDPL
+
+بوجود خوادمنا محلياً، نضمن لعملائنا الامتثال التام لنظام حماية البيانات الشخصية (PDPL) المعمول به في المملكة. نحن ندرك الحساسية العالية للبيانات في العصر الحالي، ولذلك فإن بياناتكم وبيانات جمهوركم تظل داخل حدود الوطن، محمية بأعلى بروتوكولات الأمان السعودية ومعايير التشفير العالمية. باستخدامك لـ 4r.sa كـ موقع اختصار روابط، فإنك تحمي عملك من المخاطر القانونية والتقنية المرتبطة بنقل البيانات خارج الحدود، مما يمنحك وجمهورك راحة بال كاملة.
+
+## ما الذي يعنيه هذا الانتقال لمستخدمينا الحاليين؟
+
+نحن ندرك أن التغيير قد يثير بعض التساؤلات، ولذلك نود أن نؤكد لجميع مستخدمينا الأوفياء بأن هذا الانتقال قد تم التخطيط له بدقة متناهية ليكون سلساً وتلقائياً بالكامل. إليكم أهم النقاط التي تضمن استمرارية أعمالكم:
+
+- **استمرارية الروابط السابقة:** جميع الروابط التي تم إنشاؤها عبر snip.sa ستظل تعمل بشكل طبيعي تماماً وللأبد. لقد قمنا بإعداد أنظمة إعادة توجيه تلقائية تضمن وصول الزوار إلى وجهاتهم دون أي انقطاع. لا داعي لتغيير الروابط في حملاتكم الحالية أو منشوراتكم القديمة.
+- **حسابات المستخدمين والبيانات:** جميع بيانات حساباتكم، تحليلاتكم، وروابطكم المختصرة قد انتقلت بأمان إلى المنصة الجديدة. يمكنك تسجيل الدخول باستخدام نفس البيانات السابقة دون أي تغيير.
+- **نفس الميزات الرائعة وأكثر:** سنستمر في تقديم ميزاتنا الأساسية التي جعلت منا أفضل موقع اختصار روابط، مع إضافة تحديثات دورية وميزات جديدة سيتم الإعلان عنها تباعاً في الأسابيع القادمة.
+
+## الميزات الاحترافية التي تجعل 4r.sa الخيار الأول في المملكة
+
+سواء كنت مسوقاً رقمياً، صاحب شركة ناشئة، أو صانع محتوى يسعى للتميز، فإن 4r.sa يوفر لك ترسانة من الأدوات المصممة لتعزيز حضورك الرقمي:
+
+### رموز QR الذكية والمخصصة
+
+في عالم يجمع بين الواقع الملموس والرقمي، تُعد رموز QR الجسر المثالي للتواصل. في 4r.sa، يمكنك إنشاء رموز QR مخصصة لكل رابط تختصره. يمكنك تغيير الألوان، إضافة شعار علامتك التجارية، وتنزيل الرموز بجودة عالية للطباعة. والأهم من ذلك، أن كل عملية مسح للرمز يتم تتبعها وتحليلها تماماً مثل النقرات الرقمية، مما يمنحك رؤية كاملة لأداء حملاتك في المجلات، المطاعم، أو اللوحات الإعلانية.
+
+### النطاقات المخصصة (Branding)
+
+الثقة هي مفتاح النجاح على الإنترنت. يتيح لك 4r.sa استخدام نطاقك الخاص (مثل link.yourbrand.sa) بدلاً من النطاق العام. استخدامه كـ موقع اختصار روابط بنطاقك الخاص يعزز من وعي الجمهور بعلامتك التجارية ويزيد من معدلات النقر (CTR) بنسبة تصل إلى 34%، حيث يشعر المستخدم بأمان أكبر عند التعامل مع روابط تحمل اسماً يعرفه ويثق به.
+
+### تحليلات دقيقة ولحظية (Real-time Analytics)
+
+المعلومات هي القوة. توفر لك منصة 4r.sa تقارير مفصلة ولحظية عن أداء روابطك. يمكنك معرفة عدد النقرات، الموقع الجغرافي للزوار بدقة، مصادر الإحالة (سواء كانت من واتساب، تويتر، أو غيرها)، ونوع الأجهزة المستخدمة. هذه البيانات تمكنك من اتخاذ قرارات تسويقية مبنية على حقائق وأرقام، وليس مجرد توقعات.
+
+## كيف تبدأ رحلتك الجديدة مع 4r.sa؟
+
+البدء مع 4r.sa أسهل مما تتخيل. نحن نؤمن بأن التقنية يجب أن تكون في خدمة الإنسان، لا أن تكون عائقاً أمامه. يمكنك اتباع هذه الخطوات البسيطة:
+
+١. **تسجيل الدخول أو الاشتراك:** قم بزيارة 4r.sa وسجل حسابك الجديد في ثوانٍ، أو استخدم حسابك السابق من snip.sa.
+٢. **اختصر وخصص:** ضع رابطك الطويل، اختر اسماً مخصصاً للرابط المختصر إذا أردت، واضغط على زر الاختصار.
+٣. **انشر وتتبع:** شارك رابطك الجديد مع جمهورك، ثم عد إلى لوحة التحكم لمراقبة التفاعل والنجاح الذي تحققه في الوقت الفعلي.
+
+نحن نقدم خططاً مرنة تناسب الجميع، بدءاً من الأفراد وصولاً إلى الشركات الكبرى، مع ضمان أعلى مستويات الخدمة والدعم الفني السعودي المتخصص.
+
+## رؤيتنا للمستقبل: نحو ريادة رقمية سعودية عالمية
+
+إن تحولنا إلى 4r.sa هو مجرد البداية. رؤيتنا تتجاوز مجرد كونه موقع اختصار روابط؛ نحن نطمح لأن نكون المنصة الرقمية الأولى في المملكة التي توفر حلولاً ذكية لإدارة الهوية الرقمية والروابط التسويقية. نحن ملتزمون بالابتكار المستمر وإضافة ميزات تعتمد على الذكاء الاصطناعي لمساعدة عملائنا على تحقيق أقصى استفادة من كل نقرة.
+
+نشكركم من القلب على ثقتكم الغالية التي كانت ولا تزال الوقود لرحلتنا. ندعوكم لمشاركتنا هذا الفصل الجديد والمشرق مع 4r.sa، حيث تجتمع السرعة، الأمان، والبساطة في مكان واحد لخدمة طموحاتكم.
+
+لا تنتظر لتعزيز حضورك الرقمي. انضم إلى آلاف الشركات السعودية التي حققت النجاح مع 4r.sa.
+
+**سجل في 4r.sa اليوم - مجاناً وفي ثوانٍ معدودة!**
+
+انطلق معنا اليوم عبر 4r.sa.. واجعل لكل رابط قصة نجاح سعودية جديدة!`,
+    },
+    category: { en: "News", ar: "أخبار" },
+    readTime: { en: "10 min read", ar: "١٠ دقائق قراءة" },
+    date: { en: "Jul 8, 2026", ar: "٨ يوليو ٢٠٢٦" },
+    seoTitle: {
+      en: "snip.sa is now 4r.sa | The Fastest Saudi-Based URL Shortener",
+      ar: "من snip.sa إلى 4r.sa | أسرع موقع اختصار روابط بهوية سعودية",
+    },
+    seoDescription: {
+      en: "We've rebranded to 4r.sa! Experience the simplest URL shortener in KSA with local servers, blazing speed, and full PDPL compliance. Sign up for free today!",
+      ar: "نعلن تحول snip.sa إلى 4r.sa! اكتشف أسهل موقع اختصار روابط في السعودية بخوادم محلية، سرعة فائقة وأمان كامل لبياناتك. سجل الآن مجاناً وابدأ رحلتك الجديدة.",
+    },
+  },
   {
     slug: "url-shortening-efficiency-analytics",
     image: blogEfficiencyAnalytics,

@@ -531,14 +531,6 @@ const updateUrl = async (req, res) => {
       newIsActive: isActive,
     });
 
-    if (isActive === true && url.moderationStatus === "blocked") {
-      return res.status(400).json({
-        success: false,
-        message:
-          "This link is blocked by content moderation. Use the content scan review action to allow it before activating.",
-      });
-    }
-
     const updateData = {};
     if (isActive !== undefined) updateData.isActive = isActive;
     if (title !== undefined) updateData.title = title;
@@ -614,10 +606,10 @@ const updateUrlModeration = async (req, res) => {
       id,
       {
         moderationStatus,
-        // BLOCK deactivates the link so it can no longer be used; ALLOW
-        // reactivates it. Keeps the Active/Inactive status in sync with
-        // the moderation decision instead of just the redirect-time check.
-        isActive: action === "ALLOW",
+        // Active/Inactive is a separate, admin-controlled lifecycle toggle —
+        // BLOCK/ALLOW never touches it. A blocked link stays inaccessible
+        // via the moderationStatus check in redirectService.validateRedirect
+        // regardless of isActive, so the two states don't need to be synced.
         moderationVerdict: {
           ...(url.moderationVerdict || {}),
           adminReview: {
