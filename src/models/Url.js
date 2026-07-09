@@ -50,6 +50,14 @@ const urlSchema = new mongoose.Schema(
       ref: "Organization",
       default: null,
     },
+    // Enterprise RBAC: which Project this link belongs to. Only set when
+    // `organization` is set — solo (non-enterprise) accounts never set this.
+    // See claude-implementation-docs/Architecture/rbac-enterprise-project-roles.md
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      default: null,
+    },
     domain: {
       type: String,
       default: null,
@@ -393,6 +401,7 @@ urlSchema.index(
 );
 urlSchema.index({ creator: 1 });
 urlSchema.index({ organization: 1 });
+urlSchema.index({ project: 1 });
 urlSchema.index({ isActive: 1 });
 urlSchema.index({ expiresAt: 1 });
 urlSchema.index({ createdAt: -1 });

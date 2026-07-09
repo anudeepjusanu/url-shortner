@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const mongoose = require("mongoose");
 const Organization = require("../models/Organization");
 const Project = require("../models/Project");
 const ProjectMembership = require("../models/ProjectMembership");
@@ -421,6 +422,143 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
   return { memberships, personalProject };
 };
 
+/**
+ * Resolve how a list/read endpoint (links, QR codes, domains, analytics)
+ * should be scoped for this request. A no-op for solo (non-enterprise)
+ * accounts, who keep today's unrestricted, organization-less behavior.
+ *
+ * - No `user.organization`: not an enterprise account — returns {}.
+ * - `requestedProjectId` given: caller must have at least Viewer access on
+ *   it; returns { project: requestedProjectId }.
+ * - No `requestedProjectId`: only the Account Owner may omit it, to see the
+ *   "All projects" aggregate; returns { organization: user.organization }.
+ *   Anyone else omitting it is rejected — the frontend always sends the
+ *   active project for non-owners (only the Owner is ever offered an
+ *   "All projects" view).
+ */
+/**
+ * Loads a client-supplied projectId, scoped to the caller's own
+ * organization — a project id belonging to a different organization 404s
+ * exactly like attachProjectById, rather than leaking whether it exists.
+ */
+const loadOwnProject = async (user, projectId) => {
+  // A malformed id can never match a real project — treat it the same as
+  // "not found" rather than letting Mongoose's CastError bubble up as a 500.
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new NotFoundError("Project not found");
+  }
+  const project = await Project.findOne({
+    _id: projectId,
+    organization: user.organization,
+  });
+  if (!project) {
+    throw new NotFoundError("Project not found");
+  }
+  return project;
+};
+
+const resolveReadScope = async (user, requestedProjectId) => {
+  if (!user.organization) return {};
+
+  if (requestedProjectId) {
+    const project = await loadOwnProject(user, requestedProjectId);
+    const role = await getEffectiveRole(user.id, project);
+    if (!role) {
+      throw new ForbiddenError("You do not have access to this project");
+    }
+    return { project: project._id };
+  }
+
+  if (await isAccountOwner(user.id, user.organization)) {
+    return { organization: user.organization };
+  }
+
+  throw new ValidationError("projectId is required");
+};
+
+/**
+ * Validates + resolves the project a brand-new resource (link, QR code,
+ * domain) should be created in. A no-op for solo accounts (returns null).
+ * For enterprise accounts, requires a projectId and a write-capable role
+ * (owner/admin/editor/personal-owner) on it — Viewers are rejected here.
+ */
+const resolveWriteProject = async (user, requestedProjectId) => {
+  if (!user.organization) return null;
+
+  if (!requestedProjectId) {
+    throw new ValidationError("projectId is required");
+  }
+  const project = await loadOwnProject(user, requestedProjectId);
+  const role = await getEffectiveRole(user.id, project);
+  if (!["owner", "admin", "editor", "personal-owner"].includes(role)) {
+    throw new ForbiddenError("You do not have edit access to this project");
+  }
+  return project._id;
+};
+
+/**
+ * Guards viewing an existing project-scoped resource. Derives the access
+ * check from the resource's own `project` field, never from a client-
+ * supplied projectId. No-op for solo accounts. A resource with no project
+ * set (a pre-migration legacy row) is only visible to the Account Owner,
+ * fail-closed for everyone else, until it's backfilled.
+ */
+const assertCanViewResource = async (user, resource) => {
+  if (!user.organization) return;
+  if (!resource.project) {
+    if (await isAccountOwner(user.id, user.organization)) return;
+    throw new ForbiddenError(
+      "This resource has not been assigned to a project yet",
+    );
+  }
+  const role = await getEffectiveRole(user.id, resource.project);
+  if (!role) {
+    throw new ForbiddenError("You do not have access to this project");
+  }
+};
+
+/**
+ * Guards mutating (edit/delete) an existing project-scoped resource. Same
+ * derive-from-the-resource's-own-project rule as assertCanViewResource —
+ * this is what stops an Editor on Project A from spoofing edit rights over
+ * a resource that actually lives in Project B by passing a different
+ * projectId in the request body.
+ */
+const assertCanEditResource = async (user, resource) => {
+  if (!user.organization) return;
+  if (!resource.project) {
+    if (await isAccountOwner(user.id, user.organization)) return;
+    throw new ForbiddenError(
+      "This resource has not been assigned to a project yet",
+    );
+  }
+  if (!(await canEditProject(user.id, resource.project))) {
+    throw new ForbiddenError("You do not have edit access to this project");
+  }
+};
+
+/**
+ * Guards account-level (not project-owned) sensitive actions — namely the
+ * single per-user API key — that still need to respect per-project roles.
+ * No-op for solo accounts. For enterprise accounts: a specific projectId
+ * requires a write-capable role there; omitting it is only allowed for the
+ * Account Owner (mirroring the "All projects" aggregate view, where there
+ * is no single active project to check against).
+ */
+const assertAccountLevelEditAccess = async (user, projectId) => {
+  if (!user.organization) return;
+
+  if (!projectId) {
+    if (await isAccountOwner(user.id, user.organization)) return;
+    throw new ValidationError("projectId is required");
+  }
+  const project = await loadOwnProject(user, projectId);
+  const role = await getEffectiveRole(user.id, project);
+  if (!["owner", "admin", "editor", "personal-owner"].includes(role)) {
+    throw new ForbiddenError("You do not have edit access to this project");
+  }
+};
+
 module.exports = {
   ForbiddenError,
   NotFoundError,
@@ -442,4 +580,9 @@ module.exports = {
   removeMemberFromProject,
   removeUserFromAccount,
   acceptInvitation,
+  resolveReadScope,
+  resolveWriteProject,
+  assertCanViewResource,
+  assertCanEditResource,
+  assertAccountLevelEditAccess,
 };

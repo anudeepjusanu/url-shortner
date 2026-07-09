@@ -1,107 +1,6 @@
 const Organization = require("../models/Organization");
 const logger = require("../config/logger");
 
-const checkUrlAccess = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const Url = require("../models/Url");
-    const url = await Url.findById(id);
-
-    if (!url) {
-      return res.status(404).json({
-        success: false,
-        message: "URL not found",
-      });
-    }
-
-    const hasAccess =
-      url.creator.toString() === userId ||
-      (req.user.organization &&
-        url.organization?.toString() === req.user.organization.toString()) ||
-      req.user.role === "admin";
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
-    }
-
-    req.url = url;
-    next();
-  } catch (error) {
-    logger.error("URL access check error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Access validation failed",
-    });
-  }
-};
-
-const checkOrganizationAccess = (requiredActions = []) => {
-  return async (req, res, next) => {
-    try {
-      const userId = req.user.id;
-      const organizationId =
-        req.user.organization ||
-        req.params.organizationId ||
-        req.body.organizationId;
-
-      if (!organizationId) {
-        return res.status(400).json({
-          success: false,
-          message: "Organization ID required",
-        });
-      }
-
-      if (req.user.role === "admin") {
-        return next();
-      }
-
-      const organization = await Organization.findById(organizationId);
-
-      if (!organization) {
-        return res.status(404).json({
-          success: false,
-          message: "Organization not found",
-        });
-      }
-
-      const member = organization.members.find(
-        (m) => m.user.toString() === userId,
-      );
-
-      if (!member) {
-        return res.status(403).json({
-          success: false,
-          message: "Not a member of this organization",
-        });
-      }
-
-      for (const action of requiredActions) {
-        if (!organization.canUserPerformAction(userId, action)) {
-          return res.status(403).json({
-            success: false,
-            message: `Insufficient permissions for action: ${action}`,
-          });
-        }
-      }
-
-      req.organization = organization;
-      req.memberRole = member.role;
-      next();
-    } catch (error) {
-      logger.error("Organization access check error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Organization access validation failed",
-      });
-    }
-  };
-};
-
 const requirePremium = (req, res, next) => {
   if (req.user.role === "admin") {
     return next();
@@ -308,8 +207,6 @@ const checkSubscriptionStatus = async (req, res, next) => {
 };
 
 module.exports = {
-  checkUrlAccess,
-  checkOrganizationAccess,
   requirePremium,
   checkResourceLimits,
   checkFeatureAccess,

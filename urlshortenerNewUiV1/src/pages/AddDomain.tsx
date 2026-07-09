@@ -17,6 +17,7 @@ import {
 import { useAddDomain } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
 
 type Step = "enter" | "dns" | "done";
@@ -26,6 +27,7 @@ const AddDomain = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   useRequireEditAccess("/dashboard/domains");
+  const { activeProject } = useProject();
   const [step, setStep] = useState<Step>("enter");
   const [domain, setDomain] = useState("");
   const [subdomain, setSubdomain] = useState("");
@@ -82,6 +84,7 @@ const AddDomain = () => {
       const response = await addDomain.mutateAsync({
         domain: domain.trim(),
         subdomain: subdomain.trim() || undefined,
+        projectId: activeProject?.id,
       });
       const target = response?.data?.cnameTarget || "";
       setCnameTarget(target);

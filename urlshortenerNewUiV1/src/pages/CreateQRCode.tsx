@@ -27,12 +27,14 @@ import { fireConversion } from "@/lib/conversion";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import { QRCodeCanvas } from "qrcode.react";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const CreateQRCode = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   useRequireEditAccess("/dashboard/qr-codes");
+  const { activeProject, isAllProjectsView } = useProject();
   const [searchParams] = useSearchParams();
 
   // Link picker state
@@ -58,7 +60,10 @@ const CreateQRCode = () => {
   useEffect(() => {
     const fetchLinks = async () => {
       try {
-        const res = await myLinksService.getAll({ limit: 100 });
+        const res = await myLinksService.getAll({
+          limit: 100,
+          projectId: isAllProjectsView ? undefined : activeProject?.id,
+        });
         const links = res?.data?.urls ?? [];
         setAllLinks(links);
 
@@ -85,7 +90,7 @@ const CreateQRCode = () => {
       }
     };
     fetchLinks();
-  }, []);
+  }, [activeProject?.id, isAllProjectsView]);
 
   // Close picker on outside click or Escape
   useEffect(() => {
@@ -184,6 +189,7 @@ const CreateQRCode = () => {
     const newLink = await myLinksService.create({
       originalUrl: trimmed,
       ...(label.trim() && { title: label.trim() }),
+      projectId: activeProject?.id,
     });
     const urlId = newLink?.data?.url?._id;
     if (!urlId) throw new Error("Failed to create short link");

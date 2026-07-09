@@ -41,7 +41,7 @@ const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
 const ApiDocs = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { canEdit } = useProject();
+  const { canEdit, activeProject, isLoading: isProjectLoading } = useProject();
 
   // ── API Key ──────────────────────────────────────────────────────────────────
   const [isLoadingKey, setIsLoadingKey] = useState(true);
@@ -54,22 +54,27 @@ const ApiDocs = () => {
   const loadApiKey = useCallback(async () => {
     setIsLoadingKey(true);
     try {
-      const res = await profileService.getApiKey().catch(() => null);
+      // Enterprise RBAC: the active project's role governs whether this
+      // account's key can be revealed here — a Viewer is denied.
+      const res = await profileService
+        .getApiKey(activeProject?.id)
+        .catch(() => null);
       if (res?.apiKey) setApiKey(res.apiKey);
     } finally {
       setIsLoadingKey(false);
     }
-  }, []);
+  }, [activeProject?.id]);
 
   useEffect(() => {
+    if (isProjectLoading) return;
     loadApiKey();
-  }, [loadApiKey]);
+  }, [loadApiKey, isProjectLoading]);
 
   const handleRegenerateKey = async () => {
     setRegenConfirmOpen(false);
     setIsRegeneratingKey(true);
     try {
-      const res = await profileService.regenerateApiKey();
+      const res = await profileService.regenerateApiKey(activeProject?.id);
       if (res?.apiKey) {
         setApiKey(res.apiKey);
         setShowKey(true);

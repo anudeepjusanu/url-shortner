@@ -84,7 +84,7 @@ const endpoints = {
     browsers: "/google-analytics/browsers",
     dashboard: "/google-analytics/dashboard",
   },
-    projects: {
+  projects: {
     list: "/projects",
     create: "/projects",
   },
@@ -858,13 +858,20 @@ export const deepLinkAPI = {
 };
 
 export const dynamicQRCodeAPI = {
-  list: (params?: { page?: number; limit?: number; search?: string }) =>
-    apiClient.get("/dynamic-qr", params),
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    /** Enterprise RBAC: scopes the list to one project. Omit only as the Account Owner viewing "All projects". */
+    projectId?: string;
+  }) => apiClient.get("/dynamic-qr", params),
   get: (id: string) => apiClient.get(`/dynamic-qr/${id}`),
   create: (data: {
     name: string;
     destinationUrl: string;
     customization?: Record<string, unknown>;
+    /** Enterprise RBAC: the project this code is created in. Required for enterprise accounts. */
+    projectId?: string;
   }) => apiClient.post("/dynamic-qr", data),
   update: (
     id: string,

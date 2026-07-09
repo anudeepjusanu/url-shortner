@@ -6,6 +6,16 @@ const sslCertificateService = require("../services/sslCertificateService");
 const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
+
+// Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
+// ValidationError (each carrying a .statusCode). See urlController.js for
+// the same pattern.
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, message: error.message });
+  return true;
+};
 
 // Helper function to clear domain cache for a user
 const clearDomainCache = async (userId) => {
@@ -19,44 +29,47 @@ const clearDomainCache = async (userId) => {
   }
 };
 
-// Helper function to check domain access
-const checkDomainAccess = (domain, user) => {
-  const domainOwnerId = domain.owner.toString();
-  const userId = user.id.toString();
-  const userOrgId = user.organization?.toString();
-  const domainOrgId = domain.organization?.toString();
+// domain.owner may be a bare ObjectId or a populated User doc depending on
+// the query that fetched it — normalize both to a comparable id string.
+const idOf = (value) => (value && value._id ? value._id : value)?.toString();
 
-  logger.info("Domain access check:", {
-    domainOwnerId,
-    userId,
-    userOrgId,
-    domainOrgId,
-    isOwner: domainOwnerId === userId,
-    isSameOrg: userOrgId && domainOrgId && userOrgId === domainOrgId,
-    isAdmin: user.role === "admin",
-  });
-
-  // User owns the domain
-  if (domainOwnerId === userId) {
-    return true;
+// Enterprise RBAC + legacy access checks for an existing domain. Platform
+// admins (user.role === 'admin' — Snip's internal staff role, unrelated to
+// project roles) can always access any domain. Solo accounts: owner-only,
+// unchanged pre-RBAC behavior. Enterprise accounts: governed by the
+// domain's own project + the caller's current role there — a Viewer gets
+// canViewDomain but not canEditDomain.
+const canViewDomain = async (domain, user) => {
+  if (user.role === "admin") return true;
+  if (!user.organization) {
+    return idOf(domain.owner) === user.id.toString();
   }
-
-  // User's organization owns the domain
-  if (userOrgId && domainOrgId && userOrgId === domainOrgId) {
+  try {
+    await projectAccessService.assertCanViewResource(user, domain);
     return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
   }
+};
 
-  // Admin users can access all domains
-  if (user.role === "admin") {
+const canEditDomain = async (domain, user) => {
+  if (user.role === "admin") return true;
+  if (!user.organization) {
+    return idOf(domain.owner) === user.id.toString();
+  }
+  try {
+    await projectAccessService.assertCanEditResource(user, domain);
     return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
   }
-
-  return false;
 };
 
 const addDomain = async (req, res) => {
   try {
-    let { domain, subdomain, isDefault = false } = req.body;
+    let { domain, subdomain, isDefault = false, projectId } = req.body;
 
     if (!domain) {
       return res.status(400).json({
@@ -64,6 +77,13 @@ const addDomain = async (req, res) => {
         message: "Domain name is required",
       });
     }
+
+    // Enterprise RBAC: resolves to null for solo accounts; for enterprise
+    // accounts, requires projectId + a write-capable role and 403s Viewers.
+    const resolvedProjectId = await projectAccessService.resolveWriteProject(
+      req.user,
+      projectId,
+    );
 
     // Validate domain format using Punycode-aware validator
     const { validateDomain, domainToASCII } = require("../utils/punycode");
@@ -109,6 +129,7 @@ const addDomain = async (req, res) => {
       fullDomain: fullDomain.toLowerCase(),
       owner: req.user.id,
       organization: req.user.organization,
+      project: resolvedProjectId,
       isDefault,
       verificationRecord: {
         type: "CNAME",
@@ -151,6 +172,7 @@ const addDomain = async (req, res) => {
       },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Add domain error:", error);
 
     // Handle MongoDB duplicate key error
@@ -183,6 +205,7 @@ const getDomains = async (req, res) => {
       verificationStatus,
       sortBy = "createdAt",
       sortOrder = "desc",
+      projectId,
     } = req.query;
 
     // Temporarily disable caching for debugging
@@ -198,15 +221,16 @@ const getDomains = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const filter = {
-      owner: req.user.id,
-    };
-
-    if (req.user.organization) {
-      filter.$or = [
-        { owner: req.user.id },
-        { organization: req.user.organization },
-      ];
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.owner = req.user.id;
     }
 
     logger.info("getDomains filter:", filter);
@@ -272,6 +296,7 @@ const getDomains = async (req, res) => {
       data: result,
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Get domains error:", error);
     res.status(500).json({
       success: false,
@@ -298,12 +323,7 @@ const getDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (
-      domain.owner._id.toString() !== req.user.id &&
-      (!req.user.organization ||
-        domain.organization?._id.toString() !==
-          req.user.organization.toString())
-    ) {
+    if (!(await canViewDomain(domain, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -352,7 +372,7 @@ const updateDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canEditDomain(domain, req.user))) {
       return res.status(403).json({
         success: false,
         message:
@@ -423,8 +443,7 @@ const deleteDomain = async (req, res) => {
     }
 
     // Check access permissions
-    // Check access permissions
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canEditDomain(domain, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied - You can only delete domains that you own",
@@ -474,7 +493,7 @@ const verifyDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canEditDomain(domain, req.user))) {
       return res.status(403).json({
         success: false,
         message:
@@ -529,7 +548,7 @@ const setDefaultDomain = async (req, res) => {
     }
 
     // Check access permissions
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canEditDomain(domain, req.user))) {
       return res.status(403).json({
         success: false,
         message:
@@ -643,7 +662,7 @@ const provisionSSL = async (req, res) => {
         .json({ success: false, message: "Domain not found" });
     }
 
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canEditDomain(domain, req.user))) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
@@ -697,7 +716,7 @@ const getSSLStatus = async (req, res) => {
         .json({ success: false, message: "Domain not found" });
     }
 
-    if (!checkDomainAccess(domain, req.user)) {
+    if (!(await canViewDomain(domain, req.user))) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 

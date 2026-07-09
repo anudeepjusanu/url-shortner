@@ -75,7 +75,12 @@ const QRCodes = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { canEdit } = useProject();
+  const {
+    canEdit,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get("urlId");
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -116,7 +121,12 @@ const QRCodes = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const res = await myLinksService.getAll({ limit: 100 });
+      const res = await myLinksService.getAll({
+        limit: 100,
+        // Enterprise RBAC: scope the list to the active project. Omitted
+        // only in the Account Owner's "All projects" aggregate view.
+        projectId: isAllProjectsView ? undefined : activeProject?.id,
+      });
       setAllUrls(res?.data?.urls ?? []);
     } catch {
       setIsError(true);
@@ -127,11 +137,12 @@ const QRCodes = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeProject?.id, isAllProjectsView]);
 
   useEffect(() => {
+    if (isProjectLoading) return;
     fetchUrls();
-  }, [fetchUrls]);
+  }, [fetchUrls, isProjectLoading]);
 
   // Refetch when tab becomes visible again
   useEffect(() => {

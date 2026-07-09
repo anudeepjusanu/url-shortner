@@ -70,7 +70,12 @@ const CustomDomains = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { canEdit } = useProject();
+  const {
+    canEdit,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   const [dnsDialog, setDnsDialog] = useState<DomainEntry | null>(null);
   const [showVerified, setShowVerified] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -86,7 +91,16 @@ const CustomDomains = () => {
   });
   const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
 
-  const { data: domainsData, isLoading, isError } = useDomains();
+  // Enterprise RBAC: scope the list to the active project. Omitted only in
+  // the Account Owner's "All projects" aggregate view.
+  const {
+    data: domainsData,
+    isLoading,
+    isError,
+  } = useDomains(
+    { projectId: isAllProjectsView ? undefined : activeProject?.id },
+    { enabled: !isProjectLoading },
+  );
   const deleteDomain = useDeleteDomain();
   const verifyDomain = useVerifyDomain();
   const setDefaultDomain = useSetDefaultDomain();

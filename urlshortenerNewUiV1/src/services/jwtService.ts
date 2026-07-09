@@ -81,8 +81,8 @@ async function authRequest<T = any>(
   if (!response.ok) {
     const errData = data as any;
     const validationErrors:
-      | Array<{ field: string; message: string; value?: unknown }>
-      | undefined = errData?.errors?.length ? errData.errors : undefined;
+      Array<{ field: string; message: string; value?: unknown }> | undefined =
+      errData?.errors?.length ? errData.errors : undefined;
     const message = validationErrors
       ? validationErrors.map((e) => e.message).join("; ")
       : errData?.message || errData?.error || `HTTP ${response.status}`;
@@ -153,6 +153,8 @@ export interface GetUrlsParams {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   tags?: string;
+  /** Enterprise RBAC: scopes the list to one project. Omit only as the Account Owner viewing "All projects". */
+  projectId?: string;
 }
 
 export const myLinksService = {
@@ -180,6 +182,8 @@ export const myLinksService = {
     domainId?: string;
     password?: string;
     utmParams?: Record<string, string>;
+    /** Enterprise RBAC: the project this link is created in. Required for enterprise accounts. */
+    projectId?: string;
   }) => authRequest("/urls", { method: "POST", body: data as any }),
 
   /** PUT /urls/:id — update an existing link */
@@ -204,8 +208,11 @@ export const myLinksService = {
     authRequest("/urls/bulk-delete", { method: "POST", body: { ids } as any }),
 
   /** POST /urls/bulk-create — create multiple links from parsed file data */
-  bulkCreate: (urls: BulkCreateEntry[]) =>
-    authRequest("/urls/bulk-create", { method: "POST", body: { urls } as any }),
+  bulkCreate: (urls: BulkCreateEntry[], projectId?: string) =>
+    authRequest("/urls/bulk-create", {
+      method: "POST",
+      body: { urls, projectId } as any,
+    }),
 
   /** GET /urls/stats — aggregated stats (total clicks, top URLs, etc.) */
   getStats: () => authRequest("/urls/stats"),
@@ -423,12 +430,24 @@ export const profileService = {
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     authRequest("/auth/change-password", { method: "POST", body: data as any }),
 
-  /** GET /auth/api-key → { success, apiKey } */
-  getApiKey: () => authRequest("/auth/api-key"),
+  /**
+   * GET /auth/api-key → { success, apiKey }
+   * Enterprise RBAC: pass the active projectId — a Viewer there is denied.
+   */
+  getApiKey: (projectId?: string) =>
+    authRequest(
+      `/auth/api-key${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    ),
 
-  /** POST /auth/regenerate-api-key → { success, apiKey } */
-  regenerateApiKey: () =>
-    authRequest("/auth/regenerate-api-key", { method: "POST" }),
+  /**
+   * POST /auth/regenerate-api-key → { success, apiKey }
+   * Enterprise RBAC: pass the active projectId — a Viewer there is denied.
+   */
+  regenerateApiKey: (projectId?: string) =>
+    authRequest("/auth/regenerate-api-key", {
+      method: "POST",
+      body: { projectId } as any,
+    }),
 
   /** GET /auth/preferences → { emailNotifications, marketingEmails, weeklyReports, language, timezone } */
   getPreferences: () => authRequest("/auth/preferences"),

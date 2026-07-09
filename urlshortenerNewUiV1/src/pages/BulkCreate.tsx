@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import { myLinksService, BulkCreateEntry } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import {
@@ -183,6 +184,7 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 
 const BulkCreate = () => {
   useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
   const { toast } = useToast();
   const dropRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -342,7 +344,10 @@ const BulkCreate = () => {
       setProgressLabel(`Processing chunk ${c + 1} of ${chunks.length}…`);
 
       try {
-        const res: any = await myLinksService.bulkCreate(chunks[c]);
+        const res: any = await myLinksService.bulkCreate(
+          chunks[c],
+          activeProject?.id,
+        );
         const data = res?.data;
         if (data?.successful) allSuccessful.push(...data.successful);
         if (data?.failed) allFailed.push(...data.failed);

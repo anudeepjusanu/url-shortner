@@ -6,6 +6,51 @@ const DynamicQRCode = require("../models/DynamicQRCode");
 const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
+
+// Enterprise RBAC + legacy access checks. Solo accounts: unchanged,
+// creator-only. Enterprise accounts: governed by the code's own project +
+// the caller's current role there — not just "same organization," since
+// that alone would let any org member touch any other member's codes.
+const canViewDqr = async (doc, user) => {
+  if (!user.organization) return doc.creator.toString() === user.id.toString();
+  try {
+    await projectAccessService.assertCanViewResource(user, doc);
+    return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
+  }
+};
+
+const canEditDqr = async (doc, user) => {
+  if (!user.organization) return doc.creator.toString() === user.id.toString();
+  try {
+    await projectAccessService.assertCanEditResource(user, doc);
+    return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
+  }
+};
+
+// Enterprise RBAC: resolveReadScope/resolveWriteProject throw
+// ForbiddenError/NotFoundError/ValidationError (each carrying .statusCode).
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, error: error.message });
+  return true;
+};
+
+// Scopes a by-id lookup to the caller's own tenant: solo accounts keep the
+// original creator-only filter; enterprise accounts are scoped to the
+// organization here, with the fine-grained per-project role check left to
+// canViewDqr/canEditDqr at the call site (an org-wide match alone isn't
+// enough — a Viewer on a different project must still be denied).
+const scopedByIdFilter = (id, user) =>
+  user.organization
+    ? { _id: id, organization: user.organization }
+    : { _id: id, creator: user.id };
 
 const CACHE_TTL = 60; // seconds — short so destination changes propagate quickly
 const cacheKey = (code) => `dqr:${code}`;
@@ -129,8 +174,15 @@ exports.create = [
     }
 
     try {
-      const { name, destinationUrl, customization = {} } = req.body;
+      const { name, destinationUrl, customization = {}, projectId } = req.body;
       const creator = req.user.id;
+
+      // Resolves to null for solo accounts; for enterprise accounts,
+      // requires projectId + a write-capable role and 403s Viewers.
+      const resolvedProjectId = await projectAccessService.resolveWriteProject(
+        req.user,
+        projectId,
+      );
 
       const code = await DynamicQRCode.generateUniqueCode();
       const scanUrl = getScanUrl(code);
@@ -145,6 +197,7 @@ exports.create = [
         destinationUrl,
         creator,
         organization: req.user.organization || null,
+        project: resolvedProjectId,
         customization,
         qrCodeData,
         destinationHistory: [{ url: destinationUrl, changedBy: creator }],
@@ -156,6 +209,7 @@ exports.create = [
         data: { ...doc.toObject(), scanUrl },
       });
     } catch (err) {
+      if (sendIfAccessError(err, res)) return;
       logger.error("DynamicQR create error:", err);
       return res
         .status(500)
@@ -172,7 +226,17 @@ exports.list = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search?.trim();
 
-    const filter = { creator: req.user.id };
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      req.query.projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.creator = req.user.id;
+    }
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -203,6 +267,7 @@ exports.list = async (req, res) => {
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (err) {
+    if (sendIfAccessError(err, res)) return;
     logger.error("DynamicQR list error:", err);
     return res
       .status(500)
@@ -213,12 +278,11 @@ exports.list = async (req, res) => {
 // GET /api/dynamic-qr/:id
 exports.get = async (req, res) => {
   try {
-    const doc = await DynamicQRCode.findOne({
-      _id: req.params.id,
-      creator: req.user.id,
-    }).lean();
+    const doc = await DynamicQRCode.findOne(
+      scopedByIdFilter(req.params.id, req.user),
+    ).lean();
 
-    if (!doc) {
+    if (!doc || !(await canViewDqr(doc, req.user))) {
       return res
         .status(404)
         .json({ success: false, error: "Dynamic QR code not found" });
@@ -239,11 +303,10 @@ exports.get = async (req, res) => {
 // PUT /api/dynamic-qr/:id  — update name / customization (not destination)
 exports.update = async (req, res) => {
   try {
-    const doc = await DynamicQRCode.findOne({
-      _id: req.params.id,
-      creator: req.user.id,
-    });
-    if (!doc) {
+    const doc = await DynamicQRCode.findOne(
+      scopedByIdFilter(req.params.id, req.user),
+    );
+    if (!doc || !(await canEditDqr(doc, req.user))) {
       return res
         .status(404)
         .json({ success: false, error: "Dynamic QR code not found" });
@@ -306,11 +369,10 @@ exports.updateDestination = [
     }
 
     try {
-      const doc = await DynamicQRCode.findOne({
-        _id: req.params.id,
-        creator: req.user.id,
-      });
-      if (!doc) {
+      const doc = await DynamicQRCode.findOne(
+        scopedByIdFilter(req.params.id, req.user),
+      );
+      if (!doc || !(await canEditDqr(doc, req.user))) {
         return res
           .status(404)
           .json({ success: false, error: "Dynamic QR code not found" });
@@ -351,17 +413,17 @@ exports.updateDestination = [
 // DELETE /api/dynamic-qr/:id
 exports.remove = async (req, res) => {
   try {
-    const doc = await DynamicQRCode.findOneAndDelete({
-      _id: req.params.id,
-      creator: req.user.id,
-    });
+    const doc = await DynamicQRCode.findOne(
+      scopedByIdFilter(req.params.id, req.user),
+    );
 
-    if (!doc) {
+    if (!doc || !(await canEditDqr(doc, req.user))) {
       return res
         .status(404)
         .json({ success: false, error: "Dynamic QR code not found" });
     }
 
+    await DynamicQRCode.deleteOne({ _id: doc._id });
     await cacheDel(cacheKey(doc.code));
 
     return res.json({ success: true, message: "Dynamic QR code deleted" });
@@ -376,16 +438,15 @@ exports.remove = async (req, res) => {
 // GET /api/dynamic-qr/:id/analytics
 exports.getAnalytics = async (req, res) => {
   try {
-    const doc = await DynamicQRCode.findOne({
-      _id: req.params.id,
-      creator: req.user.id,
-    })
+    const doc = await DynamicQRCode.findOne(
+      scopedByIdFilter(req.params.id, req.user),
+    )
       .select(
-        "code name destinationUrl scanCount uniqueScanCount lastScannedAt destinationHistory createdAt isActive",
+        "code name destinationUrl scanCount uniqueScanCount lastScannedAt destinationHistory createdAt isActive creator organization project",
       )
       .lean();
 
-    if (!doc) {
+    if (!doc || !(await canViewDqr(doc, req.user))) {
       return res
         .status(404)
         .json({ success: false, error: "Dynamic QR code not found" });
@@ -410,11 +471,10 @@ exports.getAnalytics = async (req, res) => {
 // GET /api/dynamic-qr/:id/download?format=png
 exports.download = async (req, res) => {
   try {
-    const doc = await DynamicQRCode.findOne({
-      _id: req.params.id,
-      creator: req.user.id,
-    });
-    if (!doc) {
+    const doc = await DynamicQRCode.findOne(
+      scopedByIdFilter(req.params.id, req.user),
+    );
+    if (!doc || !(await canViewDqr(doc, req.user))) {
       return res
         .status(404)
         .json({ success: false, error: "Dynamic QR code not found" });

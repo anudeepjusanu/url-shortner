@@ -14,10 +14,17 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Loader2, QrCode, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  QrCode,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { dynamicQRCodeAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -64,6 +71,7 @@ export default function CreateDynamicQRCode() {
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { activeProject } = useProject();
 
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -75,6 +83,7 @@ export default function CreateDynamicQRCode() {
       dynamicQRCodeAPI.create({
         name: form.name.trim(),
         destinationUrl: form.destinationUrl.trim(),
+        projectId: activeProject?.id,
         customization: {
           size: form.size,
           format: form.format,
@@ -86,7 +95,9 @@ export default function CreateDynamicQRCode() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dynamic-qr"] });
-      toast({ title: t("Dynamic QR code created!", "تم إنشاء كود QR الديناميكي!") });
+      toast({
+        title: t("Dynamic QR code created!", "تم إنشاء كود QR الديناميكي!"),
+      });
       navigate("/dashboard/dynamic-qr");
     },
     onError: (err: any) => {
@@ -102,7 +113,8 @@ export default function CreateDynamicQRCode() {
         toast({
           variant: "destructive",
           title: t("Creation failed", "فشل الإنشاء"),
-          description: err?.message ?? t("Please try again", "يرجى المحاولة مرة أخرى"),
+          description:
+            err?.message ?? t("Please try again", "يرجى المحاولة مرة أخرى"),
         });
       }
     },
@@ -117,14 +129,17 @@ export default function CreateDynamicQRCode() {
     }
 
     if (!form.destinationUrl.trim()) {
-      next.destinationUrl = t("Destination URL is required", "رابط الوجهة مطلوب");
+      next.destinationUrl = t(
+        "Destination URL is required",
+        "رابط الوجهة مطلوب",
+      );
     } else {
       try {
         const p = new URL(form.destinationUrl.trim());
         if (p.protocol !== "http:" && p.protocol !== "https:") {
           next.destinationUrl = t(
             "URL must start with http:// or https://",
-            "يجب أن يبدأ الرابط بـ http:// أو https://"
+            "يجب أن يبدأ الرابط بـ http:// أو https://",
           );
         }
       } catch {
@@ -168,7 +183,7 @@ export default function CreateDynamicQRCode() {
             <p className="text-sm text-muted-foreground mt-0.5">
               {t(
                 "The QR code is permanent — only the destination changes.",
-                "كود QR دائم — الوجهة هي التي تتغير."
+                "كود QR دائم — الوجهة هي التي تتغير.",
               )}
             </p>
           </div>
@@ -186,12 +201,18 @@ export default function CreateDynamicQRCode() {
               value={form.name}
               onChange={(e) => {
                 set("name", e.target.value);
-                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                if (errors.name)
+                  setErrors((prev) => ({ ...prev, name: undefined }));
               }}
-              placeholder={t("e.g. Summer Campaign 2025", "مثال: حملة صيف 2025")}
+              placeholder={t(
+                "e.g. Summer Campaign 2025",
+                "مثال: حملة صيف 2025",
+              )}
               maxLength={100}
             />
-            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name}</p>
+            )}
           </div>
 
           {/* Destination URL */}
@@ -213,12 +234,14 @@ export default function CreateDynamicQRCode() {
               dir="ltr"
             />
             {errors.destinationUrl && (
-              <p className="text-xs text-destructive">{errors.destinationUrl}</p>
+              <p className="text-xs text-destructive">
+                {errors.destinationUrl}
+              </p>
             )}
             <p className="text-xs text-muted-foreground">
               {t(
                 "You can update this URL anytime without changing the QR image.",
-                "يمكنك تحديث هذا الرابط في أي وقت دون تغيير صورة QR."
+                "يمكنك تحديث هذا الرابط في أي وقت دون تغيير صورة QR.",
               )}
             </p>
           </div>
@@ -243,16 +266,19 @@ export default function CreateDynamicQRCode() {
             <div className="space-y-4 ps-2 border-s-2 border-muted">
               {/* Size */}
               <div className="space-y-1.5">
-                <Label htmlFor="size">
-                  {t("Size (px)", "الحجم (بكسل)")}
-                </Label>
+                <Label htmlFor="size">{t("Size (px)", "الحجم (بكسل)")}</Label>
                 <Input
                   id="size"
                   type="number"
                   min={100}
                   max={2000}
                   value={form.size}
-                  onChange={(e) => set("size", Math.max(100, Math.min(2000, Number(e.target.value))))}
+                  onChange={(e) =>
+                    set(
+                      "size",
+                      Math.max(100, Math.min(2000, Number(e.target.value))),
+                    )
+                  }
                   dir="ltr"
                 />
               </div>
@@ -260,7 +286,10 @@ export default function CreateDynamicQRCode() {
               {/* Format */}
               <div className="space-y-1.5">
                 <Label>{t("Download Format", "صيغة التحميل")}</Label>
-                <Select value={form.format} onValueChange={(v) => set("format", v)}>
+                <Select
+                  value={form.format}
+                  onValueChange={(v) => set("format", v)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -341,7 +370,9 @@ export default function CreateDynamicQRCode() {
                   checked={form.includeMargin}
                   onCheckedChange={(v) => set("includeMargin", v)}
                 />
-                <Label htmlFor="margin">{t("Include margin (quiet zone)", "تضمين هامش")}</Label>
+                <Label htmlFor="margin">
+                  {t("Include margin (quiet zone)", "تضمين هامش")}
+                </Label>
               </div>
             </div>
           )}
@@ -352,7 +383,7 @@ export default function CreateDynamicQRCode() {
             <p className="text-sm text-muted-foreground">
               {t(
                 "A permanent scan URL will be generated and encoded into the QR image. You can change the destination anytime from the dashboard — no need to reprint.",
-                "سيتم إنشاء رابط مسح دائم وتضمينه في صورة QR. يمكنك تغيير الوجهة في أي وقت من لوحة التحكم دون الحاجة لإعادة الطباعة."
+                "سيتم إنشاء رابط مسح دائم وتضمينه في صورة QR. يمكنك تغيير الوجهة في أي وقت من لوحة التحكم دون الحاجة لإعادة الطباعة.",
               )}
             </p>
           </div>
@@ -367,7 +398,11 @@ export default function CreateDynamicQRCode() {
             >
               {t("Cancel", "إلغاء")}
             </Button>
-            <Button type="submit" disabled={createMutation.isPending} className="flex-1">
+            <Button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="flex-1"
+            >
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin me-2" />
               ) : (

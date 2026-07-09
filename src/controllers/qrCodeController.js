@@ -5,6 +5,32 @@ const sharp = require("sharp");
 const PDFDocument = require("pdfkit");
 const { domainToASCII } = require("../utils/punycode");
 const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
+
+// Enterprise RBAC + legacy access checks for the Url a QR code belongs to.
+// Solo accounts: unchanged, creator-only. Enterprise accounts: governed by
+// the link's own project + the caller's current role there.
+const canViewQrUrl = async (url, user) => {
+  if (!user.organization) return url.creator.toString() === user.id.toString();
+  try {
+    await projectAccessService.assertCanViewResource(user, url);
+    return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
+  }
+};
+
+const canEditQrUrl = async (url, user) => {
+  if (!user.organization) return url.creator.toString() === user.id.toString();
+  try {
+    await projectAccessService.assertCanEditResource(user, url);
+    return true;
+  } catch (error) {
+    if (error.statusCode) return false;
+    throw error;
+  }
+};
 
 // Helper function to get the correct protocol for a domain
 const getProtocolForDomain = (domain) => {
@@ -131,12 +157,8 @@ const generateQRCode = async (req, res) => {
       originalUrl: url.originalUrl,
     });
 
-    // Check if user owns this URL
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    // Check access — solo: creator only. Enterprise: current project role.
+    if (!(await canEditQrUrl(url, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -291,12 +313,8 @@ const downloadQRCode = async (req, res) => {
       domain: url.domain,
     });
 
-    // Check if user owns this URL
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    // Downloading is a view/export action — Viewers can do this too.
+    if (!(await canViewQrUrl(url, req.user))) {
       logger.error("❌ Access denied:", {
         urlCreator: url.creator.toString(),
         requestUser: req.user.id,
@@ -446,12 +464,7 @@ const getUrlQRCode = async (req, res) => {
       });
     }
 
-    // Check if user owns this URL
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!(await canViewQrUrl(url, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -519,7 +532,7 @@ const bulkGenerateQRCodes = async (req, res) => {
     const { size = 300, format = "png", errorCorrection = "M" } = options;
 
     // Find all URLs
-    const urls = await Url.find({
+    const foundUrls = await Url.find({
       _id: { $in: urlIds },
       $or: [
         { creator: req.user.id },
@@ -528,6 +541,14 @@ const bulkGenerateQRCodes = async (req, res) => {
           : []),
       ],
     });
+
+    // Enterprise RBAC: each url's own project + the caller's current role
+    // there governs edit access — a broad organization match above isn't
+    // enough on its own (e.g. a Viewer, or an Editor on a different project).
+    const editable = await Promise.all(
+      foundUrls.map((url) => canEditQrUrl(url, req.user)),
+    );
+    const urls = foundUrls.filter((_url, index) => editable[index]);
 
     if (urls.length === 0) {
       return res.status(404).json({
@@ -720,12 +741,7 @@ const updateQRCodeCustomization = async (req, res) => {
       });
     }
 
-    // Check if user owns this URL
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!(await canEditQrUrl(url, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -852,11 +868,7 @@ const deleteQRCode = async (req, res) => {
       return res.status(404).json({ success: false, message: "URL not found" });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!(await canEditQrUrl(url, req.user))) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 

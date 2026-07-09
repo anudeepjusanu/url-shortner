@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Url = require("../models/Url");
 const User = require("../models/User");
 const Domain = require("../models/Domain");
+const projectAccessService = require("../services/projectAccessService");
 const {
   generateShortCode,
   validateShortCode,
@@ -13,6 +14,16 @@ const config = require("../config/environment");
 const safeBrowsingService = require("../services/safeBrowsingService");
 const { triggerUrlScan } = require("../services/urlScanner/scanTrigger");
 const logger = require("../config/logger");
+
+// Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
+// ValidationError (each carrying a .statusCode) for ProjectId scope checks.
+// Returns true (and has already written the response) if `error` was one of
+// those, so the caller's catch block can just `if (sendIfAccessError(...)) return;`.
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, message: error.message });
+  return true;
+};
 
 // Single source of truth for the public short-link base URL.
 // BASE_URL takes precedence; otherwise it is derived from BASE_DOMAIN so that
@@ -268,7 +279,15 @@ const createUrl = async (req, res) => {
       domainId,
       generateQRCode = false, // Option to auto-generate QR code
       source: bodySource,
+      projectId,
     } = req.body;
+
+    // Enterprise RBAC: resolves to null for solo accounts; for enterprise
+    // accounts, requires projectId + a write-capable role and 403s Viewers.
+    const resolvedProjectId = await projectAccessService.resolveWriteProject(
+      req.user,
+      projectId,
+    );
 
     // Check usage limits before creating URL
     const usageCheck = await UsageTracker.canPerformAction(
@@ -440,6 +459,7 @@ const createUrl = async (req, res) => {
       description,
       creator: req.user.id,
       organization: req.user.organization,
+      project: resolvedProjectId,
       domain: useBaseDomain
         ? null
         : selectedDomain
@@ -568,6 +588,7 @@ const createUrl = async (req, res) => {
       },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Create URL error:", error);
     res.status(500).json({
       success: false,
@@ -588,19 +609,21 @@ const getUrls = async (req, res) => {
       sortOrder = "desc",
       isActive,
       deepLinkEnabled,
+      projectId,
     } = req.query;
 
     const skip = (page - 1) * limit;
 
-    const filter = {
-      creator: req.user.id,
-    };
-
-    if (req.user.organization) {
-      filter.$or = [
-        { creator: req.user.id },
-        { organization: req.user.organization },
-      ];
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate. 403/400s if the caller lacks access.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.creator = req.user.id;
     }
 
     if (deepLinkEnabled !== undefined) {
@@ -651,6 +674,7 @@ const getUrls = async (req, res) => {
       },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Get URLs error:", error);
     res.status(500).json({
       success: false,
@@ -674,22 +698,20 @@ const getUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator._id.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?._id.toString() !== req.user.organization.toString())
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
+    // Solo accounts: unchanged, creator-only. Enterprise accounts: governed
+    // entirely by the link's own project + the caller's current role there
+    // (assertCanViewResource is a no-op for solo, since it has no project).
+    if (!req.user.organization && url.creator._id.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
+    await projectAccessService.assertCanViewResource(req.user, url);
 
     res.json({
       success: true,
       data: { url },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Get URL error:", error);
     res.status(500).json({
       success: false,
@@ -724,16 +746,13 @@ const updateUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     // Validate and check accessibility of new originalUrl if provided
     if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
@@ -901,6 +920,7 @@ const updateUrl = async (req, res) => {
       data: { url: updatedUrl },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Update URL error:", error);
     res.status(500).json({
       success: false,
@@ -922,16 +942,13 @@ const deleteUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     await Url.findByIdAndDelete(id);
     await cacheDel(`url:${url.shortCode.toLowerCase()}`);
@@ -944,6 +961,7 @@ const deleteUrl = async (req, res) => {
       message: "URL deleted successfully",
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Delete URL error:", error);
     res.status(500).json({
       success: false,
@@ -980,6 +998,15 @@ const bulkDelete = async (req, res) => {
       });
     }
 
+    // Enterprise RBAC: each url's own project + the caller's current role
+    // there governs edit access — a broad organization match above isn't
+    // enough on its own. Solo accounts already required creator match above.
+    for (const url of urls) {
+      if (req.user.organization) {
+        await projectAccessService.assertCanEditResource(req.user, url);
+      }
+    }
+
     const shortCodes = urls.map((url) => url.shortCode);
     const customCodes = urls
       .filter((url) => url.customCode)
@@ -999,6 +1026,7 @@ const bulkDelete = async (req, res) => {
       message: `${urls.length} URLs deleted successfully`,
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Bulk delete error:", error);
     res.status(500).json({
       success: false,
@@ -1135,7 +1163,7 @@ const getUrlStats = async (req, res) => {
 
 const bulkCreate = async (req, res) => {
   try {
-    const { urls } = req.body;
+    const { urls, projectId } = req.body;
 
     if (!Array.isArray(urls) || urls.length === 0) {
       return res
@@ -1147,6 +1175,12 @@ const bulkCreate = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Maximum 1000 URLs per batch" });
     }
+
+    // The whole batch is created in a single project.
+    const resolvedProjectId = await projectAccessService.resolveWriteProject(
+      req.user,
+      projectId,
+    );
 
     const today = new Date();
     const bulkTag =
@@ -1330,6 +1364,7 @@ const bulkCreate = async (req, res) => {
           title: entry.title || "",
           creator: req.user.id,
           organization: req.user.organization,
+          project: resolvedProjectId,
           tags,
           utm: hasUtm ? utm : {},
           bulkImportId,
@@ -1378,6 +1413,7 @@ const bulkCreate = async (req, res) => {
       },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Bulk create error:", error);
     res
       .status(500)
@@ -1559,13 +1595,10 @@ const updateDeepLink = async (req, res) => {
     if (!url) {
       return res.status(404).json({ success: false, message: "URL not found" });
     }
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     const isEnabling = enabled === true || enabled === "true";
     const isDisabling = enabled === false || enabled === "false";
@@ -1618,6 +1651,7 @@ const updateDeepLink = async (req, res) => {
 
     return res.json({ success: true, data: url });
   } catch (err) {
+    if (sendIfAccessError(err, res)) return;
     logger.error("[updateDeepLink] error:", err.message);
     return res.status(500).json({
       success: false,

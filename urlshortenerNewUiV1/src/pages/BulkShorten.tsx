@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -238,6 +239,7 @@ const BulkShorten = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
 
   const [rows, setRows] = useState<BulkRow[]>([
     makeRow(),
@@ -399,6 +401,7 @@ const BulkShorten = () => {
         const body: Parameters<typeof myLinksService.create>[0] = {
           originalUrl: row.originalUrl.trim(),
         };
+        if (activeProject?.id) body.projectId = activeProject.id;
         if (row.customAlias.trim()) body.customCode = row.customAlias.trim();
         if (row.domainId) body.domainId = row.domainId;
         if (

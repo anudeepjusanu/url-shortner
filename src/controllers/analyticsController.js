@@ -5,6 +5,16 @@ const Domain = require("../models/Domain");
 const { cacheGet, cacheSet } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
+
+// Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
+// ValidationError (each carrying a .statusCode). See urlController.js for
+// the same pattern.
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, message: error.message });
+  return true;
+};
 
 // Shared helper — fetches, caches, and returns the full analytics data object.
 // All sub-route controllers call this so they share the same cache entry.
@@ -27,14 +37,23 @@ const resolveAnalyticsData = async (id, query, user) => {
     throw e;
   }
 
-  if (
-    url.creator.toString() !== user.id &&
-    (!user.organization ||
-      url.organization?.toString() !== user.organization.toString())
-  ) {
+  // Analytics has no Viewer restriction (everyone can view/export), but
+  // still respects project scoping — solo: creator-only, unchanged.
+  // Enterprise: governed by the link's own project.
+  if (!user.organization && url.creator.toString() !== user.id) {
     const e = new Error("Access denied");
     e.status = 403;
     throw e;
+  }
+  try {
+    await projectAccessService.assertCanViewResource(user, url);
+  } catch (error) {
+    if (error.statusCode) {
+      const e = new Error(error.message);
+      e.status = error.statusCode;
+      throw e;
+    }
+    throw error;
   }
 
   const cacheKey = `analytics:${id}:${period}:${groupBy}`;
@@ -507,12 +526,17 @@ const getDashboardAnalytics = async (req, res) => {
       }
     }
 
-    const filter = {
-      $or: [
-        { creator: userObjectId },
-        ...(orgObjectId ? [{ organization: orgObjectId }] : []),
-      ],
-    };
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      req.query.projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.creator = userObjectId;
+    }
 
     const now = new Date();
     let dateRange;
@@ -547,12 +571,10 @@ const getDashboardAnalytics = async (req, res) => {
     );
     const urlIds = urls.map((url) => url._id);
 
-    const customDomainsFilter = {
-      $or: [
-        { owner: userObjectId },
-        ...(orgObjectId ? [{ organization: orgObjectId }] : []),
-      ],
-    };
+    const customDomainsFilter = { ...scope };
+    if (!req.user.organization) {
+      customDomainsFilter.owner = userObjectId;
+    }
     const totalCustomDomains = await Domain.countDocuments(customDomainsFilter);
 
     logger.info(
@@ -865,6 +887,7 @@ const getDashboardAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Get dashboard analytics error:", error);
     logger.error("Error stack:", error.stack);
     res.status(500).json({
@@ -897,16 +920,13 @@ const exportAnalytics = async (req, res) => {
       });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanViewResource(req.user, url);
 
     const days =
       {
@@ -972,6 +992,7 @@ const exportAnalytics = async (req, res) => {
       res.json(exportData);
     }
   } catch (error) {
+    if (sendIfAccessError(error, res)) return;
     logger.error("Export analytics error:", error);
     res.status(500).json({
       success: false,

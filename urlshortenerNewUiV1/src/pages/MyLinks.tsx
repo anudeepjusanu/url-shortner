@@ -54,7 +54,12 @@ const MyLinks = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { canEdit } = useProject();
+  const {
+    canEdit,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest" | "most-clicked">(
     "latest",
@@ -97,16 +102,22 @@ const MyLinks = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const res = await myLinksService.getAll({ limit: 100 });
+      const res = await myLinksService.getAll({
+        limit: 100,
+        // Enterprise RBAC: scope the list to the active project. Omitted
+        // only in the Account Owner's "All projects" aggregate view.
+        projectId: isAllProjectsView ? undefined : activeProject?.id,
+      });
       setUrls(res?.data?.urls ?? []);
     } catch {
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeProject?.id, isAllProjectsView]);
 
   useEffect(() => {
+    if (isProjectLoading) return;
     fetchUrls();
     myLinksService
       .getAvailableDomains()
@@ -114,7 +125,7 @@ const MyLinks = () => {
         setAvailableDomains(res?.data?.domains ?? []);
       })
       .catch(() => {});
-  }, [fetchUrls]);
+  }, [fetchUrls, isProjectLoading]);
 
   // Refetch when tab becomes visible again
   useEffect(() => {

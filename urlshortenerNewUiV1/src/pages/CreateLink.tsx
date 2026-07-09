@@ -21,6 +21,7 @@ import {
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 
@@ -29,6 +30,7 @@ const CreateLink = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
   const [originalUrl, setOriginalUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [title, setTitle] = useState("");
@@ -150,6 +152,12 @@ const CreateLink = () => {
         originalUrl: originalUrl.trim(),
         source: "dashboard",
       };
+
+      // Enterprise RBAC: which project this link is created in. Undefined
+      // for solo accounts, where the backend doesn't require it.
+      if (activeProject?.id) {
+        payload.projectId = activeProject.id;
+      }
 
       if (customAlias.trim()) {
         payload.customCode = customAlias.trim();

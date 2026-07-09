@@ -3,15 +3,43 @@ import { useParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Download, MousePointer, Users, QrCode, ZoomIn, ZoomOut, RotateCcw, CalendarIcon, ChevronDown, Clock, Loader2 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Download,
+  MousePointer,
+  Users,
+  QrCode,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  CalendarIcon,
+  ChevronDown,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useUrlAnalytics, useAnalyticsDashboard } from "@/hooks/useApi";
 import { analyticsService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
 
 // ─── Constants ───
@@ -24,8 +52,9 @@ type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 // ─── Saudi Arabia Standard Time offset (UTC+3) ───
 const SAST_OFFSET_MS = 3 * 3600_000;
 
-
-const HOUR_WEIGHTS = [1,1,1,1,1,2,3,5,7,8,9,8,7,8,9,8,6,5,4,3,2,2,1,1];
+const HOUR_WEIGHTS = [
+  1, 1, 1, 1, 1, 2, 3, 5, 7, 8, 9, 8, 7, 8, 9, 8, 6, 5, 4, 3, 2, 2, 1, 1,
+];
 const TOTAL_WEIGHT = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
 
 // Distribute `total` across 24 hours using the largest-remainder method.
@@ -33,7 +62,7 @@ const TOTAL_WEIGHT = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
 // correct peak hours even when total is very small (e.g. 1–5 clicks).
 function distributeAcrossHours(total: number): number[] {
   if (total === 0) return new Array(24).fill(0);
-  const exact = HOUR_WEIGHTS.map(w => (w / TOTAL_WEIGHT) * total);
+  const exact = HOUR_WEIGHTS.map((w) => (w / TOTAL_WEIGHT) * total);
   const floored = exact.map(Math.floor);
   const remainder = total - floored.reduce((a, b) => a + b, 0);
   exact
@@ -48,7 +77,12 @@ function distributeAcrossHours(total: number): number[] {
 // rangeStartMs/rangeEndMs extend the timeline to cover the full selected period,
 // ensuring sparse API data (e.g. only days-with-clicks) doesn't shrink the window.
 const buildHourlyTimeline = (
-  dailyData: { date: string; clicks: number; visitors: number; qrScans: number }[],
+  dailyData: {
+    date: string;
+    clicks: number;
+    visitors: number;
+    qrScans: number;
+  }[],
   rangeStartMs?: number,
   rangeEndMs?: number,
 ) => {
@@ -59,7 +93,7 @@ const buildHourlyTimeline = (
     const d = new Date(raw);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
-  const dataMap = new Map(dailyData.map(d => [toLocalKey(d.date), d]));
+  const dataMap = new Map(dailyData.map((d) => [toLocalKey(d.date), d]));
 
   let start: Date;
   let end: Date;
@@ -75,22 +109,40 @@ const buildHourlyTimeline = (
   }
 
   // Normalize to day boundaries using local time (avoids UTC-midnight vs local-midnight mismatch)
-  start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
-  end   = new Date(end.getFullYear(),   end.getMonth(),   end.getDate(),   23, 0, 0, 0);
+  start = new Date(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+  end = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 0, 0, 0);
 
-  const timeline: { ts: number; clicks: number; visitors: number; qrScans: number }[] = [];
+  const timeline: {
+    ts: number;
+    clicks: number;
+    visitors: number;
+    qrScans: number;
+  }[] = [];
   const cur = new Date(start);
   while (cur <= end) {
     const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
     const dd = dataMap.get(key) || { clicks: 0, visitors: 0, qrScans: 0 };
-    const clickDist   = distributeAcrossHours(dd.clicks);
+    const clickDist = distributeAcrossHours(dd.clicks);
     const visitorDist = distributeAcrossHours(dd.visitors);
-    const qrDist      = distributeAcrossHours(dd.qrScans);
+    const qrDist = distributeAcrossHours(dd.qrScans);
     for (let h = 0; h < 24; h++) {
       const d = new Date(cur);
       d.setHours(h, 0, 0, 0);
       if (d.getTime() > end.getTime()) break;
-      timeline.push({ ts: d.getTime(), clicks: clickDist[h], visitors: visitorDist[h], qrScans: qrDist[h] });
+      timeline.push({
+        ts: d.getTime(),
+        clicks: clickDist[h],
+        visitors: visitorDist[h],
+        qrScans: qrDist[h],
+      });
     }
     cur.setDate(cur.getDate() + 1);
   }
@@ -110,7 +162,9 @@ function isoWeekKey(d: Date): string {
   const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((tmp.getTime() - yearStart.getTime()) / DAY + 1) / 7);
+  const weekNo = Math.ceil(
+    ((tmp.getTime() - yearStart.getTime()) / DAY + 1) / 7,
+  );
   return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
 }
 
@@ -121,20 +175,27 @@ function aggregateTimeline(
   endMs: number,
   gran: Granularity,
 ) {
-  const visible = timeline.filter(e => e.ts >= startMs && e.ts <= endMs);
+  const visible = timeline.filter((e) => e.ts >= startMs && e.ts <= endMs);
 
   const keyFn = (ts: number): string => {
     const d = new Date(ts);
     switch (gran) {
-      case "hourly": return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}-${String(d.getHours()).padStart(2,"0")}`;
-      case "daily": return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-      case "weekly": return isoWeekKey(d);
-      case "monthly": return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      case "hourly":
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}-${String(d.getHours()).padStart(2, "0")}`;
+      case "daily":
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      case "weekly":
+        return isoWeekKey(d);
+      case "monthly":
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     }
   };
 
-  const map = new Map<string, { clicks: number; visitors: number; qrScans: number }>();
-  visible.forEach(e => {
+  const map = new Map<
+    string,
+    { clicks: number; visitors: number; qrScans: number }
+  >();
+  visible.forEach((e) => {
     const k = keyFn(e.ts);
     const cur = map.get(k) || { clicks: 0, visitors: 0, qrScans: 0 };
     cur.clicks += e.clicks;
@@ -149,28 +210,38 @@ function aggregateTimeline(
   const eDate = new Date(endMs);
 
   if (gran === "hourly") {
-    const c = new Date(sDate); c.setMinutes(0,0,0);
+    const c = new Date(sDate);
+    c.setMinutes(0, 0, 0);
     while (c <= eDate) {
       const k = keyFn(c.getTime());
-      const lbl = `${String(c.getHours()).padStart(2,"0")}:00`;
-      const full = `${c.toLocaleDateString("en-US",{month:"short",day:"numeric"})} ${lbl}`;
+      const lbl = `${String(c.getHours()).padStart(2, "0")}:00`;
+      const full = `${c.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${lbl}`;
       slots.push({ key: k, label: lbl, fullLabel: full });
       c.setTime(c.getTime() + HOUR);
     }
   } else if (gran === "daily") {
-    const c = new Date(sDate); c.setHours(0,0,0,0);
+    const c = new Date(sDate);
+    c.setHours(0, 0, 0, 0);
     while (c <= eDate) {
       const k = keyFn(c.getTime());
-      const lbl = c.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+      const lbl = c.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
       slots.push({ key: k, label: lbl, fullLabel: lbl });
       c.setDate(c.getDate() + 1);
     }
   } else if (gran === "weekly") {
     const c = new Date(sDate);
-    const dow = c.getDay(); c.setDate(c.getDate() - ((dow + 6) % 7)); c.setHours(0,0,0,0);
+    const dow = c.getDay();
+    c.setDate(c.getDate() - ((dow + 6) % 7));
+    c.setHours(0, 0, 0, 0);
     while (c <= eDate) {
       const k = isoWeekKey(c);
-      const lbl = c.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+      const lbl = c.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
       slots.push({ key: k, label: lbl, fullLabel: `Week of ${lbl}` });
       c.setDate(c.getDate() + 7);
     }
@@ -178,19 +249,23 @@ function aggregateTimeline(
     const c = new Date(sDate.getFullYear(), sDate.getMonth(), 1);
     while (c <= eDate) {
       const k = keyFn(c.getTime());
-      const lbl = c.toLocaleDateString("en-US",{month:"short",year:"numeric"});
+      const lbl = c.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      });
       slots.push({ key: k, label: lbl, fullLabel: lbl });
       c.setMonth(c.getMonth() + 1);
     }
   }
 
-  return slots.map(s => {
+  return slots.map((s) => {
     const d = map.get(s.key) || { clicks: 0, visitors: 0, qrScans: 0 };
     return { label: s.label, fullLabel: s.fullLabel, ...d };
   });
 }
 
-type DateFilter = "today" | "7d" | "30d" | "60d" | "90d" | "180d" | "1y" | "custom";
+type DateFilter =
+  "today" | "7d" | "30d" | "60d" | "90d" | "180d" | "1y" | "custom";
 
 // Nearest backend-supported period for the dashboard endpoint (only accepts fixed values)
 const dashboardPeriodMap: Record<DateFilter, string> = {
@@ -207,13 +282,22 @@ const dashboardPeriodMap: Record<DateFilter, string> = {
 // Build stat entries from a list of { name, count } items with percentage
 function buildStatList(items: { name: string; value: number }[]) {
   const total = items.reduce((s, i) => s + i.value, 0) || 1;
-  return items.map(i => ({ name: i.name, value: i.value, pct: Math.round((i.value / total) * 100) }));
+  return items.map((i) => ({
+    name: i.name,
+    value: i.value,
+    pct: Math.round((i.value / total) * 100),
+  }));
 }
 
 const AnalyticsPage = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { linkId } = useParams<{ linkId?: string }>();
+  const {
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   // chartEl is stored in state so that the event-listener effects re-run the
   // first time the chart container actually appears in the DOM (it is inside a
   // {!isLoading && ...} block, so chartContainerRef.current is null on mount).
@@ -232,13 +316,13 @@ const AnalyticsPage = () => {
   // Always-fresh refs for event handlers — avoids stale closure bugs
   const windowStartRef = useRef(0);
   const windowEndRef = useRef(0);
-  const clampWindowRef = useRef<(s: number, e: number) => { start: number; end: number }>(
-    (s, e) => ({ start: s, end: e })
-  );
+  const clampWindowRef = useRef<
+    (s: number, e: number) => { start: number; end: number }
+  >((s, e) => ({ start: s, end: e }));
   const totalDurationRef = useRef(DAY);
 
   useEffect(() => {
-    amplitudeService.track('Analytics View');
+    amplitudeService.track("Analytics View");
   }, []);
 
   const [dateFilter, setDateFilter] = useState<DateFilter>("30d");
@@ -272,8 +356,24 @@ const AnalyticsPage = () => {
 
     if (dateFilter === "custom" && customFrom && customTo) {
       // Start at 00:00:00.000 of the chosen start day, end at 23:59:59.999 of end day
-      const start = new Date(customFrom.getFullYear(), customFrom.getMonth(), customFrom.getDate(), 0, 0, 0, 0);
-      const end = new Date(customTo.getFullYear(), customTo.getMonth(), customTo.getDate(), 23, 59, 59, 999);
+      const start = new Date(
+        customFrom.getFullYear(),
+        customFrom.getMonth(),
+        customFrom.getDate(),
+        0,
+        0,
+        0,
+        0,
+      );
+      const end = new Date(
+        customTo.getFullYear(),
+        customTo.getMonth(),
+        customTo.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
       return {
         period: "1y",
         startDate: start.toISOString(),
@@ -282,7 +382,13 @@ const AnalyticsPage = () => {
     }
 
     const daysMap: Record<string, number> = {
-      today: 0, "7d": 7, "30d": 30, "60d": 60, "90d": 90, "180d": 180, "1y": 365,
+      today: 0,
+      "7d": 7,
+      "30d": 30,
+      "60d": 60,
+      "90d": 90,
+      "180d": 180,
+      "1y": 365,
     };
     const days = daysMap[dateFilter] ?? 30;
     const start = new Date(now);
@@ -301,13 +407,27 @@ const AnalyticsPage = () => {
     };
   }, [dateFilter, customFrom, customTo]);
 
-  // Fetch URL-specific or dashboard analytics
+  // Fetch URL-specific or dashboard analytics. Enterprise RBAC: the
+  // dashboard (org-wide) query is scoped to the active project — omitted
+  // only in the Account Owner's "All projects" aggregate view. The
+  // per-link query derives its scope from the link's own project, so it
+  // needs no projectId here.
   const urlAnalyticsQuery = useUrlAnalytics(linkId || "", apiParams);
-  const dashboardQuery = useAnalyticsDashboard(apiParams);
+  const dashboardQuery = useAnalyticsDashboard(
+    {
+      ...apiParams,
+      projectId: isAllProjectsView ? undefined : activeProject?.id,
+    },
+    { enabled: !isProjectLoading },
+  );
 
-  const isLoading = linkId ? urlAnalyticsQuery.isLoading : dashboardQuery.isLoading;
+  const isLoading = linkId
+    ? urlAnalyticsQuery.isLoading
+    : dashboardQuery.isLoading;
   const isError = linkId ? urlAnalyticsQuery.isError : dashboardQuery.isError;
-  const apiData = linkId ? urlAnalyticsQuery.data?.data : dashboardQuery.data?.data;
+  const apiData = linkId
+    ? urlAnalyticsQuery.data?.data
+    : dashboardQuery.data?.data;
 
   // ─── Normalize timeSeries from API ───
   const allClicksDataFull = useMemo(() => {
@@ -315,12 +435,9 @@ const AnalyticsPage = () => {
 
     // Largest-remainder spread of `total` across n days proportional to each
     // day's click share — guarantees sum === total with no rounding loss.
-    const spreadByClicks = (
-      total: number,
-      clickCounts: number[],
-    ): number[] => {
+    const spreadByClicks = (total: number, clickCounts: number[]): number[] => {
       const sumClicks = clickCounts.reduce((a, b) => a + b, 0) || 1;
-      const exact = clickCounts.map(c => (c / sumClicks) * total);
+      const exact = clickCounts.map((c) => (c / sumClicks) * total);
       const floored = exact.map(Math.floor);
       const remainder = total - floored.reduce((a, b) => a + b, 0);
       exact
@@ -334,13 +451,17 @@ const AnalyticsPage = () => {
     if (linkId) {
       // URL-specific analytics: timeSeries = [{ date, clicks, uniqueClicks }]
       const ts: any[] = apiData.timeSeries || [];
-      const mapped: { date: string; clicks: number; visitors: number; qrScans: number }[] =
-        ts.map((d: any) => ({
-          date: d.date,
-          clicks: d.clicks || 0,
-          visitors: d.uniqueClicks || 0,
-          qrScans: 0,
-        }));
+      const mapped: {
+        date: string;
+        clicks: number;
+        visitors: number;
+        qrScans: number;
+      }[] = ts.map((d: any) => ({
+        date: d.date,
+        clicks: d.clicks || 0,
+        visitors: d.uniqueClicks || 0,
+        qrScans: 0,
+      }));
 
       if (mapped.length === 0) return mapped;
 
@@ -356,21 +477,25 @@ const AnalyticsPage = () => {
         apiData.overview?.totalQRScans ||
         apiData.overview?.qr_scans ||
         0;
-      const clickCounts      = mapped.map(d => d.clicks);
+      const clickCounts = mapped.map((d) => d.clicks);
 
       // timeSeries often omits uniqueClicks and never includes qrScans per day.
       // Distribute the overview totals proportionally across days so the chart
       // lines for "Unique Visitors" and "QR Scans" actually render.
-      const missingVisitors = mapped.every(d => d.visitors === 0) && overviewVisitors > 0;
-      const visitorDist = missingVisitors ? spreadByClicks(overviewVisitors, clickCounts) : null;
-      const qrDist      = overviewQR > 0  ? spreadByClicks(overviewQR,       clickCounts) : null;
+      const missingVisitors =
+        mapped.every((d) => d.visitors === 0) && overviewVisitors > 0;
+      const visitorDist = missingVisitors
+        ? spreadByClicks(overviewVisitors, clickCounts)
+        : null;
+      const qrDist =
+        overviewQR > 0 ? spreadByClicks(overviewQR, clickCounts) : null;
 
       if (!visitorDist && !qrDist) return mapped;
 
       return mapped.map((d, i) => ({
         ...d,
         visitors: visitorDist ? visitorDist[i] : d.visitors,
-        qrScans:  qrDist      ? qrDist[i]      : d.qrScans,
+        qrScans: qrDist ? qrDist[i] : d.qrScans,
       }));
     } else {
       // Dashboard analytics: chartData.clicksByDay = [{ date, clicks }]
@@ -396,9 +521,13 @@ const AnalyticsPage = () => {
         0;
       const clickCounts = mapped.map((d: any) => d.clicks);
 
-      const missingVisitors = mapped.every((d: any) => d.visitors === 0) && overviewUnique > 0;
-      const visitorDist = missingVisitors ? spreadByClicks(overviewUnique, clickCounts) : null;
-      const qrDist = overviewQR > 0 ? spreadByClicks(overviewQR, clickCounts) : null;
+      const missingVisitors =
+        mapped.every((d: any) => d.visitors === 0) && overviewUnique > 0;
+      const visitorDist = missingVisitors
+        ? spreadByClicks(overviewUnique, clickCounts)
+        : null;
+      const qrDist =
+        overviewQR > 0 ? spreadByClicks(overviewQR, clickCounts) : null;
 
       if (!visitorDist && !qrDist) return mapped;
 
@@ -413,7 +542,13 @@ const AnalyticsPage = () => {
   // ─── Normalize topStats ───
   const topStatsData = useMemo(() => {
     if (!apiData?.topStats) {
-      return { countries: [], cities: [], devices: [], browsers: [], operatingSystems: [] };
+      return {
+        countries: [],
+        cities: [],
+        devices: [],
+        browsers: [],
+        operatingSystems: [],
+      };
     }
     const ts = apiData.topStats;
 
@@ -421,7 +556,8 @@ const AnalyticsPage = () => {
       // URL analytics format: { _id: { country, countryName }, count }
       return {
         countries: (ts.countries || []).map((c: any) => ({
-          name: c._id?.countryName || c._id?.country || c.countryName || "Unknown",
+          name:
+            c._id?.countryName || c._id?.country || c.countryName || "Unknown",
           value: c.count || c.clicks || 0,
         })),
         cities: (ts.cities || []).map((c: any) => ({
@@ -473,11 +609,33 @@ const AnalyticsPage = () => {
     const now = new Date();
     if (dateFilter === "custom" && customFrom && customTo) {
       return {
-        filterStart: new Date(customFrom.getFullYear(), customFrom.getMonth(), customFrom.getDate(), 0, 0, 0).getTime(),
-        filterEnd: new Date(customTo.getFullYear(), customTo.getMonth(), customTo.getDate(), 23, 59, 59).getTime(),
+        filterStart: new Date(
+          customFrom.getFullYear(),
+          customFrom.getMonth(),
+          customFrom.getDate(),
+          0,
+          0,
+          0,
+        ).getTime(),
+        filterEnd: new Date(
+          customTo.getFullYear(),
+          customTo.getMonth(),
+          customTo.getDate(),
+          23,
+          59,
+          59,
+        ).getTime(),
       };
     }
-    const daysMap: Record<string, number> = { today: 0, "7d": 7, "30d": 30, "60d": 60, "90d": 90, "180d": 180, "1y": 365 };
+    const daysMap: Record<string, number> = {
+      today: 0,
+      "7d": 7,
+      "30d": 30,
+      "60d": 60,
+      "90d": 90,
+      "180d": 180,
+      "1y": 365,
+    };
     const days = daysMap[dateFilter] ?? 30;
     const start = new Date(now);
     start.setDate(start.getDate() - days);
@@ -497,8 +655,8 @@ const AnalyticsPage = () => {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
     const startKey = toLocalKey(filterStart);
-    const endKey   = toLocalKey(filterEnd);
-    return allClicksDataFull.filter(d => {
+    const endKey = toLocalKey(filterEnd);
+    return allClicksDataFull.filter((d) => {
       const key = toLocalKey(new Date(d.date).getTime());
       return key >= startKey && key <= endKey;
     });
@@ -543,7 +701,8 @@ const AnalyticsPage = () => {
     [filteredClicksData, filterStart, filterEnd],
   );
   const timelineStart = hourlyTimeline[0]?.ts ?? filterStart;
-  const timelineEnd = hourlyTimeline[hourlyTimeline.length - 1]?.ts ?? filterEnd;
+  const timelineEnd =
+    hourlyTimeline[hourlyTimeline.length - 1]?.ts ?? filterEnd;
   const totalDuration = Math.max(timelineEnd - timelineStart, DAY);
 
   const [windowStart, setWindowStart] = useState(timelineStart);
@@ -559,12 +718,14 @@ const AnalyticsPage = () => {
   const granularity = pickGranularity(windowDuration);
 
   const chartData = useMemo(
-    () => aggregateTimeline(hourlyTimeline, windowStart, windowEnd, granularity),
-    [hourlyTimeline, windowStart, windowEnd, granularity]
+    () =>
+      aggregateTimeline(hourlyTimeline, windowStart, windowEnd, granularity),
+    [hourlyTimeline, windowStart, windowEnd, granularity],
   );
 
   const zoomDescription = useMemo(() => {
-    if (windowDuration >= totalDuration * 0.9) return t("All data", "كل البيانات");
+    if (windowDuration >= totalDuration * 0.9)
+      return t("All data", "كل البيانات");
     const days = Math.round(windowDuration / DAY);
     if (days > 1) return t(`~${days} days`, `~${days} أيام`);
     const hours = Math.round(windowDuration / HOUR);
@@ -581,18 +742,27 @@ const AnalyticsPage = () => {
     return labels[granularity];
   }, [granularity, t]);
 
-  const clampWindow = useCallback((s: number, e: number) => {
-    let dur = e - s;
-    dur = Math.max(DAY, Math.min(dur, totalDuration));
-    const center = (s + e) / 2;
-    s = center - dur / 2;
-    e = center + dur / 2;
-    if (s < timelineStart) { s = timelineStart; e = s + dur; }
-    if (e > timelineEnd) { e = timelineEnd; s = e - dur; }
-    s = Math.max(timelineStart, s);
-    e = Math.min(timelineEnd, e);
-    return { start: s, end: e };
-  }, [timelineStart, timelineEnd, totalDuration]);
+  const clampWindow = useCallback(
+    (s: number, e: number) => {
+      let dur = e - s;
+      dur = Math.max(DAY, Math.min(dur, totalDuration));
+      const center = (s + e) / 2;
+      s = center - dur / 2;
+      e = center + dur / 2;
+      if (s < timelineStart) {
+        s = timelineStart;
+        e = s + dur;
+      }
+      if (e > timelineEnd) {
+        e = timelineEnd;
+        s = e - dur;
+      }
+      s = Math.max(timelineStart, s);
+      e = Math.min(timelineEnd, e);
+      return { start: s, end: e };
+    },
+    [timelineStart, timelineEnd, totalDuration],
+  );
 
   const handleReset = useCallback(() => {
     setWindowStart(timelineStart);
@@ -626,7 +796,7 @@ const AnalyticsPage = () => {
       // Check if this is a trackpad pan gesture (horizontal scroll or two-finger pan)
       // Trackpad panning typically has smaller deltaY and may have deltaX
       const isTrackpadPan = e.ctrlKey === false && Math.abs(e.deltaX) > 0;
-      
+
       if (isTrackpadPan) {
         // Two-finger trackpad panning
         e.preventDefault();
@@ -635,7 +805,8 @@ const AnalyticsPage = () => {
         const we = windowEndRef.current;
         const dur = we - ws;
         // Use deltaX for horizontal panning, deltaY for vertical trackpad movement
-        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const delta =
+          Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
         const dtMs = -(delta / rect.width) * dur;
         const c = clampWindowRef.current(ws + dtMs, we + dtMs);
         setWindowStart(c.start);
@@ -644,12 +815,18 @@ const AnalyticsPage = () => {
         // Scroll wheel zoom
         e.preventDefault();
         const rect = el.getBoundingClientRect();
-        const mouseRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const mouseRatio = Math.max(
+          0,
+          Math.min(1, (e.clientX - rect.left) / rect.width),
+        );
         const ws = windowStartRef.current;
         const we = windowEndRef.current;
         const curDur = we - ws;
         const factor = e.deltaY < 0 ? 0.85 : 1.15;
-        const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * factor));
+        const newDur = Math.max(
+          DAY,
+          Math.min(totalDurationRef.current, curDur * factor),
+        );
         const anchor = ws + curDur * mouseRatio;
         const newStart = anchor - newDur * mouseRatio;
         const newEnd = newStart + newDur;
@@ -680,7 +857,10 @@ const AnalyticsPage = () => {
         lastPinchDist.current = getTouchDist(e);
         const rect = el.getBoundingClientRect();
         const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        pinchAnchor.current = Math.max(0, Math.min(1, (midX - rect.left) / rect.width));
+        pinchAnchor.current = Math.max(
+          0,
+          Math.min(1, (midX - rect.left) / rect.width),
+        );
       } else if (e.touches.length === 1) {
         isTwoFingerTouch = false;
       }
@@ -695,7 +875,10 @@ const AnalyticsPage = () => {
         const ws = windowStartRef.current;
         const we = windowEndRef.current;
         const curDur = we - ws;
-        const newDur = Math.max(DAY, Math.min(totalDurationRef.current, curDur * ratio));
+        const newDur = Math.max(
+          DAY,
+          Math.min(totalDurationRef.current, curDur * ratio),
+        );
         const anchor = ws + curDur * pinchAnchor.current;
         const newStart = anchor - newDur * pinchAnchor.current;
         const newEnd = newStart + newDur;
@@ -742,7 +925,7 @@ const AnalyticsPage = () => {
         const ws = windowStartRef.current;
         const we = windowEndRef.current;
         const dur = we - ws;
-        const dtMs = -(vel * frameMs / rect.width) * dur;
+        const dtMs = -((vel * frameMs) / rect.width) * dur;
         const c = clampWindowRef.current(ws + dtMs, we + dtMs);
         setWindowStart(c.start);
         setWindowEnd(c.end);
@@ -759,7 +942,10 @@ const AnalyticsPage = () => {
       isDragging.current = true;
       dragButton.current = e.button;
       dragStartX.current = e.clientX;
-      dragStartWindow.current = { start: windowStartRef.current, end: windowEndRef.current };
+      dragStartWindow.current = {
+        start: windowStartRef.current,
+        end: windowEndRef.current,
+      };
       prevDragX.current = e.clientX;
       prevDragTime.current = Date.now();
       dragVelocity.current = 0;
@@ -785,7 +971,7 @@ const AnalyticsPage = () => {
       const dtMs = -(totalDx / rect.width) * dur;
       const c = clampWindowRef.current(
         dragStartWindow.current.start + dtMs,
-        dragStartWindow.current.end + dtMs
+        dragStartWindow.current.end + dtMs,
       );
       setWindowStart(c.start);
       setWindowEnd(c.end);
@@ -823,16 +1009,35 @@ const AnalyticsPage = () => {
   // Compute tick interval to avoid label crowding
   const xTickInterval = useMemo(() => {
     const len = chartData.length;
-    const maxTicks = typeof window !== "undefined" && window.innerWidth < 640 ? 5 : 12;
+    const maxTicks =
+      typeof window !== "undefined" && window.innerWidth < 640 ? 5 : 12;
     if (len <= maxTicks) return 0;
     return Math.ceil(len / maxTicks) - 1;
   }, [chartData.length]);
 
   // Top stat cards
   const topStats = [
-    { label: t("Total Clicks", "إجمالي الضغطات"), value: String(overviewTotals.clicks), icon: MousePointer, color: "hsl(217, 71%, 30%)", bg: "hsla(217, 71%, 30%, 0.08)" },
-    { label: t("Unique Visitors", "الزوار الفريدين"), value: String(overviewTotals.visitors), icon: Users, color: "hsl(var(--navy))", bg: "hsla(220, 50%, 15%, 0.08)" },
-    { label: t("QR Scans", "مسح QR"), value: String(overviewTotals.qrScans), icon: QrCode, color: "hsl(25, 95%, 53%)", bg: "hsla(25, 95%, 53%, 0.08)" },
+    {
+      label: t("Total Clicks", "إجمالي الضغطات"),
+      value: String(overviewTotals.clicks),
+      icon: MousePointer,
+      color: "hsl(217, 71%, 30%)",
+      bg: "hsla(217, 71%, 30%, 0.08)",
+    },
+    {
+      label: t("Unique Visitors", "الزوار الفريدين"),
+      value: String(overviewTotals.visitors),
+      icon: Users,
+      color: "hsl(var(--navy))",
+      bg: "hsla(220, 50%, 15%, 0.08)",
+    },
+    {
+      label: t("QR Scans", "مسح QR"),
+      value: String(overviewTotals.qrScans),
+      icon: QrCode,
+      color: "hsl(25, 95%, 53%)",
+      bg: "hsla(25, 95%, 53%, 0.08)",
+    },
   ];
 
   // Devices pie chart — map "mobile"/"desktop" → display names with colors
@@ -842,16 +1047,28 @@ const AnalyticsPage = () => {
     tablet: "hsl(142, 71%, 30%)",
   };
   const devices = useMemo(() => {
-    return buildStatList(topStatsData.devices).map(d => ({
+    return buildStatList(topStatsData.devices).map((d) => ({
       ...d,
       color: deviceColorMap[d.name.toLowerCase()] || "hsl(215, 16%, 47%)",
     }));
   }, [topStatsData.devices]);
 
-  const countries = useMemo(() => buildStatList(topStatsData.countries), [topStatsData.countries]);
-  const cities = useMemo(() => buildStatList(topStatsData.cities), [topStatsData.cities]);
-  const browsers = useMemo(() => buildStatList(topStatsData.browsers), [topStatsData.browsers]);
-  const operatingSystems = useMemo(() => buildStatList(topStatsData.operatingSystems), [topStatsData.operatingSystems]);
+  const countries = useMemo(
+    () => buildStatList(topStatsData.countries),
+    [topStatsData.countries],
+  );
+  const cities = useMemo(
+    () => buildStatList(topStatsData.cities),
+    [topStatsData.cities],
+  );
+  const browsers = useMemo(
+    () => buildStatList(topStatsData.browsers),
+    [topStatsData.browsers],
+  );
+  const operatingSystems = useMemo(
+    () => buildStatList(topStatsData.operatingSystems),
+    [topStatsData.operatingSystems],
+  );
   const osTotal = operatingSystems.reduce((sum, os) => sum + os.value, 0) || 1;
 
   const [geoTab, setGeoTab] = useState<"countries" | "cities">("countries");
@@ -863,7 +1080,8 @@ const AnalyticsPage = () => {
   const peakHoursData = useMemo(() => {
     if (!linkId) {
       // Real hourly data from the dashboard API — hours are in UTC, convert to SAST (+3)
-      const clicksByHour: { hour: number; clicks: number }[] = apiData?.chartData?.clicksByHour || [];
+      const clicksByHour: { hour: number; clicks: number }[] =
+        apiData?.chartData?.clicksByHour || [];
       const topHours = [...clicksByHour]
         .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
         .slice(0, 4);
@@ -879,15 +1097,20 @@ const AnalyticsPage = () => {
     }
 
     // URL-specific fallback: aggregate synthesized hourly timeline into SAST buckets
-    const hourBuckets = Array.from({ length: 24 }, (_, i) => ({ hour: i, clicks: 0 }));
-    hourlyTimeline.forEach(e => {
+    const hourBuckets = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      clicks: 0,
+    }));
+    hourlyTimeline.forEach((e) => {
       // Convert UTC-based timestamp to SAST hour by adding 3 hours before reading UTC hours
       const sastHour = new Date(e.ts + SAST_OFFSET_MS).getUTCHours();
       hourBuckets[sastHour].clicks += e.clicks;
     });
-    const sorted = [...hourBuckets].sort((a, b) => b.clicks - a.clicks).slice(0, 4);
-    const maxClicks = Math.max(...sorted.map(b => b.clicks), 1);
-    return sorted.map(b => ({
+    const sorted = [...hourBuckets]
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, 4);
+    const maxClicks = Math.max(...sorted.map((b) => b.clicks), 1);
+    return sorted.map((b) => ({
       label: `${String(b.hour).padStart(2, "0")}:00 – ${String((b.hour + 1) % 24).padStart(2, "0")}:00`,
       clicks: b.clicks,
       pct: Math.round((b.clicks / maxClicks) * 100),
@@ -900,9 +1123,12 @@ const AnalyticsPage = () => {
     setExporting(true);
     try {
       const exportParams: Record<string, string> = {};
-      if ("period" in apiParams && apiParams.period) exportParams.period = apiParams.period;
-      if ("startDate" in apiParams && apiParams.startDate) exportParams.startDate = apiParams.startDate;
-      if ("endDate" in apiParams && apiParams.endDate) exportParams.endDate = apiParams.endDate;
+      if ("period" in apiParams && apiParams.period)
+        exportParams.period = apiParams.period;
+      if ("startDate" in apiParams && apiParams.startDate)
+        exportParams.startDate = apiParams.startDate;
+      if ("endDate" in apiParams && apiParams.endDate)
+        exportParams.endDate = apiParams.endDate;
 
       const blob = await analyticsService.exportCSV(linkId, exportParams);
       const url = URL.createObjectURL(blob);
@@ -935,9 +1161,19 @@ const AnalyticsPage = () => {
         </h1>
         <div className="flex items-center gap-2">
           {/* Date Filter Dropdown */}
-          <Popover open={filterOpen} onOpenChange={(open) => { setFilterOpen(open); if (open) setShowCalendar(false); }}>
+          <Popover
+            open={filterOpen}
+            onOpenChange={(open) => {
+              setFilterOpen(open);
+              if (open) setShowCalendar(false);
+            }}
+          >
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm sm:gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs sm:text-sm sm:gap-2"
+              >
                 <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>
                   {dateFilter === "custom"
@@ -951,23 +1187,32 @@ const AnalyticsPage = () => {
                 <ChevronDown className="w-3 h-3 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className={cn("p-0", showCalendar ? "w-auto" : "w-44")} align="end">
+            <PopoverContent
+              className={cn("p-0", showCalendar ? "w-auto" : "w-44")}
+              align="end"
+            >
               {showCalendar ? (
                 <div className="p-2">
                   <div className="flex gap-1 mb-2">
                     <button
                       className={cn(
                         "flex-1 text-xs py-1 rounded-md font-body transition-colors",
-                        pickingFrom ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        pickingFrom
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground",
                       )}
                       onClick={() => setPickingFrom(true)}
                     >
-                      {customFrom ? format(customFrom, "MMM d") : t("From", "من")}
+                      {customFrom
+                        ? format(customFrom, "MMM d")
+                        : t("From", "من")}
                     </button>
                     <button
                       className={cn(
                         "flex-1 text-xs py-1 rounded-md font-body transition-colors",
-                        !pickingFrom ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        !pickingFrom
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground",
                       )}
                       onClick={() => setPickingFrom(false)}
                     >
@@ -996,7 +1241,8 @@ const AnalyticsPage = () => {
                   />
                   {customFrom && customTo && (
                     <p className="text-xs text-muted-foreground mt-1 font-body text-center">
-                      {format(customFrom, "MMM d, yyyy")} – {format(customTo, "MMM d, yyyy")}
+                      {format(customFrom, "MMM d, yyyy")} –{" "}
+                      {format(customTo, "MMM d, yyyy")}
                     </p>
                   )}
                   <button
@@ -1008,26 +1254,30 @@ const AnalyticsPage = () => {
                 </div>
               ) : (
                 <div className="p-1.5 space-y-0">
-                  {(Object.keys(dateFilterLabels) as DateFilter[]).map((key) => (
-                    <button
-                      key={key}
-                      className={cn(
-                        "w-full text-start px-2.5 py-1 text-xs rounded-md transition-colors font-body",
-                        dateFilter === key ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground"
-                      )}
-                      onClick={() => {
-                        if (key !== "custom") {
-                          setDateFilter(key);
-                          setFilterOpen(false);
-                        } else {
-                          setShowCalendar(true);
-                          setPickingFrom(true);
-                        }
-                      }}
-                    >
-                      {dateFilterLabels[key]}
-                    </button>
-                  ))}
+                  {(Object.keys(dateFilterLabels) as DateFilter[]).map(
+                    (key) => (
+                      <button
+                        key={key}
+                        className={cn(
+                          "w-full text-start px-2.5 py-1 text-xs rounded-md transition-colors font-body",
+                          dateFilter === key
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted text-foreground",
+                        )}
+                        onClick={() => {
+                          if (key !== "custom") {
+                            setDateFilter(key);
+                            setFilterOpen(false);
+                          } else {
+                            setShowCalendar(true);
+                            setPickingFrom(true);
+                          }
+                        }}
+                      >
+                        {dateFilterLabels[key]}
+                      </button>
+                    ),
+                  )}
                 </div>
               )}
             </PopoverContent>
@@ -1063,7 +1313,10 @@ const AnalyticsPage = () => {
       {isError && !isLoading && (
         <div className="text-center py-20">
           <p className="text-sm text-destructive font-body">
-            {t("Failed to load analytics. Please try again.", "فشل تحميل التحليلات. حاول مرة أخرى.")}
+            {t(
+              "Failed to load analytics. Please try again.",
+              "فشل تحميل التحليلات. حاول مرة أخرى.",
+            )}
           </p>
         </div>
       )}
@@ -1085,19 +1338,32 @@ const AnalyticsPage = () => {
                 <select
                   className="text-[10px] sm:text-xs font-body bg-muted/50 text-muted-foreground px-2 py-1 rounded border-none outline-none cursor-pointer"
                   value={
-                    windowDuration >= totalDuration * 0.9 ? "all"
-                    : Math.abs(windowDuration - DAY) < HOUR * 2 ? "24h"
-                    : Math.abs(windowDuration - 5 * DAY) < DAY ? "5d"
-                    : Math.abs(windowDuration - 20 * DAY) < DAY ? "20d"
-                    : "custom"
+                    windowDuration >= totalDuration * 0.9
+                      ? "all"
+                      : Math.abs(windowDuration - DAY) < HOUR * 2
+                        ? "24h"
+                        : Math.abs(windowDuration - 5 * DAY) < DAY
+                          ? "5d"
+                          : Math.abs(windowDuration - 20 * DAY) < DAY
+                            ? "20d"
+                            : "custom"
                   }
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val === "all") { setWindowStart(timelineStart); setWindowEnd(timelineEnd); return; }
-                    const durations: Record<string, number> = { "24h": DAY, "5d": 5 * DAY, "20d": 20 * DAY };
+                    if (val === "all") {
+                      setWindowStart(timelineStart);
+                      setWindowEnd(timelineEnd);
+                      return;
+                    }
+                    const durations: Record<string, number> = {
+                      "24h": DAY,
+                      "5d": 5 * DAY,
+                      "20d": 20 * DAY,
+                    };
                     const newDur = durations[val];
                     if (!newDur) return;
-                    const center = (windowStartRef.current + windowEndRef.current) / 2;
+                    const center =
+                      (windowStartRef.current + windowEndRef.current) / 2;
                     const newStart = center - newDur / 2;
                     const newEnd = center + newDur / 2;
                     const c = clampWindowRef.current(newStart, newEnd);
@@ -1109,17 +1375,34 @@ const AnalyticsPage = () => {
                   <option value="20d">{t("20 days", "20 يوم")}</option>
                   <option value="5d">{t("5 days", "5 أيام")}</option>
                   <option value="24h">{t("24 hours", "24 ساعة")}</option>
-                  {windowDuration < totalDuration * 0.9 && Math.abs(windowDuration - DAY) >= HOUR * 2 && Math.abs(windowDuration - 5 * DAY) >= DAY && Math.abs(windowDuration - 20 * DAY) >= DAY && (
-                    <option value="custom" disabled>{zoomDescription}</option>
-                  )}
+                  {windowDuration < totalDuration * 0.9 &&
+                    Math.abs(windowDuration - DAY) >= HOUR * 2 &&
+                    Math.abs(windowDuration - 5 * DAY) >= DAY &&
+                    Math.abs(windowDuration - 20 * DAY) >= DAY && (
+                      <option value="custom" disabled>
+                        {zoomDescription}
+                      </option>
+                    )}
                 </select>
                 {windowDuration < totalDuration * 0.9 && (
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={handleZoomOut} title={t("Zoom out", "تصغير")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={handleZoomOut}
+                    title={t("Zoom out", "تصغير")}
+                  >
                     <ZoomOut className="w-3 h-3" />
                   </Button>
                 )}
                 {(windowStart > timelineStart || windowEnd < timelineEnd) && (
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={handleReset} title={t("Reset zoom", "إعادة تعيين التكبير")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={handleReset}
+                    title={t("Reset zoom", "إعادة تعيين التكبير")}
+                  >
                     <RotateCcw className="w-3 h-3" />
                   </Button>
                 )}
@@ -1128,31 +1411,54 @@ const AnalyticsPage = () => {
 
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
               {topStats.map((stat) => (
-                <div key={stat.label} className="bg-muted/30 rounded-lg p-2.5 sm:p-4">
+                <div
+                  key={stat.label}
+                  className="bg-muted/30 rounded-lg p-2.5 sm:p-4"
+                >
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: stat.bg }}>
-                      <stat.icon className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" style={{ color: stat.color }} />
+                    <div
+                      className="w-5 h-5 sm:w-7 sm:h-7 rounded-md flex items-center justify-center"
+                      style={{ backgroundColor: stat.bg }}
+                    >
+                      <stat.icon
+                        className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
+                        style={{ color: stat.color }}
+                      />
                     </div>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground font-body leading-tight">{stat.label}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground font-body leading-tight">
+                      {stat.label}
+                    </p>
                   </div>
-                  <p className="text-lg sm:text-2xl font-display font-bold text-foreground">{stat.value}</p>
+                  <p className="text-lg sm:text-2xl font-display font-bold text-foreground">
+                    {stat.value}
+                  </p>
                 </div>
               ))}
             </div>
 
             <p className="text-xs text-muted-foreground mb-3 font-body">
               <ZoomIn className="w-3 h-3 inline me-1" />
-              <span className="hidden sm:inline">{t("Scroll to zoom · Drag to pan", "مرر للتكبير · اسحب للتنقل")}</span>
-              <span className="sm:hidden">{t("Pinch to zoom · Drag to pan", "اقرص للتكبير · اسحب للتنقل")}</span>
+              <span className="hidden sm:inline">
+                {t("Scroll to zoom · Drag to pan", "مرر للتكبير · اسحب للتنقل")}
+              </span>
+              <span className="sm:hidden">
+                {t("Pinch to zoom · Drag to pan", "اقرص للتكبير · اسحب للتنقل")}
+              </span>
             </p>
 
             <div
-              ref={(el) => { chartContainerRef.current = el; setChartEl(el); }}
+              ref={(el) => {
+                chartContainerRef.current = el;
+                setChartEl(el);
+              }}
               style={{ cursor: "grab", touchAction: "none" }}
             >
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(214, 32%, 91%)"
+                  />
                   <XAxis
                     dataKey="label"
                     tick={{ fontSize: 11, fill: "hsl(215, 16%, 47%)" }}
@@ -1164,7 +1470,10 @@ const AnalyticsPage = () => {
                     stroke="hsl(214, 32%, 91%)"
                     allowDecimals={false}
                     width={30}
-                    domain={[0, (max: number) => Math.max(10, Math.ceil(max * 1.1))]}
+                    domain={[
+                      0,
+                      (max: number) => Math.max(10, Math.ceil(max * 1.1)),
+                    ]}
                   />
                   <Tooltip
                     contentStyle={{
@@ -1173,11 +1482,40 @@ const AnalyticsPage = () => {
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
-                    labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel || ""}
+                    labelFormatter={(_, payload) =>
+                      payload?.[0]?.payload?.fullLabel || ""
+                    }
                   />
-                  <Line type="monotone" dataKey="clicks" name={t("Clicks", "الضغطات")} stroke="hsl(217, 71%, 30%)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(217, 71%, 30%)" }} animationDuration={200} />
-                  <Line type="monotone" dataKey="visitors" name={t("Unique Visitors", "الزوار الفريدين")} stroke="hsl(var(--navy))" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--navy))" }} animationDuration={200} />
-                  <Line type="monotone" dataKey="qrScans" name={t("QR Scans", "مسح QR")} stroke="hsl(25, 95%, 53%)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(25, 95%, 53%)" }} animationDuration={200} />
+                  <Line
+                    type="monotone"
+                    dataKey="clicks"
+                    name={t("Clicks", "الضغطات")}
+                    stroke="hsl(217, 71%, 30%)"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: "hsl(217, 71%, 30%)" }}
+                    animationDuration={200}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="visitors"
+                    name={t("Unique Visitors", "الزوار الفريدين")}
+                    stroke="hsl(var(--navy))"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: "hsl(var(--navy))" }}
+                    animationDuration={200}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="qrScans"
+                    name={t("QR Scans", "مسح QR")}
+                    stroke="hsl(25, 95%, 53%)"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: "hsl(25, 95%, 53%)" }}
+                    animationDuration={200}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -1201,7 +1539,15 @@ const AnalyticsPage = () => {
                   <div className="w-24 h-24 sm:w-32 sm:h-32">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={devices} cx="50%" cy="50%" innerRadius={25} outerRadius={40} dataKey="value" strokeWidth={0}>
+                        <Pie
+                          data={devices}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={25}
+                          outerRadius={40}
+                          dataKey="value"
+                          strokeWidth={0}
+                        >
                           {devices.map((entry, i) => (
                             <Cell key={i} fill={entry.color} />
                           ))}
@@ -1212,9 +1558,16 @@ const AnalyticsPage = () => {
                   <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-4 mt-2 sm:mt-3">
                     {devices.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                        <span className="text-[11px] sm:text-sm font-body text-foreground capitalize">{d.name}</span>
-                        <span className="text-[11px] sm:text-sm font-display font-semibold text-foreground">{d.value}</span>
+                        <div
+                          className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full"
+                          style={{ backgroundColor: d.color }}
+                        />
+                        <span className="text-[11px] sm:text-sm font-body text-foreground capitalize">
+                          {d.name}
+                        </span>
+                        <span className="text-[11px] sm:text-sm font-display font-semibold text-foreground">
+                          {d.value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -1231,7 +1584,9 @@ const AnalyticsPage = () => {
                 <button
                   className={cn(
                     "text-xs sm:text-sm font-display font-semibold px-2.5 py-1 rounded-md transition-colors",
-                    geoTab === "countries" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+                    geoTab === "countries"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted",
                   )}
                   onClick={() => setGeoTab("countries")}
                 >
@@ -1240,7 +1595,9 @@ const AnalyticsPage = () => {
                 <button
                   className={cn(
                     "text-xs sm:text-sm font-display font-semibold px-2.5 py-1 rounded-md transition-colors",
-                    geoTab === "cities" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+                    geoTab === "cities"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted",
                   )}
                   onClick={() => setGeoTab("cities")}
                 >
@@ -1252,11 +1609,18 @@ const AnalyticsPage = () => {
                   (geoTab === "countries" ? countries : cities).map((c) => (
                     <div key={c.name}>
                       <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                        <span className="text-xs sm:text-sm font-body text-foreground">{c.name}</span>
-                        <span className="text-[10px] sm:text-xs font-body text-muted-foreground">{c.value}</span>
+                        <span className="text-xs sm:text-sm font-body text-foreground">
+                          {c.name}
+                        </span>
+                        <span className="text-[10px] sm:text-xs font-body text-muted-foreground">
+                          {c.value}
+                        </span>
                       </div>
                       <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full" style={{ width: `${c.pct}%` }} />
+                        <div
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${c.pct}%` }}
+                        />
                       </div>
                     </div>
                   ))
@@ -1282,17 +1646,22 @@ const AnalyticsPage = () => {
                 {peakHoursData.map((h) => (
                   <div key={h.label}>
                     <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                      <span className="text-xs sm:text-sm font-body text-foreground">{h.label}</span>
+                      <span className="text-xs sm:text-sm font-body text-foreground">
+                        {h.label}
+                      </span>
                       <span className="text-[10px] sm:text-xs font-body text-muted-foreground">
                         {h.clicks} {t("clicks", "ضغطة")}
                       </span>
                     </div>
                     <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${h.pct}%` }} />
+                      <div
+                        className="h-full bg-primary rounded-full"
+                        style={{ width: `${h.pct}%` }}
+                      />
                     </div>
                   </div>
                 ))}
-                {peakHoursData.every(h => h.clicks === 0) && (
+                {peakHoursData.every((h) => h.clicks === 0) && (
                   <p className="text-xs text-muted-foreground font-body text-center py-2">
                     {t("No data", "لا توجد بيانات")}
                   </p>
@@ -1305,17 +1674,26 @@ const AnalyticsPage = () => {
                 {t("Browsers", "المتصفحات")}
               </h2>
               <div className="space-y-2 sm:space-y-3">
-                {browsers.length > 0 ? browsers.map((b) => (
-                  <div key={b.name}>
-                    <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                      <span className="text-xs sm:text-sm font-body text-foreground">{b.name}</span>
-                      <span className="text-[10px] sm:text-xs font-body text-muted-foreground">{b.value}</span>
+                {browsers.length > 0 ? (
+                  browsers.map((b) => (
+                    <div key={b.name}>
+                      <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                        <span className="text-xs sm:text-sm font-body text-foreground">
+                          {b.name}
+                        </span>
+                        <span className="text-[10px] sm:text-xs font-body text-muted-foreground">
+                          {b.value}
+                        </span>
+                      </div>
+                      <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${b.pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${b.pct}%` }} />
-                    </div>
-                  </div>
-                )) : (
+                  ))
+                ) : (
                   <p className="text-xs text-muted-foreground font-body text-center py-6">
                     {t("No data", "لا توجد بيانات")}
                   </p>
@@ -1328,20 +1706,29 @@ const AnalyticsPage = () => {
                 {t("Operating Systems", "أنظمة التشغيل")}
               </h2>
               <div className="space-y-2 sm:space-y-3">
-                {operatingSystems.length > 0 ? operatingSystems.map((os) => {
-                  const pct = Math.round((os.value / osTotal) * 100);
-                  return (
-                    <div key={os.name}>
-                      <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                        <span className="text-xs sm:text-sm font-body text-foreground">{os.name}</span>
-                        <span className="text-[10px] sm:text-xs font-body text-muted-foreground">{os.value}</span>
+                {operatingSystems.length > 0 ? (
+                  operatingSystems.map((os) => {
+                    const pct = Math.round((os.value / osTotal) * 100);
+                    return (
+                      <div key={os.name}>
+                        <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                          <span className="text-xs sm:text-sm font-body text-foreground">
+                            {os.name}
+                          </span>
+                          <span className="text-[10px] sm:text-xs font-body text-muted-foreground">
+                            {os.value}
+                          </span>
+                        </div>
+                        <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                }) : (
+                    );
+                  })
+                ) : (
                   <p className="text-xs text-muted-foreground font-body text-center py-6">
                     {t("No data", "لا توجد بيانات")}
                   </p>
