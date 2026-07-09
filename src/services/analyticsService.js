@@ -35,6 +35,7 @@ class AnalyticsService {
       "www.snip.sa",
       "shortener.snip.sa",
       "qa.snip.sa",
+      "qa.4r.sa",
       "localhost",
       "localhost:3015",
       "20.193.155.139",
@@ -64,6 +65,7 @@ class AnalyticsService {
       // Build query with domain filtering for custom domains
       let query = {
         $or: [{ shortCode }, { customCode: shortCode }],
+        $or: [{ shortCode }, { customCode: shortCode }],
       };
 
       // Add domain filtering for custom domains to prevent duplicate counting
@@ -72,6 +74,7 @@ class AnalyticsService {
       }
 
       const url = await Url.findOne(query);
+
 
       if (!url) {
         logger.error("❌ URL not found for click recording:", shortCode);
@@ -84,6 +87,7 @@ class AnalyticsService {
         domain: url.domain,
       });
 
+
       if (!config.ANALYTICS.TRACK_CLICKS) {
         logger.warn("⚠️ Click tracking is disabled");
         return null;
@@ -94,6 +98,7 @@ class AnalyticsService {
       const device = this.parseUserAgent(userAgent);
       const isBot = this.detectBot(userAgent);
       const isUnique = await this.isUniqueClick(url._id, ipHash);
+
 
       const clickRecord = {
         url: url._id,

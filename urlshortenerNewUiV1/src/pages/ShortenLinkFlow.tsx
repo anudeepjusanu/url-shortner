@@ -10,14 +10,32 @@ import { authAPI, urlsAPI } from "@/services/api";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
-import { Loader2, Link2, Check, Copy, Eye, EyeOff, ArrowRight, ArrowLeft, Globe, Lock, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Link2,
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  Globe,
+  Lock,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SAUDI_NUMBER_REGEX = /^5\d{8}$/;
 // TEMPORARY: India support for testing - REMOVE BEFORE PRODUCTION
 const INDIA_NUMBER_REGEX = /^[6-9]\d{9}$/;
 const COUNTRY_OPTIONS = [
-  { dialCode: '+966', flag: '🇸🇦', label: 'SA', maxDigits: 9, placeholder: '5XXXXXXXX' },
+  {
+    dialCode: "+966",
+    flag: "🇸🇦",
+    label: "SA",
+    maxDigits: 9,
+    placeholder: "5XXXXXXXX",
+  },
   // { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 // ============================================================================
@@ -74,7 +92,9 @@ const ShortenLinkFlow = () => {
   const [phoneOtpAttempts, setPhoneOtpAttempts] = useState(0);
   const [phoneOtpResends, setPhoneOtpResends] = useState(0);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [phoneOtpExpiresAt, setPhoneOtpExpiresAt] = useState<number | null>(null);
+  const [phoneOtpExpiresAt, setPhoneOtpExpiresAt] = useState<number | null>(
+    null,
+  );
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   // ── Complete profile state (new users only) ──
@@ -87,7 +107,9 @@ const ShortenLinkFlow = () => {
   // ── Loading & session ──
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(
+    null,
+  );
   const [existingUserData, setExistingUserData] = useState<any>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -96,7 +118,10 @@ const ShortenLinkFlow = () => {
 
   // ── Retrieve original URL from navigation state or sessionStorage ──
   useEffect(() => {
-    const url = (location.state as { url?: string })?.url || sessionStorage.getItem("shortenUrl") || "";
+    const url =
+      (location.state as { url?: string })?.url ||
+      sessionStorage.getItem("shortenUrl") ||
+      "";
     setOriginalUrl(url);
     if (url) sessionStorage.setItem("shortenUrl", url);
   }, [location.state]);
@@ -120,7 +145,10 @@ const ShortenLinkFlow = () => {
     if (phoneOtpExpiresAt) {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
-        const remaining = Math.max(0, Math.ceil((phoneOtpExpiresAt - Date.now()) / 1000));
+        const remaining = Math.max(
+          0,
+          Math.ceil((phoneOtpExpiresAt - Date.now()) / 1000),
+        );
         setTimeRemaining(remaining);
         if (remaining <= 0 && timerRef.current) {
           clearInterval(timerRef.current);
@@ -157,20 +185,25 @@ const ShortenLinkFlow = () => {
   const validateEmail = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!value.trim()) return t("Email is required", "البريد الإلكتروني مطلوب");
-    if (!emailRegex.test(value)) return t("Please enter a valid email", "الرجاء إدخال بريد إلكتروني صحيح");
+    if (!emailRegex.test(value))
+      return t("Please enter a valid email", "الرجاء إدخال بريد إلكتروني صحيح");
     return "";
   };
 
   const validatePhone = (value: string) => {
     const digits = value.replace(/\D/g, "");
     if (!digits) return t("Phone number is required", "رقم الجوال مطلوب");
-    if (selectedCountry.dialCode === '+91') {
+    if (selectedCountry.dialCode === "+91") {
       // TEMPORARY: India validation - REMOVE AFTER TESTING
-      if (digits.length !== 10) return t("Please enter 10 digits", "الرجاء إدخال 10 أرقام");
-      if (!INDIA_NUMBER_REGEX.test(digits)) return t("Invalid Indian mobile number", "رقم جوال هندي غير صحيح");
+      if (digits.length !== 10)
+        return t("Please enter 10 digits", "الرجاء إدخال 10 أرقام");
+      if (!INDIA_NUMBER_REGEX.test(digits))
+        return t("Invalid Indian mobile number", "رقم جوال هندي غير صحيح");
     } else {
-      if (digits.length !== 9) return t("Please enter 9 digits", "الرجاء إدخال 9 أرقام");
-      if (!SAUDI_NUMBER_REGEX.test(digits)) return t("Invalid Saudi mobile number", "رقم جوال سعودي غير صحيح");
+      if (digits.length !== 9)
+        return t("Please enter 9 digits", "الرجاء إدخال 9 أرقام");
+      if (!SAUDI_NUMBER_REGEX.test(digits))
+        return t("Invalid Saudi mobile number", "رقم جوال سعودي غير صحيح");
     }
     return "";
   };
@@ -182,7 +215,8 @@ const ShortenLinkFlow = () => {
   };
 
   const generateShortCode = () => {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
     for (let i = 0; i < 6; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -193,18 +227,30 @@ const ShortenLinkFlow = () => {
   const previewShortCode = useMemo(() => generateShortCode(), []);
 
   const createShortUrl = async () => {
-    if (hasCreatedUrlRef.current) return shortUrl || `${import.meta.env.VITE_BASE_URL || "https://snip.sa"}/${previewShortCode}`;
+    if (hasCreatedUrlRef.current)
+      return (
+        shortUrl ||
+        `${import.meta.env.VITE_BASE_URL || window.location.origin}/${previewShortCode}`
+      );
     hasCreatedUrlRef.current = true;
 
-    const response = await urlsAPI.createUrl({ originalUrl: originalUrl, customCode: previewShortCode, source: "landing" });
+    const response = await urlsAPI.createUrl({
+      originalUrl: originalUrl,
+      customCode: previewShortCode,
+      source: "landing",
+    });
     if (response.success && response.data) {
-      const shortCode = response.data.shortCode || response.data.shortUrl || previewShortCode;
-      const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";
+      const shortCode =
+        response.data.shortCode || response.data.shortUrl || previewShortCode;
+      const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
       const fullShortUrl = `${baseUrl}/${shortCode}`;
       setShortUrl(fullShortUrl);
       return fullShortUrl;
     }
-    throw new Error(response.message || t("Failed to create short URL", "فشل إنشاء الرابط المختصر"));
+    throw new Error(
+      response.message ||
+        t("Failed to create short URL", "فشل إنشاء الرابط المختصر"),
+    );
   };
 
   const handleCopy = () => {
@@ -238,7 +284,10 @@ const ShortenLinkFlow = () => {
         setStep("phone");
       }
     } catch (err: any) {
-      setEmailError(err.message || t("Failed to check email", "فشل التحقق من البريد الإلكتروني"));
+      setEmailError(
+        err.message ||
+          t("Failed to check email", "فشل التحقق من البريد الإلكتروني"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -263,7 +312,10 @@ const ShortenLinkFlow = () => {
         setStep("emailOtp");
         toast({
           title: t("OTP Sent", "تم إرسال رمز التحقق"),
-          description: t("Please check your email for the verification code", "تحقق من بريدك الإلكتروني للحصول على رمز التحقق"),
+          description: t(
+            "Please check your email for the verification code",
+            "تحقق من بريدك الإلكتروني للحصول على رمز التحقق",
+          ),
         });
       } else if (response?.success && response?.data?.accessToken) {
         // Direct login (no OTP)
@@ -271,7 +323,9 @@ const ShortenLinkFlow = () => {
         await finishFlow();
       }
     } catch (error: any) {
-      setPasswordError(error.message || t("Invalid password", "كلمة المرور غير صحيحة"));
+      setPasswordError(
+        error.message || t("Invalid password", "كلمة المرور غير صحيحة"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -281,20 +335,32 @@ const ShortenLinkFlow = () => {
   const handleEmailOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (emailOtp.length < EMAIL_OTP_LENGTH) {
-      setEmailOtpError(t("Please enter the 4-digit code", "الرجاء إدخال الرمز المكون من 4 أرقام"));
+      setEmailOtpError(
+        t(
+          "Please enter the 4-digit code",
+          "الرجاء إدخال الرمز المكون من 4 أرقام",
+        ),
+      );
       return;
     }
     setEmailOtpError("");
 
     setIsLoading(true);
     try {
-      const response = await authAPI.login({ email: email.trim(), password, otp: emailOtp });
+      const response = await authAPI.login({
+        email: email.trim(),
+        password,
+        otp: emailOtp,
+      });
       if (response?.success && response?.data?.accessToken) {
         await refreshUser();
         await finishFlow();
       }
     } catch (error: any) {
-      setEmailOtpError(error.message || t("Invalid or expired code", "رمز غير صحيح أو منتهي الصلاحية"));
+      setEmailOtpError(
+        error.message ||
+          t("Invalid or expired code", "رمز غير صحيح أو منتهي الصلاحية"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -311,20 +377,28 @@ const ShortenLinkFlow = () => {
           // Existing Google user → auto login
           await refreshUser();
           await finishFlow();
-        } else if (response?.data?.requiresPhoneVerification && response?.data?.sessionToken) {
+        } else if (
+          response?.data?.requiresPhoneVerification &&
+          response?.data?.sessionToken
+        ) {
           // New Google user → phone verification
           setGoogleSessionToken(response.data.sessionToken);
           setStep("phone");
           toast({
             title: t("Verify Your Mobile", "تحقق من رقم جوالك"),
-            description: t("Please enter your mobile number", "الرجاء إدخال رقم جوالك"),
+            description: t(
+              "Please enter your mobile number",
+              "الرجاء إدخال رقم جوالك",
+            ),
           });
         }
       }
     } catch (error: any) {
       toast({
         title: t("Google Sign-In Failed", "فشل تسجيل الدخول بقوقل"),
-        description: error.message || t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
+        description:
+          error.message ||
+          t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
         variant: "destructive",
       });
     } finally {
@@ -350,7 +424,10 @@ const ShortenLinkFlow = () => {
     try {
       if (googleSessionToken) {
         // Google SSO flow
-        const otpRes = await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        const otpRes = await authAPI.googleSendOTP(
+          googleSessionToken,
+          phoneNumber,
+        );
         // TEMPORARY: devOtp returned for Indian numbers in non-production - REMOVE AFTER TESTING
         setDevOtp(otpRes?.data?.devOtp ?? null);
       } else {
@@ -372,10 +449,15 @@ const ShortenLinkFlow = () => {
 
       toast({
         title: t("Code Sent", "تم إرسال الرمز"),
-        description: t("Verification code sent to your mobile number", "تم إرسال رمز التحقق إلى رقم جوالك"),
+        description: t(
+          "Verification code sent to your mobile number",
+          "تم إرسال رمز التحقق إلى رقم جوالك",
+        ),
       });
     } catch (error: any) {
-      setPhoneError(error.message || t("Failed to send code", "فشل إرسال الرمز"));
+      setPhoneError(
+        error.message || t("Failed to send code", "فشل إرسال الرمز"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -387,7 +469,10 @@ const ShortenLinkFlow = () => {
     setIsLoading(true);
     try {
       if (googleSessionToken) {
-        const otpRes = await authAPI.googleSendOTP(googleSessionToken, phoneNumber);
+        const otpRes = await authAPI.googleSendOTP(
+          googleSessionToken,
+          phoneNumber,
+        );
         setDevOtp(otpRes?.data?.devOtp ?? null);
       } else {
         const otpRes = await authAPI.phoneSendOTP(email.trim(), phoneNumber);
@@ -403,10 +488,15 @@ const ShortenLinkFlow = () => {
 
       toast({
         title: t("Code Resent", "تم إعادة إرسال الرمز"),
-        description: t("A new verification code has been sent", "تم إرسال رمز تحقق جديد"),
+        description: t(
+          "A new verification code has been sent",
+          "تم إرسال رمز تحقق جديد",
+        ),
       });
     } catch (error: any) {
-      setPhoneOtpError(error.message || t("Failed to resend code", "فشل إعادة إرسال الرمز"));
+      setPhoneOtpError(
+        error.message || t("Failed to resend code", "فشل إعادة إرسال الرمز"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -415,7 +505,12 @@ const ShortenLinkFlow = () => {
   const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phoneOtp.length < PHONE_OTP_LENGTH) {
-      setPhoneOtpError(t("Please enter the 4-digit code", "الرجاء إدخال الرمز المكون من 4 أرقام"));
+      setPhoneOtpError(
+        t(
+          "Please enter the 4-digit code",
+          "الرجاء إدخال الرمز المكون من 4 أرقام",
+        ),
+      );
       return;
     }
 
@@ -425,7 +520,10 @@ const ShortenLinkFlow = () => {
     try {
       if (googleSessionToken) {
         // Google SSO flow
-        const response = await authAPI.googleVerifyOTP(googleSessionToken, phoneOtp);
+        const response = await authAPI.googleVerifyOTP(
+          googleSessionToken,
+          phoneOtp,
+        );
         if (response?.success) {
           await refreshUser();
           await finishFlow();
@@ -433,10 +531,18 @@ const ShortenLinkFlow = () => {
       } else {
         // Email registration flow — verify against Redis via /auth/phone/verify-otp
         if (!phoneSessionKey) {
-          setPhoneOtpError(t("Session expired. Please request a new code.", "انتهت الجلسة. الرجاء طلب رمز جديد."));
+          setPhoneOtpError(
+            t(
+              "Session expired. Please request a new code.",
+              "انتهت الجلسة. الرجاء طلب رمز جديد.",
+            ),
+          );
           return;
         }
-        const response = await authAPI.phoneVerifyOTP(phoneSessionKey, phoneOtp);
+        const response = await authAPI.phoneVerifyOTP(
+          phoneSessionKey,
+          phoneOtp,
+        );
         if (response?.success) {
           setPhoneSessionKey(null);
           setStep("completeProfile");
@@ -449,7 +555,10 @@ const ShortenLinkFlow = () => {
       if (newAttempts >= MAX_OTP_ATTEMPTS) {
         toast({
           title: t("Verification Locked", "تم قفل التحقق"),
-          description: t("Too many failed attempts. Please start over.", "محاولات فاشلة كثيرة. الرجاء البدء من جديد."),
+          description: t(
+            "Too many failed attempts. Please start over.",
+            "محاولات فاشلة كثيرة. الرجاء البدء من جديد.",
+          ),
           variant: "destructive",
         });
         // Reset to email step
@@ -462,8 +571,8 @@ const ShortenLinkFlow = () => {
         error.message ||
           t(
             `Invalid code. ${MAX_OTP_ATTEMPTS - newAttempts} attempts remaining.`,
-            `رمز غير صحيح. ${MAX_OTP_ATTEMPTS - newAttempts} محاولات متبقية.`
-          )
+            `رمز غير صحيح. ${MAX_OTP_ATTEMPTS - newAttempts} محاولات متبقية.`,
+          ),
       );
     } finally {
       setIsLoading(false);
@@ -476,7 +585,10 @@ const ShortenLinkFlow = () => {
     if (!fullName.trim() || fullName.trim().length < 2) {
       toast({
         title: t("Validation Error", "خطأ في التحقق"),
-        description: t("Full name must be at least 2 characters", "الاسم الكامل يجب أن يكون حرفين على الأقل"),
+        description: t(
+          "Full name must be at least 2 characters",
+          "الاسم الكامل يجب أن يكون حرفين على الأقل",
+        ),
         variant: "destructive",
       });
       return;
@@ -484,7 +596,10 @@ const ShortenLinkFlow = () => {
     if (!newPassword || newPassword.length < 8) {
       toast({
         title: t("Validation Error", "خطأ في التحقق"),
-        description: t("Password must be at least 8 characters", "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+        description: t(
+          "Password must be at least 8 characters",
+          "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        ),
         variant: "destructive",
       });
       return;
@@ -516,17 +631,22 @@ const ShortenLinkFlow = () => {
         await finishFlow();
       } else if (response?.otpRequired || response?.data?.otpSent) {
         // Phone verification didn't produce a Redis token in time — surface a clear error
-        throw new Error(t(
-          "Verification session expired. Please go back and re-verify your phone number.",
-          "انتهت جلسة التحقق. الرجاء العودة والتحقق من رقم جوالك مجدداً."
-        ));
+        throw new Error(
+          t(
+            "Verification session expired. Please go back and re-verify your phone number.",
+            "انتهت جلسة التحقق. الرجاء العودة والتحقق من رقم جوالك مجدداً.",
+          ),
+        );
       }
     } catch (error: any) {
       const msg = error.message || "";
       if (msg.toLowerCase().includes("already registered")) {
         toast({
           title: t("Account exists", "الحساب موجود"),
-          description: t("This email is already registered. Please sign in instead.", "هذا البريد مسجل مسبقاً. الرجاء تسجيل الدخول."),
+          description: t(
+            "This email is already registered. Please sign in instead.",
+            "هذا البريد مسجل مسبقاً. الرجاء تسجيل الدخول.",
+          ),
         });
         setStep("password");
       } else {
@@ -549,8 +669,10 @@ const ShortenLinkFlow = () => {
     try {
       await createShortUrl();
       setStep("result");
-      amplitudeService.track("Shorten Link Flow Completed", { url: originalUrl });
-      fireConversion('landing_shorten');
+      amplitudeService.track("Shorten Link Flow Completed", {
+        url: originalUrl,
+      });
+      fireConversion("landing_shorten");
       toast({
         title: t("Success!", "نجاح!"),
         description: t("Your link has been shortened", "تم اختصار رابطك"),
@@ -561,15 +683,34 @@ const ShortenLinkFlow = () => {
       hasCreatedUrlRef.current = false;
 
       const msg = (error.message || "").toLowerCase();
-      if (msg.includes("malicious") || msg.includes("phishing") || msg.includes("unsafe") || msg.includes("blocked") || msg.includes("suspicious")) {
-        setUrlError(t("This URL has been flagged as unsafe and cannot be shortened.", "تم تحديد هذا الرابط كغير آمن ولا يمكن اختصاره."));
+      if (
+        msg.includes("malicious") ||
+        msg.includes("phishing") ||
+        msg.includes("unsafe") ||
+        msg.includes("blocked") ||
+        msg.includes("suspicious")
+      ) {
+        setUrlError(
+          t(
+            "This URL has been flagged as unsafe and cannot be shortened.",
+            "تم تحديد هذا الرابط كغير آمن ولا يمكن اختصاره.",
+          ),
+        );
       } else {
-        setUrlError(error.message || t("Failed to create short link. Please try a different URL.", "فشل إنشاء الرابط المختصر. جرب رابطاً مختلفاً."));
+        setUrlError(
+          error.message ||
+            t(
+              "Failed to create short link. Please try a different URL.",
+              "فشل إنشاء الرابط المختصر. جرب رابطاً مختلفاً.",
+            ),
+        );
       }
 
       toast({
         title: t("Link Creation Failed", "فشل إنشاء الرابط"),
-        description: error.message || t("Unable to shorten this URL", "تعذر اختصار هذا الرابط"),
+        description:
+          error.message ||
+          t("Unable to shorten this URL", "تعذر اختصار هذا الرابط"),
         variant: "destructive",
       });
     }
@@ -590,14 +731,17 @@ const ShortenLinkFlow = () => {
     if (step === "password") setStep("email");
     else if (step === "emailOtp") setStep("password");
     else if (step === "phone") setStep("email");
-    else if (step === "phoneOtp") { setDevOtp(null); setPhoneSessionKey(null); setStep("phone"); }
-    else if (step === "completeProfile") setStep("phoneOtp");
+    else if (step === "phoneOtp") {
+      setDevOtp(null);
+      setPhoneSessionKey(null);
+      setStep("phone");
+    } else if (step === "completeProfile") setStep("phoneOtp");
   };
 
   // ── Render helpers ──
   const renderLeftSide = () => {
     const isResult = step === "result";
-    const baseUrl = import.meta.env.VITE_BASE_URL || "https://snip.sa";
+    const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
     const domain = baseUrl.replace(/^https?:\/\//, "");
 
     return (
@@ -607,7 +751,11 @@ const ShortenLinkFlow = () => {
           onClick={handleCancel}
           className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors font-body"
         >
-          {isAr ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+          {isAr ? (
+            <ArrowRight className="w-4 h-4" />
+          ) : (
+            <ArrowLeft className="w-4 h-4" />
+          )}
           {t("Back to home", "العودة للرئيسية")}
         </button>
 
@@ -623,8 +771,14 @@ const ShortenLinkFlow = () => {
               </h1>
               <p className="text-sm lg:text-base text-white/70 font-body">
                 {isResult
-                  ? t("Copy it now or head to your dashboard.", "انسخه الآن أو توجه إلى لوحة التحكم.")
-                  : t("Sign up to unlock your shortened link.", "سجّل للحصول على رابطك المختصر.")}
+                  ? t(
+                      "Copy it now or head to your dashboard.",
+                      "انسخه الآن أو توجه إلى لوحة التحكم.",
+                    )
+                  : t(
+                      "Sign up to unlock your shortened link.",
+                      "سجّل للحصول على رابطك المختصر.",
+                    )}
               </p>
             </div>
 
@@ -633,11 +787,16 @@ const ShortenLinkFlow = () => {
               <p className="text-xs uppercase tracking-wider text-white/50 font-body">
                 {t("Original URL", "الرابط الأصلي")}
               </p>
-              <div className={cn(
-                "p-2 lg:p-4 bg-white/10 rounded-2xl border",
-                urlError ? "border-red-400" : "border-white/10"
-              )}>
-                <p className="text-sm font-body text-white/90 truncate" dir="ltr">
+              <div
+                className={cn(
+                  "p-2 lg:p-4 bg-white/10 rounded-2xl border",
+                  urlError ? "border-red-400" : "border-white/10",
+                )}
+              >
+                <p
+                  className="text-sm font-body text-white/90 truncate"
+                  dir="ltr"
+                >
                   {originalUrl || "https://example.com/very/long/url..."}
                 </p>
               </div>
@@ -649,14 +808,22 @@ const ShortenLinkFlow = () => {
             {/* Shortened link preview / result */}
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wider text-white/50 font-body">
-                {isResult ? t("Your shortened link", "رابطك المختصر") : t("Shortened link", "الرابط المختصر")}
+                {isResult
+                  ? t("Your shortened link", "رابطك المختصر")
+                  : t("Shortened link", "الرابط المختصر")}
               </p>
               {isResult ? (
                 <div className="space-y-2 lg:space-y-4">
                   <div className="flex items-center gap-3 p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                     <Link2 className="w-5 h-5 text-white/70 shrink-0" />
-                    <p className="text-base font-display font-bold text-white/90" dir="ltr">
-                      {(shortUrl || `${domain}/${previewShortCode}`).replace(/^https?:\/\//, "")}
+                    <p
+                      className="text-base font-display font-bold text-white/90"
+                      dir="ltr"
+                    >
+                      {(shortUrl || `${domain}/${previewShortCode}`).replace(
+                        /^https?:\/\//,
+                        "",
+                      )}
                     </p>
                   </div>
                   <Button
@@ -664,21 +831,34 @@ const ShortenLinkFlow = () => {
                     variant="outline"
                     className="w-full h-11 gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
                   >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copied ? t("Copied!", "تم النسخ!") : t("Copy Link", "نسخ الرابط")}
+                    {copied ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    {copied
+                      ? t("Copied!", "تم النسخ!")
+                      : t("Copy Link", "نسخ الرابط")}
                   </Button>
                   <Button
                     onClick={() => navigate("/dashboard")}
                     className="w-full h-11 bg-white text-[hsl(350,52%,31%)] hover:bg-white/90 gap-2"
                   >
                     {t("Go to Dashboard", "الذهاب إلى لوحة التحكم")}
-                    {isAr ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                    {isAr ? (
+                      <ArrowLeft className="w-4 h-4" />
+                    ) : (
+                      <ArrowRight className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-2 lg:p-4 bg-white/10 rounded-2xl border border-white/10">
                   <Link2 className="w-5 h-5 text-white/70 shrink-0" />
-                  <p className="text-base font-display font-bold text-white/90" dir="ltr">
+                  <p
+                    className="text-base font-display font-bold text-white/90"
+                    dir="ltr"
+                  >
                     {domain}/••••••
                   </p>
                   <span className="ms-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-xs text-white/60 font-body">
@@ -692,7 +872,12 @@ const ShortenLinkFlow = () => {
             {/* Footer */}
             <div className="flex items-center gap-2 text-xs text-white/40 font-body">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{t("Free forever · No credit card · Hosted in Saudi Arabia", "مجاني للأبد · بدون بطاقة ائتمان · مستضاف في السعودية")}</span>
+              <span>
+                {t(
+                  "Free forever · No credit card · Hosted in Saudi Arabia",
+                  "مجاني للأبد · بدون بطاقة ائتمان · مستضاف في السعودية",
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -720,28 +905,55 @@ const ShortenLinkFlow = () => {
             <h2 className="text-lg lg:text-2xl font-display font-bold text-[hsl(350,52%,31%)]">
               {step === "email" && t("Create your account", "أنشئ حسابك")}
               {step === "password" && t("Welcome back", "مرحباً بعودتك")}
-              {step === "emailOtp" && t("Verify your email", "تحقق من بريدك الإلكتروني")}
+              {step === "emailOtp" &&
+                t("Verify your email", "تحقق من بريدك الإلكتروني")}
               {step === "phone" && t("Verify your mobile", "تحقق من رقم جوالك")}
-              {step === "phoneOtp" && t("Enter verification code", "أدخل رمز التحقق")}
-              {step === "completeProfile" && t("Complete your profile", "أكمل ملفك الشخصي")}
+              {step === "phoneOtp" &&
+                t("Enter verification code", "أدخل رمز التحقق")}
+              {step === "completeProfile" &&
+                t("Complete your profile", "أكمل ملفك الشخصي")}
               {step === "result" && t("All set!", "كل شيء جاهز!")}
             </h2>
             <p className="text-xs lg:text-sm text-muted-foreground font-body">
-              {step === "email" && t("Sign up to shorten your link.", "سجّل لإنشاء رابطك المختصر.")}
-              {step === "password" && t("Enter your password to continue", "أدخل كلمة المرور للمتابعة")}
-              {step === "emailOtp" && t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
-              {step === "phone" && (selectedCountry.dialCode === '+91'
-                ? t("Enter your Indian mobile number", "أدخل رقم جوالك الهندي")
-                : t("Enter your Saudi mobile number", "أدخل رقم جوالك السعودي"))}
-              {step === "phoneOtp" && t(`Code sent to ${selectedCountry.dialCode}${phoneNumber}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phoneNumber}`)}
-              {step === "completeProfile" && t("Just a few more details", "بضعة تفاصيل إضافية")}
+              {step === "email" &&
+                t(
+                  "Sign up to shorten your link.",
+                  "سجّل لإنشاء رابطك المختصر.",
+                )}
+              {step === "password" &&
+                t(
+                  "Enter your password to continue",
+                  "أدخل كلمة المرور للمتابعة",
+                )}
+              {step === "emailOtp" &&
+                t(`Code sent to ${email}`, `تم إرسال الرمز إلى ${email}`)}
+              {step === "phone" &&
+                (selectedCountry.dialCode === "+91"
+                  ? t(
+                      "Enter your Indian mobile number",
+                      "أدخل رقم جوالك الهندي",
+                    )
+                  : t(
+                      "Enter your Saudi mobile number",
+                      "أدخل رقم جوالك السعودي",
+                    ))}
+              {step === "phoneOtp" &&
+                t(
+                  `Code sent to ${selectedCountry.dialCode}${phoneNumber}`,
+                  `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phoneNumber}`,
+                )}
+              {step === "completeProfile" &&
+                t("Just a few more details", "بضعة تفاصيل إضافية")}
               {step === "result" && t("Your link is ready", "رابطك جاهز")}
             </p>
           </div>
 
           {/* Form content */}
           {step === "email" && (
-            <form onSubmit={handleEmailSubmit} className="space-y-2 lg:space-y-4">
+            <form
+              onSubmit={handleEmailSubmit}
+              className="space-y-2 lg:space-y-4"
+            >
               <GoogleAuthButton
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
@@ -770,7 +982,10 @@ const ShortenLinkFlow = () => {
                     type="email"
                     placeholder="you@example.com"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError("");
+                    }}
                     className={cn("h-11 flex-1", isAr && "text-right")}
                     dir="ltr"
                     autoFocus
@@ -788,17 +1003,27 @@ const ShortenLinkFlow = () => {
                   </Button>
                 </div>
                 {emailError && (
-                  <p className="text-xs text-destructive font-body">{emailError}</p>
+                  <p className="text-xs text-destructive font-body">
+                    {emailError}
+                  </p>
                 )}
               </div>
             </form>
           )}
 
           {step === "password" && (
-            <form onSubmit={handlePasswordSubmit} className="space-y-2 lg:space-y-4">
+            <form
+              onSubmit={handlePasswordSubmit}
+              className="space-y-2 lg:space-y-4"
+            >
               {/* Email — editable in case they want to change it */}
               <div className="space-y-1.5">
-                <Label htmlFor="signin-email" className="text-foreground text-sm">{t("Email", "البريد الإلكتروني")}</Label>
+                <Label
+                  htmlFor="signin-email"
+                  className="text-foreground text-sm"
+                >
+                  {t("Email", "البريد الإلكتروني")}
+                </Label>
                 <Input
                   id="signin-email"
                   type="email"
@@ -820,7 +1045,10 @@ const ShortenLinkFlow = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
                     className="h-11 pe-10"
                     dir="ltr"
                     autoFocus
@@ -830,11 +1058,17 @@ const ShortenLinkFlow = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {showPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {passwordError && (
-                  <p className="text-xs text-destructive font-body">{passwordError}</p>
+                  <p className="text-xs text-destructive font-body">
+                    {passwordError}
+                  </p>
                 )}
               </div>
 
@@ -844,7 +1078,10 @@ const ShortenLinkFlow = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Signing in...", "جاري تسجيل الدخول...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Signing in...", "جاري تسجيل الدخول...")}
+                  </>
                 ) : (
                   t("Continue", "متابعة")
                 )}
@@ -861,7 +1098,10 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "emailOtp" && (
-            <form onSubmit={handleEmailOtpSubmit} className="space-y-2 lg:space-y-4">
+            <form
+              onSubmit={handleEmailOtpSubmit}
+              className="space-y-2 lg:space-y-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="emailOtp" className="text-foreground text-sm">
                   {t("Verification Code", "رمز التحقق")}
@@ -872,14 +1112,23 @@ const ShortenLinkFlow = () => {
                   inputMode="numeric"
                   placeholder="0000"
                   value={emailOtp}
-                  onChange={(e) => { setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, EMAIL_OTP_LENGTH)); setEmailOtpError(""); }}
+                  onChange={(e) => {
+                    setEmailOtp(
+                      e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, EMAIL_OTP_LENGTH),
+                    );
+                    setEmailOtpError("");
+                  }}
                   className="h-12 text-center text-xl tracking-[0.6em] font-display"
                   dir="ltr"
                   maxLength={EMAIL_OTP_LENGTH}
                   autoFocus
                 />
                 {emailOtpError && (
-                  <p className="text-xs text-destructive font-body">{emailOtpError}</p>
+                  <p className="text-xs text-destructive font-body">
+                    {emailOtpError}
+                  </p>
                 )}
               </div>
 
@@ -889,7 +1138,10 @@ const ShortenLinkFlow = () => {
                 disabled={emailOtp.length < EMAIL_OTP_LENGTH || isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Verifying...", "جاري التحقق...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Verifying...", "جاري التحقق...")}
+                  </>
                 ) : (
                   t("Verify & Continue", "تحقق واستمر")
                 )}
@@ -908,7 +1160,9 @@ const ShortenLinkFlow = () => {
           {step === "phone" && (
             <div className="space-y-2 lg:space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm">{t("Mobile Number", "رقم الجوال")}</Label>
+                <Label className="text-sm">
+                  {t("Mobile Number", "رقم الجوال")}
+                </Label>
                 <div className="flex items-center gap-2">
                   {/* TEMPORARY: Country selector for testing - REMOVE AFTER TESTING */}
                   <div className="relative shrink-0">
@@ -918,9 +1172,21 @@ const ShortenLinkFlow = () => {
                       className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-background text-sm font-body text-foreground hover:bg-muted transition-colors"
                     >
                       <span>{selectedCountry.flag}</span>
-                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
-                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <span className="text-muted-foreground">
+                        {selectedCountry.dialCode}
+                      </span>
+                      <svg
+                        className="w-3 h-3 text-muted-foreground"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {countryOpen && (
@@ -936,11 +1202,15 @@ const ShortenLinkFlow = () => {
                               setCountryOpen(false);
                             }}
                             className={`w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start ${
-                              selectedCountry.dialCode === c.dialCode ? "bg-muted" : ""
+                              selectedCountry.dialCode === c.dialCode
+                                ? "bg-muted"
+                                : ""
                             }`}
                           >
                             <span>{c.flag}</span>
-                            <span className="text-muted-foreground">{c.dialCode}</span>
+                            <span className="text-muted-foreground">
+                              {c.dialCode}
+                            </span>
                             <span className="text-foreground">{c.label}</span>
                           </button>
                         ))}
@@ -952,7 +1222,14 @@ const ShortenLinkFlow = () => {
                     inputMode="numeric"
                     placeholder={selectedCountry.placeholder}
                     value={phoneNumber}
-                    onChange={(e) => { setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits)); setPhoneError(""); }}
+                    onChange={(e) => {
+                      setPhoneNumber(
+                        e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, selectedCountry.maxDigits),
+                      );
+                      setPhoneError("");
+                    }}
                     className="h-11"
                     dir="ltr"
                     maxLength={selectedCountry.maxDigits}
@@ -960,13 +1237,20 @@ const ShortenLinkFlow = () => {
                   />
                 </div>
                 {phoneError && (
-                  <p className="text-xs text-destructive font-body">{phoneError}</p>
+                  <p className="text-xs text-destructive font-body">
+                    {phoneError}
+                  </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {selectedCountry.dialCode === '+91'
-                    ? t(`Enter your Indian mobile number (${selectedCountry.placeholder})`, `أدخل رقم جوالك الهندي (${selectedCountry.placeholder})`)
-                    : t(`Enter your Saudi mobile number (${selectedCountry.placeholder})`, `أدخل رقم جوالك السعودي (${selectedCountry.placeholder})`)
-                  }
+                  {selectedCountry.dialCode === "+91"
+                    ? t(
+                        `Enter your Indian mobile number (${selectedCountry.placeholder})`,
+                        `أدخل رقم جوالك الهندي (${selectedCountry.placeholder})`,
+                      )
+                    : t(
+                        `Enter your Saudi mobile number (${selectedCountry.placeholder})`,
+                        `أدخل رقم جوالك السعودي (${selectedCountry.placeholder})`,
+                      )}
                 </p>
               </div>
 
@@ -974,10 +1258,17 @@ const ShortenLinkFlow = () => {
                 type="button"
                 className="w-full h-11 bg-primary text-primary-foreground"
                 onClick={handleSendPhoneOtp}
-                disabled={phoneNumber.length !== selectedCountry.maxDigits || isLoading || !!phoneError}
+                disabled={
+                  phoneNumber.length !== selectedCountry.maxDigits ||
+                  isLoading ||
+                  !!phoneError
+                }
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Sending...", "جاري الإرسال...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Sending...", "جاري الإرسال...")}
+                  </>
                 ) : (
                   t("Send Verification Code", "إرسال رمز التحقق")
                 )}
@@ -994,31 +1285,51 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "phoneOtp" && (
-            <form onSubmit={handleVerifyPhoneOtp} className="space-y-2 lg:space-y-4">
+            <form
+              onSubmit={handleVerifyPhoneOtp}
+              className="space-y-2 lg:space-y-4"
+            >
               <div className="space-y-2">
-                <Label className="text-sm">{t("Verification Code", "رمز التحقق")}</Label>
+                <Label className="text-sm">
+                  {t("Verification Code", "رمز التحقق")}
+                </Label>
                 <Input
                   type="text"
                   inputMode="numeric"
                   placeholder="0000"
                   value={phoneOtp}
-                  onChange={(e) => { setPhoneOtp(e.target.value.replace(/\D/g, "").slice(0, PHONE_OTP_LENGTH)); setPhoneOtpError(""); }}
+                  onChange={(e) => {
+                    setPhoneOtp(
+                      e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, PHONE_OTP_LENGTH),
+                    );
+                    setPhoneOtpError("");
+                  }}
                   className="h-12 text-center text-xl tracking-[0.5em] font-display"
                   dir="ltr"
                   maxLength={PHONE_OTP_LENGTH}
                   autoFocus
                 />
                 {phoneOtpError && (
-                  <p className="text-xs text-destructive font-body">{phoneOtpError}</p>
+                  <p className="text-xs text-destructive font-body">
+                    {phoneOtpError}
+                  </p>
                 )}
                 {timeRemaining !== null && timeRemaining > 0 && (
                   <p className="text-xs text-muted-foreground text-center">
-                    {t(`Code expires in ${formatTime(timeRemaining)}`, `ينتهي الرمز خلال ${formatTime(timeRemaining)}`)}
+                    {t(
+                      `Code expires in ${formatTime(timeRemaining)}`,
+                      `ينتهي الرمز خلال ${formatTime(timeRemaining)}`,
+                    )}
                   </p>
                 )}
                 {timeRemaining === 0 && (
                   <p className="text-xs text-destructive text-center">
-                    {t("Code expired. Please request a new one.", "انتهت صلاحية الرمز. الرجاء طلب رمز جديد.")}
+                    {t(
+                      "Code expired. Please request a new one.",
+                      "انتهت صلاحية الرمز. الرجاء طلب رمز جديد.",
+                    )}
                   </p>
                 )}
               </div>
@@ -1029,30 +1340,44 @@ const ShortenLinkFlow = () => {
                 disabled={phoneOtp.length !== PHONE_OTP_LENGTH || isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Verifying...", "جاري التحقق...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Verifying...", "جاري التحقق...")}
+                  </>
                 ) : (
                   t("Verify & Continue", "تحقق واستمر")
                 )}
               </Button>
 
               <div className="text-center space-y-2">
-                {phoneOtpResends < MAX_RESENDS && resendCooldown === 0 && !isLoading && (
-                  <button
-                    type="button"
-                    onClick={handleResendPhoneOtp}
-                    className="text-sm text-primary hover:underline font-body"
-                  >
-                    {t(`Resend code (${MAX_RESENDS - phoneOtpResends} remaining)`, `إعادة إرسال الرمز (${MAX_RESENDS - phoneOtpResends} متبقي)`)}
-                  </button>
-                )}
+                {phoneOtpResends < MAX_RESENDS &&
+                  resendCooldown === 0 &&
+                  !isLoading && (
+                    <button
+                      type="button"
+                      onClick={handleResendPhoneOtp}
+                      className="text-sm text-primary hover:underline font-body"
+                    >
+                      {t(
+                        `Resend code (${MAX_RESENDS - phoneOtpResends} remaining)`,
+                        `إعادة إرسال الرمز (${MAX_RESENDS - phoneOtpResends} متبقي)`,
+                      )}
+                    </button>
+                  )}
                 {resendCooldown > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {t(`Resend available in ${resendCooldown}s`, `إعادة الإرسال متاحة بعد ${resendCooldown} ثانية`)}
+                    {t(
+                      `Resend available in ${resendCooldown}s`,
+                      `إعادة الإرسال متاحة بعد ${resendCooldown} ثانية`,
+                    )}
                   </p>
                 )}
                 {phoneOtpResends >= MAX_RESENDS && resendCooldown === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {t("Maximum resends reached", "تم الوصول للحد الأقصى لإعادة الإرسال")}
+                    {t(
+                      "Maximum resends reached",
+                      "تم الوصول للحد الأقصى لإعادة الإرسال",
+                    )}
                   </p>
                 )}
               </div>
@@ -1068,7 +1393,10 @@ const ShortenLinkFlow = () => {
           )}
 
           {step === "completeProfile" && (
-            <form onSubmit={handleCompleteProfile} className="space-y-1 lg:space-y-4">
+            <form
+              onSubmit={handleCompleteProfile}
+              className="space-y-1 lg:space-y-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-foreground text-sm">
                   {t("Full Name", "الاسم الكامل")} *
@@ -1085,7 +1413,10 @@ const ShortenLinkFlow = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-foreground text-sm">
+                <Label
+                  htmlFor="newPassword"
+                  className="text-foreground text-sm"
+                >
                   {t("Password", "كلمة المرور")} *
                 </Label>
                 <div className="relative" dir="ltr">
@@ -1103,13 +1434,20 @@ const ShortenLinkFlow = () => {
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showNewPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {showNewPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-foreground text-sm">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-foreground text-sm"
+                >
                   {t("Confirm Password", "تأكيد كلمة المرور")} *
                 </Label>
                 <div className="relative" dir="ltr">
@@ -1119,7 +1457,13 @@ const ShortenLinkFlow = () => {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={cn("h-11 pe-10", confirmPassword.length > 0 && confirmPassword !== newPassword ? "border-destructive" : "")}
+                    className={cn(
+                      "h-11 pe-10",
+                      confirmPassword.length > 0 &&
+                        confirmPassword !== newPassword
+                        ? "border-destructive"
+                        : "",
+                    )}
                     dir="ltr"
                   />
                   <button
@@ -1127,14 +1471,22 @@ const ShortenLinkFlow = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showConfirmPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {showConfirmPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
-                {confirmPassword.length > 0 && confirmPassword !== newPassword && (
-                  <p className="text-xs text-destructive font-body">
-                    {t("Passwords do not match", "كلمتا المرور غير متطابقتين")}
-                  </p>
-                )}
+                {confirmPassword.length > 0 &&
+                  confirmPassword !== newPassword && (
+                    <p className="text-xs text-destructive font-body">
+                      {t(
+                        "Passwords do not match",
+                        "كلمتا المرور غير متطابقتين",
+                      )}
+                    </p>
+                  )}
               </div>
 
               <Button
@@ -1143,7 +1495,10 @@ const ShortenLinkFlow = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Creating Account...", "جاري إنشاء الحساب...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Creating Account...", "جاري إنشاء الحساب...")}
+                  </>
                 ) : (
                   t("Create Account", "إنشاء حساب")
                 )}
@@ -1161,7 +1516,10 @@ const ShortenLinkFlow = () => {
                   {t("Your link is ready!", "رابطك جاهز!")}
                 </h3>
                 <p className="text-sm text-muted-foreground font-body">
-                  {t("Copy it now or visit your dashboard to manage all your links.", "انسخه الآن أو زر لوحة التحكم لإدارة جميع روابطك.")}
+                  {t(
+                    "Copy it now or visit your dashboard to manage all your links.",
+                    "انسخه الآن أو زر لوحة التحكم لإدارة جميع روابطك.",
+                  )}
                 </p>
               </div>
               <Button
@@ -1169,11 +1527,14 @@ const ShortenLinkFlow = () => {
                 className="w-full h-11 bg-primary text-primary-foreground gap-2"
               >
                 {t("Go to Dashboard", "الذهاب إلى لوحة التحكم")}
-                {isAr ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                {isAr ? (
+                  <ArrowLeft className="w-4 h-4" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
               </Button>
             </div>
           )}
-
         </div>
       </div>
     );
@@ -1182,9 +1543,7 @@ const ShortenLinkFlow = () => {
   return (
     <div className="h-[100dvh] flex flex-col lg:flex-row overflow-hidden">
       {/* Left side */}
-      <div className="flex-[0.8] lg:flex-1 lg:w-1/2">
-        {renderLeftSide()}
-      </div>
+      <div className="flex-[0.8] lg:flex-1 lg:w-1/2">{renderLeftSide()}</div>
 
       {/* Right side */}
       <div className="flex-[1.2] lg:flex-1 lg:w-1/2 overflow-hidden">

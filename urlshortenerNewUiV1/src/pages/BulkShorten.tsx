@@ -259,7 +259,7 @@ const BulkShorten = () => {
   }, []);
 
   const defaultDomain =
-    domains.find((d) => d.id === "base")?.domain || "snip.sa";
+    domains.find((d) => d.id === "base")?.domain || window.location.host;
 
   const update = (id: string, patch: Partial<BulkRow>) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));

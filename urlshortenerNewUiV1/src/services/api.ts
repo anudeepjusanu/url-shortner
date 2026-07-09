@@ -1,6 +1,6 @@
 // API Configuration
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3015/api";
+  import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
 
 // API endpoints
 const endpoints = {
@@ -84,7 +84,7 @@ const endpoints = {
     browsers: "/google-analytics/browsers",
     dashboard: "/google-analytics/dashboard",
   },
-  projects: {
+    projects: {
     list: "/projects",
     create: "/projects",
   },

@@ -607,6 +607,10 @@ const updateUrlModeration = async (req, res) => {
       id,
       {
         moderationStatus,
+        // Active/Inactive is a separate, admin-controlled lifecycle toggle —
+        // BLOCK/ALLOW never touches it. A blocked link stays inaccessible
+        // via the moderationStatus check in redirectService.validateRedirect
+        // regardless of isActive, so the two states don't need to be synced.
         moderationVerdict: {
           ...(url.moderationVerdict || {}),
           adminReview: {

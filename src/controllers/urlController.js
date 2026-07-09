@@ -158,6 +158,10 @@ const RESERVED_ALIASES = [
   "url-management",
   "management",
   "admin-urls",
+  "blocked",
+  "qr-error",
+  "shorten",
+  "terms",
 
   // Backend/API routes
   "api",
@@ -1170,20 +1174,11 @@ const bulkCreate = async (req, res) => {
     }
 
     // --- Pre-flight checks (run before the main loop for efficiency) ---
+    // Content safety is judged asynchronously per-link by the url-scanner
+    // pipeline after creation (triggered in the loop below) — bulk creation
+    // is never gated on it, same as the single-link createUrl flow.
 
-    // 1. Collect all original URLs for batch Safe Browsing check
-    const allOriginalUrls = urls
-      .map((e) => {
-        const v = validateUrl(e.originalUrl);
-        return v.isValid ? v.cleanUrl : null;
-      })
-      .filter(Boolean);
-
-    // 2. Batch Safe Browsing check — ONE API call for all URLs
-    const safeBrowsingResults =
-      await safeBrowsingService.checkUrlsBatch(allOriginalUrls);
-
-    // 3. Reachability check — same policy as createUrl/updateUrl, with bounded concurrency.
+    // Reachability check — same policy as createUrl/updateUrl, with bounded concurrency.
     //    Deduplicate by cleanUrl so each unique destination is only checked once.
     const reachabilityMap = new Map(); // cleanUrl → { allowed, message }
     const uniqueUrlsToCheck = [];
@@ -1256,22 +1251,6 @@ const bulkCreate = async (req, res) => {
           } catch (_) {
             /* keep original if URL construction fails */
           }
-        }
-
-        // Check pre-computed Safe Browsing result for this URL
-        const safetyCheck = safeBrowsingResults.get(urlValidation.cleanUrl) || {
-          isSafe: true,
-        };
-        if (!safetyCheck.isSafe) {
-          failed.push({
-            row: i + 1,
-            originalUrl: entry.originalUrl,
-            customCode: entry.customCode || "",
-            title: entry.title || "",
-            error:
-              safetyCheck.message || "URL flagged as unsafe by Safe Browsing",
-          });
-          continue;
         }
 
         // Handle custom alias

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUTM } from "@/contexts/UTMContext";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
-import { urlsAPI } from "@/services/api";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,7 +83,6 @@ const CreateUTMLink = () => {
   const [shortenToggle, setShortenToggle] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [safetyError, setSafetyError] = useState("");
 
   // Validation state — only shown after first submit attempt
   const [touched, setTouched] = useState(false);
@@ -128,24 +126,6 @@ const CreateUTMLink = () => {
     const finalTaggedUrl = taggedUrl ?? destinationUrl.trim();
 
     setIsSubmitting(true);
-    try {
-      const safety = await urlsAPI.checkSafety(finalTaggedUrl);
-      if (!safety.isSafe) {
-        setSafetyError(
-          safety.message ||
-            t(
-              "This URL has been flagged as unsafe (phishing or malware) and cannot be used.",
-              "تم تحديد هذا الرابط كغير آمن (تصيد أو برامج ضارة) ولا يمكن استخدامه.",
-            ),
-        );
-        setIsSubmitting(false);
-        return;
-      }
-      setSafetyError("");
-    } catch {
-      // Network failure — fail open so the flow still works
-    }
-
     try {
       if (shortenToggle) {
         const payload: any = { originalUrl: finalTaggedUrl };
@@ -245,19 +225,13 @@ const CreateUTMLink = () => {
               onChange={(e) => {
                 setDestinationUrl(e.target.value);
                 if (touched && e.target.value.trim()) setTouched(false);
-                if (safetyError) setSafetyError("");
               }}
               onBlur={() => setTouched(true)}
-              className={`h-11 ${destError || safetyError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+              className={`h-11 ${destError ? "border-destructive focus-visible:ring-destructive" : ""}`}
               disabled={isSubmitting}
             />
             {destError && (
               <p className="text-xs text-destructive font-body">{destError}</p>
-            )}
-            {safetyError && (
-              <p className="text-xs text-destructive font-body">
-                {safetyError}
-              </p>
             )}
           </div>
 
