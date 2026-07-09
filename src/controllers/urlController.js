@@ -735,7 +735,9 @@ const updateUrl = async (req, res) => {
     }
 
     // Validate and check accessibility of new originalUrl if provided
+    let destinationChanged = false;
     if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
+      destinationChanged = true;
       const urlValidation = validateUrl(originalUrl);
       if (!urlValidation.isValid) {
         return res.status(400).json({
@@ -835,6 +837,15 @@ const updateUrl = async (req, res) => {
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
 
+    // Destination changed — the old moderation verdict no longer applies to
+    // the new content, so re-queue it for the async scanner pipeline just
+    // like a freshly created link, instead of leaving the stale badge shown.
+    if (destinationChanged) {
+      updateData.moderationStatus = "pending";
+      updateData.moderationVerdict = null;
+      updateData.moderationCheckedAt = null;
+    }
+
     // When updating customCode, also update shortCode to match
     if (customCode !== undefined) {
       const normalizedCode = normalizeShortCode(customCode);
@@ -892,6 +903,12 @@ const updateUrl = async (req, res) => {
         await cacheDel(`url:${updatedUrl.customCode.toLowerCase()}`);
       }
       await cacheDel(`url:${updatedUrl.shortCode.toLowerCase()}`);
+    }
+
+    // Destination changed — kick off the moderation pipeline for the new
+    // content, same fire-and-forget pattern as link creation.
+    if (destinationChanged) {
+      triggerUrlScan(updatedUrl);
     }
 
     res.json({

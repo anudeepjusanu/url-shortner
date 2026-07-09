@@ -38,11 +38,17 @@ const BlogPost = () => {
   const date = lang === "ar" ? post.date.ar : post.date.en;
 
   const seoTitle = post.seoTitle
-    ? (lang === "ar" ? post.seoTitle.ar : post.seoTitle.en)
+    ? lang === "ar"
+      ? post.seoTitle.ar
+      : post.seoTitle.en
     : title;
   const seoDescription = post.seoDescription
-    ? (lang === "ar" ? post.seoDescription.ar : post.seoDescription.en)
-    : (lang === "ar" ? post.excerpt.ar : post.excerpt.en);
+    ? lang === "ar"
+      ? post.seoDescription.ar
+      : post.seoDescription.en
+    : lang === "ar"
+      ? post.excerpt.ar
+      : post.excerpt.en;
 
   useMetaTags({
     title: seoTitle,
@@ -62,15 +68,32 @@ const BlogPost = () => {
     const parts = str.split(/(\*\*.*?\*\*|`.*?`|\[.*?\]\(.*?\))/g);
     return parts.map((part, j) => {
       if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
-        return <strong key={j} className="text-foreground">{part.slice(2, -2)}</strong>;
+        return (
+          <strong key={j} className="text-foreground">
+            {part.slice(2, -2)}
+          </strong>
+        );
       }
       if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
-        return <code key={j} className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">{part.slice(1, -1)}</code>;
+        return (
+          <code
+            key={j}
+            className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
       }
       const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
       if (linkMatch) {
         return (
-          <a key={j} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          <a
+            key={j}
+            href={linkMatch[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
             {linkMatch[1]}
           </a>
         );
@@ -92,9 +115,12 @@ const BlogPost = () => {
       if (line.startsWith("```")) {
         if (inCodeBlock) {
           elements.push(
-            <pre key={`code-${idx}`} className="bg-foreground text-background/80 rounded-lg p-5 text-sm font-mono overflow-x-auto my-6">
+            <pre
+              key={`code-${idx}`}
+              className="bg-foreground text-background/80 rounded-lg p-5 text-sm font-mono overflow-x-auto my-6"
+            >
               {codeLines.join("\n")}
-            </pre>
+            </pre>,
           );
           codeLines = [];
         }
@@ -117,12 +143,18 @@ const BlogPost = () => {
           idx++;
         }
         const parseRow = (row: string) =>
-          row.split("|").slice(1, -1).map((c) => c.trim());
-        const isSep = (cells: string[]) => cells.every((c) => /^[-: ]+$/.test(c));
+          row
+            .split("|")
+            .slice(1, -1)
+            .map((c) => c.trim());
+        const isSep = (cells: string[]) =>
+          cells.every((c) => /^[-: ]+$/.test(c));
         const allRows = tableLines.map(parseRow);
         const sepIdx = allRows.findIndex(isSep);
-        const headerRows = sepIdx >= 0 ? allRows.slice(0, sepIdx) : [allRows[0]];
-        const bodyRows = sepIdx >= 0 ? allRows.slice(sepIdx + 1) : allRows.slice(1);
+        const headerRows =
+          sepIdx >= 0 ? allRows.slice(0, sepIdx) : [allRows[0]];
+        const bodyRows =
+          sepIdx >= 0 ? allRows.slice(sepIdx + 1) : allRows.slice(1);
         elements.push(
           <div key={`table-${idx}`} className="overflow-x-auto my-6">
             <table className="w-full border-collapse text-sm font-body">
@@ -130,7 +162,10 @@ const BlogPost = () => {
                 {headerRows.map((row, ri) => (
                   <tr key={ri} className="bg-muted/50">
                     {row.map((cell, ci) => (
-                      <th key={ci} className="border border-border px-4 py-2 text-left font-semibold text-foreground whitespace-nowrap">
+                      <th
+                        key={ci}
+                        className="border border-border px-4 py-2 text-left font-semibold text-foreground whitespace-nowrap"
+                      >
                         {cell}
                       </th>
                     ))}
@@ -141,7 +176,10 @@ const BlogPost = () => {
                 {bodyRows.map((row, ri) => (
                   <tr key={ri} className={ri % 2 === 0 ? "" : "bg-muted/20"}>
                     {row.map((cell, ci) => (
-                      <td key={ci} className="border border-border px-4 py-2 text-muted-foreground">
+                      <td
+                        key={ci}
+                        className="border border-border px-4 py-2 text-muted-foreground"
+                      >
                         {cell}
                       </td>
                     ))}
@@ -149,58 +187,79 @@ const BlogPost = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div>,
         );
         continue;
       }
 
       if (line.startsWith("## ")) {
         elements.push(
-          <h2 key={idx} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
+          <h2
+            key={idx}
+            className="font-display text-2xl font-bold text-foreground mt-10 mb-4"
+          >
             {line.replace("## ", "")}
-          </h2>
+          </h2>,
         );
       } else if (line.startsWith("### ")) {
         elements.push(
-          <h3 key={idx} className="font-display text-xl font-semibold text-foreground mt-8 mb-3">
+          <h3
+            key={idx}
+            className="font-display text-xl font-semibold text-foreground mt-8 mb-3"
+          >
             {line.replace("### ", "")}
-          </h3>
+          </h3>,
         );
       } else if (line.startsWith("- **")) {
         const match = line.match(/^- \*\*(.+?)\*\*\s*,?\s*(.*)/);
         if (match) {
           elements.push(
-            <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
+            <li
+              key={idx}
+              className="font-body text-muted-foreground leading-relaxed ml-4 mb-2"
+            >
               <strong className="text-foreground">{match[1]}</strong>
               {match[2] && <span>, {renderInline(match[2])}</span>}
-            </li>
+            </li>,
           );
         }
       } else if (line.startsWith("- ")) {
         elements.push(
-          <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2">
+          <li
+            key={idx}
+            className="font-body text-muted-foreground leading-relaxed ml-4 mb-2"
+          >
             {renderInline(line.replace("- ", ""))}
-          </li>
+          </li>,
         );
       } else if (line.match(/^\d+\.\s/)) {
         elements.push(
-          <li key={idx} className="font-body text-muted-foreground leading-relaxed ml-4 mb-2 list-decimal">
+          <li
+            key={idx}
+            className="font-body text-muted-foreground leading-relaxed ml-4 mb-2 list-decimal"
+          >
             {renderInline(line.replace(/^\d+\.\s/, ""))}
-          </li>
+          </li>,
         );
       } else if (line.startsWith("`") && line.endsWith("`")) {
         elements.push(
-          <code key={idx} className="bg-muted px-2 py-1 rounded text-sm font-mono text-foreground block my-4">
+          <code
+            key={idx}
+            className="bg-muted px-2 py-1 rounded text-sm font-mono text-foreground block my-4"
+          >
             {line.replace(/`/g, "")}
-          </code>
+          </code>,
         );
       } else if (line.trim() === "") {
         elements.push(<div key={idx} className="h-4" />);
       } else {
         elements.push(
-          <p key={idx} className="font-body text-muted-foreground leading-relaxed mb-3">
+          <p
+            key={idx}
+            className="font-body text-muted-foreground leading-relaxed mb-3"
+          >
             {renderInline(line)}
-          </p>
+          </p>,
         );
       }
 
@@ -253,16 +312,14 @@ const BlogPost = () => {
                 <img
                   src={post.image}
                   alt={title}
-                  className="w-full h-64 md:h-80 object-cover"
+                  className="w-full h-auto block"
                   loading="lazy"
                 />
               </div>
             )}
 
             {/* Article content */}
-            <div className="prose-custom">
-              {renderContent(content)}
-            </div>
+            <div className="prose-custom">{renderContent(content)}</div>
           </article>
 
           {/* Related posts */}

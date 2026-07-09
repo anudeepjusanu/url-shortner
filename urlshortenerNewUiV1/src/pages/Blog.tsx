@@ -11,27 +11,34 @@ const Blog = () => {
 
   // Set meta tags based on language
   useMetaTags({
-    title: lang === "ar" 
-      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
-      : "Shortlink Blog | Tips & Tools for Smart Link Management",
-    description: lang === "ar"
-      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
-    keywords: "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip, مدونة اختصار الروابط, نصائح الروابط القصيرة",
-    ogTitle: lang === "ar"
-      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
-      : "Shortlink Blog | Tips & Tools for Smart Link Management",
-    ogDescription: lang === "ar"
-      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    title:
+      lang === "ar"
+        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    description:
+      lang === "ar"
+        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    keywords:
+      "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip, مدونة اختصار الروابط, نصائح الروابط القصيرة",
+    ogTitle:
+      lang === "ar"
+        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    ogDescription:
+      lang === "ar"
+        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
     ogUrl: "https://snip.sa/blog",
     ogImage: "https://snip.sa/og-image.png",
-    twitterTitle: lang === "ar"
-      ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
-      : "Shortlink Blog | Tips & Tools for Smart Link Management",
-    twitterDescription: lang === "ar"
-      ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-      : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
+    twitterTitle:
+      lang === "ar"
+        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        : "Shortlink Blog | Tips & Tools for Smart Link Management",
+    twitterDescription:
+      lang === "ar"
+        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
+        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
     twitterImage: "https://snip.sa/og-image.png",
     canonical: "https://snip.sa/blog",
   });
@@ -49,7 +56,7 @@ const Blog = () => {
             <p className="text-muted-foreground font-body text-lg leading-relaxed">
               {t(
                 "Tips, guides, and insights to help you get the most out of your short links and campaigns.",
-                "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك."
+                "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك.",
               )}
             </p>
           </div>
@@ -62,12 +69,14 @@ const Blog = () => {
                 key={post.slug}
                 className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="h-48 overflow-hidden bg-[hsl(var(--navy))]">
+                <div
+                  className={`overflow-hidden ${post.image ? "" : "h-48 bg-[hsl(var(--navy))]"}`}
+                >
                   {post.image ? (
                     <img
                       src={post.image}
                       alt={lang === "ar" ? post.title.ar : post.title.en}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-auto block group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
                   ) : (
