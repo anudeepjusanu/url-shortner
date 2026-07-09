@@ -57,6 +57,7 @@ import {
   FileText,
   Globe,
   ShieldAlert,
+  QrCode,
 } from "lucide-react";
 
 type ContentType = "url" | "bio";
@@ -84,6 +85,8 @@ interface ContentItem {
   creator?: { _id: string; firstName: string; lastName: string; email: string };
   moderationStatus?: ModerationStatus;
   moderationVerdict?: Record<string, any> | null;
+  qrCodeGenerated?: boolean;
+  qrCodeGeneratedAt?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -329,6 +332,8 @@ const UrlManagement = () => {
         };
         moderationStatus?: ModerationStatus;
         moderationVerdict?: Record<string, any> | null;
+        qrCodeGenerated?: boolean;
+        qrCodeGeneratedAt?: string;
       }> = [
         ...(urlsRes?.data?.urls ?? []),
         ...restUrlResults.flatMap((r: any) => r?.data?.urls ?? []),
@@ -367,6 +372,8 @@ const UrlManagement = () => {
         creator: u.creator,
         moderationStatus: u.moderationStatus,
         moderationVerdict: u.moderationVerdict,
+        qrCodeGenerated: u.qrCodeGenerated,
+        qrCodeGeneratedAt: u.qrCodeGeneratedAt,
       }));
 
       const bioItems: ContentItem[] = fetchedBioPages.map((b) => ({
@@ -815,6 +822,15 @@ const UrlManagement = () => {
                       >
                         {getTypeLabel(item.type)}
                       </Badge>
+                      {item.type === "url" && item.qrCodeGenerated && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1.5 py-0 h-4 gap-0.5"
+                        >
+                          <QrCode className="w-2.5 h-2.5" />
+                          {t("QR", "QR")}
+                        </Badge>
+                      )}
                     </div>
                     <a
                       href={getUrlLink(item)}
@@ -981,12 +997,23 @@ const UrlManagement = () => {
                 {paginatedContent.map((item) => (
                   <TableRow key={`${item.type}-${item._id}`}>
                     <TableCell>
-                      <Badge
-                        variant={typeBadgeVariants[item.type]}
-                        className="text-[10px]"
-                      >
-                        {getTypeLabel(item.type)}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge
+                          variant={typeBadgeVariants[item.type]}
+                          className="text-[10px]"
+                        >
+                          {getTypeLabel(item.type)}
+                        </Badge>
+                        {item.type === "url" && item.qrCodeGenerated && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] gap-0.5"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            {t("QR", "QR")}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <a
@@ -1236,6 +1263,17 @@ const UrlManagement = () => {
                 <Row
                   label={t("Domain", "الدومين")}
                   value={viewItem.domain || "—"}
+                />
+                <Row
+                  label={t("QR Code", "كود QR")}
+                  value={
+                    viewItem.qrCodeGenerated
+                      ? t("Generated", "تم إنشاؤه") +
+                        (viewItem.qrCodeGeneratedAt
+                          ? ` (${formatDate(viewItem.qrCodeGeneratedAt)})`
+                          : "")
+                      : t("Not generated", "لم يتم إنشاؤه")
+                  }
                 />
               </Section>
               {viewItem.creator && (
