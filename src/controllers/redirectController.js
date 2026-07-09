@@ -1,6 +1,22 @@
 const redirectService = require("../services/redirectService");
 const geoLocation = require("../utils/geoLocation");
 
+// Resolves the public frontend origin to redirect to for error pages
+// (link-not-found, blocked, etc). Prefers the domain the request actually
+// came in on (so qa.snip.sa stays on qa.snip.sa) instead of a hardcoded
+// fallback, which would otherwise leak a dev placeholder like
+// "http://localhost:8080" into production/QA whenever BASE_URL is unset.
+const getFrontendBaseUrl = (req) => {
+  const rawHost = req?.get?.("host") || "";
+  const requestDomain = rawHost.split(":")[0];
+  if (requestDomain && redirectService.isMainDomain(requestDomain)) {
+    return `${req.protocol}://${rawHost}`;
+  }
+  return (
+    process.env.BASE_URL || `https://${process.env.BASE_DOMAIN || "snip.sa"}`
+  );
+};
+
 const redirectToOriginalUrl = async (req, res) => {
   let shortCode = req.params.shortCode || "";
   try {
@@ -92,7 +108,7 @@ const redirectToOriginalUrl = async (req, res) => {
     );
 
     if (!redirectResult.success) {
-      const frontendUrl = process.env.BASE_URL || "https://snip.sa";
+      const frontendUrl = getFrontendBaseUrl(req);
       return res.redirect(
         `${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`,
       );
@@ -103,7 +119,7 @@ const redirectToOriginalUrl = async (req, res) => {
     res.status(redirectType).redirect(redirectResult.redirectUrl);
   } catch (error) {
     console.error("Redirect error:", error);
-    const frontendUrl = process.env.BASE_URL || "http://localhost:8080";
+    const frontendUrl = getFrontendBaseUrl(req);
 
     if (error.message === "URL not found") {
       return res.redirect(
@@ -432,7 +448,7 @@ const redirectFromQRCode = async (req, res) => {
     );
 
     if (!redirectResult.success) {
-      const frontendUrl = process.env.BASE_URL || "http://localhost:8080";
+      const frontendUrl = getFrontendBaseUrl(req);
       return res.redirect(
         `${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`,
       );
@@ -443,7 +459,7 @@ const redirectFromQRCode = async (req, res) => {
     res.status(redirectType).redirect(redirectResult.redirectUrl);
   } catch (error) {
     console.error("QR Code redirect error:", error);
-    const frontendUrl = process.env.BASE_URL || "http://localhost:8080";
+    const frontendUrl = getFrontendBaseUrl(req);
 
     if (error.message === "URL not found") {
       return res.redirect(
@@ -475,7 +491,7 @@ const redirectFromQRCode = async (req, res) => {
     }
 
     res.redirect(
-      `${process.env.BASE_URL || "http://localhost:8080"}/link-not-found?code=${encodeURIComponent(shortCode)}`,
+      `${getFrontendBaseUrl(req)}/link-not-found?code=${encodeURIComponent(shortCode)}`,
     );
   }
 };
@@ -504,7 +520,7 @@ const handleDeepLinkRedirect = async (req, res) => {
   try {
     shortCode = decodeURIComponent(req.params.shortCode || "");
   } catch {
-    const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+    const frontendUrl = getFrontendBaseUrl(req);
     return res.redirect(`${frontendUrl}/link-not-found`);
   }
 
@@ -524,7 +540,7 @@ const handleDeepLinkRedirect = async (req, res) => {
     }).populate("deepLink.appRegistration");
 
     if (!url || !url.deepLink?.appRegistration) {
-      const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+      const frontendUrl = getFrontendBaseUrl(req);
       return res.redirect(
         `${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`,
       );
@@ -590,7 +606,7 @@ const handleDeepLinkRedirect = async (req, res) => {
     return res.redirect(webFallback);
   } catch (err) {
     console.error("[deepLink] redirect error:", err.message);
-    const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+    const frontendUrl = getFrontendBaseUrl(req);
     return res.redirect(
       `${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`,
     );

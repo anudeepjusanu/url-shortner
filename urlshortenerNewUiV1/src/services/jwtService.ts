@@ -214,6 +214,30 @@ export const myLinksService = {
   getAvailableDomains: () => authRequest("/urls/domains/available"),
 };
 
+// ─── UTM Link Service  (GET /utm-links, POST /utm-links, …) ────────────────
+
+export interface UtmLinkPayload {
+  name?: string;
+  destinationUrl: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+}
+
+export const utmLinkService = {
+  /** GET /utm-links — list current user's saved (unshortened) UTM links */
+  getAll: () => authRequest("/utm-links"),
+
+  /** POST /utm-links — save a tagged URL without shortening it */
+  create: (data: UtmLinkPayload) =>
+    authRequest("/utm-links", { method: "POST", body: data as any }),
+
+  /** DELETE /utm-links/:id */
+  delete: (id: string) => authRequest(`/utm-links/${id}`, { method: "DELETE" }),
+};
+
 // ─── QR Code Service  (GET /qr-codes/…, POST /qr-codes/…) ──────────────────
 
 export interface QRCodeOptions {
@@ -372,6 +396,21 @@ export const adminService = {
   /** DELETE /admin/bio-pages/:id */
   deleteBioPage: (id: string) =>
     authRequest(`/admin/bio-pages/${id}`, { method: "DELETE" }),
+
+  // ── UTM Links ──
+  /** GET /admin/utm-links?limit=&search=&creator=&page= */
+  getUtmLinks: (params: Record<string, string | number> = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== "") qs.append(k, String(v));
+    });
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return authRequest(`/admin/utm-links${query}`);
+  },
+
+  /** DELETE /admin/utm-links/:id */
+  deleteUtmLink: (id: string) =>
+    authRequest(`/admin/utm-links/${id}`, { method: "DELETE" }),
 };
 
 // ─── Password Reset Service (unauthenticated) ─────────────────────────────────

@@ -135,7 +135,7 @@ const CreateUTMLink = () => {
           navigate("/dashboard/links");
         }
       } else {
-        addUTMLink({
+        await addUTMLink({
           name: name.trim() || undefined,
           destinationUrl: destinationUrl.trim(),
           utmSource: utmSource.trim() || undefined,
