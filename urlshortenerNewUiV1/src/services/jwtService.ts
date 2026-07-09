@@ -497,4 +497,18 @@ export const analyticsService = {
     );
     return response.blob();
   },
+
+  /**
+   * GET /analytics/dashboard/export?format=csv&period=...
+   * Export the overall (all-links) analytics as a CSV blob, one row per link.
+   */
+  exportDashboardCSV: async (
+    params: Record<string, string> = {},
+  ): Promise<Blob> => {
+    const query = new URLSearchParams({ format: "csv", ...params });
+    const response = await authFetch(
+      `/analytics/dashboard/export?${query.toString()}`,
+    );
+    return response.blob();
+  },
 };
