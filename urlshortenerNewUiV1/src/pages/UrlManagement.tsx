@@ -60,7 +60,7 @@ import {
   QrCode,
 } from "lucide-react";
 
-type ContentType = "url" | "bio";
+type ContentType = "url" | "bio" | "utm";
 
 type ModerationStatus =
   | "pending"
@@ -87,6 +87,13 @@ interface ContentItem {
   moderationVerdict?: Record<string, any> | null;
   qrCodeGenerated?: boolean;
   qrCodeGeneratedAt?: string;
+  expiresAt?: string;
+  fullTaggedUrl?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -108,6 +115,9 @@ const getPublicBaseUrl = () => {
 };
 
 const getUrlLink = (item: ContentItem) => {
+  if (item.type === "utm") {
+    return item.fullTaggedUrl || item.originalUrl || "";
+  }
   if (item.type === "bio") {
     const base = getPublicBaseUrl();
     const domain = base.startsWith("http") ? base : `https://${base}`;
@@ -250,14 +260,21 @@ const UrlManagement = () => {
         limit: BATCH,
         ...getSortParams(sortBy),
       };
+      const utmParams: Record<string, string | number> = {
+        page: 1,
+        limit: BATCH,
+        ...getSortParams(sortBy),
+      };
 
       if (debouncedSearch) {
         urlParams.search = debouncedSearch;
         bioParams.search = debouncedSearch;
+        utmParams.search = debouncedSearch;
       }
       if (creatorFilter !== "all") {
         urlParams.creator = creatorFilter;
         bioParams.owner = creatorFilter;
+        utmParams.creator = creatorFilter;
       }
       if (fromDate) {
         const startIso = new Date(
@@ -271,6 +288,7 @@ const UrlManagement = () => {
         ).toISOString();
         urlParams.startDate = startIso;
         bioParams.startDate = startIso;
+        utmParams.startDate = startIso;
       }
       if (toDate) {
         const endIso = new Date(
@@ -284,34 +302,45 @@ const UrlManagement = () => {
         ).toISOString();
         urlParams.endDate = endIso;
         bioParams.endDate = endIso;
+        utmParams.endDate = endIso;
       }
 
       // Fetch first pages in parallel
-      const [urlsRes, bioRes] = await Promise.all([
+      const [urlsRes, bioRes, utmRes] = await Promise.all([
         adminService.getUrls(urlParams),
         adminService.getBioPages(bioParams),
+        adminService.getUtmLinks(utmParams),
       ]);
 
       const urlTotalPages: number = urlsRes?.data?.pagination?.pages ?? 1;
       const bioTotalPages: number = bioRes?.data?.pagination?.pages ?? 1;
+      const utmTotalPages: number = utmRes?.data?.pagination?.pages ?? 1;
 
       // Fetch any remaining pages in parallel so all records are visible
-      const [restUrlResults, restBioResults] = await Promise.all([
-        urlTotalPages > 1
-          ? Promise.all(
-              Array.from({ length: urlTotalPages - 1 }, (_, i) =>
-                adminService.getUrls({ ...urlParams, page: i + 2 }),
-              ),
-            )
-          : Promise.resolve([]),
-        bioTotalPages > 1
-          ? Promise.all(
-              Array.from({ length: bioTotalPages - 1 }, (_, i) =>
-                adminService.getBioPages({ ...bioParams, page: i + 2 }),
-              ),
-            )
-          : Promise.resolve([]),
-      ]);
+      const [restUrlResults, restBioResults, restUtmResults] =
+        await Promise.all([
+          urlTotalPages > 1
+            ? Promise.all(
+                Array.from({ length: urlTotalPages - 1 }, (_, i) =>
+                  adminService.getUrls({ ...urlParams, page: i + 2 }),
+                ),
+              )
+            : Promise.resolve([]),
+          bioTotalPages > 1
+            ? Promise.all(
+                Array.from({ length: bioTotalPages - 1 }, (_, i) =>
+                  adminService.getBioPages({ ...bioParams, page: i + 2 }),
+                ),
+              )
+            : Promise.resolve([]),
+          utmTotalPages > 1
+            ? Promise.all(
+                Array.from({ length: utmTotalPages - 1 }, (_, i) =>
+                  adminService.getUtmLinks({ ...utmParams, page: i + 2 }),
+                ),
+              )
+            : Promise.resolve([]),
+        ]);
 
       const fetchedUrls: Array<{
         _id: string;
@@ -334,6 +363,7 @@ const UrlManagement = () => {
         moderationVerdict?: Record<string, any> | null;
         qrCodeGenerated?: boolean;
         qrCodeGeneratedAt?: string;
+        expiresAt?: string;
       }> = [
         ...(urlsRes?.data?.urls ?? []),
         ...restUrlResults.flatMap((r: any) => r?.data?.urls ?? []),
@@ -358,6 +388,29 @@ const UrlManagement = () => {
         ...restBioResults.flatMap((r: any) => r?.data?.bioPages ?? []),
       ];
 
+      const fetchedUtmLinks: Array<{
+        _id: string;
+        name?: string;
+        destinationUrl: string;
+        fullTaggedUrl: string;
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmTerm?: string;
+        utmContent?: string;
+        createdAt: string;
+        updatedAt: string;
+        creator?: {
+          _id: string;
+          firstName: string;
+          lastName: string;
+          email: string;
+        };
+      }> = [
+        ...(utmRes?.data?.utmLinks ?? []),
+        ...restUtmResults.flatMap((r: any) => r?.data?.utmLinks ?? []),
+      ];
+
       const urlItems: ContentItem[] = fetchedUrls.map((u) => ({
         _id: u._id,
         type: "url",
@@ -374,6 +427,7 @@ const UrlManagement = () => {
         moderationVerdict: u.moderationVerdict,
         qrCodeGenerated: u.qrCodeGenerated,
         qrCodeGeneratedAt: u.qrCodeGeneratedAt,
+        expiresAt: u.expiresAt,
       }));
 
       const bioItems: ContentItem[] = fetchedBioPages.map((b) => ({
@@ -389,7 +443,26 @@ const UrlManagement = () => {
         creator: b.owner,
       }));
 
-      const merged = [...urlItems, ...bioItems];
+      const utmItems: ContentItem[] = fetchedUtmLinks.map((u) => ({
+        _id: u._id,
+        type: "utm",
+        identifier: u.name || u.utmCampaign || u.destinationUrl,
+        originalUrl: u.destinationUrl,
+        title: u.name,
+        clickCount: 0,
+        isActive: true,
+        createdAt: u.createdAt,
+        updatedAt: u.updatedAt,
+        creator: u.creator,
+        fullTaggedUrl: u.fullTaggedUrl,
+        utmSource: u.utmSource,
+        utmMedium: u.utmMedium,
+        utmCampaign: u.utmCampaign,
+        utmTerm: u.utmTerm,
+        utmContent: u.utmContent,
+      }));
+
+      const merged = [...urlItems, ...bioItems, ...utmItems];
 
       // Sort merged list
       merged.sort((a, b) => {
@@ -532,6 +605,8 @@ const UrlManagement = () => {
       const item = content.find((c) => c._id === deleteDialog.id);
       if (item?.type === "url") {
         await adminService.deleteUrl(deleteDialog.id);
+      } else if (item?.type === "utm") {
+        await adminService.deleteUtmLink(deleteDialog.id);
       } else {
         await adminService.deleteBioPage(deleteDialog.id);
       }
@@ -541,7 +616,9 @@ const UrlManagement = () => {
         title:
           item?.type === "url"
             ? t("URL deleted", "تم حذف الرابط")
-            : t("Bio page deleted", "تم حذف صفحة البايو"),
+            : item?.type === "utm"
+              ? t("UTM link deleted", "تم حذف رابط UTM")
+              : t("Bio page deleted", "تم حذف صفحة البايو"),
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -569,7 +646,7 @@ const UrlManagement = () => {
   const filteredTotal = typeFilteredContent.length;
 
   const getDisplayDomain = (item: ContentItem) => {
-    if (item.type === "bio") return "—";
+    if (item.type === "bio" || item.type === "utm") return "—";
     if (!item.domain) return t("Default", "افتراضي");
     return item.domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
   };
@@ -578,6 +655,7 @@ const UrlManagement = () => {
   const typeLabels: Record<ContentType, { en: string; ar: string }> = {
     url: { en: "Short Link", ar: "رابط مختصر" },
     bio: { en: "Bio Page", ar: "صفحة بايو" },
+    utm: { en: "UTM Link", ar: "رابط UTM" },
   };
   const getTypeLabel = (type: ContentType) =>
     t(typeLabels[type].en, typeLabels[type].ar);
@@ -587,6 +665,7 @@ const UrlManagement = () => {
   > = {
     url: "default",
     bio: "secondary",
+    utm: "outline",
   };
 
   const statCards = [
@@ -889,21 +968,23 @@ const UrlManagement = () => {
                     >
                       <Eye className="w-3.5 h-3.5 text-primary" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleToggleStatus(item)}
-                      disabled={togglingId === item._id}
-                    >
-                      {togglingId === item._id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Power
-                          className={`w-3.5 h-3.5 ${item.isActive ? "text-orange-500" : "text-green-500"}`}
-                        />
-                      )}
-                    </Button>
+                    {item.type !== "utm" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleToggleStatus(item)}
+                        disabled={togglingId === item._id}
+                      >
+                        {togglingId === item._id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Power
+                            className={`w-3.5 h-3.5 ${item.isActive ? "text-orange-500" : "text-green-500"}`}
+                          />
+                        )}
+                      </Button>
+                    )}
                     {item.type === "url" && (
                       <Button
                         variant="ghost"
@@ -1088,26 +1169,28 @@ const UrlManagement = () => {
                         >
                           <Eye className="w-4 h-4 text-secondary" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleToggleStatus(item)}
-                          disabled={togglingId === item._id}
-                          title={
-                            item.isActive
-                              ? t("Deactivate", "تعطيل")
-                              : t("Activate", "تفعيل")
-                          }
-                        >
-                          {togglingId === item._id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Power
-                              className={`w-4 h-4 ${item.isActive ? "text-orange-500" : "text-green-500"}`}
-                            />
-                          )}
-                        </Button>
+                        {item.type !== "utm" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleToggleStatus(item)}
+                            disabled={togglingId === item._id}
+                            title={
+                              item.isActive
+                                ? t("Deactivate", "تعطيل")
+                                : t("Activate", "تفعيل")
+                            }
+                          >
+                            {togglingId === item._id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Power
+                                className={`w-4 h-4 ${item.isActive ? "text-orange-500" : "text-green-500"}`}
+                              />
+                            )}
+                          </Button>
+                        )}
                         {item.type === "url" && (
                           <Button
                             variant="ghost"
@@ -1316,6 +1399,18 @@ const UrlManagement = () => {
                   label={t("Last Updated", "آخر تحديث")}
                   value={formatDate(viewItem.updatedAt)}
                 />
+                <Row
+                  label={t("Expires", "تاريخ الانتهاء")}
+                  value={
+                    viewItem.expiresAt
+                      ? `${formatDate(viewItem.expiresAt)}${
+                          new Date(viewItem.expiresAt) < new Date()
+                            ? ` (${t("expired", "منتهي")})`
+                            : ""
+                        }`
+                      : t("Never", "أبداً")
+                  }
+                />
               </Section>
             </div>
           )}
@@ -1379,6 +1474,53 @@ const UrlManagement = () => {
                 <Row
                   label={t("Last Updated", "آخر تحديث")}
                   value={formatDate(viewItem.updatedAt)}
+                />
+              </Section>
+            </div>
+          )}
+          {viewItem && viewItem.type === "utm" && (
+            <div className="space-y-5 text-sm font-body">
+              <Section label={t("UTM Link Information", "معلومات رابط UTM")}>
+                <Row label={t("Name", "الاسم")} value={viewItem.title || "—"} />
+                <Row
+                  label={t("Destination URL", "رابط الوجهة")}
+                  value={viewItem.originalUrl || "—"}
+                  truncate
+                />
+                <Row
+                  label={t("Tagged URL", "الرابط الموسوم")}
+                  value={viewItem.fullTaggedUrl || "—"}
+                  truncate
+                />
+              </Section>
+              <Section label={t("UTM Parameters", "معاملات UTM")}>
+                <Row label="utm_source" value={viewItem.utmSource || "—"} />
+                <Row label="utm_medium" value={viewItem.utmMedium || "—"} />
+                <Row label="utm_campaign" value={viewItem.utmCampaign || "—"} />
+                <Row label="utm_term" value={viewItem.utmTerm || "—"} />
+                <Row label="utm_content" value={viewItem.utmContent || "—"} />
+              </Section>
+              {viewItem.creator && (
+                <Section label={t("Creator", "المنشئ")}>
+                  <Row
+                    label={t("Name", "الاسم")}
+                    value={[
+                      viewItem.creator.firstName,
+                      viewItem.creator.lastName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  />
+                  <Row
+                    label={t("Email", "البريد")}
+                    value={viewItem.creator.email}
+                  />
+                </Section>
+              )}
+              <Section label={t("Dates", "التواريخ")}>
+                <Row
+                  label={t("Created", "الإنشاء")}
+                  value={formatDate(viewItem.createdAt)}
                 />
               </Section>
             </div>
