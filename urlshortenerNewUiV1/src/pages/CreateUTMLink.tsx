@@ -3,37 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUTM } from "@/contexts/UTMContext";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
-import { urlsAPI } from "@/services/api";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  ArrowLeft,
-  Copy,
-  Check,
-  Tag,
-  Link2,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Copy, Check, Tag, Link2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const buildTaggedUrl = (dest: string, params: {
-  utmSource?: string;
-  utmMedium?: string;
-  utmCampaign?: string;
-  utmTerm?: string;
-  utmContent?: string;
-}): string | null => {
+const buildTaggedUrl = (
+  dest: string,
+  params: {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+  },
+): string | null => {
   if (!dest.trim()) return null;
   try {
     const url = new URL(dest.trim());
-    if (params.utmSource?.trim()) url.searchParams.set("utm_source", params.utmSource.trim());
-    if (params.utmMedium?.trim()) url.searchParams.set("utm_medium", params.utmMedium.trim());
-    if (params.utmCampaign?.trim()) url.searchParams.set("utm_campaign", params.utmCampaign.trim());
-    if (params.utmTerm?.trim()) url.searchParams.set("utm_term", params.utmTerm.trim());
-    if (params.utmContent?.trim()) url.searchParams.set("utm_content", params.utmContent.trim());
+    if (params.utmSource?.trim())
+      url.searchParams.set("utm_source", params.utmSource.trim());
+    if (params.utmMedium?.trim())
+      url.searchParams.set("utm_medium", params.utmMedium.trim());
+    if (params.utmCampaign?.trim())
+      url.searchParams.set("utm_campaign", params.utmCampaign.trim());
+    if (params.utmTerm?.trim())
+      url.searchParams.set("utm_term", params.utmTerm.trim());
+    if (params.utmContent?.trim())
+      url.searchParams.set("utm_content", params.utmContent.trim());
     return url.toString();
   } catch {
     return null;
@@ -62,7 +62,7 @@ const CreateUTMLink = () => {
       Array.isArray(domainsData?.data?.domains)
         ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
         : [],
-    [domainsData]
+    [domainsData],
   );
 
   const defaultDomainId = useMemo(() => {
@@ -81,15 +81,19 @@ const CreateUTMLink = () => {
   const [shortenToggle, setShortenToggle] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [safetyError, setSafetyError] = useState("");
 
   // Validation state — only shown after first submit attempt
   const [touched, setTouched] = useState(false);
 
   const destError = useMemo(() => {
     if (!touched) return "";
-    if (!destinationUrl.trim()) return t("Destination URL is required", "رابط الوجهة مطلوب");
-    if (!isValidUrl(destinationUrl)) return t("Please enter a valid URL (e.g. https://example.com)", "أدخل رابطاً صحيحاً مثل https://example.com");
+    if (!destinationUrl.trim())
+      return t("Destination URL is required", "رابط الوجهة مطلوب");
+    if (!isValidUrl(destinationUrl))
+      return t(
+        "Please enter a valid URL (e.g. https://example.com)",
+        "أدخل رابطاً صحيحاً مثل https://example.com",
+      );
     return "";
   }, [touched, destinationUrl, t]);
 
@@ -102,7 +106,7 @@ const CreateUTMLink = () => {
         utmTerm,
         utmContent,
       }),
-    [destinationUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent]
+    [destinationUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent],
   );
 
   const handleCopy = () => {
@@ -121,24 +125,6 @@ const CreateUTMLink = () => {
 
     setIsSubmitting(true);
     try {
-      const safety = await urlsAPI.checkSafety(finalTaggedUrl);
-      if (!safety.isSafe) {
-        setSafetyError(
-          safety.message ||
-            t(
-              "This URL has been flagged as unsafe (phishing or malware) and cannot be used.",
-              "تم تحديد هذا الرابط كغير آمن (تصيد أو برامج ضارة) ولا يمكن استخدامه."
-            )
-        );
-        setIsSubmitting(false);
-        return;
-      }
-      setSafetyError("");
-    } catch {
-      // Network failure — fail open so the flow still works
-    }
-
-    try {
       if (shortenToggle) {
         const payload: any = { originalUrl: finalTaggedUrl };
         if (name.trim()) payload.title = name.trim();
@@ -149,7 +135,7 @@ const CreateUTMLink = () => {
           navigate("/dashboard/links");
         }
       } else {
-        addUTMLink({
+        await addUTMLink({
           name: name.trim() || undefined,
           destinationUrl: destinationUrl.trim(),
           utmSource: utmSource.trim() || undefined,
@@ -190,7 +176,10 @@ const CreateUTMLink = () => {
               {t("Create UTM Link", "إنشاء رابط UTM")}
             </h1>
             <p className="text-muted-foreground font-body text-sm">
-              {t("Build a tagged URL to track campaign performance", "أنشئ رابطاً موسوماً لتتبع أداء حملتك")}
+              {t(
+                "Build a tagged URL to track campaign performance",
+                "أنشئ رابطاً موسوماً لتتبع أداء حملتك",
+              )}
             </p>
           </div>
         </div>
@@ -200,24 +189,33 @@ const CreateUTMLink = () => {
           <div className="space-y-2">
             <Label className="text-foreground font-body">
               {t("Name", "الاسم")}{" "}
-              <span className="text-muted-foreground text-xs">({t("optional", "اختياري")})</span>
+              <span className="text-muted-foreground text-xs">
+                ({t("optional", "اختياري")})
+              </span>
             </Label>
             <Input
-              placeholder={t("e.g. Spring Sale Email Campaign", "مثال: حملة البريد الربيعية")}
+              placeholder={t(
+                "e.g. Spring Sale Email Campaign",
+                "مثال: حملة البريد الربيعية",
+              )}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-11"
               disabled={isSubmitting}
             />
             <p className="text-xs text-muted-foreground font-body">
-              {t("Helps you identify this link in the list", "يساعدك على التعرف على هذا الرابط في القائمة")}
+              {t(
+                "Helps you identify this link in the list",
+                "يساعدك على التعرف على هذا الرابط في القائمة",
+              )}
             </p>
           </div>
 
           {/* Destination URL (required) */}
           <div className="space-y-2">
             <Label className="text-foreground font-body">
-              {t("Destination URL", "رابط الوجهة")} <span className="text-destructive">*</span>
+              {t("Destination URL", "رابط الوجهة")}{" "}
+              <span className="text-destructive">*</span>
             </Label>
             <Input
               placeholder="https://example.com/landing-page"
@@ -225,17 +223,13 @@ const CreateUTMLink = () => {
               onChange={(e) => {
                 setDestinationUrl(e.target.value);
                 if (touched && e.target.value.trim()) setTouched(false);
-                if (safetyError) setSafetyError("");
               }}
               onBlur={() => setTouched(true)}
-              className={`h-11 ${destError || safetyError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+              className={`h-11 ${destError ? "border-destructive focus-visible:ring-destructive" : ""}`}
               disabled={isSubmitting}
             />
             {destError && (
               <p className="text-xs text-destructive font-body">{destError}</p>
-            )}
-            {safetyError && (
-              <p className="text-xs text-destructive font-body">{safetyError}</p>
             )}
           </div>
 
@@ -249,10 +243,15 @@ const CreateUTMLink = () => {
               <div className="space-y-1.5">
                 <Label className="text-sm text-foreground font-body">
                   {t("Source", "المصدر")}{" "}
-                  <span className="text-muted-foreground text-xs font-mono">utm_source</span>
+                  <span className="text-muted-foreground text-xs font-mono">
+                    utm_source
+                  </span>
                 </Label>
                 <Input
-                  placeholder={t("google, newsletter, twitter", "google, newsletter, twitter")}
+                  placeholder={t(
+                    "google, newsletter, twitter",
+                    "google, newsletter, twitter",
+                  )}
                   value={utmSource}
                   onChange={(e) => setUtmSource(e.target.value)}
                   disabled={isSubmitting}
@@ -262,7 +261,9 @@ const CreateUTMLink = () => {
               <div className="space-y-1.5">
                 <Label className="text-sm text-foreground font-body">
                   {t("Medium", "الوسيلة")}{" "}
-                  <span className="text-muted-foreground text-xs font-mono">utm_medium</span>
+                  <span className="text-muted-foreground text-xs font-mono">
+                    utm_medium
+                  </span>
                 </Label>
                 <Input
                   placeholder={t("cpc, email, social", "cpc, email, social")}
@@ -275,10 +276,15 @@ const CreateUTMLink = () => {
               <div className="space-y-1.5">
                 <Label className="text-sm text-foreground font-body">
                   {t("Campaign", "الحملة")}{" "}
-                  <span className="text-muted-foreground text-xs font-mono">utm_campaign</span>
+                  <span className="text-muted-foreground text-xs font-mono">
+                    utm_campaign
+                  </span>
                 </Label>
                 <Input
-                  placeholder={t("spring_sale, product_launch", "spring_sale, product_launch")}
+                  placeholder={t(
+                    "spring_sale, product_launch",
+                    "spring_sale, product_launch",
+                  )}
                   value={utmCampaign}
                   onChange={(e) => setUtmCampaign(e.target.value)}
                   disabled={isSubmitting}
@@ -288,10 +294,15 @@ const CreateUTMLink = () => {
               <div className="space-y-1.5">
                 <Label className="text-sm text-foreground font-body">
                   {t("Term", "الكلمة المفتاحية")}{" "}
-                  <span className="text-muted-foreground text-xs font-mono">utm_term</span>
+                  <span className="text-muted-foreground text-xs font-mono">
+                    utm_term
+                  </span>
                 </Label>
                 <Input
-                  placeholder={t("running+shoes, seo+keyword", "running+shoes, seo+keyword")}
+                  placeholder={t(
+                    "running+shoes, seo+keyword",
+                    "running+shoes, seo+keyword",
+                  )}
                   value={utmTerm}
                   onChange={(e) => setUtmTerm(e.target.value)}
                   disabled={isSubmitting}
@@ -302,10 +313,15 @@ const CreateUTMLink = () => {
             <div className="space-y-1.5">
               <Label className="text-sm text-foreground font-body">
                 {t("Content", "المحتوى")}{" "}
-                <span className="text-muted-foreground text-xs font-mono">utm_content</span>
+                <span className="text-muted-foreground text-xs font-mono">
+                  utm_content
+                </span>
               </Label>
               <Input
-                placeholder={t("logolink, textlink, banner_top", "logolink, textlink, banner_top")}
+                placeholder={t(
+                  "logolink, textlink, banner_top",
+                  "logolink, textlink, banner_top",
+                )}
                 value={utmContent}
                 onChange={(e) => setUtmContent(e.target.value)}
                 disabled={isSubmitting}
@@ -352,8 +368,14 @@ const CreateUTMLink = () => {
               ) : (
                 <p className="text-xs text-muted-foreground font-body italic">
                   {destinationUrl.trim() && !isValidUrl(destinationUrl)
-                    ? t("Enter a valid URL to see preview", "أدخل رابطاً صحيحاً لرؤية المعاينة")
-                    : t("Your tagged URL will appear here as you type…", "سيظهر رابطك الموسوم هنا أثناء الكتابة...")}
+                    ? t(
+                        "Enter a valid URL to see preview",
+                        "أدخل رابطاً صحيحاً لرؤية المعاينة",
+                      )
+                    : t(
+                        "Your tagged URL will appear here as you type…",
+                        "سيظهر رابطك الموسوم هنا أثناء الكتابة...",
+                      )}
                 </p>
               )}
             </div>
@@ -369,7 +391,7 @@ const CreateUTMLink = () => {
                 <p className="text-xs text-muted-foreground font-body mt-0.5">
                   {t(
                     "Creates a short link from the tagged URL and adds it to My Links",
-                    "ينشئ رابطاً قصيراً من الرابط الموسوم ويضيفه إلى روابطي"
+                    "ينشئ رابطاً قصيراً من الرابط الموسوم ويضيفه إلى روابطي",
                   )}
                 </p>
               </div>

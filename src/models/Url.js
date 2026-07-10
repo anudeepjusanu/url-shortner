@@ -1,234 +1,298 @@
-const mongoose = require('mongoose');
-const { domainToASCII } = require('../utils/punycode');
+const mongoose = require("mongoose");
+const { domainToASCII } = require("../utils/punycode");
 
-const urlSchema = new mongoose.Schema({
-  originalUrl: {
-    type: String,
-    required: [true, 'Original URL is required'],
-    trim: true,
-    maxlength: [2048, 'URL cannot exceed 2048 characters']
-  },
-  shortCode: {
-    type: String,
-    required: [true, 'Short code is required'],
-    unique: true,
-    trim: true,
-    match: [/^[\p{L}\p{N}_-]+$/u, 'Short code can only contain letters (any language), numbers, hyphens, and underscores']
-  },
-  customCode: {
-    type: String,
-    default: null,
-    trim: true,
-    sparse: true,
-    match: [/^[\p{L}\p{N}_-]+$/u, 'Custom code can only contain letters (any language), numbers, hyphens, and underscores']
-  },
+const urlSchema = new mongoose.Schema(
+  {
+    originalUrl: {
+      type: String,
+      required: [true, "Original URL is required"],
+      trim: true,
+      maxlength: [2048, "URL cannot exceed 2048 characters"],
+    },
+    shortCode: {
+      type: String,
+      required: [true, "Short code is required"],
+      unique: true,
+      trim: true,
+      match: [
+        /^[\p{L}\p{N}_-]+$/u,
+        "Short code can only contain letters (any language), numbers, hyphens, and underscores",
+      ],
+    },
+    customCode: {
+      type: String,
+      default: null,
+      trim: true,
+      sparse: true,
+      match: [
+        /^[\p{L}\p{N}_-]+$/u,
+        "Custom code can only contain letters (any language), numbers, hyphens, and underscores",
+      ],
+    },
     title: {
-    type: String,
-    trim: true,
-    maxlength: [200, 'Title cannot exceed 200 characters']
-  },
-  description: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Description cannot exceed 500 characters']
-  },
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  organization: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Organization',
-    default: null
-  },
-  domain: {
-    type: String,
-    default: null,
-    trim: true,
-    lowercase: true
-  },
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true,
-    maxlength: [30, 'Tag cannot exceed 30 characters']
-  }],
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  isPublic: {
-    type: Boolean,
-    default: true
-  },
-  password: {
-    type: String,
-    default: null
-  },
-  expiresAt: {
-    type: Date,
-    default: null
-  },
-  clickCount: {
-    type: Number,
-    default: 0
-  },
-  uniqueClickCount: {
-    type: Number,
-    default: 0
-  },
-  lastClickedAt: {
-    type: Date,
-    default: null
-  },
-  qrCode: {
-    type: String,
-    default: null
-  },
-  qrCodeGenerated: {
-    type: Boolean,
-    default: false
-  },
-  qrCodeGeneratedAt: {
-    type: Date,
-    default: null
-  },
-  qrCodeDownloads: {
-    type: Number,
-    default: 0
-  },
-  lastQRCodeDownload: {
-    type: Date,
-    default: null
-  },
-  // QR Scan tracking - separate from regular clicks
-  qrScanCount: {
-    type: Number,
-    default: 0
-  },
-  uniqueQrScanCount: {
-    type: Number,
-    default: 0
-  },
-  lastQrScanAt: {
-    type: Date,
-    default: null
-  },
-  // Store QR customization settings
-  qrCodeSettings: {
-    size: {
-      type: Number,
-      default: 300
-    },
-    format: {
       type: String,
-      enum: ['png', 'jpeg', 'jpg', 'gif', 'webp', 'svg', 'pdf'],
-      default: 'png'
+      trim: true,
+      maxlength: [200, "Title cannot exceed 200 characters"],
     },
-    errorCorrection: {
+    description: {
       type: String,
-      enum: ['L', 'M', 'Q', 'H'],
-      default: 'M'
+      trim: true,
+      maxlength: [500, "Description cannot exceed 500 characters"],
     },
-    foregroundColor: {
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    organization: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      default: null,
+    },
+    domain: {
       type: String,
-      default: '#000000'
+      default: null,
+      trim: true,
+      lowercase: true,
     },
-    backgroundColor: {
-      type: String,
-      default: '#FFFFFF'
-    },
-    includeMargin: {
+    tags: [
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+        maxlength: [30, "Tag cannot exceed 30 characters"],
+      },
+    ],
+    isActive: {
       type: Boolean,
-      default: true
-    }
-  },
-  metaData: {
-    favicon: String,
-    ogTitle: String,
-    ogDescription: String,
-    ogImage: String,
-    ogType: String
-  },
-  utm: {
-    source: String,
-    medium: String,
-    campaign: String,
-    term: String,
-    content: String
-  },
-  restrictions: {
-    countries: [{
-      type: String,
-      uppercase: true,
-      length: 2
-    }],
-    allowedCountries: {
-      type: Boolean,
-      default: true
+      default: true,
     },
-    deviceTypes: [{
+    isPublic: {
+      type: Boolean,
+      default: true,
+    },
+    password: {
       type: String,
-      enum: ['mobile', 'tablet', 'desktop']
-    }],
-    maxClicks: {
+      default: null,
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
+    },
+    clickCount: {
       type: Number,
-      default: null
-    }
+      default: 0,
+    },
+    uniqueClickCount: {
+      type: Number,
+      default: 0,
+    },
+    lastClickedAt: {
+      type: Date,
+      default: null,
+    },
+    qrCode: {
+      type: String,
+      default: null,
+    },
+    qrCodeGenerated: {
+      type: Boolean,
+      default: false,
+    },
+    qrCodeGeneratedAt: {
+      type: Date,
+      default: null,
+    },
+    qrCodeDownloads: {
+      type: Number,
+      default: 0,
+    },
+    lastQRCodeDownload: {
+      type: Date,
+      default: null,
+    },
+    // QR Scan tracking - separate from regular clicks
+    qrScanCount: {
+      type: Number,
+      default: 0,
+    },
+    uniqueQrScanCount: {
+      type: Number,
+      default: 0,
+    },
+    lastQrScanAt: {
+      type: Date,
+      default: null,
+    },
+    // Store QR customization settings
+    qrCodeSettings: {
+      size: {
+        type: Number,
+        default: 300,
+      },
+      format: {
+        type: String,
+        enum: ["png", "jpeg", "jpg", "gif", "webp", "svg", "pdf"],
+        default: "png",
+      },
+      errorCorrection: {
+        type: String,
+        enum: ["L", "M", "Q", "H"],
+        default: "M",
+      },
+      foregroundColor: {
+        type: String,
+        default: "#000000",
+      },
+      backgroundColor: {
+        type: String,
+        default: "#FFFFFF",
+      },
+      includeMargin: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    metaData: {
+      favicon: String,
+      ogTitle: String,
+      ogDescription: String,
+      ogImage: String,
+      ogType: String,
+    },
+    utm: {
+      source: String,
+      medium: String,
+      campaign: String,
+      term: String,
+      content: String,
+    },
+    restrictions: {
+      countries: [
+        {
+          type: String,
+          uppercase: true,
+          length: 2,
+        },
+      ],
+      allowedCountries: {
+        type: Boolean,
+        default: true,
+      },
+      deviceTypes: [
+        {
+          type: String,
+          enum: ["mobile", "tablet", "desktop"],
+        },
+      ],
+      maxClicks: {
+        type: Number,
+        default: null,
+      },
+    },
+    redirectType: {
+      type: Number,
+      enum: [301, 302, 307],
+      default: 302,
+    },
+    notes: {
+      type: String,
+      maxlength: [1000, "Notes cannot exceed 1000 characters"],
+    },
+    bulkImportId: {
+      type: String,
+      default: null,
+    },
+    source: {
+      type: String,
+      enum: ["landing", "dashboard", "api", "bulk"],
+      default: "dashboard",
+    },
+    // Deep linking configuration — only populated when this URL is a deep link
+    deepLink: {
+      enabled: {
+        type: Boolean,
+        default: false,
+        validate: {
+          validator: function (v) {
+            if (v === true && !this.deepLink?.appRegistration) return false;
+            return true;
+          },
+          message:
+            "deepLink.appRegistration is required when deep linking is enabled",
+        },
+      },
+      appRegistration: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AppRegistration",
+        default: null,
+      },
+      screen: { type: String, trim: true, default: null }, // screen identifier, e.g. 'product'
+      params: { type: mongoose.Schema.Types.Mixed, default: null }, // { id: '123', color: 'navy' }
+      webFallbackUrl: { type: String, trim: true, default: null }, // per-link override; falls back to app registration default
+    },
+    // Destination content moderation — populated by the async url-scanner pipeline
+    // after creation. Only 'blocked' halts the redirect; other statuses pass through.
+    // 'not_scanned' marks links that predate the scanner (backfilled once via
+    // scripts/backfill-legacy-url-moderation.js) — deliberately excluded from
+    // scheduledTasks.reScanActiveLinks() so legacy links are never swept into
+    // the periodic re-scan, only newly created ones are.
+    moderationStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "safe",
+        "suspicious",
+        "blocked",
+        "could_not_verify",
+        "not_scanned",
+      ],
+      default: "pending",
+    },
+    moderationVerdict: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    moderationCheckedAt: {
+      type: Date,
+      default: null,
+    },
   },
-  redirectType: {
-    type: Number,
-    enum: [301, 302, 307],
-    default: 302
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        delete ret.__v;
+        return ret;
+      },
+    },
   },
-  notes: {
-    type: String,
-    maxlength: [1000, 'Notes cannot exceed 1000 characters']
-  },
-  bulkImportId: {
-    type: String,
-    default: null
-  },
-  source: {
-    type: String,
-    enum: ['landing', 'dashboard', 'api', 'bulk'],
-    default: 'dashboard'
-  }
-}, {
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    transform: function(doc, ret) {
-      delete ret.__v;
-      return ret;
-    }
-  }
-});
+);
 
-urlSchema.virtual('shortUrl').get(function() {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+urlSchema.virtual("shortUrl").get(function () {
+  const baseUrl = process.env.BASE_URL || "http://localhost:3000";
   const domain = this.domain || baseUrl;
   return `${domain}/${this.customCode || this.shortCode}`;
 });
 
-urlSchema.virtual('isExpired').get(function() {
+urlSchema.virtual("isExpired").get(function () {
   return this.expiresAt && this.expiresAt < new Date();
 });
 
-urlSchema.virtual('daysUntilExpiry').get(function() {
+urlSchema.virtual("daysUntilExpiry").get(function () {
   if (!this.expiresAt) return null;
   const diff = this.expiresAt.getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 });
 
-urlSchema.pre('save', function(next) {
+urlSchema.pre("save", function (next) {
   // Convert international domains to Punycode for consistent storage
-  if (this.isModified('domain') && this.domain) {
+  if (this.isModified("domain") && this.domain) {
     try {
       this.domain = domainToASCII(this.domain.toLowerCase());
     } catch (error) {
-      console.error('Error converting domain to ASCII:', error);
+      console.error("Error converting domain to ASCII:", error);
     }
   }
 
@@ -238,16 +302,19 @@ urlSchema.pre('save', function(next) {
       const url = new URL(this.originalUrl);
       this.title = url.hostname;
     } catch (error) {
-      this.title = 'Untitled';
+      this.title = "Untitled";
     }
   }
   next();
 });
 
-urlSchema.methods.incrementClick = async function(isUnique = false, isQrScan = false) {
+urlSchema.methods.incrementClick = async function (
+  isUnique = false,
+  isQrScan = false,
+) {
   const update = {
     $inc: { clickCount: 1 },
-    lastClickedAt: new Date()
+    lastClickedAt: new Date(),
   };
 
   if (isUnique) {
@@ -266,39 +333,48 @@ urlSchema.methods.incrementClick = async function(isUnique = false, isQrScan = f
   return this.updateOne(update);
 };
 
-urlSchema.methods.isClickAllowed = function(country, deviceType) {
+urlSchema.methods.isClickAllowed = function (country, deviceType) {
   if (!this.isActive || this.isExpired) return false;
-  
-  if (this.restrictions.maxClicks && this.clickCount >= this.restrictions.maxClicks) {
+
+  if (
+    this.restrictions.maxClicks &&
+    this.clickCount >= this.restrictions.maxClicks
+  ) {
     return false;
   }
-  
+
   if (this.restrictions.countries && this.restrictions.countries.length > 0) {
-    const isCountryInList = this.restrictions.countries.includes(country?.toUpperCase());
+    const isCountryInList = this.restrictions.countries.includes(
+      country?.toUpperCase(),
+    );
     if (this.restrictions.allowedCountries && !isCountryInList) return false;
     if (!this.restrictions.allowedCountries && isCountryInList) return false;
   }
-  
-  if (this.restrictions.deviceTypes && this.restrictions.deviceTypes.length > 0) {
+
+  if (
+    this.restrictions.deviceTypes &&
+    this.restrictions.deviceTypes.length > 0
+  ) {
     if (!this.restrictions.deviceTypes.includes(deviceType)) return false;
   }
-  
+
   return true;
 };
 
-urlSchema.methods.addUTMParameters = function() {
-  if (!this.utm.source && !this.utm.medium && !this.utm.campaign) return this.originalUrl;
-  
+urlSchema.methods.addUTMParameters = function () {
+  if (!this.utm.source && !this.utm.medium && !this.utm.campaign)
+    return this.originalUrl;
+
   try {
     const url = new URL(this.originalUrl);
     const params = url.searchParams;
-    
-    if (this.utm.source) params.set('utm_source', this.utm.source);
-    if (this.utm.medium) params.set('utm_medium', this.utm.medium);
-    if (this.utm.campaign) params.set('utm_campaign', this.utm.campaign);
-    if (this.utm.term) params.set('utm_term', this.utm.term);
-    if (this.utm.content) params.set('utm_content', this.utm.content);
-    
+
+    if (this.utm.source) params.set("utm_source", this.utm.source);
+    if (this.utm.medium) params.set("utm_medium", this.utm.medium);
+    if (this.utm.campaign) params.set("utm_campaign", this.utm.campaign);
+    if (this.utm.term) params.set("utm_term", this.utm.term);
+    if (this.utm.content) params.set("utm_content", this.utm.content);
+
     return url.toString();
   } catch (error) {
     return this.originalUrl;
@@ -306,8 +382,14 @@ urlSchema.methods.addUTMParameters = function() {
 };
 
 // Case-insensitive unique indexes for shortCode and customCode
-urlSchema.index({ shortCode: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
-urlSchema.index({ customCode: 1 }, { unique: true, sparse: true, collation: { locale: 'en', strength: 2 } });
+urlSchema.index(
+  { shortCode: 1 },
+  { unique: true, collation: { locale: "en", strength: 2 } },
+);
+urlSchema.index(
+  { customCode: 1 },
+  { unique: true, sparse: true, collation: { locale: "en", strength: 2 } },
+);
 urlSchema.index({ creator: 1 });
 urlSchema.index({ organization: 1 });
 urlSchema.index({ isActive: 1 });
@@ -320,5 +402,10 @@ urlSchema.index({ domain: 1 });
 urlSchema.index({ qrCodeGenerated: 1 });
 urlSchema.index({ qrScanCount: -1 });
 urlSchema.index({ qrCodeGeneratedAt: -1 });
+urlSchema.index({ "deepLink.enabled": 1 });
+urlSchema.index({ "deepLink.appRegistration": 1 });
 
-module.exports = mongoose.model('Url', urlSchema);
+// Supports the periodic url-scanner re-scan query (isActive + moderationStatus + staleness)
+urlSchema.index({ isActive: 1, moderationStatus: 1, moderationCheckedAt: 1 });
+
+module.exports = mongoose.model("Url", urlSchema);

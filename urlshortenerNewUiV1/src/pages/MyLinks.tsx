@@ -524,7 +524,7 @@ const MyLinks = () => {
                               rel="noopener noreferrer"
                               className="hover:underline truncate min-w-0"
                             >
-                              {shortUrl}
+                             {shortUrl.replace(/^https?:\/\//, "")}
                             </a>
                             <button
                               onClick={() => handleCopy(url)}

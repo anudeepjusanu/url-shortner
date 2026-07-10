@@ -20,7 +20,7 @@ const BlogSection = () => {
             <p className="text-[hsl(var(--navy))]/60 font-body text-lg max-w-md">
               {t(
                 "Tips, guides, and insights to help you get the most out of your short links and campaigns.",
-                "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك."
+                "نصائح وأدلة ورؤى تساعدك تستفيد أكثر من روابطك المختصرة وحملاتك.",
               )}
             </p>
           </div>
@@ -45,11 +45,24 @@ const BlogSection = () => {
               to={`/blog/${featured.slug}`}
               className="group block bg-white rounded-3xl overflow-hidden border border-[hsl(var(--navy))]/10 hover:border-[hsl(var(--sky))]/30 hover:-translate-y-1 transition-all duration-300 h-full"
             >
-              <div className="h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center relative overflow-hidden">
+              <div
+                className={`relative overflow-hidden ${
+                  featured.image
+                    ? ""
+                    : "h-64 md:h-80 bg-[hsl(var(--navy))] flex items-center justify-center"
+                }`}
+              >
                 {featured.image ? (
-                  <img src={featured.image} alt={lang === "ar" ? featured.title.ar : featured.title.en} className="w-full h-full object-cover" loading="lazy" />
+                  <img
+                    src={featured.image}
+                    alt={lang === "ar" ? featured.title.ar : featured.title.en}
+                    className="w-full h-auto block"
+                    loading="lazy"
+                  />
                 ) : (
-                  <span className="text-white/10 font-display text-[10rem] font-black">01</span>
+                  <span className="text-white/10 font-display text-[10rem] font-black">
+                    01
+                  </span>
                 )}
                 <span className="absolute top-5 start-5 text-xs font-body font-bold text-white bg-[hsl(var(--sky))] px-4 py-1.5 rounded-full">
                   {lang === "ar" ? featured.category.ar : featured.category.en}
@@ -59,7 +72,9 @@ const BlogSection = () => {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="flex items-center gap-1 text-[hsl(var(--navy))]/50 text-xs font-body">
                     <Clock size={12} />
-                    {lang === "ar" ? featured.readTime.ar : featured.readTime.en}
+                    {lang === "ar"
+                      ? featured.readTime.ar
+                      : featured.readTime.en}
                   </span>
                   <span className="text-[hsl(var(--navy))]/30 text-xs">·</span>
                   <span className="text-[hsl(var(--navy))]/40 font-body text-xs">
@@ -90,9 +105,20 @@ const BlogSection = () => {
                   to={`/blog/${post.slug}`}
                   className="group block bg-white rounded-3xl overflow-hidden border border-[hsl(var(--navy))]/10 hover:border-[hsl(var(--sky))]/30 hover:-translate-y-1 transition-all duration-300 h-full"
                 >
-                  <div className={`h-28 ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"} flex items-center justify-center overflow-hidden`}>
+                  <div
+                    className={`overflow-hidden ${
+                      post.image
+                        ? ""
+                        : `h-28 flex items-center justify-center ${i === 0 ? "bg-[hsl(var(--sky))]" : "bg-[hsl(var(--navy))]"}`
+                    }`}
+                  >
                     {post.image ? (
-                      <img src={post.image} alt={lang === "ar" ? post.title.ar : post.title.en} className="w-full h-full object-cover" loading="lazy" />
+                      <img
+                        src={post.image}
+                        alt={lang === "ar" ? post.title.ar : post.title.en}
+                        className="w-full h-auto block"
+                        loading="lazy"
+                      />
                     ) : (
                       <span className="text-white/10 font-display text-7xl font-black">
                         {String(i + 2).padStart(2, "0")}

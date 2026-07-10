@@ -1,13 +1,13 @@
-const Url = require('../models/Url');
-const analyticsService = require('./analyticsService');
-const securityService = require('./securityService');
-const { cacheGet, cacheSet } = require('../config/redis');
-const config = require('../config/environment');
+const Url = require("../models/Url");
+const analyticsService = require("./analyticsService");
+const securityService = require("./securityService");
+const { cacheGet, cacheSet } = require("../config/redis");
+const config = require("../config/environment");
 
 class RedirectService {
   async handleRedirect(shortCode, requestData) {
     try {
-      console.log('\n========== REDIRECT SERVICE START ==========');
+      console.log("\n========== REDIRECT SERVICE START ==========");
       const {
         ipAddress,
         userAgent,
@@ -16,41 +16,45 @@ class RedirectService {
         screenResolution,
         password,
         domain,
-        clickSource
+        clickSource,
       } = requestData;
 
-      console.log('🔄 Redirect Service - handleRedirect:', {
+      console.log("🔄 Redirect Service - handleRedirect:", {
         shortCode,
         shortCodeType: typeof shortCode,
         shortCodeLength: shortCode?.length,
         clickSource,
         domain,
         ipAddress,
-        userAgent: userAgent?.substring(0, 50)
+        userAgent: userAgent?.substring(0, 50),
       });
 
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
-        console.error('🚫 IP Blocked:', { ipAddress, reason: blocked.reason });
+        console.error("🚫 IP Blocked:", { ipAddress, reason: blocked.reason });
         throw new Error(`IP blocked: ${blocked.reason}`);
       }
-      console.log('✅ IP not blocked:', ipAddress);
+      console.log("✅ IP not blocked:", ipAddress);
 
       const url = await this.getUrlByShortCode(shortCode, domain);
       if (!url) {
-        console.error('❌ URL not found for shortCode:', shortCode);
-        console.log('========== REDIRECT SERVICE FAILED (URL NOT FOUND) ==========\n');
-        throw new Error('URL not found');
+        console.error("❌ URL not found for shortCode:", shortCode);
+        console.log(
+          "========== REDIRECT SERVICE FAILED (URL NOT FOUND) ==========\n",
+        );
+        throw new Error("URL not found");
       }
-      console.log('✅ URL retrieved successfully');
+      console.log("✅ URL retrieved successfully");
 
       const validationResult = await this.validateRedirect(url, requestData);
       if (!validationResult.allowed) {
-        console.error('❌ Validation failed:', validationResult.reason);
-        console.log('========== REDIRECT SERVICE FAILED (VALIDATION) ==========\n');
+        console.error("❌ Validation failed:", validationResult.reason);
+        console.log(
+          "========== REDIRECT SERVICE FAILED (VALIDATION) ==========\n",
+        );
         throw new Error(validationResult.reason);
       }
-      console.log('✅ Validation passed');
+      console.log("✅ Validation passed");
 
       const clickData = {
         ipAddress,
@@ -59,199 +63,263 @@ class RedirectService {
         language,
         screenResolution,
         domain, // Pass the domain to analytics service
-        clickSource: clickSource || 'unknown' // Pass the click source
+        clickSource: clickSource || "unknown", // Pass the click source
       };
-      
+
       try {
         await analyticsService.recordClick(shortCode, clickData);
       } catch (analyticsError) {
-        console.error('Analytics recording failed:', analyticsError);
+        console.error("Analytics recording failed:", analyticsError);
       }
-      
+
       const redirectUrl = this.processRedirectUrl(url);
 
-      console.log('🎯 Processing redirect:', {
+      console.log("🎯 Processing redirect:", {
         originalUrl: url.originalUrl,
         redirectUrl,
-        hasUTM: redirectUrl !== url.originalUrl
+        hasUTM: redirectUrl !== url.originalUrl,
       });
 
       await securityService.logSecurityEvent({
-        type: 'URL_REDIRECT',
-        level: 'INFO',
+        type: "URL_REDIRECT",
+        level: "INFO",
         ipAddress,
         userAgent,
         details: {
           shortCode,
           originalUrl: url.originalUrl,
-          redirectUrl
-        }
+          redirectUrl,
+        },
       });
 
-      console.log('✅ Redirect successful:', {
+      console.log("✅ Redirect successful:", {
         shortCode,
         redirectType: url.redirectType || 302,
-        redirectUrl
+        redirectUrl,
       });
-      console.log('========== REDIRECT SERVICE SUCCESS ==========\n');
+      console.log("========== REDIRECT SERVICE SUCCESS ==========\n");
 
       return {
         success: true,
         redirectUrl,
         redirectType: url.redirectType || 302,
-        metadata: this.getRedirectMetadata(url)
+        metadata: this.getRedirectMetadata(url),
       };
     } catch (error) {
-      console.error('❌ REDIRECT SERVICE ERROR:');
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      console.error('ShortCode:', shortCode);
-      console.error('RequestData:', {
+      console.error("❌ REDIRECT SERVICE ERROR:");
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("ShortCode:", shortCode);
+      console.error("RequestData:", {
         ipAddress: requestData.ipAddress,
         domain: requestData.domain,
-        clickSource: requestData.clickSource
+        clickSource: requestData.clickSource,
       });
-      console.log('========== REDIRECT SERVICE ERROR ==========\n');
+      console.log("========== REDIRECT SERVICE ERROR ==========\n");
 
       await securityService.logSecurityEvent({
-        type: 'REDIRECT_ERROR',
-        level: 'WARNING',
+        type: "REDIRECT_ERROR",
+        level: "WARNING",
         ipAddress: requestData.ipAddress,
         userAgent: requestData.userAgent,
         details: {
           shortCode,
-          error: error.message
-        }
+          error: error.message,
+        },
       });
 
       throw error;
     }
   }
-  
+
   async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
-      console.log('\n===== GET URL BY SHORT CODE START =====');
+      console.log("\n===== GET URL BY SHORT CODE START =====");
       // Normalize domain to ASCII (Punycode) for consistent database lookup
-      const { domainToASCII } = require('../utils/punycode');
-      const normalizedDomain = requestDomain ? domainToASCII(requestDomain.toLowerCase()) : null;
-      
+      const { domainToASCII } = require("../utils/punycode");
+      const normalizedDomain = requestDomain
+        ? domainToASCII(requestDomain.toLowerCase())
+        : null;
+
       // Normalize shortCode for case-insensitive lookup (but preserve original for logging)
       const originalShortCode = shortCode;
       const lowerShortCode = shortCode.toLowerCase();
 
-      console.log('🔍 Looking up URL:', {
+      console.log("🔍 Looking up URL:", {
         shortCode: originalShortCode,
         lowerShortCode,
         shortCodeType: typeof shortCode,
         shortCodeLength: shortCode?.length,
         requestDomain,
         normalizedDomain,
-        isMainDomain: this.isMainDomain(normalizedDomain)
+        isMainDomain: this.isMainDomain(normalizedDomain),
       });
 
       // Try cache with lowercase key first
       let url = await cacheGet(`url:${lowerShortCode}`);
-      
+
       // Also try original case for backward compatibility
       if (!url) {
         url = await cacheGet(`url:${originalShortCode}`);
       }
 
       if (url) {
-        console.log('💾 Cache HIT:', { shortCode: originalShortCode, cachedIsActive: url.isActive, cachedDomain: url.domain });
+        console.log("💾 Cache HIT:", {
+          shortCode: originalShortCode,
+          cachedIsActive: url.isActive,
+          cachedDomain: url.domain,
+        });
 
         // Validate cached URL belongs to the requested domain (custom domain isolation)
-        const isRequestOnMainDomain = !normalizedDomain || this.isMainDomain(normalizedDomain);
+        const isRequestOnMainDomain =
+          !normalizedDomain || this.isMainDomain(normalizedDomain);
         const cachedUrlDomain = url.domain ? url.domain.toLowerCase() : null;
         const domainMatches = isRequestOnMainDomain
           ? true // main domain requests can resolve any URL (no domain restriction)
           : cachedUrlDomain === normalizedDomain; // custom domain requests must match exactly
 
         if (!domainMatches) {
-          console.log('⚠️ Cache domain mismatch! Request domain:', normalizedDomain, 'Cached domain:', cachedUrlDomain, '→ falling through to DB');
+          console.log(
+            "⚠️ Cache domain mismatch! Request domain:",
+            normalizedDomain,
+            "Cached domain:",
+            cachedUrlDomain,
+            "→ falling through to DB",
+          );
           url = null; // Force DB lookup with correct domain filter
         }
 
         if (url) {
-          // IMPORTANT: Always verify isActive status from database for cached URLs
-          // This ensures deactivated URLs don't redirect even if cached
-          const freshStatus = await Url.findOne({
-            $or: [
-              { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
-              { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
-            ]
-          }).select('isActive').lean();
-        
-        if (freshStatus && freshStatus.isActive !== url.isActive) {
-          console.log('⚠️ Cache stale! DB isActive:', freshStatus.isActive, 'Cache isActive:', url.isActive);
-          url.isActive = freshStatus.isActive;
-
-          // If URL is now inactive, clear the cache
-          if (!freshStatus.isActive) {
-            console.log('🗑️ Clearing stale cache for deactivated URL');
-            const { cacheDel } = require('../config/redis');
-            await cacheDel(`url:${lowerShortCode}`);
-            await cacheDel(`url:${originalShortCode}`);
+          // IMPORTANT: Always verify isActive AND moderationStatus from the
+          // database for cached URLs. An admin Allow/Block decision (or the
+          // async scanner) updates both fields together and clears the
+          // cache — but if that cacheDel is ever missed (a transient Redis
+          // blip, a narrow race with an in-flight redirect), a cached copy
+          // can keep serving a stale moderationStatus indefinitely. Refreshing
+          // isActive alone isn't enough: a link blocked after being cached
+          // would show a corrected isActive:false but a stale
+          // moderationStatus of "suspicious"/"safe" — validateRedirect would
+          // then report "URL is deactivated" instead of "CONTENT_BLOCKED",
+          // which routes to the generic link-not-found page instead of the
+          // block page. Refreshing both fields together fixes that in both
+          // directions (newly blocked, or newly unblocked).
+          let freshStatus = null;
+          try {
+            freshStatus = await Url.findOne({
+              $or: [
+                {
+                  shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") },
+                },
+                {
+                  customCode: {
+                    $regex: new RegExp(`^${lowerShortCode}$`, "i"),
+                  },
+                },
+              ],
+            })
+              .select("isActive moderationStatus")
+              .lean();
+          } catch (freshCheckError) {
+            console.warn(
+              "⚠️  Freshness re-check failed, using cached status as-is:",
+              freshCheckError.message,
+            );
           }
-        }
+
+          if (freshStatus) {
+            const isStale =
+              freshStatus.isActive !== url.isActive ||
+              freshStatus.moderationStatus !== url.moderationStatus;
+
+            if (isStale) {
+              console.log("⚠️ Cache stale!", {
+                dbIsActive: freshStatus.isActive,
+                cacheIsActive: url.isActive,
+                dbModerationStatus: freshStatus.moderationStatus,
+                cacheModerationStatus: url.moderationStatus,
+              });
+              url.isActive = freshStatus.isActive;
+              url.moderationStatus = freshStatus.moderationStatus;
+
+              // Evict the now-confirmed-stale entry so the next lookup goes
+              // straight to the DB instead of re-hitting this same copy.
+              console.log("🗑️ Clearing stale cache entry");
+              const { cacheDel } = require("../config/redis");
+              await cacheDel(`url:${lowerShortCode}`);
+              await cacheDel(`url:${originalShortCode}`);
+            }
+          }
         } // closes inner if(url) after domain validation
       } else {
-        console.log('💾 Cache MISS - querying database');
+        console.log("💾 Cache MISS - querying database");
 
         // Use case-insensitive regex for shortCode and customCode lookup
         const query = {
           $or: [
-            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } },
-            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, 'i') } }
-          ]
+            { shortCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") } },
+            { customCode: { $regex: new RegExp(`^${lowerShortCode}$`, "i") } },
+          ],
         };
 
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
           query.domain = normalizedDomain;
-          console.log('🌐 Custom domain query (case-insensitive):', JSON.stringify(query, null, 2));
+          console.log(
+            "🌐 Custom domain query (case-insensitive):",
+            JSON.stringify(query, null, 2),
+          );
         } else {
-          console.log('🌐 Main domain query (case-insensitive):', JSON.stringify(query, null, 2));
+          console.log(
+            "🌐 Main domain query (case-insensitive):",
+            JSON.stringify(query, null, 2),
+          );
         }
 
         url = await Url.findOne(query)
-          .populate('creator', 'firstName lastName email')
-          .populate('organization', 'name slug');
+          .populate("creator", "firstName lastName email")
+          .populate("organization", "name slug");
 
         if (url) {
-          console.log('✅ URL FOUND in database:', {
+          console.log("✅ URL FOUND in database:", {
             _id: url._id,
             shortCode: url.shortCode,
             customCode: url.customCode,
             domain: url.domain,
             originalUrl: url.originalUrl,
-            isActive: url.isActive
+            isActive: url.isActive,
           });
         } else {
-          console.log('❌ URL NOT FOUND in database');
-          console.log('Query was:', JSON.stringify(query, null, 2));
+          console.log("❌ URL NOT FOUND in database");
+          console.log("Query was:", JSON.stringify(query, null, 2));
         }
 
         if (url && url.isActive) {
           try {
             // Cache with lowercase key for consistent case-insensitive lookups
-            await cacheSet(`url:${lowerShortCode}`, url, config.CACHE_TTL.URL_CACHE);
-            console.log('💾 Cached URL:', { shortCode: lowerShortCode, ttl: config.CACHE_TTL.URL_CACHE });
+            await cacheSet(
+              `url:${lowerShortCode}`,
+              url,
+              config.CACHE_TTL.URL_CACHE,
+            );
+            console.log("💾 Cached URL:", {
+              shortCode: lowerShortCode,
+              ttl: config.CACHE_TTL.URL_CACHE,
+            });
           } catch (cacheError) {
-            console.warn('⚠️  Cache set failed:', cacheError.message);
+            console.warn("⚠️  Cache set failed:", cacheError.message);
             // Continue anyway, just without caching
           }
         }
       }
 
-      console.log('===== GET URL BY SHORT CODE END =====\n');
+      console.log("===== GET URL BY SHORT CODE END =====\n");
       return url;
     } catch (error) {
-      console.error('❌ ERROR in getUrlByShortCode:');
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      console.error('ShortCode:', shortCode);
-      console.log('===== GET URL BY SHORT CODE FAILED =====\n');
+      console.error("❌ ERROR in getUrlByShortCode:");
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("ShortCode:", shortCode);
+      console.log("===== GET URL BY SHORT CODE FAILED =====\n");
       return null;
     }
   }
@@ -261,10 +329,11 @@ class RedirectService {
 
     const normalize = (url) => {
       if (!url) return null;
-      return url.toLowerCase()
-        .replace(/^https?:\/\//, '')   // strip protocol
-        .replace(/:\d+$/, '')          // strip port
-        .split('/')[0];                // strip path
+      return url
+        .toLowerCase()
+        .replace(/^https?:\/\//, "") // strip protocol
+        .replace(/:\d+$/, "") // strip port
+        .split("/")[0]; // strip path
     };
 
     const mainDomains = [
@@ -273,240 +342,273 @@ class RedirectService {
       normalize(process.env.BASE_DOMAIN),
       normalize(process.env.SHORT_DOMAIN),
       normalize(process.env.CNAME_TARGET),
-      'laghhu.link',
-      'www.laghhu.link',
-      'shortener.laghhu.link',
-      'snip.sa',
-      'www.snip.sa',
-      'shortener.snip.sa',
-      'qa.snip.sa',
-      'localhost',
-      'localhost:3015',
-      '20.193.155.139'
+      "laghhu.link",
+      "www.laghhu.link",
+      "shortener.laghhu.link",
+      "snip.sa",
+      "www.snip.sa",
+      "shortener.snip.sa",
+      "qa.snip.sa",
+      "qa.4r.sa",
+      "localhost",
+      "localhost:3015",
+      "20.193.155.139",
     ].filter(Boolean);
 
     const isMain = mainDomains.includes(domain.toLowerCase());
-    console.log('isMainDomain check:', { domain, mainDomains, isMain });
+    console.log("isMainDomain check:", { domain, mainDomains, isMain });
     return isMain;
   }
-  
+
   async validateRedirect(url, requestData) {
     const { ipAddress, userAgent, password, country, deviceType } = requestData;
-    
-    console.log('🔍 validateRedirect check:', {
+
+    console.log("🔍 validateRedirect check:", {
       urlId: url._id,
       shortCode: url.shortCode,
       isActive: url.isActive,
       hasPassword: !!url.password,
-      expiresAt: url.expiresAt
+      expiresAt: url.expiresAt,
     });
-    
+
     if (!url) {
-      return { allowed: false, reason: 'URL not found' };
+      return { allowed: false, reason: "URL not found" };
     }
-    
+
+    // Checked before the generic isActive gate: a moderation block deactivates
+    // the link (see adminController.updateUrlModeration), so without this
+    // ordering every blocked link would report "URL is deactivated" instead
+    // of "CONTENT_BLOCKED" and land on the generic link-not-found page
+    // instead of the dedicated block page.
+    if (url.moderationStatus === "blocked") {
+      console.log("❌ URL blocked by content moderation, blocking redirect");
+      return { allowed: false, reason: "CONTENT_BLOCKED" };
+    }
+
     if (!url.isActive) {
-      console.log('❌ URL is deactivated, blocking redirect');
-      return { allowed: false, reason: 'URL is deactivated' };
+      console.log("❌ URL is deactivated, blocking redirect");
+      return { allowed: false, reason: "URL is deactivated" };
     }
-    
+
     if (url.expiresAt && new Date() > new Date(url.expiresAt)) {
-      return { allowed: false, reason: 'URL has expired' };
+      return { allowed: false, reason: "URL has expired" };
     }
-    
+
     if (url.password && (!password || url.password !== password)) {
-      return { allowed: false, reason: 'Password required' };
+      return { allowed: false, reason: "Password required" };
     }
-    
+
     // Check restrictions
     if (url.restrictions) {
       if (url.restrictions.countries && url.restrictions.countries.length > 0) {
-        const isAllowed = url.restrictions.allowedCountries 
+        const isAllowed = url.restrictions.allowedCountries
           ? url.restrictions.countries.includes(country)
           : !url.restrictions.countries.includes(country);
-        
+
         if (!isAllowed) {
-          return { allowed: false, reason: 'Access restricted for your location or device' };
+          return {
+            allowed: false,
+            reason: "Access restricted for your location or device",
+          };
         }
       }
-      
-      if (url.restrictions.deviceTypes && url.restrictions.deviceTypes.length > 0) {
+
+      if (
+        url.restrictions.deviceTypes &&
+        url.restrictions.deviceTypes.length > 0
+      ) {
         if (!url.restrictions.deviceTypes.includes(deviceType)) {
-          return { allowed: false, reason: 'Access restricted for your device type' };
+          return {
+            allowed: false,
+            reason: "Access restricted for your device type",
+          };
         }
       }
-      
-      if (url.restrictions.maxClicks && url.clickCount >= url.restrictions.maxClicks) {
-        return { allowed: false, reason: 'Maximum click limit reached' };
+
+      if (
+        url.restrictions.maxClicks &&
+        url.clickCount >= url.restrictions.maxClicks
+      ) {
+        return { allowed: false, reason: "Maximum click limit reached" };
       }
     }
-    
+
     const suspiciousActivity = securityService.detectSuspiciousActivity({
       ipAddress,
       userAgent,
       requestCount: 1,
       timeWindow: 60000,
       endpoints: [`/${url.shortCode}`],
-      failedAttempts: 0
+      failedAttempts: 0,
     });
-    
+
     if (suspiciousActivity.riskScore > 70) {
       await securityService.logSecurityEvent({
-        type: 'SUSPICIOUS_REDIRECT_ATTEMPT',
-        level: 'WARNING',
+        type: "SUSPICIOUS_REDIRECT_ATTEMPT",
+        level: "WARNING",
         ipAddress,
         userAgent,
         details: {
           shortCode: url.shortCode,
           riskScore: suspiciousActivity.riskScore,
-          indicators: suspiciousActivity.indicators
-        }
+          indicators: suspiciousActivity.indicators,
+        },
       });
-      
-      return { allowed: false, reason: 'Access temporarily restricted' };
+
+      return { allowed: false, reason: "Access temporarily restricted" };
     }
-    
+
     return { allowed: true };
   }
-  
+
   processRedirectUrl(url) {
     try {
       const utm = url.utm;
-      if (!utm || (!utm.source && !utm.medium && !utm.campaign && !utm.term && !utm.content)) {
+      if (
+        !utm ||
+        (!utm.source &&
+          !utm.medium &&
+          !utm.campaign &&
+          !utm.term &&
+          !utm.content)
+      ) {
         return url.originalUrl;
       }
 
       const parsedUrl = new URL(url.originalUrl);
       const params = parsedUrl.searchParams;
 
-      if (utm.source) params.set('utm_source', utm.source);
-      if (utm.medium) params.set('utm_medium', utm.medium);
-      if (utm.campaign) params.set('utm_campaign', utm.campaign);
-      if (utm.term) params.set('utm_term', utm.term);
-      if (utm.content) params.set('utm_content', utm.content);
+      if (utm.source) params.set("utm_source", utm.source);
+      if (utm.medium) params.set("utm_medium", utm.medium);
+      if (utm.campaign) params.set("utm_campaign", utm.campaign);
+      if (utm.term) params.set("utm_term", utm.term);
+      if (utm.content) params.set("utm_content", utm.content);
 
       return parsedUrl.toString();
     } catch (error) {
-      console.error('Error processing redirect URL:', error);
+      console.error("Error processing redirect URL:", error);
       return url.originalUrl;
     }
   }
-  
+
   getRedirectMetadata(url) {
     return {
       title: url.title,
       description: url.description,
       favicon: url.metaData?.favicon,
       ogImage: url.metaData?.ogImage,
-      creator: url.creator?.firstName ? 
-        `${url.creator.firstName} ${url.creator.lastName}` : 
-        'Anonymous',
+      creator: url.creator?.firstName
+        ? `${url.creator.firstName} ${url.creator.lastName}`
+        : "Anonymous",
       createdAt: url.createdAt,
-      clickCount: url.clickCount
+      clickCount: url.clickCount,
     };
   }
-  
+
   async generatePreviewPage(shortCode, requestData) {
     try {
       const url = await this.getUrlByShortCode(shortCode);
-      
+
       if (!url) {
-        throw new Error('URL not found');
+        throw new Error("URL not found");
       }
-      
+
       const validationResult = await this.validateRedirect(url, requestData);
-      if (!validationResult.allowed && validationResult.reason !== 'Password required') {
+      if (
+        !validationResult.allowed &&
+        validationResult.reason !== "Password required"
+      ) {
         throw new Error(validationResult.reason);
       }
-      
+
       const previewData = {
         shortCode: url.shortCode,
         originalUrl: url.originalUrl,
-        title: url.title || 'Shortened URL',
-        description: url.description || 'Click to visit the destination',
+        title: url.title || "Shortened URL",
+        description: url.description || "Click to visit the destination",
         favicon: url.metaData?.favicon,
         ogImage: url.metaData?.ogImage,
         ogTitle: url.metaData?.ogTitle,
         ogDescription: url.metaData?.ogDescription,
         isPasswordProtected: !!url.password,
-        creator: url.creator?.firstName ? 
-          `${url.creator.firstName} ${url.creator.lastName}` : 
-          'Anonymous',
+        creator: url.creator?.firstName
+          ? `${url.creator.firstName} ${url.creator.lastName}`
+          : "Anonymous",
         createdAt: url.createdAt,
         clickCount: url.clickCount,
         domain: this.extractDomain(url.originalUrl),
-        isSecure: url.originalUrl.startsWith('https://'),
-        redirectType: url.redirectType || 302
+        isSecure: url.originalUrl.startsWith("https://"),
+        redirectType: url.redirectType || 302,
       };
-      
+
       await securityService.logSecurityEvent({
-        type: 'PREVIEW_PAGE_VIEW',
-        level: 'INFO',
+        type: "PREVIEW_PAGE_VIEW",
+        level: "INFO",
         ipAddress: requestData.ipAddress,
         userAgent: requestData.userAgent,
         details: {
           shortCode,
-          originalUrl: url.originalUrl
-        }
+          originalUrl: url.originalUrl,
+        },
       });
-      
+
       return previewData;
     } catch (error) {
-      console.error('Error generating preview page:', error);
+      console.error("Error generating preview page:", error);
       throw error;
     }
   }
-  
+
   extractDomain(url) {
     try {
       const parsed = new URL(url);
       return parsed.hostname;
     } catch (error) {
-      return 'Unknown Domain';
+      return "Unknown Domain";
     }
   }
-  
+
   async handleBulkRedirect(shortCodes, requestData) {
     const results = [];
-    
+
     for (const shortCode of shortCodes) {
       try {
         const result = await this.handleRedirect(shortCode, requestData);
         results.push({
           shortCode,
           success: true,
-          ...result
+          ...result,
         });
       } catch (error) {
         results.push({
           shortCode,
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     return results;
   }
-  
+
   async checkUrlSafety(originalUrl) {
     try {
       const domain = this.extractDomain(originalUrl);
-      
+
       const knownMaliciousDomains = [
-        'malware.com',
-        'phishing.org',
-        'suspicious.net'
+        "malware.com",
+        "phishing.org",
+        "suspicious.net",
       ];
-      
+
       if (knownMaliciousDomains.includes(domain)) {
         return {
           safe: false,
-          reason: 'Known malicious domain',
-          riskLevel: 'HIGH'
+          reason: "Known malicious domain",
+          riskLevel: "HIGH",
         };
       }
-      
+
       const suspiciousPatterns = [
         /bit\.ly\/bit\.ly/i,
         /tinyurl\.com\/tinyurl/i,
@@ -514,70 +616,73 @@ class RedirectService {
         /\.tk$/i,
         /\.ml$/i,
         /\.ga$/i,
-        /\.cf$/i
+        /\.cf$/i,
       ];
-      
-      if (suspiciousPatterns.some(pattern => pattern.test(originalUrl))) {
+
+      if (suspiciousPatterns.some((pattern) => pattern.test(originalUrl))) {
         return {
           safe: false,
-          reason: 'Suspicious URL pattern detected',
-          riskLevel: 'MEDIUM'
+          reason: "Suspicious URL pattern detected",
+          riskLevel: "MEDIUM",
         };
       }
-      
-      if (originalUrl.includes('javascript:') || originalUrl.includes('data:')) {
+
+      if (
+        originalUrl.includes("javascript:") ||
+        originalUrl.includes("data:")
+      ) {
         return {
           safe: false,
-          reason: 'Potentially dangerous URL scheme',
-          riskLevel: 'HIGH'
+          reason: "Potentially dangerous URL scheme",
+          riskLevel: "HIGH",
         };
       }
-      
+
       return {
         safe: true,
-        riskLevel: 'LOW'
+        riskLevel: "LOW",
       };
     } catch (error) {
-      console.error('Error checking URL safety:', error);
+      console.error("Error checking URL safety:", error);
       return {
         safe: false,
-        reason: 'Unable to verify URL safety',
-        riskLevel: 'UNKNOWN'
+        reason: "Unable to verify URL safety",
+        riskLevel: "UNKNOWN",
       };
     }
   }
-  
+
   async generateQRCode(shortCode, options = {}) {
     try {
       const {
         size = 300,
-        format = 'png',
-        fgColor = '000000',
-        bgColor = 'ffffff',
-        errorCorrection = 'M',
-        margin = 1
+        format = "png",
+        fgColor = "000000",
+        bgColor = "ffffff",
+        errorCorrection = "M",
+        margin = 1,
       } = options;
 
       const url = await this.getUrlByShortCode(shortCode);
       if (!url) {
-        throw new Error('URL not found');
+        throw new Error("URL not found");
       }
 
       // Properly encode the short code for international characters (Arabic, Chinese, etc.)
       const encodedShortCode = encodeURIComponent(shortCode);
       const shortUrl = `${config.BASE_URL}/${encodedShortCode}?qr=1`;
 
-      console.log('🔗 Generating QR Code:', {
+      console.log("🔗 Generating QR Code:", {
         shortCode,
         encodedShortCode,
         shortUrl,
         format,
-        hasInternationalChars: /[^\x00-\x7F]/.test(shortCode)
+        hasInternationalChars: /[^\x00-\x7F]/.test(shortCode),
       });
 
       // Generate QR code locally using the qrcode library
-      const QRCode = require('qrcode');
-      const sharp = require('sharp');
+      const QRCode = require("qrcode");
+      const sharp = require("sharp");
 
       const qrOptions = {
         errorCorrectionLevel: errorCorrection,
@@ -585,46 +690,52 @@ class RedirectService {
         width: parseInt(size),
         color: {
           dark: `#${fgColor}`,
-          light: `#${bgColor}`
-        }
+          light: `#${bgColor}`,
+        },
       };
 
       let qrCodeData;
       let mimeType;
 
-      if (format === 'svg') {
+      if (format === "svg") {
         // Generate SVG
-        qrCodeData = await QRCode.toString(shortUrl, { ...qrOptions, type: 'svg' });
-        mimeType = 'image/svg+xml';
+        qrCodeData = await QRCode.toString(shortUrl, {
+          ...qrOptions,
+          type: "svg",
+        });
+        mimeType = "image/svg+xml";
         // Return SVG as data URL
-        qrCodeData = `data:${mimeType};base64,${Buffer.from(qrCodeData).toString('base64')}`;
-      } else if (format === 'pdf') {
+        qrCodeData = `data:${mimeType};base64,${Buffer.from(qrCodeData).toString("base64")}`;
+      } else if (format === "pdf") {
         // Generate PDF with QR code
-        const PDFDocument = require('pdfkit');
-        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
-        
+        const PDFDocument = require("pdfkit");
+        const pngBuffer = await QRCode.toBuffer(shortUrl, {
+          ...qrOptions,
+          type: "image/png",
+        });
+
         // Create PDF
         const pdfBuffer = await new Promise((resolve, reject) => {
           try {
             const doc = new PDFDocument({
               size: [parseInt(size) + 100, parseInt(size) + 100],
-              margins: { top: 50, bottom: 50, left: 50, right: 50 }
+              margins: { top: 50, bottom: 50, left: 50, right: 50 },
             });
 
             const chunks = [];
-            doc.on('data', chunk => chunks.push(chunk));
-            doc.on('end', () => resolve(Buffer.concat(chunks)));
-            doc.on('error', reject);
+            doc.on("data", (chunk) => chunks.push(chunk));
+            doc.on("end", () => resolve(Buffer.concat(chunks)));
+            doc.on("error", reject);
 
             // Add title
-            doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: 'center' });
+            doc.fontSize(16).text(`QR Code: ${shortCode}`, { align: "center" });
             doc.moveDown();
 
             // Add QR code image
             doc.image(pngBuffer, {
               fit: [parseInt(size), parseInt(size)],
-              align: 'center',
-              valign: 'center'
+              align: "center",
+              valign: "center",
             });
 
             doc.end();
@@ -632,38 +743,45 @@ class RedirectService {
             reject(error);
           }
         });
-        
-        mimeType = 'application/pdf';
-        qrCodeData = `data:${mimeType};base64,${pdfBuffer.toString('base64')}`;
+
+        mimeType = "application/pdf";
+        qrCodeData = `data:${mimeType};base64,${pdfBuffer.toString("base64")}`;
       } else {
         // Generate PNG buffer first
-        const pngBuffer = await QRCode.toBuffer(shortUrl, { ...qrOptions, type: 'image/png' });
+        const pngBuffer = await QRCode.toBuffer(shortUrl, {
+          ...qrOptions,
+          type: "image/png",
+        });
 
         // Convert to requested format using sharp
         let finalBuffer;
         switch (format.toLowerCase()) {
-          case 'jpeg':
-          case 'jpg':
-            finalBuffer = await sharp(pngBuffer).jpeg({ quality: 92 }).toBuffer();
-            mimeType = 'image/jpeg';
+          case "jpeg":
+          case "jpg":
+            finalBuffer = await sharp(pngBuffer)
+              .jpeg({ quality: 92 })
+              .toBuffer();
+            mimeType = "image/jpeg";
             break;
-          case 'gif':
+          case "gif":
             finalBuffer = await sharp(pngBuffer).gif().toBuffer();
-            mimeType = 'image/gif';
+            mimeType = "image/gif";
             break;
-          case 'webp':
-            finalBuffer = await sharp(pngBuffer).webp({ quality: 92 }).toBuffer();
-            mimeType = 'image/webp';
+          case "webp":
+            finalBuffer = await sharp(pngBuffer)
+              .webp({ quality: 92 })
+              .toBuffer();
+            mimeType = "image/webp";
             break;
-          case 'png':
+          case "png":
           default:
             finalBuffer = pngBuffer;
-            mimeType = 'image/png';
+            mimeType = "image/png";
             break;
         }
 
         // Return as data URL
-        qrCodeData = `data:${mimeType};base64,${finalBuffer.toString('base64')}`;
+        qrCodeData = `data:${mimeType};base64,${finalBuffer.toString("base64")}`;
       }
 
       return {
@@ -678,23 +796,23 @@ class RedirectService {
           fgColor,
           bgColor,
           errorCorrection,
-          margin
-        }
+          margin,
+        },
       };
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      console.error("Error generating QR code:", error);
       throw error;
     }
   }
-  
+
   async getRedirectStats(shortCode) {
     try {
       const url = await this.getUrlByShortCode(shortCode);
-      
+
       if (!url) {
-        throw new Error('URL not found');
+        throw new Error("URL not found");
       }
-      
+
       return {
         shortCode: url.shortCode,
         originalUrl: url.originalUrl,
@@ -705,10 +823,10 @@ class RedirectService {
         createdAt: url.createdAt,
         isActive: url.isActive,
         isExpired: url.isExpired,
-        expiresAt: url.expiresAt
+        expiresAt: url.expiresAt,
       };
     } catch (error) {
-      console.error('Error getting redirect stats:', error);
+      console.error("Error getting redirect stats:", error);
       throw error;
     }
   }

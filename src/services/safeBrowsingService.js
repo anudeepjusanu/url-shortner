@@ -1,67 +1,145 @@
-const axios = require('axios');
+const axios = require("axios");
 
 /**
- * Google Safe Browsing Service
- * Checks URLs against Google's Safe Browsing API to detect malicious content
- * 
- * API Documentation: https://developers.google.com/safe-browsing/v4
+ * Google Safe Browsing / Web Risk Service
+ * Checks URLs against Google's threat lists to detect malicious content.
+ *
+ * Safe Browsing v4 (GOOGLE_SAFE_BROWSING_API_KEY) is free but non-commercial
+ * licensed. Web Risk (WEBRISK_API_KEY) is the commercially-licensed
+ * equivalent — set it and it takes priority automatically, no other code
+ * changes needed anywhere this service is called.
+ *
+ * API Documentation:
+ *   https://developers.google.com/safe-browsing/v4
+ *   https://cloud.google.com/web-risk/docs/reference/rest/v1/uris/search
  */
 class SafeBrowsingService {
   constructor() {
     this.apiKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
-    this.apiUrl = 'https://safebrowsing.googleapis.com/v4/threatMatches:find';
-    this.enabled = !!this.apiKey;
-    
-    // Threat types to check for
+    this.apiUrl = "https://safebrowsing.googleapis.com/v4/threatMatches:find";
+
+    this.webRiskApiKey = process.env.WEBRISK_API_KEY;
+    this.webRiskApiUrl = "https://webrisk.googleapis.com/v1/uris:search";
+    // Web Risk has no equivalent to Safe Browsing's POTENTIALLY_HARMFUL_APPLICATION
+    // (that one is Android-APK specific and Safe-Browsing-only).
+    this.webRiskThreatTypes = [
+      "MALWARE",
+      "SOCIAL_ENGINEERING",
+      "UNWANTED_SOFTWARE",
+    ];
+    this.useWebRisk = !!this.webRiskApiKey;
+
+    this.enabled = !!(this.webRiskApiKey || this.apiKey);
+
+    // Threat types to check for (Safe Browsing v4)
     this.threatTypes = [
-      'MALWARE',
-      'SOCIAL_ENGINEERING', // Phishing
-      'UNWANTED_SOFTWARE',
-      'POTENTIALLY_HARMFUL_APPLICATION'
+      "MALWARE",
+      "SOCIAL_ENGINEERING", // Phishing
+      "UNWANTED_SOFTWARE",
+      "POTENTIALLY_HARMFUL_APPLICATION",
     ];
-    
+
     // Platform types
-    this.platformTypes = [
-      'ANY_PLATFORM'
-    ];
-    
+    this.platformTypes = ["ANY_PLATFORM"];
+
     // Threat entry types
-    this.threatEntryTypes = [
-      'URL'
-    ];
+    this.threatEntryTypes = ["URL"];
   }
 
   /**
-   * Check if a URL is safe using Google Safe Browsing API
+   * Check if a URL is safe using Google Web Risk (uris:search).
+   * @param {string} url - The URL to check
+   * @returns {Promise<{isSafe: boolean, threats: Array, message: string}>}
+   */
+  async checkUrlWebRisk(url) {
+    try {
+      const params = new URLSearchParams({ key: this.webRiskApiKey, uri: url });
+      this.webRiskThreatTypes.forEach((t) => params.append("threatTypes", t));
+
+      const response = await axios.get(
+        `${this.webRiskApiUrl}?${params.toString()}`,
+        {
+          timeout: 5000,
+        },
+      );
+
+      const threat = response.data && response.data.threat;
+      if (
+        threat &&
+        Array.isArray(threat.threatTypes) &&
+        threat.threatTypes.length > 0
+      ) {
+        const threats = threat.threatTypes.map((threatType) => ({
+          threatType,
+        }));
+        console.log("🚨 Unsafe URL detected (Web Risk):", url, threats);
+        return {
+          isSafe: false,
+          threats,
+          message: this.formatThreatMessage(threats),
+        };
+      }
+
+      console.log("✅ URL passed safety check (Web Risk):", url);
+      return { isSafe: true, threats: [], message: "URL is safe" };
+    } catch (error) {
+      const status = error.response?.status;
+      if (status === 429) {
+        console.error("❌ Web Risk API rate limit exceeded");
+      } else if (status === 401 || status === 403) {
+        console.error(
+          "❌ Web Risk API authentication error — check WEBRISK_API_KEY",
+        );
+      } else if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("❌ Web Risk API timed out");
+      } else {
+        console.error("❌ Web Risk API error:", error.message);
+      }
+      return {
+        isSafe: true, // fail open — never block a legitimate link on infra errors
+        threats: [],
+        error: error.message,
+        skipped: true,
+      };
+    }
+  }
+
+  /**
+   * Check if a URL is safe using Google's threat-checking APIs.
+   * Uses Web Risk when WEBRISK_API_KEY is set, otherwise legacy Safe Browsing v4.
    * @param {string} url - The URL to check
    * @returns {Promise<{isSafe: boolean, threats: Array, error: string}>}
    */
   async checkUrl(url) {
-    // If API key is not configured, skip the check
+    // If no key is configured at all, skip the check
     if (!this.enabled) {
-      console.warn('⚠️ Google Safe Browsing API key not configured. Skipping safety check.');
+      console.warn(
+        "⚠️ No Safe Browsing / Web Risk API key configured. Skipping safety check.",
+      );
       return {
         isSafe: true,
         threats: [],
         skipped: true,
-        message: 'Safety check skipped - API not configured'
+        message: "Safety check skipped - API not configured",
       };
+    }
+
+    if (this.useWebRisk) {
+      return this.checkUrlWebRisk(url);
     }
 
     try {
       const requestBody = {
         client: {
-          clientId: 'url-shortener',
-          clientVersion: '1.0.0'
+          clientId: "url-shortener",
+          clientVersion: "1.0.0",
         },
         threatInfo: {
           threatTypes: this.threatTypes,
           platformTypes: this.platformTypes,
           threatEntryTypes: this.threatEntryTypes,
-          threatEntries: [
-            { url: url }
-          ]
-        }
+          threatEntries: [{ url: url }],
+        },
       };
 
       const response = await axios.post(
@@ -69,39 +147,42 @@ class SafeBrowsingService {
         requestBody,
         {
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          timeout: 5000 // 5 second timeout
-        }
+          timeout: 5000, // 5 second timeout
+        },
       );
 
       // If matches are found, the URL is unsafe
-      if (response.data && response.data.matches && response.data.matches.length > 0) {
-        const threats = response.data.matches.map(match => ({
+      if (
+        response.data &&
+        response.data.matches &&
+        response.data.matches.length > 0
+      ) {
+        const threats = response.data.matches.map((match) => ({
           threatType: match.threatType,
           platformType: match.platformType,
-          threatEntryType: match.threatEntryType
+          threatEntryType: match.threatEntryType,
         }));
 
-        console.log('🚨 Unsafe URL detected:', url, threats);
+        console.log("🚨 Unsafe URL detected:", url, threats);
 
         return {
           isSafe: false,
           threats: threats,
-          message: this.formatThreatMessage(threats)
+          message: this.formatThreatMessage(threats),
         };
       }
 
       // No matches found - URL is safe
-      console.log('✅ URL passed safety check:', url);
+      console.log("✅ URL passed safety check:", url);
       return {
         isSafe: true,
         threats: [],
-        message: 'URL is safe'
+        message: "URL is safe",
       };
-
     } catch (error) {
-      console.error('❌ Google Safe Browsing API error:', error.message);
+      console.error("❌ Google Safe Browsing API error:", error.message);
 
       // Handle specific error cases
       if (error.response) {
@@ -109,44 +190,44 @@ class SafeBrowsingService {
         const errorData = error.response.data;
 
         if (status === 400) {
-          console.error('Bad request to Safe Browsing API:', errorData);
+          console.error("Bad request to Safe Browsing API:", errorData);
           return {
             isSafe: true, // Allow URL on API error (fail open)
             threats: [],
-            error: 'Invalid request to safety check service',
-            skipped: true
+            error: "Invalid request to safety check service",
+            skipped: true,
           };
         }
 
         if (status === 401 || status === 403) {
-          console.error('Authentication error with Safe Browsing API');
+          console.error("Authentication error with Safe Browsing API");
           return {
             isSafe: true, // Allow URL on auth error
             threats: [],
-            error: 'Safety check service authentication failed',
-            skipped: true
+            error: "Safety check service authentication failed",
+            skipped: true,
           };
         }
 
         if (status === 429) {
-          console.error('Rate limit exceeded for Safe Browsing API');
+          console.error("Rate limit exceeded for Safe Browsing API");
           return {
             isSafe: true, // Allow URL on rate limit
             threats: [],
-            error: 'Safety check service rate limit exceeded',
-            skipped: true
+            error: "Safety check service rate limit exceeded",
+            skipped: true,
           };
         }
       }
 
       // Network or timeout errors - fail open (allow the URL)
-      if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-        console.error('Timeout checking URL safety');
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("Timeout checking URL safety");
         return {
           isSafe: true,
           threats: [],
-          error: 'Safety check timed out',
-          skipped: true
+          error: "Safety check timed out",
+          skipped: true,
         };
       }
 
@@ -155,7 +236,7 @@ class SafeBrowsingService {
         isSafe: true,
         threats: [],
         error: error.message,
-        skipped: true
+        skipped: true,
       };
     }
   }
@@ -167,26 +248,28 @@ class SafeBrowsingService {
    */
   formatThreatMessage(threats) {
     if (!threats || threats.length === 0) {
-      return 'URL is flagged as unsafe';
+      return "URL is flagged as unsafe";
     }
 
-    const threatTypes = threats.map(t => t.threatType);
+    const threatTypes = threats.map((t) => t.threatType);
     const uniqueThreats = [...new Set(threatTypes)];
 
     const threatMessages = {
-      'MALWARE': 'malware',
-      'SOCIAL_ENGINEERING': 'phishing or social engineering',
-      'UNWANTED_SOFTWARE': 'unwanted software',
-      'POTENTIALLY_HARMFUL_APPLICATION': 'potentially harmful applications'
+      MALWARE: "malware",
+      SOCIAL_ENGINEERING: "phishing or social engineering",
+      UNWANTED_SOFTWARE: "unwanted software",
+      POTENTIALLY_HARMFUL_APPLICATION: "potentially harmful applications",
     };
 
-    const messages = uniqueThreats.map(type => threatMessages[type] || 'unsafe content');
-    
+    const messages = uniqueThreats.map(
+      (type) => threatMessages[type] || "unsafe content",
+    );
+
     if (messages.length === 1) {
       return `This URL has been flagged by Google Safe Browsing as containing ${messages[0]}`;
     } else {
       const lastMessage = messages.pop();
-      return `This URL has been flagged by Google Safe Browsing as containing ${messages.join(', ')} and ${lastMessage}`;
+      return `This URL has been flagged by Google Safe Browsing as containing ${messages.join(", ")} and ${lastMessage}`;
     }
   }
 
@@ -204,11 +287,46 @@ class SafeBrowsingService {
 
     // Build result map with unverified state as default
     const resultMap = new Map();
-    urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: safety check not performed' }));
+    urls.forEach((url) =>
+      resultMap.set(url, {
+        isSafe: true,
+        threats: [],
+        verified: false,
+        message: "Skipped: safety check not performed",
+      }),
+    );
 
     if (!this.enabled) {
-      console.warn('⚠️ Google Safe Browsing API key not configured. Skipping batch safety check.');
-      urls.forEach(url => resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: API key not configured' }));
+      console.warn(
+        "⚠️ Google Safe Browsing API key not configured. Skipping batch safety check.",
+      );
+      urls.forEach((url) =>
+        resultMap.set(url, {
+          isSafe: true,
+          threats: [],
+          verified: false,
+          message: "Skipped: API key not configured",
+        }),
+      );
+      return resultMap;
+    }
+
+    // Web Risk has no native batch endpoint — run individual checks with a
+    // small concurrency window instead of one giant Promise.all.
+    if (this.useWebRisk) {
+      const concurrency = 10;
+      for (let i = 0; i < urls.length; i += concurrency) {
+        const batch = urls.slice(i, i + concurrency);
+        const results = await Promise.all(
+          batch.map((url) => this.checkUrlWebRisk(url)),
+        );
+        batch.forEach((url, idx) => {
+          resultMap.set(url, {
+            ...results[idx],
+            verified: !results[idx].skipped,
+          });
+        });
+      }
       return resultMap;
     }
 
@@ -220,57 +338,67 @@ class SafeBrowsingService {
 
       try {
         const requestBody = {
-          client: { clientId: 'url-shortener', clientVersion: '1.0.0' },
+          client: { clientId: "url-shortener", clientVersion: "1.0.0" },
           threatInfo: {
             threatTypes: this.threatTypes,
             platformTypes: this.platformTypes,
             threatEntryTypes: this.threatEntryTypes,
-            threatEntries: batch.map(url => ({ url }))
-          }
+            threatEntries: batch.map((url) => ({ url })),
+          },
         };
 
         const response = await axios.post(
           `${this.apiUrl}?key=${this.apiKey}`,
           requestBody,
-          { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+          { headers: { "Content-Type": "application/json" }, timeout: 10000 },
         );
 
         if (response.data && response.data.matches) {
           // Group matches by URL
           const matchesByUrl = new Map();
-          response.data.matches.forEach(match => {
+          response.data.matches.forEach((match) => {
             const url = match.threat.url;
             if (!matchesByUrl.has(url)) matchesByUrl.set(url, []);
             matchesByUrl.get(url).push({
               threatType: match.threatType,
               platformType: match.platformType,
-              threatEntryType: match.threatEntryType
+              threatEntryType: match.threatEntryType,
             });
           });
 
           matchesByUrl.forEach((threats, url) => {
-            console.log('🚨 Unsafe URL detected (batch):', url, threats);
+            console.log("🚨 Unsafe URL detected (batch):", url, threats);
             resultMap.set(url, {
               isSafe: false,
               threats,
               verified: true,
-              message: this.formatThreatMessage(threats)
+              message: this.formatThreatMessage(threats),
             });
           });
         }
 
         // Mark URLs in this batch that were checked but had no threats as verified safe
-        batch.forEach(url => {
+        batch.forEach((url) => {
           if (resultMap.get(url).verified === false) {
-            resultMap.set(url, { isSafe: true, threats: [], verified: true, message: 'URL is safe' });
+            resultMap.set(url, {
+              isSafe: true,
+              threats: [],
+              verified: true,
+              message: "URL is safe",
+            });
           }
         });
       } catch (error) {
-        console.error('❌ Safe Browsing batch check error:', error.message);
+        console.error("❌ Safe Browsing batch check error:", error.message);
         // Mark this batch as skipped due to error rather than verified safe
-        batch.forEach(url => {
+        batch.forEach((url) => {
           if (resultMap.get(url).verified === false) {
-            resultMap.set(url, { isSafe: true, threats: [], verified: false, message: 'Skipped: batch check failed' });
+            resultMap.set(url, {
+              isSafe: true,
+              threats: [],
+              verified: false,
+              message: "Skipped: batch check failed",
+            });
           }
         });
       }
@@ -288,7 +416,7 @@ class SafeBrowsingService {
     if (!Array.isArray(urls) || urls.length === 0) {
       return [];
     }
-    return Promise.all(urls.map(url => this.checkUrl(url)));
+    return Promise.all(urls.map((url) => this.checkUrl(url)));
   }
 
   /**
@@ -306,8 +434,9 @@ class SafeBrowsingService {
   getStatus() {
     return {
       enabled: this.enabled,
-      configured: !!this.apiKey,
-      threatTypes: this.threatTypes
+      provider: this.useWebRisk ? "web-risk" : "safe-browsing-v4",
+      configured: !!(this.webRiskApiKey || this.apiKey),
+      threatTypes: this.useWebRisk ? this.webRiskThreatTypes : this.threatTypes,
     };
   }
 }

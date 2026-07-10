@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const UTMBuilder = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { utmLinks, deleteUTMLink } = useUTM();
+  const { utmLinks, deleteUTMLink, isLoading } = useUTM();
   const createUrl = useCreateUrl();
   const { data: domainsData } = useAvailableDomains();
 
@@ -32,7 +32,7 @@ const UTMBuilder = () => {
       Array.isArray(domainsData?.data?.domains)
         ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
         : [],
-    [domainsData]
+    [domainsData],
   );
 
   const defaultDomainId = useMemo(() => {
@@ -57,7 +57,7 @@ const UTMBuilder = () => {
       ? utmLinks.filter(
           (l) =>
             label(l).toLowerCase().includes(q) ||
-            l.destinationUrl.toLowerCase().includes(q)
+            l.destinationUrl.toLowerCase().includes(q),
         )
       : [...utmLinks];
 
@@ -70,9 +70,15 @@ const UTMBuilder = () => {
     return result;
   }, [utmLinks, search, sort]);
 
-  const handleDelete = (id: string) => {
-    deleteUTMLink(id);
-    toast.success(t("UTM link deleted", "تم حذف رابط UTM"));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteUTMLink(id);
+      toast.success(t("UTM link deleted", "تم حذف رابط UTM"));
+    } catch (error: any) {
+      toast.error(
+        error.message || t("Failed to delete link", "فشل حذف الرابط"),
+      );
+    }
   };
 
   const handleShorten = async (link: UTMLink) => {
@@ -88,7 +94,9 @@ const UTMBuilder = () => {
         navigate("/dashboard/links");
       }
     } catch (error: any) {
-      toast.error(error.message || t("Failed to shorten link", "فشل اختصار الرابط"));
+      toast.error(
+        error.message || t("Failed to shorten link", "فشل اختصار الرابط"),
+      );
     } finally {
       setShorteningId(null);
     }
@@ -107,7 +115,10 @@ const UTMBuilder = () => {
               {t("UTM Builder", "منشئ UTM")}
             </h1>
             <p className="text-sm text-muted-foreground font-body">
-              {t("Create and manage tagged URLs for campaign tracking", "أنشئ وأدر روابط موسومة لتتبع الحملات")}
+              {t(
+                "Create and manage tagged URLs for campaign tracking",
+                "أنشئ وأدر روابط موسومة لتتبع الحملات",
+              )}
             </p>
           </div>
         </div>
@@ -125,7 +136,10 @@ const UTMBuilder = () => {
         <div className="relative flex-1">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder={t("Search by name or URL…", "ابحث بالاسم أو الرابط...")}
+            placeholder={t(
+              "Search by name or URL…",
+              "ابحث بالاسم أو الرابط...",
+            )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="ps-9 h-10"
@@ -141,7 +155,7 @@ const UTMBuilder = () => {
                 "px-3 py-1.5 text-sm font-body transition-colors",
                 sort === "latest"
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               {t("Latest", "الأحدث")}
@@ -152,7 +166,7 @@ const UTMBuilder = () => {
                 "px-3 py-1.5 text-sm font-body transition-colors",
                 sort === "oldest"
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               {t("Oldest", "الأقدم")}
@@ -162,7 +176,11 @@ const UTMBuilder = () => {
       </div>
 
       {/* List */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
             <Tag className="w-8 h-8 text-muted-foreground" />
@@ -182,7 +200,10 @@ const UTMBuilder = () => {
                 {t("No UTM links yet", "لا توجد روابط UTM بعد")}
               </p>
               <p className="text-sm text-muted-foreground font-body mb-4">
-                {t("Create your first tagged URL to start tracking campaigns", "أنشئ أول رابط موسوم لبدء تتبع الحملات")}
+                {t(
+                  "Create your first tagged URL to start tracking campaigns",
+                  "أنشئ أول رابط موسوم لبدء تتبع الحملات",
+                )}
               </p>
               <Button
                 onClick={() => navigate("/dashboard/utm-builder/create")}
@@ -222,17 +243,26 @@ const UTMBuilder = () => {
                     {/* UTM chips */}
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {link.utmSource && (
-                        <Badge variant="secondary" className="text-xs font-mono h-5 px-1.5">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-mono h-5 px-1.5"
+                        >
                           src: {link.utmSource}
                         </Badge>
                       )}
                       {link.utmMedium && (
-                        <Badge variant="secondary" className="text-xs font-mono h-5 px-1.5">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-mono h-5 px-1.5"
+                        >
                           med: {link.utmMedium}
                         </Badge>
                       )}
                       {link.utmCampaign && (
-                        <Badge variant="secondary" className="text-xs font-mono h-5 px-1.5">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-mono h-5 px-1.5"
+                        >
                           cmp: {link.utmCampaign}
                         </Badge>
                       )}

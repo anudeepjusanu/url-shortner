@@ -72,11 +72,19 @@ router.put('/:id',
   urlController.updateUrl
 );
 
-// Delete URL - accepts both Bearer token and API key
-router.delete('/:id', 
+// Update deep link configuration for a URL
+router.put('/:id/deep-link',
   authenticateAny,
   apiLimiter,
-  validateObjectId, 
+  validateObjectId,
+  urlController.updateDeepLink
+);
+
+// Delete URL - accepts both Bearer token and API key
+router.delete('/:id',
+  authenticateAny,
+  apiLimiter,
+  validateObjectId,
   urlController.deleteUrl
 );
 
