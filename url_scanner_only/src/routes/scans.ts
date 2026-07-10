@@ -21,7 +21,7 @@ router.get("/scans", async (req, res): Promise<void> => {
   }
   const { limit = 50, offset = 0, decision } = parsed.data;
 
-  const query = db
+  let query = db
     .select()
     .from(scansTable)
     .orderBy(desc(scansTable.scannedAt))
@@ -29,7 +29,7 @@ router.get("/scans", async (req, res): Promise<void> => {
     .offset(offset);
 
   if (decision) {
-    query.where(eq(scansTable.decision, decision));
+    query = query.where(eq(scansTable.decision, decision));
   }
 
   const scans = await query;
@@ -71,7 +71,10 @@ router.post("/scans", async (req, res): Promise<void> => {
     })
     .returning();
 
-  req.log.info({ scanId: scan.id, decision: verdict.decision }, "Scan complete");
+  req.log.info(
+    { scanId: scan.id, decision: verdict.decision },
+    "Scan complete",
+  );
   res.status(201).json(GetScanResponse.parse(scan));
 });
 
@@ -128,7 +131,7 @@ router.get("/stats", async (_req, res): Promise<void> => {
       blocked: totals?.blocked ?? 0,
       topCategories,
       recentScans,
-    })
+    }),
   );
 });
 
