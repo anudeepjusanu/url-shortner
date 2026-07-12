@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const ApiKey = require("../models/ApiKey");
 const config = require("../config/environment");
 const { cacheSet, cacheDel, cacheGet } = require("../config/redis");
 const emailService = require("../services/emailService");
@@ -1184,30 +1185,26 @@ const loginWithPhoneOtp = async (req, res) => {
   }
 };
 
-// Get user's API key
+// Get the caller's API key for a project (or their account-wide key, for
+// solo accounts / an Account Owner in the "All projects" view).
 const getApiKey = async (req, res) => {
   try {
-    // Enterprise RBAC: the API key is per-user, not per-project, but a
-    // Viewer on the caller's active project still can't reveal/regenerate
-    // it — same "sensitive action" treatment as Custom Domains/API Keys
+    // Enterprise RBAC: the key is scoped per (user, project) — a Viewer on
+    // the caller's active project still can't reveal/regenerate/delete it —
+    // same "sensitive action" treatment as Custom Domains/API Keys
     // elsewhere. No-op for solo accounts. Account Owners may omit
     // projectId (the "All projects" aggregate has no single active project).
+    const projectId = req.query.projectId || null;
     await projectAccessService.assertAccountLevelEditAccess(
       req.user,
-      req.query.projectId,
+      projectId,
     );
 
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Find active API key or return empty
-    const activeKey = user.apiKeys?.find((k) => k.isActive);
+    const activeKey = await ApiKey.findOne({
+      user: req.user.id,
+      project: projectId,
+      isActive: true,
+    });
 
     res.json({
       success: true,
@@ -1226,46 +1223,30 @@ const getApiKey = async (req, res) => {
   }
 };
 
-// Regenerate API key
+// Regenerate the caller's API key for a project — deactivates the previous
+// key for that same (user, project) pair rather than deleting it.
 const regenerateApiKey = async (req, res) => {
   try {
+    const projectId = req.body.projectId || null;
     await projectAccessService.assertAccountLevelEditAccess(
       req.user,
-      req.body.projectId,
+      projectId,
     );
 
-    const user = await User.findById(req.user.id);
+    await ApiKey.updateMany(
+      { user: req.user.id, project: projectId, isActive: true },
+      { $set: { isActive: false } },
+    );
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Generate new API key
     const newApiKey = crypto.randomBytes(32).toString("hex");
-
-    // Deactivate all existing keys
-    if (user.apiKeys && user.apiKeys.length > 0) {
-      user.apiKeys.forEach((key) => {
-        key.isActive = false;
-      });
-    }
-
-    // Add new key
-    if (!user.apiKeys) {
-      user.apiKeys = [];
-    }
-
-    user.apiKeys.push({
+    await ApiKey.create({
+      user: req.user.id,
+      organization: req.user.organization || null,
+      project: projectId,
       name: "Default API Key",
       key: newApiKey,
       isActive: true,
-      createdAt: new Date(),
     });
-
-    await user.save();
 
     res.json({
       success: true,
@@ -1281,6 +1262,39 @@ const regenerateApiKey = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to regenerate API key",
+    });
+  }
+};
+
+// Delete the caller's API key for a project, without generating a
+// replacement — the project returns to "No API key yet" until one is
+// created again.
+const deleteApiKey = async (req, res) => {
+  try {
+    const projectId = req.body.projectId || null;
+    await projectAccessService.assertAccountLevelEditAccess(
+      req.user,
+      projectId,
+    );
+
+    await ApiKey.updateMany(
+      { user: req.user.id, project: projectId, isActive: true },
+      { $set: { isActive: false } },
+    );
+
+    res.json({
+      success: true,
+      message: "API key deleted successfully",
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete API key",
     });
   }
 };
@@ -1431,6 +1445,7 @@ module.exports = {
   loginWithPhoneOtp,
   getApiKey,
   regenerateApiKey,
+  deleteApiKey,
   getPreferences,
   updatePreferences,
 };

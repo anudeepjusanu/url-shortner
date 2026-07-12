@@ -95,6 +95,7 @@ const CreateAppRegistration = lazy(
 );
 const CreateDeepLink = lazy(() => import("./pages/CreateDeepLink"));
 const TeamOverview = lazy(() => import("./pages/TeamOverview"));
+const TeamUrls = lazy(() => import("./pages/TeamUrls"));
 const TeamMemberDetail = lazy(() => import("./pages/TeamMemberDetail"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
@@ -271,6 +272,14 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <TeamMemberDetail />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/dashboard/team-urls"
+                        element={
+                          <ProtectedRoute>
+                            <TeamUrls />
                           </ProtectedRoute>
                         }
                       />

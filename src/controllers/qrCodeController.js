@@ -4,8 +4,22 @@ const QRCodeModel = require("../models/QRCode");
 const sharp = require("sharp");
 const PDFDocument = require("pdfkit");
 const { domainToASCII } = require("../utils/punycode");
+const redirectService = require("../services/redirectService");
 const logger = require("../config/logger");
 const projectAccessService = require("../services/projectAccessService");
+
+// Resolves the domain to embed in a QR code's short URL: an explicitly
+// stored custom domain wins, then the request's own host (if it's a
+// recognized main domain, e.g. qa.snip.sa or qa.4r.sa), then SHORT_DOMAIN,
+// then the legacy fallback.
+const getUrlDomain = (req, url) => {
+  if (url.domain) return url.domain;
+  const requestHost = req?.get?.("host");
+  if (requestHost && redirectService.isMainDomain(requestHost)) {
+    return requestHost;
+  }
+  return process.env.SHORT_DOMAIN || "laghhu.link";
+};
 
 // Enterprise RBAC + legacy access checks for the Url a QR code belongs to.
 // Solo accounts: unchanged, creator-only. Enterprise accounts: governed by
@@ -167,7 +181,7 @@ const generateQRCode = async (req, res) => {
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
+    const urlDomain = getUrlDomain(req, url);
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
@@ -464,7 +478,12 @@ const getUrlQRCode = async (req, res) => {
       });
     }
 
-    if (!(await canViewQrUrl(url, req.user))) {
+    // Check if user owns this URL
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -473,7 +492,7 @@ const getUrlQRCode = async (req, res) => {
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
+    const urlDomain = getUrlDomain(req, url);
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
@@ -560,8 +579,7 @@ const bulkGenerateQRCodes = async (req, res) => {
     // Generate QR codes for all URLs
     const qrCodes = await Promise.all(
       urls.map(async (url) => {
-        const urlDomain =
-          url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
+        const urlDomain = getUrlDomain(req, url);
         const asciiDomain = domainToASCII(urlDomain);
         const protocol = getProtocolForDomain(asciiDomain);
         const shortUrl = `${protocol}${asciiDomain}/${url.shortCode}?qr=1`;
@@ -741,7 +759,12 @@ const updateQRCodeCustomization = async (req, res) => {
       });
     }
 
-    if (!(await canEditQrUrl(url, req.user))) {
+    // Check if user owns this URL
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -750,7 +773,7 @@ const updateQRCodeCustomization = async (req, res) => {
 
     // Build the short URL with QR tracking parameter using the URL's actual domain
     // Convert to ASCII (Punycode) for international domain support in QR codes
-    const urlDomain = url.domain || process.env.SHORT_DOMAIN || "laghhu.link";
+    const urlDomain = getUrlDomain(req, url);
     const asciiDomain = domainToASCII(urlDomain);
     const protocol = getProtocolForDomain(asciiDomain);
     // Use customCode if available, otherwise use shortCode
@@ -868,7 +891,11 @@ const deleteQRCode = async (req, res) => {
       return res.status(404).json({ success: false, message: "URL not found" });
     }
 
-    if (!(await canEditQrUrl(url, req.user))) {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 

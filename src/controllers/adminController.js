@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Url = require("../models/Url");
 const Domain = require("../models/Domain");
 const BioPage = require("../models/BioPage");
+const UtmLink = require("../models/UtmLink");
 const Organization = require("../models/Organization");
 const { Click } = require("../models/Analytics");
 const QRCode = require("../models/QRCode");
@@ -811,6 +812,104 @@ const deleteBioPage = async (req, res) => {
   }
 };
 
+const getAllUtmLinks = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      creator,
+      startDate,
+      endDate,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+    const filter = {};
+
+    if (search && search.trim()) {
+      const escapedSearch = search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { name: { $regex: escapedSearch, $options: "i" } },
+        { destinationUrl: { $regex: escapedSearch, $options: "i" } },
+        { utmCampaign: { $regex: escapedSearch, $options: "i" } },
+      ];
+    }
+
+    if (creator) {
+      filter.creator = creator;
+    }
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+    const [utmLinks, total] = await Promise.all([
+      UtmLink.find(filter)
+        .populate("creator", "firstName lastName email")
+        .populate("organization", "name slug")
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(parseInt(limit)),
+      UtmLink.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        utmLinks,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get all UTM links error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch UTM links",
+    });
+  }
+};
+
+const deleteUtmLinkAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const utmLink = await UtmLink.findById(id);
+    if (!utmLink) {
+      return res.status(404).json({
+        success: false,
+        message: "UTM link not found",
+      });
+    }
+
+    await UtmLink.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: "UTM link deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete UTM link error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete UTM link",
+    });
+  }
+};
+
 const getOrganizations = async (req, res) => {
   try {
     const {
@@ -1034,6 +1133,8 @@ module.exports = {
   getAllBioPages,
   updateBioPage,
   deleteBioPage,
+  getAllUtmLinks,
+  deleteUtmLinkAdmin,
   getOrganizations,
   getApiUsers,
   exportLinks,

@@ -13,6 +13,7 @@ const { UsageTracker } = require("../middleware/usageTracker");
 const config = require("../config/environment");
 const safeBrowsingService = require("../services/safeBrowsingService");
 const { triggerUrlScan } = require("../services/urlScanner/scanTrigger");
+const redirectService = require("../services/redirectService");
 const logger = require("../config/logger");
 
 // Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
@@ -26,14 +27,26 @@ const sendIfAccessError = (error, res) => {
 };
 
 // Single source of truth for the public short-link base URL.
-// BASE_URL takes precedence; otherwise it is derived from BASE_DOMAIN so that
-// both the QR path and response always reference the same host.
-const getPublicBaseUrl = () =>
-  process.env.BASE_URL || `https://${process.env.BASE_DOMAIN || "snip.sa"}`;
+// When the request came in on a recognized main domain (e.g. qa.snip.sa or
+// qa.4r.sa), that host wins so links reflect whichever domain the user is
+// actually on. Otherwise falls back to BASE_URL, then BASE_DOMAIN.
+const getPublicBaseUrl = (req) => {
+  const requestHost = req?.get?.("host");
+  if (requestHost && redirectService.isMainDomain(requestHost)) {
+    return `${req.protocol}://${requestHost}`;
+  }
+  return (
+    process.env.BASE_URL || `https://${process.env.BASE_DOMAIN || "snip.sa"}`
+  );
+};
 
 // Derives the bare hostname from the canonical base URL so that both
 // fullDomain and shortUrl in responses are always consistent with each other.
-const getPublicBaseDomain = () => {
+const getPublicBaseDomain = (req) => {
+  const requestHost = req?.get?.("host");
+  if (requestHost && redirectService.isMainDomain(requestHost)) {
+    return requestHost;
+  }
   if (process.env.BASE_DOMAIN) return process.env.BASE_DOMAIN;
   if (process.env.BASE_URL) {
     try {
@@ -513,7 +526,7 @@ const createUrl = async (req, res) => {
             : "https://";
           shortUrl = `${protocol}${asciiDomain}/${urlCode}?qr=1`;
         } else {
-          shortUrl = `${getPublicBaseUrl()}/${urlCode}?qr=1`;
+          shortUrl = `${getPublicBaseUrl(req)}/${urlCode}?qr=1`;
         }
 
         // Generate QR code
@@ -554,8 +567,8 @@ const createUrl = async (req, res) => {
     }
 
     // Prepare domain info for response — both values derived from the same source
-    const baseUrl = getPublicBaseUrl();
-    const baseDomain = getPublicBaseDomain();
+    const baseUrl = getPublicBaseUrl(req);
+    const baseDomain = getPublicBaseDomain(req);
 
     const domainInfo = useBaseDomain
       ? {
@@ -654,6 +667,7 @@ const getUrls = async (req, res) => {
       Url.find(filter)
         .populate("creator", "firstName lastName email")
         .populate("organization", "name slug")
+        .populate("project", "name")
         .populate("deepLink.appRegistration", "name bundleId packageName")
         .sort(sortOptions)
         .skip(skip)
@@ -755,7 +769,9 @@ const updateUrl = async (req, res) => {
     await projectAccessService.assertCanEditResource(req.user, url);
 
     // Validate and check accessibility of new originalUrl if provided
+    let destinationChanged = false;
     if (originalUrl !== undefined && originalUrl !== url.originalUrl) {
+      destinationChanged = true;
       const urlValidation = validateUrl(originalUrl);
       if (!urlValidation.isValid) {
         return res.status(400).json({
@@ -855,6 +871,15 @@ const updateUrl = async (req, res) => {
     if (restrictions !== undefined) updateData.restrictions = restrictions;
     if (redirectType !== undefined) updateData.redirectType = redirectType;
 
+    // Destination changed — the old moderation verdict no longer applies to
+    // the new content, so re-queue it for the async scanner pipeline just
+    // like a freshly created link, instead of leaving the stale badge shown.
+    if (destinationChanged) {
+      updateData.moderationStatus = "pending";
+      updateData.moderationVerdict = null;
+      updateData.moderationCheckedAt = null;
+    }
+
     // When updating customCode, also update shortCode to match
     if (customCode !== undefined) {
       const normalizedCode = normalizeShortCode(customCode);
@@ -912,6 +937,12 @@ const updateUrl = async (req, res) => {
         await cacheDel(`url:${updatedUrl.customCode.toLowerCase()}`);
       }
       await cacheDel(`url:${updatedUrl.shortCode.toLowerCase()}`);
+    }
+
+    // Destination changed — kick off the moderation pipeline for the new
+    // content, same fire-and-forget pattern as link creation.
+    if (destinationChanged) {
+      triggerUrlScan(updatedUrl);
     }
 
     res.json({
@@ -1186,7 +1217,7 @@ const bulkCreate = async (req, res) => {
     const bulkTag =
       `bulk upload ${today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`.toLowerCase();
     const bulkImportId = `bulk_${today.toISOString().split("T")[0]}_${Date.now()}`;
-    const baseUrl = getPublicBaseUrl();
+    const baseUrl = getPublicBaseUrl(req);
 
     // Pre-check quota for the entire batch before processing any rows
     const usageCheck = await UsageTracker.canPerformAction(
@@ -1479,8 +1510,8 @@ const getAvailableDomains = async (req, res) => {
     const activeDomains = domains.filter((domain) => domain.isActive);
 
     // Always include the base/default system domain
-    const baseUrl = getPublicBaseUrl();
-    const baseDomain = getPublicBaseDomain();
+    const baseUrl = getPublicBaseUrl(req);
+    const baseDomain = getPublicBaseDomain(req);
 
     const domainList = [
       // Base domain (always first and default if user has no custom domains)

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const ApiKey = require("../models/ApiKey");
 const { cacheGet } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
@@ -172,10 +173,19 @@ const apiKeyAuth = async (req, res, next) => {
       apiKey.substring(0, 8) + "...",
     );
 
-    const user = await User.findOne({
-      "apiKeys.key": apiKey,
-      "apiKeys.isActive": true,
-    }).populate("organization", "name slug limits");
+    const apiKeyDoc = await ApiKey.findOne({ key: apiKey, isActive: true });
+    if (!apiKeyDoc) {
+      logger.info("No active API key found");
+      return res.status(401).json({
+        success: false,
+        message: "Invalid API key",
+      });
+    }
+
+    const user = await User.findById(apiKeyDoc.user).populate(
+      "organization",
+      "name slug limits",
+    );
 
     if (!user) {
       logger.info("No user found with this API key");
@@ -192,9 +202,8 @@ const apiKeyAuth = async (req, res, next) => {
       });
     }
 
-    const apiKeyObj = user.apiKeys.find((key) => key.key === apiKey);
-    apiKeyObj.lastUsed = new Date();
-    await user.save();
+    apiKeyDoc.lastUsed = new Date();
+    await apiKeyDoc.save();
 
     // Ensure consistent user ID format for API key auth
     const userId = user._id.toString();

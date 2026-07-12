@@ -203,6 +203,7 @@ app.use("/api/super-admin", require("./routes/superAdmin"));
 app.use("/api/users", require("./routes/userManagement"));
 app.use("/api/google-analytics", require("./routes/googleAnalytics"));
 app.use("/api/bio-pages", require("./routes/bioPages"));
+app.use("/api/utm-links", require("./routes/utmLinks"));
 app.use("/api/dynamic-qr", require("./routes/dynamicQRCodes"));
 app.use("/api/v1/app-registrations", require("./routes/appRegistrations"));
 app.use("/api/v1", require("./routes/deepLinks"));

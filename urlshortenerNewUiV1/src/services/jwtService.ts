@@ -81,8 +81,8 @@ async function authRequest<T = any>(
   if (!response.ok) {
     const errData = data as any;
     const validationErrors:
-      Array<{ field: string; message: string; value?: unknown }> | undefined =
-      errData?.errors?.length ? errData.errors : undefined;
+      | Array<{ field: string; message: string; value?: unknown }>
+      | undefined = errData?.errors?.length ? errData.errors : undefined;
     const message = validationErrors
       ? validationErrors.map((e) => e.message).join("; ")
       : errData?.message || errData?.error || `HTTP ${response.status}`;
@@ -219,6 +219,33 @@ export const myLinksService = {
 
   /** GET /urls/domains/available — domains the user can use for short links */
   getAvailableDomains: () => authRequest("/urls/domains/available"),
+};
+
+// ─── UTM Link Service  (GET /utm-links, POST /utm-links, …) ────────────────
+
+export interface UtmLinkPayload {
+  name?: string;
+  destinationUrl: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  /** Enterprise RBAC: project to scope this link to. Omitted for solo accounts. */
+  projectId?: string;
+}
+
+export const utmLinkService = {
+  /** GET /utm-links — list saved (unshortened) UTM links, scoped to a project */
+  getAll: (projectId?: string) =>
+    authRequest(`/utm-links${projectId ? `?projectId=${projectId}` : ""}`),
+
+  /** POST /utm-links — save a tagged URL without shortening it */
+  create: (data: UtmLinkPayload) =>
+    authRequest("/utm-links", { method: "POST", body: data as any }),
+
+  /** DELETE /utm-links/:id */
+  delete: (id: string) => authRequest(`/utm-links/${id}`, { method: "DELETE" }),
 };
 
 // ─── QR Code Service  (GET /qr-codes/…, POST /qr-codes/…) ──────────────────
@@ -379,6 +406,21 @@ export const adminService = {
   /** DELETE /admin/bio-pages/:id */
   deleteBioPage: (id: string) =>
     authRequest(`/admin/bio-pages/${id}`, { method: "DELETE" }),
+
+  // ── UTM Links ──
+  /** GET /admin/utm-links?limit=&search=&creator=&page= */
+  getUtmLinks: (params: Record<string, string | number> = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== "") qs.append(k, String(v));
+    });
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return authRequest(`/admin/utm-links${query}`);
+  },
+
+  /** DELETE /admin/utm-links/:id */
+  deleteUtmLink: (id: string) =>
+    authRequest(`/admin/utm-links/${id}`, { method: "DELETE" }),
 };
 
 // ─── Password Reset Service (unauthenticated) ─────────────────────────────────
@@ -449,6 +491,16 @@ export const profileService = {
       body: { projectId } as any,
     }),
 
+  /**
+   * DELETE /auth/api-key → { success } — removes the key without generating
+   * a replacement. Enterprise RBAC: same Viewer-denied gate as above.
+   */
+  deleteApiKey: (projectId?: string) =>
+    authRequest("/auth/api-key", {
+      method: "DELETE",
+      body: { projectId } as any,
+    }),
+
   /** GET /auth/preferences → { emailNotifications, marketingEmails, weeklyReports, language, timezone } */
   getPreferences: () => authRequest("/auth/preferences"),
 
@@ -474,6 +526,20 @@ export const analyticsService = {
     const query = new URLSearchParams({ format: "csv", ...params });
     const response = await authFetch(
       `/analytics/${urlId}/export?${query.toString()}`,
+    );
+    return response.blob();
+  },
+
+  /**
+   * GET /analytics/dashboard/export?format=csv&period=...
+   * Export the overall (all-links) analytics as a CSV blob, one row per link.
+   */
+  exportDashboardCSV: async (
+    params: Record<string, string> = {},
+  ): Promise<Blob> => {
+    const query = new URLSearchParams({ format: "csv", ...params });
+    const response = await authFetch(
+      `/analytics/dashboard/export?${query.toString()}`,
     );
     return response.blob();
   },

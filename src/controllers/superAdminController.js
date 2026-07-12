@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Url = require("../models/Url");
 const Domain = require("../models/Domain");
 const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -333,6 +334,57 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+// Promotes an existing user (by email) into the Account Owner of a
+// brand-new Organization. There is no self-serve product flow that does
+// this yet (no plan/signup hook), so internal staff trigger it manually
+// here. Idempotent — if the user already belongs to an organization, that
+// one is returned instead of creating a second.
+const promoteToAccountOwner = async (req, res) => {
+  try {
+    const { email, organizationName } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "email is required",
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: `No user found with email ${email}`,
+      });
+    }
+
+    const { organization, mainProject, personalProject } =
+      await projectAccessService.promoteToAccountOwner(
+        user._id,
+        organizationName,
+      );
+
+    res.json({
+      success: true,
+      data: {
+        organization,
+        mainProject,
+        personalProject,
+      },
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
+    logger.error("promoteToAccountOwner error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to promote user to Account Owner",
+    });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -340,4 +392,5 @@ module.exports = {
   deleteUser,
   getSystemHealth,
   getAnalytics,
+  promoteToAccountOwner,
 };

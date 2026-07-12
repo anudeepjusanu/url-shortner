@@ -25,7 +25,7 @@ const UTMBuilder = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { canEdit } = useProject();
-  const { utmLinks, deleteUTMLink } = useUTM();
+  const { utmLinks, deleteUTMLink, isLoading } = useUTM();
   const createUrl = useCreateUrl();
   const { data: domainsData } = useAvailableDomains();
 
@@ -72,9 +72,15 @@ const UTMBuilder = () => {
     return result;
   }, [utmLinks, search, sort]);
 
-  const handleDelete = (id: string) => {
-    deleteUTMLink(id);
-    toast.success(t("UTM link deleted", "تم حذف رابط UTM"));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteUTMLink(id);
+      toast.success(t("UTM link deleted", "تم حذف رابط UTM"));
+    } catch (error: any) {
+      toast.error(
+        error.message || t("Failed to delete link", "فشل حذف الرابط"),
+      );
+    }
   };
 
   const handleShorten = async (link: UTMLink) => {
@@ -174,7 +180,11 @@ const UTMBuilder = () => {
       </div>
 
       {/* List */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
             <Tag className="w-8 h-8 text-muted-foreground" />

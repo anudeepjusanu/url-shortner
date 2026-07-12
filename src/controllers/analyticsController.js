@@ -4,8 +4,36 @@ const Url = require("../models/Url");
 const Domain = require("../models/Domain");
 const { cacheGet, cacheSet } = require("../config/redis");
 const config = require("../config/environment");
+const { formatSaudiDateTime } = require("../utils/dateFormat");
 const logger = require("../config/logger");
 const projectAccessService = require("../services/projectAccessService");
+
+// Shared helper — resolves a { $gte, $lte } Mongo date range from either an
+// explicit startDate/endDate pair or a named period (falls back to 30d).
+const resolveDateRange = (period, startDate, endDate) => {
+  const now = new Date();
+  if (startDate && endDate) {
+    return { $gte: new Date(startDate), $lte: new Date(endDate) };
+  }
+  const days =
+    {
+      "24h": 1,
+      "7d": 7,
+      "30d": 30,
+      "60d": 60,
+      "90d": 90,
+      "180d": 180,
+      "1y": 365,
+    }[period] || 30;
+  const start = new Date(now);
+  start.setDate(start.getDate() - days);
+  return { $gte: start, $lte: now };
+};
+
+// Escapes a value for safe inclusion in a CSV cell (wraps in quotes and
+// doubles any embedded quotes) so commas/quotes in referers or titles can't
+// shift columns.
+const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
 // Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
 // ValidationError (each carrying a .statusCode). See urlController.js for
@@ -37,10 +65,11 @@ const resolveAnalyticsData = async (id, query, user) => {
     throw e;
   }
 
-  // Analytics has no Viewer restriction (everyone can view/export), but
-  // still respects project scoping — solo: creator-only, unchanged.
-  // Enterprise: governed by the link's own project.
-  if (!user.organization && url.creator.toString() !== user.id) {
+  if (
+    url.creator.toString() !== user.id &&
+    (!user.organization ||
+      url.organization?.toString() !== user.organization.toString())
+  ) {
     const e = new Error("Access denied");
     e.status = 403;
     throw e;
@@ -900,7 +929,7 @@ const getDashboardAnalytics = async (req, res) => {
 const exportAnalytics = async (req, res) => {
   try {
     const { id } = req.params;
-    const { format = "json", period = "30d" } = req.query;
+    const { format = "json", period = "30d", startDate, endDate } = req.query;
 
     let urlObjectId;
     try {
@@ -920,7 +949,11 @@ const exportAnalytics = async (req, res) => {
       });
     }
 
-    if (!req.user.organization && url.creator.toString() !== req.user.id) {
+    if (
+      url.creator.toString() !== req.user.id &&
+      (!req.user.organization ||
+        url.organization?.toString() !== req.user.organization.toString())
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -928,22 +961,19 @@ const exportAnalytics = async (req, res) => {
     }
     await projectAccessService.assertCanViewResource(req.user, url);
 
-    const days =
-      {
-        "24h": 1,
-        "7d": 7,
-        "30d": 30,
-        "90d": 90,
-        "1y": 365,
-      }[period] || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const dateRange = resolveDateRange(period, startDate, endDate);
 
     const clicks = await Click.find({
       url: urlObjectId,
-      timestamp: { $gte: startDate },
+      timestamp: dateRange,
       isBot: { $ne: true },
     }).sort({ timestamp: -1 });
+
+    const totalClicksInPeriod = clicks.length;
+    const uniqueClicksInPeriod = clicks.filter((c) => c.isUnique).length;
+    const qrScansInPeriod = clicks.filter(
+      (c) => c.clickSource === "qr_code",
+    ).length;
 
     const exportData = {
       url: {
@@ -951,11 +981,21 @@ const exportAnalytics = async (req, res) => {
         originalUrl: url.originalUrl,
         title: url.title,
         createdAt: url.createdAt,
+        createdAtSAST: formatSaudiDateTime(url.createdAt),
       },
-      period: period,
-      totalClicks: clicks.length,
+      period,
+      dateRange: {
+        start: dateRange.$gte,
+        end: dateRange.$lte,
+      },
+      totalClicks: totalClicksInPeriod,
+      uniqueClicks: uniqueClicksInPeriod,
+      qrScans: qrScansInPeriod,
+      totalClicksAllTime: url.clickCount || 0,
+      totalUniqueClicksAllTime: url.uniqueClickCount || 0,
       clicks: clicks.map((click) => ({
         timestamp: click.timestamp,
+        timestampSAST: formatSaudiDateTime(click.timestamp),
         country: click.location.countryName || "",
         region: click.location.region || "",
         city: click.location.city || "",
@@ -968,12 +1008,35 @@ const exportAnalytics = async (req, res) => {
     };
 
     if (format === "csv") {
+      const summaryLines = [
+        `Link,${csvCell(url.title || url.shortCode)}`,
+        `Short Code,${csvCell(url.shortCode)}`,
+        `Original URL,${csvCell(url.originalUrl)}`,
+        `Period,${csvCell(period)}`,
+        `Date Range (Saudi Time),${csvCell(`${formatSaudiDateTime(dateRange.$gte)} to ${formatSaudiDateTime(dateRange.$lte)}`)}`,
+        `Total Clicks (Selected Period),${totalClicksInPeriod}`,
+        `Unique Clicks (Selected Period),${uniqueClicksInPeriod}`,
+        `QR Scans (Selected Period),${qrScansInPeriod}`,
+        `Total Clicks (All Time),${url.clickCount || 0}`,
+        `Total Unique Clicks (All Time),${url.uniqueClickCount || 0}`,
+        "",
+      ].join("\n");
+
       const csvHeader =
-        "Timestamp,Country,Region,City,Device,Browser,OS,Language,Referer\n";
+        "Timestamp (Saudi Time),Country,Region,City,Device,Browser,OS,Language,Referer\n";
       const csvData = exportData.clicks
-        .map(
-          (click) =>
-            `${click.timestamp},${click.country},${click.region},${click.city},${click.deviceType},${click.browser},${click.os},${click.language},"${click.referer}"`,
+        .map((click) =>
+          [
+            csvCell(click.timestampSAST),
+            csvCell(click.country),
+            csvCell(click.region),
+            csvCell(click.city),
+            csvCell(click.deviceType),
+            csvCell(click.browser),
+            csvCell(click.os),
+            csvCell(click.language),
+            csvCell(click.referer),
+          ].join(","),
         )
         .join("\n");
 
@@ -982,7 +1045,7 @@ const exportAnalytics = async (req, res) => {
         "Content-Disposition",
         `attachment; filename="analytics-${url.shortCode}-${period}.csv"`,
       );
-      res.send(csvHeader + csvData);
+      res.send(summaryLines + csvHeader + csvData);
     } else {
       res.setHeader("Content-Type", "application/json");
       res.setHeader(
@@ -1001,6 +1064,165 @@ const exportAnalytics = async (req, res) => {
   }
 };
 
+// Overall/dashboard export — one row per link (scoped to the requesting
+// user's own links + their organization's), with clicks aggregated over the
+// same period the dashboard analytics page is filtered to.
+const exportDashboardAnalytics = async (req, res) => {
+  try {
+    const { format = "csv", period = "30d", startDate, endDate } = req.query;
+
+    const userId = req.user.id;
+    const organizationId = req.user.organization;
+
+    let userObjectId;
+    try {
+      userObjectId = new mongoose.Types.ObjectId(userId);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+    }
+
+    let orgObjectId = null;
+    if (organizationId) {
+      try {
+        orgObjectId = new mongoose.Types.ObjectId(organizationId);
+      } catch (err) {
+        // Ignore invalid org ID, just don't filter by it
+      }
+    }
+
+    const filter = {
+      $or: [
+        { creator: userObjectId },
+        ...(orgObjectId ? [{ organization: orgObjectId }] : []),
+      ],
+    };
+
+    const dateRange = resolveDateRange(period, startDate, endDate);
+
+    const urls = await Url.find(filter)
+      .select(
+        "_id shortCode customCode title originalUrl domain createdAt clickCount uniqueClickCount qrScanCount",
+      )
+      .sort({ createdAt: -1 });
+    const urlIds = urls.map((url) => url._id);
+
+    const periodStatsByUrl = await Click.aggregate([
+      {
+        $match: {
+          url: { $in: urlIds },
+          timestamp: dateRange,
+          isBot: { $ne: true },
+        },
+      },
+      {
+        $group: {
+          _id: "$url",
+          totalClicks: { $sum: 1 },
+          uniqueClicks: {
+            $sum: { $cond: [{ $eq: ["$isUnique", true] }, 1, 0] },
+          },
+          qrScans: {
+            $sum: { $cond: [{ $eq: ["$clickSource", "qr_code"] }, 1, 0] },
+          },
+        },
+      },
+    ]);
+
+    const statsMap = new Map(
+      periodStatsByUrl.map((s) => [s._id.toString(), s]),
+    );
+
+    const links = urls.map((url) => {
+      const stats = statsMap.get(url._id.toString()) || {
+        totalClicks: 0,
+        uniqueClicks: 0,
+        qrScans: 0,
+      };
+      return {
+        shortCode: url.shortCode,
+        customCode: url.customCode || "",
+        title: url.title || "",
+        originalUrl: url.originalUrl,
+        domain: url.domain || "",
+        createdAt: url.createdAt,
+        createdAtSAST: formatSaudiDateTime(url.createdAt),
+        totalClicksPeriod: stats.totalClicks,
+        uniqueClicksPeriod: stats.uniqueClicks,
+        qrScansPeriod: stats.qrScans,
+        totalClicksAllTime: url.clickCount || 0,
+        totalUniqueClicksAllTime: url.uniqueClickCount || 0,
+        totalQrScansAllTime: url.qrScanCount || 0,
+      };
+    });
+
+    const grandTotalClicksPeriod = links.reduce(
+      (sum, l) => sum + l.totalClicksPeriod,
+      0,
+    );
+
+    const exportData = {
+      period,
+      dateRange: { start: dateRange.$gte, end: dateRange.$lte },
+      totalLinks: links.length,
+      grandTotalClicksPeriod,
+      links,
+    };
+
+    if (format === "csv") {
+      const summaryLines = [
+        `Period,${csvCell(period)}`,
+        `Date Range (Saudi Time),${csvCell(`${formatSaudiDateTime(dateRange.$gte)} to ${formatSaudiDateTime(dateRange.$lte)}`)}`,
+        `Total Links,${links.length}`,
+        `Total Clicks (Selected Period, All Links),${grandTotalClicksPeriod}`,
+        "",
+      ].join("\n");
+
+      const csvHeader =
+        "Short Code,Custom Code,Title,Original URL,Domain,Created At (Saudi Time),Total Clicks (Period),Unique Clicks (Period),QR Scans (Period),Total Clicks (All Time),Total Unique Clicks (All Time)\n";
+      const csvBody = links
+        .map((l) =>
+          [
+            csvCell(l.shortCode),
+            csvCell(l.customCode),
+            csvCell(l.title),
+            csvCell(l.originalUrl),
+            csvCell(l.domain),
+            csvCell(l.createdAtSAST),
+            l.totalClicksPeriod,
+            l.uniqueClicksPeriod,
+            l.qrScansPeriod,
+            l.totalClicksAllTime,
+            l.totalUniqueClicksAllTime,
+          ].join(","),
+        )
+        .join("\n");
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="analytics-overview-${period}.csv"`,
+      );
+      res.send(summaryLines + csvHeader + csvBody);
+    } else {
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="analytics-overview-${period}.json"`,
+      );
+      res.json(exportData);
+    }
+  } catch (error) {
+    logger.error("Export dashboard analytics error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export dashboard analytics",
+    });
+  }
+};
+
 module.exports = {
   getUrlAnalytics,
   getUrlOverview,
@@ -1009,4 +1231,5 @@ module.exports = {
   getClickAnalytics,
   getDashboardAnalytics,
   exportAnalytics,
+  exportDashboardAnalytics,
 };

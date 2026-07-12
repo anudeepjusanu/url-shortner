@@ -10,10 +10,10 @@ class EmailService {
 
   setupTransporter() {
     if (config.SMTP_HOST) {
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: config.SMTP_HOST,
         port: config.SMTP_PORT,
-        secure: config.SMTP_PORT == 465,
+        secure: config.SMTP_SECURE || config.SMTP_PORT == 465,
         auth: {
           user: config.SMTP_USER,
           pass: config.SMTP_PASS,

@@ -265,7 +265,14 @@ function aggregateTimeline(
 }
 
 type DateFilter =
-  "today" | "7d" | "30d" | "60d" | "90d" | "180d" | "1y" | "custom";
+  | "today"
+  | "7d"
+  | "30d"
+  | "60d"
+  | "90d"
+  | "180d"
+  | "1y"
+  | "custom";
 
 // Nearest backend-supported period for the dashboard endpoint (only accepts fixed values)
 const dashboardPeriodMap: Record<DateFilter, string> = {
@@ -1117,9 +1124,9 @@ const AnalyticsPage = () => {
     }));
   }, [hourlyTimeline, linkId, apiData]);
 
-  // Export handler
+  // Export handler — individual-link export when linkId is present, overall
+  // (all-links) export based on the current filters otherwise.
   const handleExport = async () => {
-    if (!linkId) return;
     setExporting(true);
     try {
       const exportParams: Record<string, string> = {};
@@ -1130,11 +1137,15 @@ const AnalyticsPage = () => {
       if ("endDate" in apiParams && apiParams.endDate)
         exportParams.endDate = apiParams.endDate;
 
-      const blob = await analyticsService.exportCSV(linkId, exportParams);
+      const blob = linkId
+        ? await analyticsService.exportCSV(linkId, exportParams)
+        : await analyticsService.exportDashboardCSV(exportParams);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `analytics-${linkId}.csv`;
+      a.download = linkId
+        ? `analytics-${linkId}.csv`
+        : `analytics-overview-${exportParams.period || "custom"}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -1283,22 +1294,20 @@ const AnalyticsPage = () => {
             </PopoverContent>
           </Popover>
 
-          {linkId && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs sm:text-sm"
-              onClick={handleExport}
-              disabled={exporting}
-            >
-              {exporting ? (
-                <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 sm:me-2 animate-spin" />
-              ) : (
-                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 sm:me-2" />
-              )}
-              {t("Export", "تصدير")}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs sm:text-sm"
+            onClick={handleExport}
+            disabled={exporting || isLoading}
+          >
+            {exporting ? (
+              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 sm:me-2 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 sm:me-2" />
+            )}
+            {t("Export", "تصدير")}
+          </Button>
         </div>
       </div>
 

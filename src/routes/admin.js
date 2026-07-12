@@ -45,6 +45,13 @@ router.delete(
   adminController.deleteBioPage,
 );
 
+router.get("/utm-links", validatePagination, adminController.getAllUtmLinks);
+router.delete(
+  "/utm-links/:id",
+  validateObjectId,
+  adminController.deleteUtmLinkAdmin,
+);
+
 router.get(
   "/organizations",
   validatePagination,

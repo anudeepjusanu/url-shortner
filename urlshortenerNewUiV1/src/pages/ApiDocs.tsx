@@ -28,6 +28,7 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Trash2,
   Loader2,
   BookOpen,
   ExternalLink,
@@ -50,6 +51,8 @@ const ApiDocs = () => {
   const [copiedKey, setCopiedKey] = useState(false);
   const [isRegeneratingKey, setIsRegeneratingKey] = useState(false);
   const [regenConfirmOpen, setRegenConfirmOpen] = useState(false);
+  const [isDeletingKey, setIsDeletingKey] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const loadApiKey = useCallback(async () => {
     setIsLoadingKey(true);
@@ -92,6 +95,25 @@ const ApiDocs = () => {
     }
   };
 
+  const handleDeleteKey = async () => {
+    setDeleteConfirmOpen(false);
+    setIsDeletingKey(true);
+    try {
+      await profileService.deleteApiKey(activeProject?.id);
+      setApiKey(null);
+      setShowKey(false);
+      toast({ title: t("API key deleted", "تم حذف مفتاح API") });
+    } catch (err: any) {
+      toast({
+        title: t("Failed to delete key", "فشل حذف المفتاح"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingKey(false);
+    }
+  };
+
   const handleCopyKey = () => {
     if (!apiKey) return;
     navigator.clipboard.writeText(apiKey);
@@ -124,6 +146,29 @@ const ApiDocs = () => {
             <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRegenerateKey}>
               {t("Regenerate", "إعادة إنشاء")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete confirm */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("Delete API Key", "حذف مفتاح API")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "Your current API key will be permanently removed. Any apps using it will stop working. Continue?",
+                "سيتم إزالة مفتاح API الحالي نهائيًا. أي تطبيقات تستخدمه ستتوقف عن العمل. هل تريد المتابعة؟",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteKey}>
+              {t("Delete", "حذف")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -240,7 +285,7 @@ const ApiDocs = () => {
                       variant="outline"
                       size="sm"
                       className="font-body text-xs shrink-0"
-                      disabled={isRegeneratingKey}
+                      disabled={isRegeneratingKey || isDeletingKey}
                       onClick={() => setRegenConfirmOpen(true)}
                     >
                       {isRegeneratingKey ? (
@@ -249,6 +294,22 @@ const ApiDocs = () => {
                         <RefreshCw className="w-3 h-3 me-1" />
                       )}
                       {t("Regenerate", "إعادة إنشاء")}
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-body text-xs shrink-0 text-destructive hover:text-destructive"
+                      disabled={isRegeneratingKey || isDeletingKey}
+                      onClick={() => setDeleteConfirmOpen(true)}
+                    >
+                      {isDeletingKey ? (
+                        <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3 h-3 me-1" />
+                      )}
+                      {t("Delete", "حذف")}
                     </Button>
                   )}
                 </div>

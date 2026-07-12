@@ -51,8 +51,12 @@ interface NavItemConfig {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang, isAr } = useLanguage();
   const { user, logout } = useAuth();
-  const { isEnterpriseAccount, canManageUsers, isPersonalActive } =
-    useProject();
+  const {
+    isEnterpriseAccount,
+    canManageUsers,
+    isPersonalActive,
+    isAccountOwner,
+  } = useProject();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -84,8 +88,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       path: "/dashboard/qr-codes",
     },
     // { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
-    { label: t("Bio Pages", "صفحات البايو"), icon: LayoutList, path: "/dashboard/bio-pages" },
-    { label: t("UTM Builder", "منشئ UTM"), icon: Tag, path: "/dashboard/utm-builder" },
+    {
+      label: t("Bio Pages", "صفحات البايو"),
+      icon: LayoutList,
+      path: "/dashboard/bio-pages",
+    },
+    {
+      label: t("UTM Builder", "منشئ UTM"),
+      icon: Tag,
+      path: "/dashboard/utm-builder",
+    },
     // { label: t("Deep Links", "الروابط العميقة"), icon: Smartphone, path: "/dashboard/deep-links" },
   ];
 
@@ -108,6 +120,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       icon: Users,
       path: "/dashboard/team",
     },
+    // Account-Owner-only: org-wide links across every project.
+    ...(isAccountOwner
+      ? [
+          {
+            label: t("Team URLs", "روابط الفريق"),
+            icon: LinkIcon,
+            path: "/dashboard/team-urls",
+          },
+        ]
+      : []),
   ];
 
   const settingsNav: NavItemConfig[] = [

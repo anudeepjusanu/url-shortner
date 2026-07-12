@@ -203,6 +203,76 @@ const createProject = async (actingUserId, organizationId, name) => {
   });
 };
 
+const slugify = (base) =>
+  base
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const uniqueOrgSlug = async (base) => {
+  let candidate = slugify(base) || "org";
+  let suffix = 0;
+  while (await Organization.exists({ slug: candidate })) {
+    suffix += 1;
+    candidate = `${slugify(base) || "org"}-${suffix}`;
+  }
+  return candidate;
+};
+
+/**
+ * Promotes an existing user into the Account Owner of a brand-new
+ * Organization — there is currently no self-serve product flow (signup,
+ * plan upgrade) that does this, so it's a deliberate, manual action.
+ * Idempotent: if the user already belongs to an organization, that one is
+ * reused instead of creating a second.
+ */
+const promoteToAccountOwner = async (userId, organizationName) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  let organization = user.organization
+    ? await Organization.findById(user.organization)
+    : null;
+
+  if (!organization) {
+    const name =
+      organizationName ||
+      `${user.firstName || user.email.split("@")[0]}'s Organization`;
+    const slug = await uniqueOrgSlug(name);
+
+    organization = await Organization.create({
+      name,
+      slug,
+      owner: user._id,
+    });
+
+    user.organization = organization._id;
+    await user.save();
+  }
+
+  let mainProject = await Project.findOne({
+    organization: organization._id,
+    isPersonal: false,
+  });
+  if (!mainProject) {
+    mainProject = await Project.create({
+      organization: organization._id,
+      name: "Main",
+      isPersonal: false,
+    });
+  }
+
+  const personalProject = await createPersonalProject(
+    user._id,
+    organization._id,
+  );
+
+  return { organization, mainProject, personalProject };
+};
+
 const generateToken = () => crypto.randomBytes(32).toString("hex");
 
 /**
@@ -575,6 +645,7 @@ module.exports = {
   getPersonalProject,
   createPersonalProject,
   createProject,
+  promoteToAccountOwner,
   inviteUser,
   changeMemberRole,
   removeMemberFromProject,

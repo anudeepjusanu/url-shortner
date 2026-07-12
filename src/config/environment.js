@@ -67,6 +67,13 @@ const config = {
     IOS_CLIENT_ID: process.env.GOOGLE_IOS_CLIENT_ID || "",
     ANDROID_CLIENT_ID: process.env.GOOGLE_ANDROID_CLIENT_ID || "",
   },
+
+  SMTP_HOST: process.env.EMAIL_HOST || process.env.SMTP_HOST || "",
+  SMTP_PORT: process.env.EMAIL_PORT || process.env.SMTP_PORT,
+  SMTP_SECURE: (process.env.EMAIL_SECURE || process.env.SMTP_SECURE) === "true",
+  SMTP_USER: process.env.EMAIL_USER || process.env.SMTP_USER,
+  SMTP_PASS: process.env.EMAIL_PASS || process.env.SMTP_PASS,
+  SMTP_FROM: process.env.EMAIL_FROM || process.env.SMTP_FROM,
 };
 
 const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET", "JWT_REFRESH_SECRET"];
