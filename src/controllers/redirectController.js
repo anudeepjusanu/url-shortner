@@ -1,5 +1,6 @@
 const redirectService = require("../services/redirectService");
 const geoLocation = require("../utils/geoLocation");
+const logger = require("../config/logger");
 
 // Resolves the public frontend origin to redirect to for error pages
 // (link-not-found, blocked, etc). Prefers the domain the request actually
@@ -37,7 +38,7 @@ const redirectToOriginalUrl = async (req, res) => {
       requestDomain = req.get("X-Forwarded-Host").split(":")[0];
     }
 
-    console.log("🔗 Redirect Request:", {
+    logger.info("🔗 Redirect Request:", {
       shortCode,
       shortCodeRaw: req.params.shortCode,
       shortCodeDecoded: shortCode,
@@ -78,7 +79,7 @@ const redirectToOriginalUrl = async (req, res) => {
     };
 
     const clientIP = getClientIP();
-    console.log("📍 Client IP detected:", clientIP);
+    logger.info("📍 Client IP detected:", clientIP);
 
     const requestData = {
       ipAddress: clientIP,
@@ -118,7 +119,7 @@ const redirectToOriginalUrl = async (req, res) => {
     const redirectType = redirectResult.redirectType || 302;
     res.status(redirectType).redirect(redirectResult.redirectUrl);
   } catch (error) {
-    console.error("Redirect error:", error);
+    logger.error("Redirect error:", error);
     const frontendUrl = getFrontendBaseUrl(req);
 
     if (error.message === "URL not found") {
@@ -184,7 +185,7 @@ const getPreview = async (req, res) => {
       data: previewData,
     });
   } catch (error) {
-    console.error("Preview error:", error);
+    logger.error("Preview error:", error);
 
     if (error.message === "URL not found") {
       return res.status(404).json({
@@ -212,7 +213,7 @@ const getRedirectStats = async (req, res) => {
       data: stats,
     });
   } catch (error) {
-    console.error("Stats error:", error);
+    logger.error("Stats error:", error);
 
     if (error.message === "URL not found") {
       return res.status(404).json({
@@ -252,7 +253,7 @@ const checkUrlSafety = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Safety check error:", error);
+    logger.error("Safety check error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to check URL safety",
@@ -285,7 +286,7 @@ const generateQRCode = async (req, res) => {
       data: qrData,
     });
   } catch (error) {
-    console.error("QR code generation error:", error);
+    logger.error("QR code generation error:", error);
 
     if (error.message === "URL not found") {
       return res.status(404).json({
@@ -324,7 +325,7 @@ const detectClickSource = (req) => {
   const userAgent = req.get("user-agent") || "";
   const referer = req.get("referer") || "";
 
-  console.log("🔍 Detecting Click Source:", {
+  logger.info("🔍 Detecting Click Source:", {
     qrQueryParam: req.query.qr,
     sourceQueryParam: req.query.source,
     userAgent: userAgent.substring(0, 100),
@@ -333,7 +334,7 @@ const detectClickSource = (req) => {
 
   // Check for QR tracking parameter (added when generating QR codes)
   if (req.query.qr === "1" || req.query.source === "qr") {
-    console.log("✅ QR Code detected via query parameter!");
+    logger.info("✅ QR Code detected via query parameter!");
     return "qr_code";
   }
 
@@ -341,24 +342,24 @@ const detectClickSource = (req) => {
   const qrScannerPatterns = [/qr/i, /scanner/i, /zxing/i, /barcode/i, /scan/i];
 
   if (qrScannerPatterns.some((pattern) => pattern.test(userAgent))) {
-    console.log("✅ QR Code detected via user-agent!");
+    logger.info("✅ QR Code detected via user-agent!");
     return "qr_code";
   }
 
   // Check if coming from API (no browser user-agent patterns)
   if (req.get("X-API-Key") || req.get("Authorization")?.includes("Bearer")) {
-    console.log("📡 API request detected");
+    logger.info("📡 API request detected");
     return "api";
   }
 
   // Check referer
   if (!referer || referer === "" || referer === "direct") {
-    console.log("🔗 Direct click detected");
+    logger.info("🔗 Direct click detected");
     return "direct";
   }
 
   // Default to browser
-  console.log("🌐 Browser click detected");
+  logger.info("🌐 Browser click detected");
   return "browser";
 };
 
@@ -383,7 +384,7 @@ const redirectFromQRCode = async (req, res) => {
       requestDomain = req.get("X-Forwarded-Host").split(":")[0];
     }
 
-    console.log("📱 QR Code Scan Redirect:", {
+    logger.info("📱 QR Code Scan Redirect:", {
       shortCode,
       shortCodeRaw: req.params.shortCode,
       shortCodeDecoded: shortCode,
@@ -440,7 +441,7 @@ const redirectFromQRCode = async (req, res) => {
 
     requestData.deviceType = getDeviceType(requestData.userAgent);
 
-    console.log("✅ Processing as QR Code scan (via /q/ route)");
+    logger.info("✅ Processing as QR Code scan (via /q/ route)");
 
     const redirectResult = await redirectService.handleRedirect(
       shortCode,
@@ -458,7 +459,7 @@ const redirectFromQRCode = async (req, res) => {
     const redirectType = redirectResult.redirectType || 302;
     res.status(redirectType).redirect(redirectResult.redirectUrl);
   } catch (error) {
-    console.error("QR Code redirect error:", error);
+    logger.error("QR Code redirect error:", error);
     const frontendUrl = getFrontendBaseUrl(req);
 
     if (error.message === "URL not found") {
@@ -569,7 +570,7 @@ const handleDeepLinkRedirect = async (req, res) => {
         clickSource: "deep_link",
       });
     } catch (analyticsErr) {
-      console.error("[deepLink] analytics error:", analyticsErr.message);
+      logger.error("[deepLink] analytics error:", analyticsErr.message);
     }
 
     // ── Flow C — desktop or in-app browser ───────────────────────────────────
@@ -605,7 +606,7 @@ const handleDeepLinkRedirect = async (req, res) => {
     // Fallback
     return res.redirect(webFallback);
   } catch (err) {
-    console.error("[deepLink] redirect error:", err.message);
+    logger.error("[deepLink] redirect error:", err.message);
     const frontendUrl = getFrontendBaseUrl(req);
     return res.redirect(
       `${frontendUrl}/link-not-found?code=${encodeURIComponent(shortCode)}`,

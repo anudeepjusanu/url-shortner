@@ -1,6 +1,7 @@
-const Domain = require('../models/Domain');
-const sslCertificateService = require('./sslCertificateService');
-const nginxConfigService = require('./nginxConfigService');
+const Domain = require("../models/Domain");
+const sslCertificateService = require("./sslCertificateService");
+const nginxConfigService = require("./nginxConfigService");
+const logger = require("../config/logger");
 
 class SSLProvisioningService {
   /**
@@ -21,62 +22,81 @@ class SSLProvisioningService {
     const domainDoc = await Domain.findById(domainId);
     if (!domainDoc) throw new Error(`Domain not found: ${domainId}`);
 
-    if (domainDoc.verificationStatus !== 'verified') {
-      throw new Error(`Domain ${domainDoc.fullDomain} must be verified before SSL can be provisioned`);
+    if (domainDoc.verificationStatus !== "verified") {
+      throw new Error(
+        `Domain ${domainDoc.fullDomain} must be verified before SSL can be provisioned`,
+      );
     }
 
     const domain = domainDoc.fullDomain;
 
     // ── Step 1: HTTP-only nginx config ──────────────────────────────────────
-    console.log(`[SSL] [${domain}] Writing HTTP-only nginx config…`);
+    logger.info(`[SSL] [${domain}] Writing HTTP-only nginx config…`);
     try {
       nginxConfigService.writeHttpOnlyConfig(domain);
       nginxConfigService.enableSite(domain);
       nginxConfigService.reloadNginx();
     } catch (err) {
       const msg = `Failed to write/enable HTTP-only nginx config: ${err.message}`;
-      console.error(`[SSL] [${domain}] ${msg}`);
-      await this._updateSSLStatus(domainDoc, 'failed', null, msg);
+      logger.error(`[SSL] [${domain}] ${msg}`);
+      await this._updateSSLStatus(domainDoc, "failed", null, msg);
       throw new Error(msg);
     }
 
     // ── Step 2: Request certificate (with retry) ────────────────────────────
-    console.log(`[SSL] [${domain}] Requesting Let's Encrypt certificate…`);
+    logger.info(`[SSL] [${domain}] Requesting Let's Encrypt certificate…`);
     let certStatus;
     try {
-      certStatus = await sslCertificateService.requestCertificateWithRetry(domain);
+      certStatus =
+        await sslCertificateService.requestCertificateWithRetry(domain);
     } catch (err) {
       const msg = `Certificate issuance failed: ${err.message}`;
-      console.error(`[SSL] [${domain}] ${msg}`);
+      logger.error(`[SSL] [${domain}] ${msg}`);
       // Domain stays HTTP-only — do NOT remove the nginx config.
-      await this._updateSSLStatus(domainDoc, 'failed', null, msg);
+      await this._updateSSLStatus(domainDoc, "failed", null, msg);
       // Return a non-throwing result so the API can still respond 200 with ssl_status: 'failed'
       return { success: false, domain, sslEnabled: false, error: msg };
     }
 
     // ── Step 3: SSL nginx config ────────────────────────────────────────────
-    console.log(`[SSL] [${domain}] Writing SSL nginx config…`);
+    logger.info(`[SSL] [${domain}] Writing SSL nginx config…`);
     try {
       nginxConfigService.writeSSLConfig(domain);
       nginxConfigService.enableSite(domain);
       nginxConfigService.reloadNginx();
     } catch (err) {
       const msg = `Failed to write/enable SSL nginx config: ${err.message}`;
-      console.error(`[SSL] [${domain}] ${msg}`);
-      await this._updateSSLStatus(domainDoc, 'failed', null, msg);
+      logger.error(`[SSL] [${domain}] ${msg}`);
+      await this._updateSSLStatus(domainDoc, "failed", null, msg);
       return { success: false, domain, sslEnabled: false, error: msg };
     }
 
     // ── Step 4: Persist SSL state ───────────────────────────────────────────
     const certInfo = sslCertificateService.checkCertificateStatus(domain);
     const nginxConfigPath = nginxConfigService.siteEnabled(domain)
-      ? require('path').join(process.env.NGINX_SITES_ENABLED || '/etc/nginx/sites-enabled', `${domain}.conf`)
+      ? require("path").join(
+          process.env.NGINX_SITES_ENABLED || "/etc/nginx/sites-enabled",
+          `${domain}.conf`,
+        )
       : null;
 
-    await this._updateSSLStatus(domainDoc, 'active', certInfo.expiresAt, null, nginxConfigPath);
+    await this._updateSSLStatus(
+      domainDoc,
+      "active",
+      certInfo.expiresAt,
+      null,
+      nginxConfigPath,
+    );
 
-    console.log(`[SSL] [${domain}] SSL provisioning complete. Expires: ${certInfo.expiresAt}`);
-    return { success: true, domain, sslEnabled: true, expiresAt: certInfo.expiresAt };
+    logger.info(
+      `[SSL] [${domain}] SSL provisioning complete. Expires: ${certInfo.expiresAt}`,
+    );
+    return {
+      success: true,
+      domain,
+      sslEnabled: true,
+      expiresAt: certInfo.expiresAt,
+    };
   }
 
   /**
@@ -88,19 +108,23 @@ class SSLProvisioningService {
     if (!domainDoc) return;
 
     const domain = domainDoc.fullDomain;
-    console.log(`[SSL] [${domain}] Deprovisioning SSL…`);
+    logger.info(`[SSL] [${domain}] Deprovisioning SSL…`);
 
     try {
       nginxConfigService.removeSite(domain);
       nginxConfigService.reloadNginx();
     } catch (err) {
-      console.warn(`[SSL] [${domain}] Could not remove nginx config: ${err.message}`);
+      logger.warn(
+        `[SSL] [${domain}] Could not remove nginx config: ${err.message}`,
+      );
     }
 
     try {
       await sslCertificateService.deleteCertificate(domain);
     } catch (err) {
-      console.warn(`[SSL] [${domain}] Could not delete certificate: ${err.message}`);
+      logger.warn(
+        `[SSL] [${domain}] Could not delete certificate: ${err.message}`,
+      );
     }
   }
 
@@ -109,43 +133,60 @@ class SSLProvisioningService {
    * Called by the monthly cron job.
    */
   async renewAll() {
-    console.log('[SSL] Running certificate renewal…');
+    logger.info("[SSL] Running certificate renewal…");
     await sslCertificateService.renewCertificates();
 
     // Copy renewed certs for all active SSL domains and reload nginx once.
-    const activeDomains = await Domain.find({ 'ssl.status': 'active', 'ssl.autoRenewal': true });
+    const activeDomains = await Domain.find({
+      "ssl.status": "active",
+      "ssl.autoRenewal": true,
+    });
 
     for (const domainDoc of activeDomains) {
       try {
-        await sslCertificateService.copyCertificateToNginx(domainDoc.fullDomain);
-        const certInfo = sslCertificateService.checkCertificateStatus(domainDoc.fullDomain);
+        await sslCertificateService.copyCertificateToNginx(
+          domainDoc.fullDomain,
+        );
+        const certInfo = sslCertificateService.checkCertificateStatus(
+          domainDoc.fullDomain,
+        );
         if (certInfo.expiresAt) {
           domainDoc.ssl.expiresAt = certInfo.expiresAt;
           domainDoc.ssl.lastRenewal = new Date();
           await domainDoc.save();
         }
       } catch (err) {
-        console.warn(`[SSL] Renewal copy failed for ${domainDoc.fullDomain}: ${err.message}`);
+        logger.warn(
+          `[SSL] Renewal copy failed for ${domainDoc.fullDomain}: ${err.message}`,
+        );
       }
     }
 
     try {
       nginxConfigService.reloadNginx();
     } catch (err) {
-      console.warn('[SSL] Nginx reload after renewal failed:', err.message);
+      logger.warn("[SSL] Nginx reload after renewal failed:", err.message);
     }
 
-    console.log(`[SSL] Renewal pass complete. Processed ${activeDomains.length} domain(s).`);
+    logger.info(
+      `[SSL] Renewal pass complete. Processed ${activeDomains.length} domain(s).`,
+    );
   }
 
   // ─── Private ───────────────────────────────────────────────────────────────
 
-  async _updateSSLStatus(domainDoc, status, expiresAt, errorMessage, nginxConfigPath) {
+  async _updateSSLStatus(
+    domainDoc,
+    status,
+    expiresAt,
+    errorMessage,
+    nginxConfigPath,
+  ) {
     domainDoc.ssl.status = status;
-    domainDoc.ssl.enabled = status === 'active';
-    domainDoc.ssl.provider = 'letsencrypt';
+    domainDoc.ssl.enabled = status === "active";
+    domainDoc.ssl.provider = "letsencrypt";
 
-    if (status === 'active') {
+    if (status === "active") {
       domainDoc.ssl.lastRenewal = new Date();
       if (expiresAt) domainDoc.ssl.expiresAt = expiresAt;
       if (nginxConfigPath) domainDoc.nginxConfigPath = nginxConfigPath;
@@ -153,7 +194,7 @@ class SSLProvisioningService {
       domainDoc.ssl.error = undefined;
     }
 
-    if (status === 'failed' && errorMessage) {
+    if (status === "failed" && errorMessage) {
       domainDoc.ssl.error = errorMessage.substring(0, 500);
     }
 

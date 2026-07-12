@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const ApiKey = require("../models/ApiKey");
 const config = require("../config/environment");
 const { cacheSet, cacheDel, cacheGet } = require("../config/redis");
 const emailService = require("../services/emailService");
@@ -12,6 +13,7 @@ const {
   getClientIP,
 } = require("../services/geoLocationService");
 const { normalizeEmail } = require("../utils/normalizeEmail");
+const projectAccessService = require("../services/projectAccessService");
 
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
@@ -57,7 +59,6 @@ const generateTokens = (userId) => {
 };
 
 const sendRegistrationOTP = async (req, res) => {
-
   try {
     const { email, phone } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -96,12 +97,16 @@ const sendRegistrationOTP = async (req, res) => {
     const targetPhone = normalizedPhone || undefined;
 
     // Send OTP via SMS or email (Authentica handles fallback)
-    await otpService.sendOtp({ email: normalizedEmail, phone: targetPhone, otp, method });
+    await otpService.sendOtp({
+      email: normalizedEmail,
+      phone: targetPhone,
+      otp,
+      method,
+    });
 
     const message = normalizedPhone
       ? "OTP sent to your phone number. Please verify to complete registration."
       : "OTP sent to your email. Please verify to complete registration.";
-
 
     return res.status(200).json({
       success: true,
@@ -146,7 +151,6 @@ const checkEmail = async (req, res) => {
 };
 
 const register = async (req, res) => {
-
   try {
     const { email, password, fullName, phone, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -184,19 +188,24 @@ const register = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 12);
       const clientIP = getClientIP(req);
       let registrationLocation = null;
-      try { registrationLocation = await getLocationFromIP(clientIP); } catch (_) {}
+      try {
+        registrationLocation = await getLocationFromIP(clientIP);
+      } catch (_) {}
 
       const nameParts = (fullName || "").trim().split(/\s+/);
       const firstName = nameParts[0] || fullName;
       const lastName = nameParts.slice(1).join(" ") || undefined;
-      const verifiedPhone = JSON.parse(phoneVerifiedData).phone || normalizedPhone;
+      const verifiedPhone =
+        JSON.parse(phoneVerifiedData).phone || normalizedPhone;
 
       let user;
       if (existingUser && existingUser.googleId && !existingUser.password) {
         existingUser.password = hashedPassword;
-        if (verifiedPhone && !existingUser.phone) existingUser.phone = verifiedPhone;
+        if (verifiedPhone && !existingUser.phone)
+          existingUser.phone = verifiedPhone;
         if (!existingUser.firstName) existingUser.firstName = firstName;
-        if (!existingUser.lastName && lastName) existingUser.lastName = lastName;
+        if (!existingUser.lastName && lastName)
+          existingUser.lastName = lastName;
         await existingUser.save();
         user = existingUser;
       } else {
@@ -212,8 +221,12 @@ const register = async (req, res) => {
         await user.save();
       }
 
-      try { await emailService.sendWelcomeEmail(user); } catch (_) {}
-      try { await emailService.sendAdminNotification(user); } catch (_) {}
+      try {
+        await emailService.sendWelcomeEmail(user);
+      } catch (_) {}
+      try {
+        await emailService.sendAdminNotification(user);
+      } catch (_) {}
 
       const { accessToken, refreshToken } = generateTokens(user._id);
       return res.status(201).json({
@@ -250,7 +263,12 @@ const register = async (req, res) => {
         await cacheSet(otpKey, generatedOtp, 5 * 60); // 5 minutes TTL
         await cacheSet(
           dataKey,
-          JSON.stringify({ email: normalizedEmail, hashedPassword, fullName, phone: normalizedPhone }),
+          JSON.stringify({
+            email: normalizedEmail,
+            hashedPassword,
+            fullName,
+            phone: normalizedPhone,
+          }),
           5 * 60,
         );
 
@@ -269,7 +287,6 @@ const register = async (req, res) => {
         const message = normalizedPhone
           ? "OTP sent to your phone number. Please verify to complete registration."
           : "OTP sent to your email. Please verify to complete registration.";
-
 
         return res.status(202).json({
           success: true,
@@ -318,10 +335,16 @@ const register = async (req, res) => {
       await cacheDel(dataKey);
 
       // Check again if user exists (for account linking scenario)
-      const existingUserForLinking = await User.findOne({ email: registrationData.email });
+      const existingUserForLinking = await User.findOne({
+        email: registrationData.email,
+      });
 
       let user;
-      if (existingUserForLinking && existingUserForLinking.googleId && !existingUserForLinking.password) {
+      if (
+        existingUserForLinking &&
+        existingUserForLinking.googleId &&
+        !existingUserForLinking.password
+      ) {
         // Account linking: Add password to existing Google account
 
         existingUserForLinking.password = registrationData.hashedPassword;
@@ -333,9 +356,12 @@ const register = async (req, res) => {
 
         // Update name if not already set
         if (registrationData.fullName) {
-          const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
+          const nameParts = (registrationData.fullName || "")
+            .trim()
+            .split(/\s+/);
           if (!existingUserForLinking.firstName) {
-            existingUserForLinking.firstName = nameParts[0] || registrationData.fullName;
+            existingUserForLinking.firstName =
+              nameParts[0] || registrationData.fullName;
           }
           if (!existingUserForLinking.lastName && nameParts.length > 1) {
             existingUserForLinking.lastName = nameParts.slice(1).join(" ");
@@ -350,8 +376,7 @@ const register = async (req, res) => {
         let registrationLocation = null;
         try {
           registrationLocation = await getLocationFromIP(clientIP);
-        } catch (locError) {
-        }
+        } catch (locError) {}
 
         // Split fullName into firstName / lastName for the schema
         const nameParts = (registrationData.fullName || "").trim().split(/\s+/);
@@ -374,17 +399,14 @@ const register = async (req, res) => {
       // Send welcome email to user
       try {
         await emailService.sendWelcomeEmail(user);
-      } catch (emailError) {
-      }
+      } catch (emailError) {}
 
       // Send admin notification
       try {
         await emailService.sendAdminNotification(user);
-      } catch (emailError) {
-      }
+      } catch (emailError) {}
 
       const { accessToken, refreshToken } = generateTokens(user._id);
-
 
       res.status(201).json({
         success: true,
@@ -414,12 +436,13 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-
   try {
     const { email, password, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email: normalizedEmail }).select("+password");
+    const user = await User.findOne({ email: normalizedEmail }).select(
+      "+password",
+    );
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -472,7 +495,6 @@ const login = async (req, res) => {
           method: "email",
         });
 
-
         return res.status(202).json({
           success: true,
           message: "OTP sent to your email. Please verify.",
@@ -523,7 +545,6 @@ const login = async (req, res) => {
       }
     }
 
-
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -542,8 +563,7 @@ const login = async (req, res) => {
         if (location && location.country) {
           user.registrationLocation = location;
         }
-      } catch (locError) {
-      }
+      } catch (locError) {}
     }
 
     await user.save();
@@ -560,7 +580,6 @@ const login = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
-
 
     res.json({
       success: true,
@@ -591,7 +610,6 @@ const login = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-
   try {
     const { refreshToken } = req.body;
 
@@ -616,7 +634,6 @@ const refreshToken = async (req, res) => {
       user._id,
     );
 
-
     res.json({
       success: true,
       data: {
@@ -633,12 +650,10 @@ const refreshToken = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-
   try {
     const userId = req.user.id;
 
     await cacheDel(`user:${userId}`);
-
 
     res.json({
       success: true,
@@ -653,7 +668,6 @@ const logout = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-
   try {
     const user = await User.findById(req.user.id)
       .populate("organization", "name slug")
@@ -665,7 +679,6 @@ const getProfile = async (req, res) => {
         message: "User not found",
       });
     }
-
 
     // Return user data directly for frontend compatibility
     res.json({
@@ -691,7 +704,6 @@ const getProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-
   try {
     const { firstName, lastName, phone, company, jobTitle, preferences } =
       req.body;
@@ -751,7 +763,6 @@ const updateProfile = async (req, res) => {
 
     await cacheDel(`user:${updatedUser._id}`);
 
-
     res.json({
       success: true,
       message: "Profile updated successfully",
@@ -772,7 +783,6 @@ const updateProfile = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
-
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -796,7 +806,6 @@ const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-
     res.json({
       success: true,
       message: "Password changed successfully",
@@ -810,7 +819,6 @@ const changePassword = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-
   try {
     const { email } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -832,7 +840,6 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-
     res.json({
       success: true,
       message: "If the email exists, a password reset link has been sent",
@@ -848,7 +855,6 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-
   try {
     const { token, newPassword } = req.body;
 
@@ -872,7 +878,6 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
-
     res.json({
       success: true,
       message: "Password reset successfully",
@@ -887,7 +892,6 @@ const resetPassword = async (req, res) => {
 
 // Send password reset OTP
 const sendPasswordResetOTP = async (req, res) => {
-
   try {
     const { email } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -916,7 +920,11 @@ const sendPasswordResetOTP = async (req, res) => {
 
     // Send OTP via email
     try {
-      await otpService.sendOtp({ email: normalizedEmail, otp, method: "email" });
+      await otpService.sendOtp({
+        email: normalizedEmail,
+        otp,
+        method: "email",
+      });
     } catch (emailError) {
       // Continue even if email fails in development
       if (process.env.NODE_ENV !== "development") {
@@ -936,7 +944,6 @@ const sendPasswordResetOTP = async (req, res) => {
       responseData.debug = true;
     }
 
-
     res.json(responseData);
   } catch (error) {
     res.status(500).json({
@@ -948,7 +955,6 @@ const sendPasswordResetOTP = async (req, res) => {
 
 // Verify password reset OTP
 const verifyPasswordResetOTP = async (req, res) => {
-
   try {
     const { email, otp } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -971,7 +977,6 @@ const verifyPasswordResetOTP = async (req, res) => {
     const verifiedKey = `password_reset_verified:${normalizedEmail}`;
     await cacheSet(verifiedKey, "true", 10 * 60); // 10 minutes TTL
 
-
     res.json({
       success: true,
       message: "OTP verified successfully",
@@ -986,7 +991,6 @@ const verifyPasswordResetOTP = async (req, res) => {
 
 // Reset password with OTP
 const resetPasswordWithOTP = async (req, res) => {
-
   try {
     const { email, newPassword } = req.body;
     const normalizedEmail = normalizeEmail(email);
@@ -1027,7 +1031,6 @@ const resetPasswordWithOTP = async (req, res) => {
     // Clear verified flag from cache
     await cacheDel(verifiedKey);
 
-
     res.json({
       success: true,
       message: "Password reset successfully",
@@ -1041,7 +1044,6 @@ const resetPasswordWithOTP = async (req, res) => {
 };
 
 const loginWithPhoneOtp = async (req, res) => {
-
   try {
     const { phoneNumber, otp } = req.body;
 
@@ -1054,22 +1056,18 @@ const loginWithPhoneOtp = async (req, res) => {
     // Find user by phone number (stored in E.164 format)
     const user = await User.findOne({ phone: phoneNumber });
     if (!user) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: "No account found with this phone number",
-        });
+      return res.status(401).json({
+        success: false,
+        message: "No account found with this phone number",
+      });
     }
 
     if (user.isLocked) {
-      return res
-        .status(423)
-        .json({
-          success: false,
-          message:
-            "Account temporarily locked due to too many failed login attempts",
-        });
+      return res.status(423).json({
+        success: false,
+        message:
+          "Account temporarily locked due to too many failed login attempts",
+      });
     }
 
     if (!otp) {
@@ -1085,7 +1083,6 @@ const loginWithPhoneOtp = async (req, res) => {
           otp: generatedOtp,
           method: "sms",
         });
-
 
         return res.status(202).json({
           success: true,
@@ -1110,12 +1107,10 @@ const loginWithPhoneOtp = async (req, res) => {
       const storedOtp = await cacheGet(otpKey);
 
       if (!storedOtp) {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            message: "OTP expired or invalid. Please request a new one.",
-          });
+        return res.status(401).json({
+          success: false,
+          message: "OTP expired or invalid. Please request a new one.",
+        });
       }
 
       if (storedOtp !== otp) {
@@ -1144,8 +1139,7 @@ const loginWithPhoneOtp = async (req, res) => {
         if (location && location.country) {
           user.registrationLocation = location;
         }
-      } catch (locError) {
-      }
+      } catch (locError) {}
     }
 
     await user.save();
@@ -1162,7 +1156,6 @@ const loginWithPhoneOtp = async (req, res) => {
       },
       config.CACHE_TTL.USER_CACHE,
     );
-
 
     res.json({
       success: true,
@@ -1192,28 +1185,37 @@ const loginWithPhoneOtp = async (req, res) => {
   }
 };
 
-// Get user's API key
+// Get the caller's API key for a project (or their account-wide key, for
+// solo accounts / an Account Owner in the "All projects" view).
 const getApiKey = async (req, res) => {
-
   try {
-    const user = await User.findById(req.user.id);
+    // Enterprise RBAC: the key is scoped per (user, project) — a Viewer on
+    // the caller's active project still can't reveal/regenerate/delete it —
+    // same "sensitive action" treatment as Custom Domains/API Keys
+    // elsewhere. No-op for solo accounts. Account Owners may omit
+    // projectId (the "All projects" aggregate has no single active project).
+    const projectId = req.query.projectId || null;
+    await projectAccessService.assertAccountLevelEditAccess(
+      req.user,
+      projectId,
+    );
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Find active API key or return empty
-    const activeKey = user.apiKeys?.find((k) => k.isActive);
-
+    const activeKey = await ApiKey.findOne({
+      user: req.user.id,
+      project: projectId,
+      isActive: true,
+    });
 
     res.json({
       success: true,
       apiKey: activeKey ? activeKey.key : null,
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
     res.status(500).json({
       success: false,
       message: "Failed to fetch API key",
@@ -1221,43 +1223,30 @@ const getApiKey = async (req, res) => {
   }
 };
 
-// Regenerate API key
+// Regenerate the caller's API key for a project — deactivates the previous
+// key for that same (user, project) pair rather than deleting it.
 const regenerateApiKey = async (req, res) => {
-
   try {
-    const user = await User.findById(req.user.id);
+    const projectId = req.body.projectId || null;
+    await projectAccessService.assertAccountLevelEditAccess(
+      req.user,
+      projectId,
+    );
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    await ApiKey.updateMany(
+      { user: req.user.id, project: projectId, isActive: true },
+      { $set: { isActive: false } },
+    );
 
-    // Generate new API key
     const newApiKey = crypto.randomBytes(32).toString("hex");
-
-    // Deactivate all existing keys
-    if (user.apiKeys && user.apiKeys.length > 0) {
-      user.apiKeys.forEach((key) => {
-        key.isActive = false;
-      });
-    }
-
-    // Add new key
-    if (!user.apiKeys) {
-      user.apiKeys = [];
-    }
-
-    user.apiKeys.push({
+    await ApiKey.create({
+      user: req.user.id,
+      organization: req.user.organization || null,
+      project: projectId,
       name: "Default API Key",
       key: newApiKey,
       isActive: true,
-      createdAt: new Date(),
     });
-
-    await user.save();
-
 
     res.json({
       success: true,
@@ -1265,6 +1254,11 @@ const regenerateApiKey = async (req, res) => {
       apiKey: newApiKey,
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
     res.status(500).json({
       success: false,
       message: "Failed to regenerate API key",
@@ -1272,9 +1266,41 @@ const regenerateApiKey = async (req, res) => {
   }
 };
 
+// Delete the caller's API key for a project, without generating a
+// replacement — the project returns to "No API key yet" until one is
+// created again.
+const deleteApiKey = async (req, res) => {
+  try {
+    const projectId = req.body.projectId || null;
+    await projectAccessService.assertAccountLevelEditAccess(
+      req.user,
+      projectId,
+    );
+
+    await ApiKey.updateMany(
+      { user: req.user.id, project: projectId, isActive: true },
+      { $set: { isActive: false } },
+    );
+
+    res.json({
+      success: true,
+      message: "API key deleted successfully",
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete API key",
+    });
+  }
+};
+
 // Get user preferences
 const getPreferences = async (req, res) => {
-
   try {
     const user = await User.findById(req.user.id);
 
@@ -1284,7 +1310,6 @@ const getPreferences = async (req, res) => {
         message: "User not found",
       });
     }
-
 
     // Return preferences with defaults
     res.json({
@@ -1309,7 +1334,6 @@ const getPreferences = async (req, res) => {
 
 // Update user preferences
 const updatePreferences = async (req, res) => {
-
   try {
     const {
       emailNotifications,
@@ -1360,7 +1384,6 @@ const updatePreferences = async (req, res) => {
 
     await user.save();
 
-
     res.json({
       success: true,
       message: "Preferences updated successfully",
@@ -1382,7 +1405,6 @@ const updatePreferences = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
-
   try {
     const userId = req.user.id;
 
@@ -1391,7 +1413,6 @@ const deleteAccount = async (req, res) => {
 
     // Delete the user document
     await User.findByIdAndDelete(userId);
-
 
     res.json({
       success: true,
@@ -1424,6 +1445,7 @@ module.exports = {
   loginWithPhoneOtp,
   getApiKey,
   regenerateApiKey,
+  deleteApiKey,
   getPreferences,
   updatePreferences,
 };

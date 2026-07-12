@@ -1,29 +1,29 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  authAPI, 
-  urlsAPI, 
-  domainsAPI, 
-  analyticsAPI, 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  authAPI,
+  urlsAPI,
+  domainsAPI,
+  analyticsAPI,
   qrCodeAPI,
   rolesAPI,
   userManagementAPI,
   adminAPI,
   googleAnalyticsAPI,
-  countryCodesAPI
-} from '@/services/api';
-import { useToast } from '@/hooks/use-toast';
+  countryCodesAPI,
+} from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 // Auth Hooks
 export const useLogin = () => {
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: authAPI.login,
     onError: (error: Error) => {
       toast({
-        title: 'Login Failed',
+        title: "Login Failed",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -31,14 +31,14 @@ export const useLogin = () => {
 
 export const useRegister = () => {
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: authAPI.register,
     onError: (error: Error) => {
       toast({
-        title: 'Registration Failed',
+        title: "Registration Failed",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -46,7 +46,7 @@ export const useRegister = () => {
 
 export const useProfile = () => {
   return useQuery({
-    queryKey: ['profile'],
+    queryKey: ["profile"],
     queryFn: authAPI.getProfile,
     retry: false,
   });
@@ -55,37 +55,38 @@ export const useProfile = () => {
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: authAPI.updateProfile,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast({
-        title: 'Success',
-        description: 'Profile updated successfully',
+        title: "Success",
+        description: "Profile updated successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
 };
 
 // URL Hooks
-export const useUrls = (params?: any) => {
+export const useUrls = (params?: any, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ['urls', params],
+    queryKey: ["urls", params],
     queryFn: () => urlsAPI.list(params),
+    enabled: options?.enabled,
   });
 };
 
 export const useUrl = (id: string) => {
   return useQuery({
-    queryKey: ['url', id],
+    queryKey: ["url", id],
     queryFn: () => urlsAPI.get(id),
     enabled: !!id,
   });
@@ -94,21 +95,21 @@ export const useUrl = (id: string) => {
 export const useCreateUrl = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: urlsAPI.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['urls'] });
+      queryClient.invalidateQueries({ queryKey: ["urls"] });
       toast({
-        title: 'Success',
-        description: 'Short link created successfully',
+        title: "Success",
+        description: "Short link created successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -117,21 +118,22 @@ export const useCreateUrl = () => {
 export const useUpdateUrl = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => urlsAPI.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      urlsAPI.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['urls'] });
+      queryClient.invalidateQueries({ queryKey: ["urls"] });
       toast({
-        title: 'Success',
-        description: 'Link updated successfully',
+        title: "Success",
+        description: "Link updated successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -140,21 +142,21 @@ export const useUpdateUrl = () => {
 export const useDeleteUrl = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: urlsAPI.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['urls'] });
+      queryClient.invalidateQueries({ queryKey: ["urls"] });
       toast({
-        title: 'Success',
-        description: 'Link deleted successfully',
+        title: "Success",
+        description: "Link deleted successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -162,45 +164,46 @@ export const useDeleteUrl = () => {
 
 export const useUrlStats = () => {
   return useQuery({
-    queryKey: ['url-stats'],
+    queryKey: ["url-stats"],
     queryFn: urlsAPI.getStats,
   });
 };
 
 export const useAvailableDomains = () => {
   return useQuery({
-    queryKey: ['available-domains'],
+    queryKey: ["available-domains"],
     queryFn: urlsAPI.getAvailableDomains,
   });
 };
 
 // Domain Hooks
-export const useDomains = (params?: any) => {
+export const useDomains = (params?: any, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ['domains', params],
+    queryKey: ["domains", params],
     queryFn: () => domainsAPI.getDomains(params),
+    enabled: options?.enabled,
   });
 };
 
 export const useAddDomain = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: domainsAPI.createDomain,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
-      queryClient.invalidateQueries({ queryKey: ['available-domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
+      queryClient.invalidateQueries({ queryKey: ["available-domains"] });
       toast({
-        title: 'Success',
-        description: 'Domain added successfully',
+        title: "Success",
+        description: "Domain added successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -213,18 +216,18 @@ export const useSetDefaultDomain = () => {
   return useMutation({
     mutationFn: domainsAPI.setDefaultDomain,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
-      queryClient.invalidateQueries({ queryKey: ['available-domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
+      queryClient.invalidateQueries({ queryKey: ["available-domains"] });
       toast({
-        title: 'Success',
-        description: 'Default domain updated successfully',
+        title: "Success",
+        description: "Default domain updated successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -232,13 +235,13 @@ export const useSetDefaultDomain = () => {
 
 export const useVerifyDomain = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: domainsAPI.verifyDomain,
     onSuccess: (data) => {
       // Only invalidate queries if verification was successful
       if (data?.success && data?.data?.verified) {
-        queryClient.invalidateQueries({ queryKey: ['domains'] });
+        queryClient.invalidateQueries({ queryKey: ["domains"] });
       }
     },
   });
@@ -247,37 +250,41 @@ export const useVerifyDomain = () => {
 export const useDeleteDomain = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: domainsAPI.deleteDomain,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
       toast({
-        title: 'Success',
-        description: 'Domain deleted successfully',
+        title: "Success",
+        description: "Domain deleted successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
 };
 
 // Analytics Hooks
-export const useAnalyticsDashboard = (params?: any) => {
+export const useAnalyticsDashboard = (
+  params?: any,
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
-    queryKey: ['analytics-dashboard', params],
+    queryKey: ["analytics-dashboard", params],
     queryFn: () => analyticsAPI.getDashboard(params),
+    enabled: options?.enabled,
   });
 };
 
 export const useUrlAnalytics = (id: string, params?: any) => {
   return useQuery({
-    queryKey: ['url-analytics', id, params],
+    queryKey: ["url-analytics", id, params],
     queryFn: () => analyticsAPI.getUrlAnalytics(id, params),
     enabled: !!id,
   });
@@ -287,22 +294,22 @@ export const useUrlAnalytics = (id: string, params?: any) => {
 export const useGenerateQRCode = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: ({ urlId, options }: { urlId: string; options: any }) => 
+    mutationFn: ({ urlId, options }: { urlId: string; options: any }) =>
       qrCodeAPI.generate(urlId, options),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
+      queryClient.invalidateQueries({ queryKey: ["qr-codes"] });
       toast({
-        title: 'Success',
-        description: 'QR code generated successfully',
+        title: "Success",
+        description: "QR code generated successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -310,7 +317,7 @@ export const useGenerateQRCode = () => {
 
 export const useQRCodeStats = () => {
   return useQuery({
-    queryKey: ['qr-code-stats'],
+    queryKey: ["qr-code-stats"],
     queryFn: qrCodeAPI.getStats,
   });
 };
@@ -318,7 +325,7 @@ export const useQRCodeStats = () => {
 // User Management Hooks
 export const useUsers = (params?: any) => {
   return useQuery({
-    queryKey: ['users', params],
+    queryKey: ["users", params],
     queryFn: () => userManagementAPI.getAllUsers(params),
   });
 };
@@ -326,22 +333,22 @@ export const useUsers = (params?: any) => {
 export const useUpdateUserStatus = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: ({ userId, data }: { userId: string; data: any }) => 
+    mutationFn: ({ userId, data }: { userId: string; data: any }) =>
       userManagementAPI.updateUserStatus(userId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       toast({
-        title: 'Success',
-        description: 'User status updated successfully',
+        title: "Success",
+        description: "User status updated successfully",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -350,14 +357,14 @@ export const useUpdateUserStatus = () => {
 // Admin Hooks
 export const useAdminUrls = (params?: any) => {
   return useQuery({
-    queryKey: ['admin-urls', params],
+    queryKey: ["admin-urls", params],
     queryFn: () => adminAPI.getAllUrls(params),
   });
 };
 
 export const useSystemStats = () => {
   return useQuery({
-    queryKey: ['system-stats'],
+    queryKey: ["system-stats"],
     queryFn: adminAPI.getSystemStats,
   });
 };
@@ -365,7 +372,7 @@ export const useSystemStats = () => {
 // Country Codes Hook
 export const useCountryCodes = () => {
   return useQuery({
-    queryKey: ['country-codes'],
+    queryKey: ["country-codes"],
     queryFn: countryCodesAPI.getAll,
     staleTime: Infinity, // Country codes don't change often
   });
@@ -374,14 +381,14 @@ export const useCountryCodes = () => {
 // Google Analytics Hooks
 export const useGoogleAnalyticsDashboard = (params?: any) => {
   return useQuery({
-    queryKey: ['google-analytics-dashboard', params],
+    queryKey: ["google-analytics-dashboard", params],
     queryFn: () => googleAnalyticsAPI.getDashboard(params),
   });
 };
 
 export const useGoogleAnalyticsStatus = () => {
   return useQuery({
-    queryKey: ['google-analytics-status'],
+    queryKey: ["google-analytics-status"],
     queryFn: googleAnalyticsAPI.checkStatus,
   });
 };

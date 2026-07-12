@@ -5,6 +5,8 @@ const Domain = require("../models/Domain");
 const { cacheGet, cacheSet } = require("../config/redis");
 const config = require("../config/environment");
 const { formatSaudiDateTime } = require("../utils/dateFormat");
+const logger = require("../config/logger");
+const projectAccessService = require("../services/projectAccessService");
 
 // Shared helper — resolves a { $gte, $lte } Mongo date range from either an
 // explicit startDate/endDate pair or a named period (falls back to 30d).
@@ -32,6 +34,15 @@ const resolveDateRange = (period, startDate, endDate) => {
 // doubles any embedded quotes) so commas/quotes in referers or titles can't
 // shift columns.
 const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+// Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
+// ValidationError (each carrying a .statusCode). See urlController.js for
+// the same pattern.
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, message: error.message });
+  return true;
+};
 
 // Shared helper — fetches, caches, and returns the full analytics data object.
 // All sub-route controllers call this so they share the same cache entry.
@@ -63,15 +74,25 @@ const resolveAnalyticsData = async (id, query, user) => {
     e.status = 403;
     throw e;
   }
+  try {
+    await projectAccessService.assertCanViewResource(user, url);
+  } catch (error) {
+    if (error.statusCode) {
+      const e = new Error(error.message);
+      e.status = error.statusCode;
+      throw e;
+    }
+    throw error;
+  }
 
   const cacheKey = `analytics:${id}:${period}:${groupBy}`;
   const cachedData = await cacheGet(cacheKey);
   if (cachedData) {
-    console.log("📊 Returning CACHED analytics data for:", cacheKey);
+    logger.info("📊 Returning CACHED analytics data for:", cacheKey);
     return cachedData;
   }
 
-  console.log("📊 No cache found, fetching fresh data for:", cacheKey);
+  logger.info("📊 No cache found, fetching fresh data for:", cacheKey);
 
   let dateRange = {};
   const now = new Date();
@@ -95,7 +116,7 @@ const resolveAnalyticsData = async (id, query, user) => {
     dateRange = { $gte: start, $lte: now };
   }
 
-  console.log("📊 Analytics Query:", {
+  logger.info("📊 Analytics Query:", {
     urlId: urlObjectId,
     urlIdString: id,
     period,
@@ -104,12 +125,12 @@ const resolveAnalyticsData = async (id, query, user) => {
   });
 
   const totalClicksEver = await Click.countDocuments({ url: urlObjectId });
-  console.log("📊 Total clicks ever for this URL:", totalClicksEver);
+  logger.info("📊 Total clicks ever for this URL:", totalClicksEver);
 
   const clicksByShortCode = await Click.countDocuments({
     shortCode: url.shortCode,
   });
-  console.log("📊 Clicks by shortCode:", clicksByShortCode);
+  logger.info("📊 Clicks by shortCode:", clicksByShortCode);
 
   const [clicks, topStats, rawTimeSeriesData, clickCounts, rawPeakHours] =
     await Promise.all([
@@ -190,7 +211,7 @@ const resolveAnalyticsData = async (id, query, user) => {
       ]),
     ]);
 
-  console.log("📊 Analytics Results:", {
+  logger.info("📊 Analytics Results:", {
     clicksFound: clicks.length,
     timeSeriesPoints: rawTimeSeriesData.length,
     rawTimeSeriesData: rawTimeSeriesData.slice(0, 5),
@@ -249,7 +270,7 @@ const resolveAnalyticsData = async (id, query, user) => {
   const totalClicks = aggregatedCounts.totalClicks;
   const uniqueClicks = aggregatedCounts.uniqueClicks;
 
-  console.log("📊 Final counts:", {
+  logger.info("📊 Final counts:", {
     aggregatedTotal: aggregatedCounts.totalClicks,
     aggregatedUnique: aggregatedCounts.uniqueClicks,
     urlModelTotal: url.clickCount,
@@ -342,7 +363,7 @@ const getUrlAnalytics = async (req, res) => {
     const data = await resolveAnalyticsData(req.params.id, req.query, req.user);
     res.json({ success: true, data });
   } catch (error) {
-    console.error("Get URL analytics error:", error);
+    logger.error("Get URL analytics error:", error);
     res.status(error.status || 500).json({
       success: false,
       message: error.message || "Failed to fetch analytics",
@@ -362,7 +383,7 @@ const getUrlOverview = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get URL overview error:", error);
+    logger.error("Get URL overview error:", error);
     res.status(error.status || 500).json({
       success: false,
       message: error.message || "Failed to fetch analytics overview",
@@ -382,7 +403,7 @@ const getDeviceAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get device analytics error:", error);
+    logger.error("Get device analytics error:", error);
     res.status(error.status || 500).json({
       success: false,
       message: error.message || "Failed to fetch device analytics",
@@ -401,7 +422,7 @@ const getGeographicAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get geographic analytics error:", error);
+    logger.error("Get geographic analytics error:", error);
     res.status(error.status || 500).json({
       success: false,
       message: error.message || "Failed to fetch geographic analytics",
@@ -497,7 +518,7 @@ const getClickAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get click analytics error:", error);
+    logger.error("Get click analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch click analytics",
@@ -534,12 +555,17 @@ const getDashboardAnalytics = async (req, res) => {
       }
     }
 
-    const filter = {
-      $or: [
-        { creator: userObjectId },
-        ...(orgObjectId ? [{ organization: orgObjectId }] : []),
-      ],
-    };
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      req.query.projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.creator = userObjectId;
+    }
 
     const now = new Date();
     let dateRange;
@@ -562,7 +588,7 @@ const getDashboardAnalytics = async (req, res) => {
       dateRange = { $gte: start, $lte: now };
     }
 
-    console.log("📊 Dashboard Analytics Query:", {
+    logger.info("📊 Dashboard Analytics Query:", {
       userId: userObjectId,
       organizationId: orgObjectId,
       period,
@@ -574,15 +600,13 @@ const getDashboardAnalytics = async (req, res) => {
     );
     const urlIds = urls.map((url) => url._id);
 
-    const customDomainsFilter = {
-      $or: [
-        { owner: userObjectId },
-        ...(orgObjectId ? [{ organization: orgObjectId }] : []),
-      ],
-    };
+    const customDomainsFilter = { ...scope };
+    if (!req.user.organization) {
+      customDomainsFilter.owner = userObjectId;
+    }
     const totalCustomDomains = await Domain.countDocuments(customDomainsFilter);
 
-    console.log(
+    logger.info(
       "📊 Found URLs:",
       urlIds.length,
       "Custom Domains:",
@@ -823,7 +847,7 @@ const getDashboardAnalytics = async (req, res) => {
     const periodUniqueClicks = periodStats[0]?.uniqueClicks || 0;
     const periodQRScans = periodStats[0]?.qrScans || 0;
 
-    console.log("📊 Dashboard Analytics Results:", {
+    logger.info("📊 Dashboard Analytics Results:", {
       totalUrls,
       totalClicksAllTime,
       periodClicks,
@@ -892,8 +916,9 @@ const getDashboardAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get dashboard analytics error:", error);
-    console.error("Error stack:", error.stack);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Get dashboard analytics error:", error);
+    logger.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard analytics",
@@ -934,6 +959,7 @@ const exportAnalytics = async (req, res) => {
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanViewResource(req.user, url);
 
     const dateRange = resolveDateRange(period, startDate, endDate);
 
@@ -1029,7 +1055,8 @@ const exportAnalytics = async (req, res) => {
       res.json(exportData);
     }
   } catch (error) {
-    console.error("Export analytics error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Export analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to export analytics",
@@ -1188,7 +1215,7 @@ const exportDashboardAnalytics = async (req, res) => {
       res.json(exportData);
     }
   } catch (error) {
-    console.error("Export dashboard analytics error:", error);
+    logger.error("Export dashboard analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to export dashboard analytics",

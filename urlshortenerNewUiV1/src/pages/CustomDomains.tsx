@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useProject } from "@/contexts/ProjectContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +70,12 @@ const CustomDomains = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const {
+    canEdit,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   const [dnsDialog, setDnsDialog] = useState<DomainEntry | null>(null);
   const [showVerified, setShowVerified] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -84,7 +91,16 @@ const CustomDomains = () => {
   });
   const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
 
-  const { data: domainsData, isLoading, isError } = useDomains();
+  // Enterprise RBAC: scope the list to the active project. Omitted only in
+  // the Account Owner's "All projects" aggregate view.
+  const {
+    data: domainsData,
+    isLoading,
+    isError,
+  } = useDomains(
+    { projectId: isAllProjectsView ? undefined : activeProject?.id },
+    { enabled: !isProjectLoading },
+  );
   const deleteDomain = useDeleteDomain();
   const verifyDomain = useVerifyDomain();
   const setDefaultDomain = useSetDefaultDomain();
@@ -240,14 +256,16 @@ const CustomDomains = () => {
         <h1 className="text-lg sm:text-2xl font-display font-bold text-foreground">
           {t("Custom Domains", "الدومينات المخصصة")}
         </h1>
-        <Button
-          className="bg-primary text-primary-foreground text-xs sm:text-sm"
-          size="sm"
-          onClick={() => navigate("/dashboard/domains/add")}
-        >
-          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5" />
-          {t("Add Domain", "أضف دومين")}
-        </Button>
+        {canEdit && (
+          <Button
+            className="bg-primary text-primary-foreground text-xs sm:text-sm"
+            size="sm"
+            onClick={() => navigate("/dashboard/domains/add")}
+          >
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5" />
+            {t("Add Domain", "أضف دومين")}
+          </Button>
+        )}
       </div>
 
       {/* Loading */}
@@ -270,7 +288,7 @@ const CustomDomains = () => {
       )}
 
       {/* Empty state */}
-      {!isLoading && !isError && domains.length === 0 && (
+      {!isLoading && !isError && domains.length === 0 && canEdit && (
         <button
           onClick={() => navigate("/dashboard/domains/add")}
           className="w-full border border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 hover:bg-muted/30 transition-colors group"
@@ -283,6 +301,14 @@ const CustomDomains = () => {
             )}
           </p>
         </button>
+      )}
+      {!isLoading && !isError && domains.length === 0 && !canEdit && (
+        <div className="w-full border border-dashed border-border rounded-xl p-8 text-center">
+          <Globe className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground font-body">
+            {t("No custom domains yet.", "لا توجد دومينات مخصصة بعد.")}
+          </p>
+        </div>
       )}
 
       {/* Domains */}
@@ -360,40 +386,44 @@ const CustomDomains = () => {
                       {t("Set Default", "تعيين كافتراضي")}
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-8"
-                    onClick={() =>
-                      setDeleteDialog({
-                        open: true,
-                        id: d._id,
-                        domain: d.domain,
-                      })
-                    }
-                    disabled={deleteDomain.isPending}
-                  >
-                    <Trash2 className="w-3 h-3 me-1" />
-                    {t("Remove", "إزالة")}
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-8"
+                      onClick={() =>
+                        setDeleteDialog({
+                          open: true,
+                          id: d._id,
+                          domain: d.domain,
+                        })
+                      }
+                      disabled={deleteDomain.isPending}
+                    >
+                      <Trash2 className="w-3 h-3 me-1" />
+                      {t("Remove", "إزالة")}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
 
           {/* Add domain hint */}
-          <button
-            onClick={() => navigate("/dashboard/domains/add")}
-            className="w-full border border-dashed border-border rounded-xl p-5 sm:p-6 text-center hover:border-primary/40 hover:bg-muted/30 transition-colors group"
-          >
-            <Globe className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground/40 group-hover:text-primary/40" />
-            <p className="text-xs sm:text-sm text-muted-foreground font-body">
-              {t(
-                "Add a custom domain like go.yourstore.sa",
-                "أضف دومين مخصص مثل go.متجرك.sa",
-              )}
-            </p>
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => navigate("/dashboard/domains/add")}
+              className="w-full border border-dashed border-border rounded-xl p-5 sm:p-6 text-center hover:border-primary/40 hover:bg-muted/30 transition-colors group"
+            >
+              <Globe className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground/40 group-hover:text-primary/40" />
+              <p className="text-xs sm:text-sm text-muted-foreground font-body">
+                {t(
+                  "Add a custom domain like go.yourstore.sa",
+                  "أضف دومين مخصص مثل go.متجرك.sa",
+                )}
+              </p>
+            </button>
+          )}
         </div>
       )}
 

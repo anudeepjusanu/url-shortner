@@ -9,6 +9,7 @@ const QRCode = require("../models/QRCode");
 const DynamicQRCode = require("../models/DynamicQRCode");
 const { cacheDel } = require("../config/redis");
 const { normalizeEmail } = require("../utils/normalizeEmail");
+const logger = require("../config/logger");
 
 const getSystemStats = async (req, res) => {
   try {
@@ -114,7 +115,7 @@ const getSystemStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get system stats error:", error);
+    logger.error("Get system stats error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch system statistics",
@@ -196,7 +197,7 @@ const getUsers = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get users error:", error);
+    logger.error("Get users error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch users",
@@ -249,7 +250,7 @@ const updateUser = async (req, res) => {
       data: { user: updatedUser },
     });
   } catch (error) {
-    console.error("Update user error:", error);
+    logger.error("Update user error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update user",
@@ -286,7 +287,7 @@ const deleteUser = async (req, res) => {
       message: "User deleted successfully",
     });
   } catch (error) {
-    console.error("Delete user error:", error);
+    logger.error("Delete user error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete user",
@@ -376,7 +377,7 @@ const bulkDeleteUsers = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Bulk delete users error:", error);
+    logger.error("Bulk delete users error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to bulk delete users",
@@ -503,7 +504,7 @@ const getAllUrls = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get all URLs error:", error);
+    logger.error("Get all URLs error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URLs",
@@ -524,7 +525,7 @@ const updateUrl = async (req, res) => {
       });
     }
 
-    console.log("🔄 Admin updating URL:", {
+    logger.info("🔄 Admin updating URL:", {
       id,
       shortCode: url.shortCode,
       customCode: url.customCode,
@@ -546,21 +547,21 @@ const updateUrl = async (req, res) => {
     // Clear cache for this URL so deactivation takes effect immediately
     // Use lowercase for case-insensitive consistency
     const lowerShortCode = url.shortCode.toLowerCase();
-    console.log("🗑️ Clearing cache for:", `url:${lowerShortCode}`);
+    logger.info("🗑️ Clearing cache for:", `url:${lowerShortCode}`);
     const cacheDelResult1 = await cacheDel(`url:${lowerShortCode}`);
-    console.log("🗑️ Cache delete result for shortCode:", cacheDelResult1);
+    logger.info("🗑️ Cache delete result for shortCode:", cacheDelResult1);
 
     if (url.customCode) {
       const lowerCustomCode = url.customCode.toLowerCase();
-      console.log(
+      logger.info(
         "🗑️ Clearing cache for customCode:",
         `url:${lowerCustomCode}`,
       );
       const cacheDelResult2 = await cacheDel(`url:${lowerCustomCode}`);
-      console.log("🗑️ Cache delete result for customCode:", cacheDelResult2);
+      logger.info("🗑️ Cache delete result for customCode:", cacheDelResult2);
     }
 
-    console.log("✅ URL updated successfully:", {
+    logger.info("✅ URL updated successfully:", {
       shortCode: updatedUrl.shortCode,
       isActive: updatedUrl.isActive,
     });
@@ -571,7 +572,7 @@ const updateUrl = async (req, res) => {
       data: { url: updatedUrl },
     });
   } catch (error) {
-    console.error("Update URL error:", error);
+    logger.error("Update URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update URL",
@@ -632,7 +633,7 @@ const updateUrlModeration = async (req, res) => {
       await cacheDel(`url:${url.customCode.toLowerCase()}`);
     }
 
-    console.log("🔍 Admin moderation decision:", {
+    logger.info("🔍 Admin moderation decision:", {
       id,
       shortCode: url.shortCode,
       action,
@@ -646,7 +647,7 @@ const updateUrlModeration = async (req, res) => {
       data: { url: updatedUrl },
     });
   } catch (error) {
-    console.error("Update URL moderation error:", error);
+    logger.error("Update URL moderation error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update moderation status",
@@ -673,7 +674,7 @@ const deleteUrl = async (req, res) => {
       message: "URL deleted successfully",
     });
   } catch (error) {
-    console.error("Delete URL error:", error);
+    logger.error("Delete URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete URL",
@@ -742,7 +743,7 @@ const getAllBioPages = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get all bio pages error:", error);
+    logger.error("Get all bio pages error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch bio pages",
@@ -776,7 +777,7 @@ const updateBioPage = async (req, res) => {
       data: { bioPage: updatedBioPage },
     });
   } catch (error) {
-    console.error("Update bio page error:", error);
+    logger.error("Update bio page error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update bio page",
@@ -803,7 +804,7 @@ const deleteBioPage = async (req, res) => {
       message: "Bio page deleted successfully",
     });
   } catch (error) {
-    console.error("Delete bio page error:", error);
+    logger.error("Delete bio page error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete bio page",
@@ -959,7 +960,7 @@ const getOrganizations = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get organizations error:", error);
+    logger.error("Get organizations error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch organizations",
@@ -1010,11 +1011,112 @@ const getApiUsers = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get API users error:", error);
+    logger.error("Get API users error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch API users",
     });
+  }
+};
+
+const exportLinks = async (req, res) => {
+  try {
+    const SHORT_DOMAIN = process.env.SHORT_DOMAIN || "snip.sa";
+
+    const links = await Url.find({})
+      .select(
+        "originalUrl shortCode domain qrCodeGenerated utm isActive source createdAt",
+      )
+      .lean();
+
+    const data = links.map((doc) => {
+      const base = doc.domain || SHORT_DOMAIN;
+      const shortUrl = `https://${base}/${doc.shortCode}`;
+      const utm = doc.utm || {};
+      const hasUtm = !!(
+        utm.source ||
+        utm.medium ||
+        utm.campaign ||
+        utm.term ||
+        utm.content
+      );
+
+      return {
+        originalUrl: doc.originalUrl,
+        shortUrl,
+        qrCode: doc.qrCodeGenerated ? "Y" : "N",
+        utm: hasUtm ? "Y" : "N",
+        linkStatus: doc.isActive ? "Active" : "Inactive",
+        linkType: doc.source || "dashboard",
+      };
+    });
+
+    res.json({ success: true, total: data.length, data });
+  } catch (error) {
+    logger.error("Export links error:", error);
+    res.status(500).json({ success: false, message: "Failed to export links" });
+  }
+};
+
+const exportUsers = async (req, res) => {
+  try {
+    const [linkCountsRaw, staticQrRaw, dynamicQrRaw, bioUserIdsRaw] =
+      await Promise.all([
+        Url.aggregate([{ $group: { _id: "$creator", count: { $sum: 1 } } }]),
+        QRCode.aggregate([{ $group: { _id: "$creator", count: { $sum: 1 } } }]),
+        DynamicQRCode.aggregate([
+          { $group: { _id: "$creator", count: { $sum: 1 } } },
+        ]),
+        BioPage.distinct("creator"),
+      ]);
+
+    const linkCounts = new Map(
+      linkCountsRaw.map((r) => [r._id.toString(), r.count]),
+    );
+    const staticQrCounts = new Map(
+      staticQrRaw.map((r) => [r._id.toString(), r.count]),
+    );
+    const dynamicQrCounts = new Map(
+      dynamicQrRaw.map((r) => [r._id.toString(), r.count]),
+    );
+    const bioUserIds = new Set(bioUserIdsRaw.map((id) => id.toString()));
+
+    const users = await User.find({})
+      .select(
+        "firstName lastName phone email createdAt lastLogin registrationLocation",
+      )
+      .lean();
+
+    const data = users.map((user) => {
+      const userId = user._id.toString();
+      const loc = user.registrationLocation || {};
+      const location = [loc.city, loc.region, loc.country]
+        .filter(Boolean)
+        .join(", ");
+      const totalQr =
+        (staticQrCounts.get(userId) || 0) + (dynamicQrCounts.get(userId) || 0);
+
+      return {
+        fullName: [user.firstName, user.lastName].filter(Boolean).join(" "),
+        phone: user.phone || "",
+        email: user.email,
+        registrationDate: user.createdAt
+          ? new Date(user.createdAt).toISOString().slice(0, 10)
+          : "",
+        lastLogin: user.lastLogin
+          ? new Date(user.lastLogin).toISOString().slice(0, 10)
+          : "",
+        location,
+        totalLinks: linkCounts.get(userId) || 0,
+        qrCodes: totalQr,
+        bioPage: bioUserIds.has(userId) ? "Y" : "N",
+      };
+    });
+
+    res.json({ success: true, total: data.length, data });
+  } catch (error) {
+    logger.error("Export users error:", error);
+    res.status(500).json({ success: false, message: "Failed to export users" });
   }
 };
 
@@ -1035,4 +1137,6 @@ module.exports = {
   deleteUtmLinkAdmin,
   getOrganizations,
   getApiUsers,
+  exportLinks,
+  exportUsers,
 };

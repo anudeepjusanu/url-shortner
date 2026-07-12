@@ -1,4 +1,5 @@
-const punycode = require('punycode/');
+const punycode = require("punycode/");
+const logger = require("../config/logger");
 
 /**
  * Converts international domain names to ASCII-compatible encoding (Punycode)
@@ -8,7 +9,7 @@ const punycode = require('punycode/');
  * @returns {string} - ASCII-compatible domain name
  */
 const domainToASCII = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return domain;
   }
 
@@ -22,10 +23,10 @@ const domainToASCII = (domain) => {
     }
 
     // Split domain into parts (handle subdomains)
-    const parts = domain.split('.');
+    const parts = domain.split(".");
 
     // Convert each part to Punycode if needed
-    const asciiParts = parts.map(part => {
+    const asciiParts = parts.map((part) => {
       // If part contains non-ASCII characters, convert to Punycode
       if (!/^[a-z0-9-]+$/i.test(part)) {
         return punycode.toASCII(part);
@@ -33,9 +34,9 @@ const domainToASCII = (domain) => {
       return part;
     });
 
-    return asciiParts.join('.');
+    return asciiParts.join(".");
   } catch (error) {
-    console.error('Error converting domain to ASCII:', error);
+    logger.error("Error converting domain to ASCII:", error);
     return domain; // Return original if conversion fails
   }
 };
@@ -48,7 +49,7 @@ const domainToASCII = (domain) => {
  * @returns {string} - Unicode domain name
  */
 const domainToUnicode = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return domain;
   }
 
@@ -57,24 +58,24 @@ const domainToUnicode = (domain) => {
     domain = domain.trim().toLowerCase();
 
     // Check if domain contains Punycode (xn--)
-    if (!domain.includes('xn--')) {
+    if (!domain.includes("xn--")) {
       return domain;
     }
 
     // Split domain into parts
-    const parts = domain.split('.');
+    const parts = domain.split(".");
 
     // Convert each Punycode part to Unicode
-    const unicodeParts = parts.map(part => {
-      if (part.startsWith('xn--')) {
+    const unicodeParts = parts.map((part) => {
+      if (part.startsWith("xn--")) {
         return punycode.toUnicode(part);
       }
       return part;
     });
 
-    return unicodeParts.join('.');
+    return unicodeParts.join(".");
   } catch (error) {
-    console.error('Error converting domain to Unicode:', error);
+    logger.error("Error converting domain to Unicode:", error);
     return domain; // Return original if conversion fails
   }
 };
@@ -86,7 +87,7 @@ const domainToUnicode = (domain) => {
  * @returns {boolean} - true if domain contains international characters
  */
 const hasInternationalChars = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return false;
   }
 
@@ -101,11 +102,11 @@ const hasInternationalChars = (domain) => {
  * @returns {boolean} - true if domain is in Punycode format
  */
 const isPunycode = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return false;
   }
 
-  return domain.toLowerCase().includes('xn--');
+  return domain.toLowerCase().includes("xn--");
 };
 
 /**
@@ -116,7 +117,7 @@ const isPunycode = (domain) => {
  * @returns {string} - Normalized domain name
  */
 const normalizeDomain = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return domain;
   }
 
@@ -138,10 +139,10 @@ const normalizeDomain = (domain) => {
  * @returns {object} - {isValid: boolean, message: string, normalizedDomain: string}
  */
 const validateDomain = (domain) => {
-  if (!domain || typeof domain !== 'string') {
+  if (!domain || typeof domain !== "string") {
     return {
       isValid: false,
-      message: 'Domain name is required'
+      message: "Domain name is required",
     };
   }
 
@@ -152,7 +153,7 @@ const validateDomain = (domain) => {
   if (domain.length > 253) {
     return {
       isValid: false,
-      message: 'Domain name is too long (max 253 characters)'
+      message: "Domain name is too long (max 253 characters)",
     };
   }
 
@@ -163,7 +164,7 @@ const validateDomain = (domain) => {
   } catch (error) {
     return {
       isValid: false,
-      message: 'Invalid domain name format'
+      message: "Invalid domain name format",
     };
   }
 
@@ -174,31 +175,32 @@ const validateDomain = (domain) => {
   // - Subdomains (sub.example.com)
   // - Custom TLDs (for development/testing: example.local, example.test)
   // More lenient validation - accepts any domain with at least one dot
-  const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$/;
+  const domainRegex =
+    /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$/;
 
   if (!domainRegex.test(asciiDomain)) {
     return {
       isValid: false,
-      message: 'Invalid domain format - supports international domains'
+      message: "Invalid domain format - supports international domains",
     };
   }
 
   // Check each label (part between dots)
-  const labels = asciiDomain.split('.');
+  const labels = asciiDomain.split(".");
   for (const label of labels) {
     if (label.length > 63) {
       return {
         isValid: false,
-        message: 'Domain label is too long (max 63 characters per part)'
+        message: "Domain label is too long (max 63 characters per part)",
       };
     }
   }
 
   return {
     isValid: true,
-    message: 'Valid domain',
+    message: "Valid domain",
     normalizedDomain: asciiDomain,
-    unicodeDomain: domainToUnicode(asciiDomain)
+    unicodeDomain: domainToUnicode(asciiDomain),
   };
 };
 
@@ -208,5 +210,5 @@ module.exports = {
   hasInternationalChars,
   isPunycode,
   normalizeDomain,
-  validateDomain
+  validateDomain,
 };

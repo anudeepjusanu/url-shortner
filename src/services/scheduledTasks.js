@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const User = require("../models/User");
 const emailService = require("./emailService");
 const Domain = require("../models/Domain");
+const logger = require("../config/logger");
 
 class ScheduledTasks {
   // Send payment reminders 3 days before billing
@@ -19,7 +20,7 @@ class ScheduledTasks {
         "preferences.emailNotifications.paymentReminders": true,
       });
 
-      console.log(`Sending payment reminders to ${users.length} users`);
+      logger.info(`Sending payment reminders to ${users.length} users`);
 
       for (const user of users) {
         const daysUntilDue = Math.ceil(
@@ -33,11 +34,11 @@ class ScheduledTasks {
 
         if (amount > 0) {
           await emailService.sendPaymentReminder(user, daysUntilDue, amount);
-          console.log(`Sent payment reminder to ${user.email}`);
+          logger.info(`Sent payment reminder to ${user.email}`);
         }
       }
     } catch (error) {
-      console.error("Error sending payment reminders:", error);
+      logger.error("Error sending payment reminders:", error);
     }
   }
 
@@ -59,7 +60,7 @@ class ScheduledTasks {
         },
       });
 
-      console.log(
+      logger.info(
         `Checking ${users.length} users for trial ending notifications`,
       );
 
@@ -72,13 +73,13 @@ class ScheduledTasks {
         // Send notification at 7 days and 3 days before trial ends
         if (daysRemaining === 7 || daysRemaining === 3) {
           await emailService.sendTrialEndingNotification(user, daysRemaining);
-          console.log(
+          logger.info(
             `Sent trial ending notification to ${user.email} (${daysRemaining} days)`,
           );
         }
       }
     } catch (error) {
-      console.error("Error sending trial ending notifications:", error);
+      logger.error("Error sending trial ending notifications:", error);
     }
   }
 
@@ -107,7 +108,7 @@ class ScheduledTasks {
               await User.findByIdAndUpdate(user._id, {
                 "usage.overageChargedThisMonth": true,
               });
-              console.log(
+              logger.info(
                 `Recorded URL overage for ${user.email}: ${overage} URLs`,
               );
             }
@@ -115,7 +116,7 @@ class ScheduledTasks {
         }
       }
     } catch (error) {
-      console.error("Error checking usage overages:", error);
+      logger.error("Error checking usage overages:", error);
     }
   }
 
@@ -134,9 +135,9 @@ class ScheduledTasks {
         });
       }
 
-      console.log(`Reset monthly usage for ${users.length} users`);
+      logger.info(`Reset monthly usage for ${users.length} users`);
     } catch (error) {
-      console.error("Error resetting monthly usage:", error);
+      logger.error("Error resetting monthly usage:", error);
     }
   }
 
@@ -150,7 +151,7 @@ class ScheduledTasks {
         },
       });
 
-      console.log(`Handling ${users.length} expired subscriptions`);
+      logger.info(`Handling ${users.length} expired subscriptions`);
 
       for (const user of users) {
         // Downgrade to free plan
@@ -159,12 +160,12 @@ class ScheduledTasks {
           "subscription.status": "cancelled",
         });
 
-        console.log(
+        logger.info(
           `Downgraded ${user.email} to free plan due to expired subscription`,
         );
       }
     } catch (error) {
-      console.error("Error handling expired subscriptions:", error);
+      logger.error("Error handling expired subscriptions:", error);
     }
   }
 
@@ -181,33 +182,31 @@ class ScheduledTasks {
 
       if (domains.length === 0) return;
 
-      console.log(
+      logger.info(
         `[SSL] Hourly retry: found ${domains.length} domain(s) needing SSL`,
       );
 
       for (const domain of domains) {
-        console.log(`[SSL] Retrying SSL for ${domain.fullDomain}...`);
+        logger.info(`[SSL] Retrying SSL for ${domain.fullDomain}...`);
         try {
           const result = await sslProvisioningService.provision(
             domain._id.toString(),
           );
           if (result.success) {
-            console.log(
+            logger.info(
               `[SSL] ✅ ${domain.fullDomain} — SSL provisioned successfully`,
             );
           } else {
-            console.log(
+            logger.info(
               `[SSL] ❌ ${domain.fullDomain} — still failing: ${result.error}`,
             );
           }
         } catch (err) {
-          console.error(
-            `[SSL] ❌ ${domain.fullDomain} — error: ${err.message}`,
-          );
+          logger.error(`[SSL] ❌ ${domain.fullDomain} — error: ${err.message}`);
         }
       }
     } catch (error) {
-      console.error("[SSL] Hourly retry task failed:", error.message);
+      logger.error("[SSL] Hourly retry task failed:", error.message);
     }
   }
 
@@ -249,11 +248,11 @@ class ScheduledTasks {
         .limit(batchSize);
 
       if (candidates.length === 0) {
-        console.log("[urlScanner] Re-scan: no links due for re-check");
+        logger.info("[urlScanner] Re-scan: no links due for re-check");
         return;
       }
 
-      console.log(
+      logger.info(
         `[urlScanner] Re-scan: found ${candidates.length} link(s) due for re-check`,
       );
 
@@ -265,45 +264,45 @@ class ScheduledTasks {
         await Promise.all(batch.map((url) => scanAndPersist(url)));
       }
 
-      console.log(
+      logger.info(
         `[urlScanner] Re-scan complete: ${candidates.length} link(s) processed`,
       );
     } catch (error) {
-      console.error("[urlScanner] Re-scan task failed:", error.message);
+      logger.error("[urlScanner] Re-scan task failed:", error.message);
     }
   }
 
   // Initialize all cron jobs
   static initializeCronJobs() {
-    console.log("Initializing scheduled tasks...");
+    logger.info("Initializing scheduled tasks...");
 
     // Payment reminders - daily at 9 AM
     cron.schedule("0 9 * * *", async () => {
-      console.log("Running payment reminder task...");
+      logger.info("Running payment reminder task...");
       await this.sendPaymentReminders();
     });
 
     // Trial ending notifications - daily at 10 AM
     cron.schedule("0 10 * * *", async () => {
-      console.log("Running trial ending notification task...");
+      logger.info("Running trial ending notification task...");
       await this.sendTrialEndingNotifications();
     });
 
     // Check usage overages - daily at 11 PM
     cron.schedule("0 23 * * *", async () => {
-      console.log("Running usage overage check...");
+      logger.info("Running usage overage check...");
       await this.checkUsageOverages();
     });
 
     // Reset monthly usage - 1st of every month at midnight
     cron.schedule("0 0 1 * *", async () => {
-      console.log("Running monthly usage reset...");
+      logger.info("Running monthly usage reset...");
       await this.resetMonthlyUsage();
     });
 
     // Handle expired subscriptions - daily at midnight
     cron.schedule("0 0 * * *", async () => {
-      console.log("Running expired subscription check...");
+      logger.info("Running expired subscription check...");
       await this.handleExpiredSubscriptions();
     });
 
@@ -317,11 +316,11 @@ class ScheduledTasks {
     // Re-scan link destinations — daily at 3 AM (off-peak)
     // Snip URL Scanner only checks a destination once, at creation.
     cron.schedule("0 3 * * *", async () => {
-      console.log("Running url-scanner re-scan task...");
+      logger.info("Running url-scanner re-scan task...");
       await ScheduledTasks.reScanActiveLinks();
     });
 
-    console.log("✓ Scheduled tasks initialized");
+    logger.info("✓ Scheduled tasks initialized");
   }
 }
 

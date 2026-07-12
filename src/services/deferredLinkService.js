@@ -10,11 +10,12 @@
  * Key pattern: dl:deferred:{ip}:{ms_timestamp}
  */
 
-const { redis, cacheSet } = require('../config/redis');
+const { redis, cacheSet } = require("../config/redis");
+const logger = require("../config/logger");
 
-const DEFERRED_TTL_SECONDS = 72 * 60 * 60;  // 72 hours
-const KEY_PREFIX = 'dl:deferred:';
-const CONFIDENCE_THRESHOLD = 0.80;
+const DEFERRED_TTL_SECONDS = 72 * 60 * 60; // 72 hours
+const KEY_PREFIX = "dl:deferred:";
+const CONFIDENCE_THRESHOLD = 0.8;
 const LOOKUP_WINDOW_HOURS = 72;
 
 /**
@@ -23,17 +24,18 @@ const LOOKUP_WINDOW_HOURS = 72;
  */
 const storePayload = async (clientIP, userAgent, req, urlDoc) => {
   try {
-    const ua = userAgent || '';
+    const ua = userAgent || "";
     const ts = Date.now();
     const key = `${KEY_PREFIX}${clientIP}:${ts}`;
 
     const entry = {
       // Fingerprint fields used for matching on app first launch
       ip: clientIP,
-      appRegistrationId: urlDoc.deepLink?.appRegistration?._id?.toString()
-                      || urlDoc.deepLink?.appRegistration?.toString()
-                      || null,
-      platform: /iphone|ipad|ipod/i.test(ua) ? 'ios' : 'android',
+      appRegistrationId:
+        urlDoc.deepLink?.appRegistration?._id?.toString() ||
+        urlDoc.deepLink?.appRegistration?.toString() ||
+        null,
+      platform: /iphone|ipad|ipod/i.test(ua) ? "ios" : "android",
       osVersion: extractOSVersion(ua),
       screenWidth: parseInt(req.query.sw) || null,
       screenHeight: parseInt(req.query.sh) || null,
@@ -43,16 +45,16 @@ const storePayload = async (clientIP, userAgent, req, urlDoc) => {
       // What to open once the app launches
       shortCode: urlDoc.shortCode,
       screen: urlDoc.deepLink?.screen || null,
-      params: urlDoc.deepLink?.params || null
+      params: urlDoc.deepLink?.params || null,
     };
 
     await cacheSet(key, entry, DEFERRED_TTL_SECONDS);
     // Log only non-PII diagnostics
-    console.log(`[deferred] stored payload screen=${entry.screen}`);
+    logger.info(`[deferred] stored payload screen=${entry.screen}`);
     return key;
   } catch (err) {
     // Non-fatal — deferred linking degrades gracefully to home screen
-    console.error('[deferred] storePayload error:', err.message);
+    logger.error("[deferred] storePayload error:", err.message);
     return null;
   }
 };
@@ -63,7 +65,15 @@ const storePayload = async (clientIP, userAgent, req, urlDoc) => {
  */
 const matchPayload = async (incoming) => {
   try {
-    const { ip, platform, osVersion, screenWidth, screenHeight, installTime, appRegistrationId } = incoming;
+    const {
+      ip,
+      platform,
+      osVersion,
+      screenWidth,
+      screenHeight,
+      installTime,
+      appRegistrationId,
+    } = incoming;
 
     if (!ip) return { matched: false };
 
@@ -82,16 +92,30 @@ const matchPayload = async (incoming) => {
       if (!raw) continue;
 
       let entry;
-      try { entry = JSON.parse(raw); } catch { continue; }
+      try {
+        entry = JSON.parse(raw);
+      } catch {
+        continue;
+      }
 
       // Skip entries older than 72h (Redis TTL handles cleanup, but be safe)
       if (entry.storedAt < cutoff) continue;
 
       // Scope to the calling app — prevents App B from claiming App A's payload
-      if (appRegistrationId && entry.appRegistrationId &&
-          entry.appRegistrationId !== appRegistrationId) continue;
+      if (
+        appRegistrationId &&
+        entry.appRegistrationId &&
+        entry.appRegistrationId !== appRegistrationId
+      )
+        continue;
 
-      const score = scoreMatch(entry, { platform, osVersion, screenWidth, screenHeight, installTime });
+      const score = scoreMatch(entry, {
+        platform,
+        osVersion,
+        screenWidth,
+        screenHeight,
+        installTime,
+      });
 
       if (score > bestScore) {
         bestScore = score;
@@ -100,11 +124,13 @@ const matchPayload = async (incoming) => {
     }
 
     if (!best || bestScore < CONFIDENCE_THRESHOLD) {
-      console.log(`[deferred] no match best=${bestScore.toFixed(2)}`);
+      logger.info(`[deferred] no match best=${bestScore.toFixed(2)}`);
       return { matched: false };
     }
 
-    console.log(`[deferred] matched confidence=${bestScore.toFixed(2)} screen=${best.screen}`);
+    logger.info(
+      `[deferred] matched confidence=${bestScore.toFixed(2)} screen=${best.screen}`,
+    );
 
     // Clean up the matched key so it can't be claimed twice
     await redis.del(`${KEY_PREFIX}${ip}:${best.storedAt}`);
@@ -113,10 +139,10 @@ const matchPayload = async (incoming) => {
       matched: true,
       screen: best.screen,
       params: best.params,
-      confidence: parseFloat(bestScore.toFixed(4))
+      confidence: parseFloat(bestScore.toFixed(4)),
     };
   } catch (err) {
-    console.error('[deferred] matchPayload error:', err.message);
+    logger.error("[deferred] matchPayload error:", err.message);
     return { matched: false };
   }
 };
@@ -149,7 +175,9 @@ const scoreMatch = (stored, incoming) => {
   if (stored.osVersion && incoming.osVersion) {
     if (stored.osVersion === incoming.osVersion) {
       score += 2;
-    } else if (stored.osVersion.split('.')[0] === incoming.osVersion.split('.')[0]) {
+    } else if (
+      stored.osVersion.split(".")[0] === incoming.osVersion.split(".")[0]
+    ) {
       score += 1;
     }
   }
@@ -184,7 +212,7 @@ const scoreMatch = (stored, incoming) => {
 /** Extract OS version string from a User-Agent. Returns null if not detectable. */
 const extractOSVersion = (ua) => {
   const ios = ua.match(/OS (\d+[_\d]*) like Mac/i);
-  if (ios) return ios[1].replace(/_/g, '.');
+  if (ios) return ios[1].replace(/_/g, ".");
 
   const android = ua.match(/Android (\d+[.\d]*)/i);
   if (android) return android[1];
@@ -195,13 +223,19 @@ const extractOSVersion = (ua) => {
 /** Scan Redis for all keys matching a pattern. Returns an array of key strings. */
 const scanKeys = async (pattern) => {
   const keys = [];
-  let cursor = '0';
+  let cursor = "0";
 
   do {
-    const [nextCursor, batch] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+    const [nextCursor, batch] = await redis.scan(
+      cursor,
+      "MATCH",
+      pattern,
+      "COUNT",
+      100,
+    );
     cursor = nextCursor;
     keys.push(...batch);
-  } while (cursor !== '0');
+  } while (cursor !== "0");
 
   return keys;
 };

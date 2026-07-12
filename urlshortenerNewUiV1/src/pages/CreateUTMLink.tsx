@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Copy, Check, Tag, Link2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
 
 const buildTaggedUrl = (
   dest: string,
@@ -53,6 +54,7 @@ const isValidUrl = (value: string): boolean => {
 const CreateUTMLink = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  useRequireEditAccess("/dashboard/utm-builder");
   const { addUTMLink } = useUTM();
   const createUrl = useCreateUrl();
   const { data: domainsData } = useAvailableDomains();

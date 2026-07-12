@@ -26,6 +26,7 @@ import {
   useCreateUrl,
 } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 
 const Dashboard = () => {
   const { t } = useLanguage();
@@ -49,10 +50,24 @@ const Dashboard = () => {
   const [isShortening, setIsShortening] = useState(false);
 
   // ─── API calls ───────────────────────────────────────────────────────────
+  const {
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
+  // Enterprise RBAC: scope to the active project. Omitted only in the
+  // Account Owner's "All projects" aggregate view.
+  const projectId = isAllProjectsView ? undefined : activeProject?.id;
   const { data: urlStatsData, isLoading: statsLoading } = useUrlStats();
   const { data: analyticsData, isLoading: analyticsLoading } =
-    useAnalyticsDashboard({ period: "30d" });
-  const { data: urlsData, isLoading: urlsLoading } = useUrls({ limit: 100 });
+    useAnalyticsDashboard(
+      { period: "30d", projectId },
+      { enabled: !isProjectLoading },
+    );
+  const { data: urlsData, isLoading: urlsLoading } = useUrls(
+    { limit: 100, projectId },
+    { enabled: !isProjectLoading },
+  );
   const createUrl = useCreateUrl();
 
   // ─── Normalize API data ───────────────────────────────────────────────────
@@ -169,7 +184,10 @@ const Dashboard = () => {
     }
     setIsShortening(true);
     try {
-      const response = await createUrl.mutateAsync({ originalUrl: longUrl });
+      const response = await createUrl.mutateAsync({
+        originalUrl: longUrl,
+        projectId: activeProject?.id,
+      });
       if (response.success && response.data) {
         // API returns: { data: { url: { shortCode, customCode, ... }, domain: { fullDomain } } }
         const urlData = response.data.url || response.data;

@@ -1,4 +1,5 @@
-const { track } = require('@amplitude/analytics-node');
+const { track } = require("@amplitude/analytics-node");
+const logger = require("../config/logger");
 
 class AmplitudeService {
   constructor() {
@@ -10,12 +11,14 @@ class AmplitudeService {
     if (this.initialized) return;
 
     if (!this.apiKey) {
-      console.warn('Amplitude API key not found. Server-side analytics will not be tracked.');
+      logger.warn(
+        "Amplitude API key not found. Server-side analytics will not be tracked.",
+      );
       return;
     }
 
     this.initialized = true;
-    console.log('Amplitude backend service initialized');
+    logger.info("Amplitude backend service initialized");
   }
 
   // Track event
@@ -25,16 +28,16 @@ class AmplitudeService {
     try {
       track(eventName, eventProperties, {
         user_id: userId,
-        device_id: eventProperties.device_id || 'server',
+        device_id: eventProperties.device_id || "server",
       });
     } catch (error) {
-      console.error('Amplitude tracking error:', error);
+      logger.error("Amplitude tracking error:", error);
     }
   }
 
   // Link Redirect Events
   trackLinkRedirect(userId, linkData, requestData) {
-    this.track(userId || 'anonymous', 'Link Redirect Performed', {
+    this.track(userId || "anonymous", "Link Redirect Performed", {
       link_id: linkData.linkId,
       short_code: linkData.shortCode,
       has_password: !!linkData.hasPassword,
@@ -52,20 +55,20 @@ class AmplitudeService {
 
   // Link Validation Events
   trackLinkValidationFailed(linkId, reason) {
-    this.track('system', 'Link Validation Failed', {
+    this.track("system", "Link Validation Failed", {
       link_id: linkId,
       failure_reason: reason,
     });
   }
 
   trackLinkExpiredAccess(linkId, userId = null) {
-    this.track(userId || 'anonymous', 'Link Expired Access Attempt', {
+    this.track(userId || "anonymous", "Link Expired Access Attempt", {
       link_id: linkId,
     });
   }
 
   trackPasswordProtectedAccess(linkId, success, userId = null) {
-    this.track(userId || 'anonymous', 'Password Protected Link Access', {
+    this.track(userId || "anonymous", "Password Protected Link Access", {
       link_id: linkId,
       access_granted: success,
     });
@@ -73,7 +76,7 @@ class AmplitudeService {
 
   // API Usage Events
   trackAPIRequest(userId, requestData) {
-    this.track(userId || 'anonymous', 'API Request Made', {
+    this.track(userId || "anonymous", "API Request Made", {
       endpoint: requestData.endpoint,
       method: requestData.method,
       status_code: requestData.statusCode,
@@ -84,20 +87,20 @@ class AmplitudeService {
   }
 
   trackAPIRateLimitHit(userId, endpoint) {
-    this.track(userId || 'anonymous', 'API Rate Limit Hit', {
+    this.track(userId || "anonymous", "API Rate Limit Hit", {
       endpoint,
     });
   }
 
   trackAPIAuthenticationFailed(ipAddress, reason) {
-    this.track('anonymous', 'API Authentication Failed', {
+    this.track("anonymous", "API Authentication Failed", {
       ip_address: ipAddress,
       failure_reason: reason,
     });
   }
 
   trackAPIError(userId, errorData) {
-    this.track(userId || 'anonymous', 'API Error Occurred', {
+    this.track(userId || "anonymous", "API Error Occurred", {
       endpoint: errorData.endpoint,
       method: errorData.method,
       error_type: errorData.errorType,
@@ -108,21 +111,21 @@ class AmplitudeService {
 
   // System Events
   trackEmailSent(userId, emailType, success = true) {
-    this.track(userId || 'system', 'Email Sent', {
+    this.track(userId || "system", "Email Sent", {
       email_type: emailType,
       success,
     });
   }
 
   trackWebhookTriggered(userId, webhookType, success = true) {
-    this.track(userId || 'system', 'Webhook Triggered', {
+    this.track(userId || "system", "Webhook Triggered", {
       webhook_type: webhookType,
       success,
     });
   }
 
   trackCronJobExecuted(jobName, success = true, duration = null) {
-    this.track('system', 'Cron Job Executed', {
+    this.track("system", "Cron Job Executed", {
       job_name: jobName,
       success,
       duration_ms: duration,
@@ -130,28 +133,28 @@ class AmplitudeService {
   }
 
   trackCacheOperation(operation, hit = true) {
-    this.track('system', operation === 'hit' ? 'Cache Hit' : 'Cache Miss', {
+    this.track("system", operation === "hit" ? "Cache Hit" : "Cache Miss", {
       operation,
     });
   }
 
   // Security Events
   trackSuspiciousActivity(userId, activityType, details = {}) {
-    this.track(userId || 'anonymous', 'Suspicious Activity Detected', {
+    this.track(userId || "anonymous", "Suspicious Activity Detected", {
       activity_type: activityType,
       ...details,
     });
   }
 
   trackMultipleFailedLogins(userId, attemptCount, ipAddress) {
-    this.track(userId || 'anonymous', 'Multiple Failed Login Attempts', {
+    this.track(userId || "anonymous", "Multiple Failed Login Attempts", {
       attempt_count: attemptCount,
       ip_address: ipAddress,
     });
   }
 
   trackInvalidTokenUsed(userId, tokenType, ipAddress) {
-    this.track(userId || 'anonymous', 'Invalid Token Used', {
+    this.track(userId || "anonymous", "Invalid Token Used", {
       token_type: tokenType,
       ip_address: ipAddress,
     });
@@ -159,7 +162,7 @@ class AmplitudeService {
 
   // Payment Events (Server-side)
   trackPaymentProcessed(userId, paymentData) {
-    this.track(userId, 'Payment Processed', {
+    this.track(userId, "Payment Processed", {
       plan_name: paymentData.planName,
       amount: paymentData.amount,
       currency: paymentData.currency,
@@ -170,7 +173,7 @@ class AmplitudeService {
   }
 
   trackSubscriptionCreated(userId, subscriptionData) {
-    this.track(userId, 'Subscription Created', {
+    this.track(userId, "Subscription Created", {
       plan_name: subscriptionData.planName,
       billing_cycle: subscriptionData.billingCycle,
       amount: subscriptionData.amount,
@@ -179,7 +182,7 @@ class AmplitudeService {
   }
 
   trackSubscriptionUpdated(userId, updateData) {
-    this.track(userId, 'Subscription Updated', {
+    this.track(userId, "Subscription Updated", {
       from_plan: updateData.fromPlan,
       to_plan: updateData.toPlan,
       change_type: updateData.changeType,
@@ -187,7 +190,7 @@ class AmplitudeService {
   }
 
   trackSubscriptionCancelled(userId, subscriptionData) {
-    this.track(userId, 'Subscription Cancelled', {
+    this.track(userId, "Subscription Cancelled", {
       plan_name: subscriptionData.planName,
       cancellation_reason: subscriptionData.reason,
       refund_issued: subscriptionData.refundIssued,
@@ -196,7 +199,7 @@ class AmplitudeService {
 
   // Bulk Operations
   trackBulkOperation(userId, operationType, count, success = true) {
-    this.track(userId, 'Bulk Operation Performed', {
+    this.track(userId, "Bulk Operation Performed", {
       operation_type: operationType,
       item_count: count,
       success,

@@ -1,40 +1,43 @@
-const User = require('../models/User');
-const Plan = require('../models/Plan');
-const Coupon = require('../models/Coupon');
-const PaymentMethod = require('../models/PaymentMethod');
-const emailService = require('./emailService');
+const User = require("../models/User");
+const Plan = require("../models/Plan");
+const Coupon = require("../models/Coupon");
+const PaymentMethod = require("../models/PaymentMethod");
+const emailService = require("./emailService");
+const logger = require("../config/logger");
 
 // Initialize Stripe only if API key is provided
 let stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
-  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 } else {
-  console.warn('⚠️  Stripe API key not configured - payment features will be disabled');
+  logger.warn(
+    "⚠️  Stripe API key not configured - payment features will be disabled",
+  );
 }
 
 class PaymentService {
   // Create Stripe customer
   async createCustomer(user) {
     if (!stripe) {
-      throw new Error('Payment service not configured');
+      throw new Error("Payment service not configured");
     }
     try {
       const customer = await stripe.customers.create({
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
         metadata: {
-          userId: user._id.toString()
-        }
+          userId: user._id.toString(),
+        },
       });
 
       // Update user with Stripe customer ID
       await User.findByIdAndUpdate(user._id, {
-        'subscription.stripeCustomerId': customer.id
+        "subscription.stripeCustomerId": customer.id,
       });
 
       return customer;
     } catch (error) {
-      console.error('Create customer error:', error);
+      logger.error("Create customer error:", error);
       throw error;
     }
   }
@@ -42,17 +45,21 @@ class PaymentService {
   // Create subscription with trial and coupon support
   async createSubscription(userId, planName, paymentMethodId, options = {}) {
     try {
-      const { billingCycle = 'monthly', couponCode = null, trialDays = 14 } = options;
+      const {
+        billingCycle = "monthly",
+        couponCode = null,
+        trialDays = 14,
+      } = options;
 
       const user = await User.findById(userId);
       const plan = await Plan.getByName(planName);
 
       if (!user || !plan) {
-        throw new Error('User or plan not found');
+        throw new Error("User or plan not found");
       }
 
       if (plan.isFree) {
-        throw new Error('Cannot create subscription for free plan');
+        throw new Error("Cannot create subscription for free plan");
       }
 
       // Create customer if doesn't exist
@@ -72,23 +79,27 @@ class PaymentService {
         const coupon = await Coupon.findValidCoupon(couponCode);
         await coupon.validateForUser(userId, planName);
         stripeCouponId = coupon.stripeCouponId;
-        discountPercentage = coupon.discountType === 'percentage' ? coupon.discountValue : null;
+        discountPercentage =
+          coupon.discountType === "percentage" ? coupon.discountValue : null;
       }
 
       // Select price based on billing cycle
-      const priceId = billingCycle === 'yearly' ? plan.stripePriceId.yearly : plan.stripePriceId.monthly;
+      const priceId =
+        billingCycle === "yearly"
+          ? plan.stripePriceId.yearly
+          : plan.stripePriceId.monthly;
 
       // Subscription parameters
       const subscriptionParams = {
         customer: customerId,
         items: [{ price: priceId }],
         default_payment_method: paymentMethodId,
-        expand: ['latest_invoice.payment_intent'],
+        expand: ["latest_invoice.payment_intent"],
         trial_period_days: trialDays,
         metadata: {
           userId: userId.toString(),
-          planName: planName
-        }
+          planName: planName,
+        },
       };
 
       // Add coupon if exists
@@ -97,7 +108,8 @@ class PaymentService {
       }
 
       // Create subscription
-      const subscription = await stripe.subscriptions.create(subscriptionParams);
+      const subscription =
+        await stripe.subscriptions.create(subscriptionParams);
 
       // Apply coupon in our system if provided
       if (couponCode) {
@@ -108,23 +120,29 @@ class PaymentService {
       // Update user subscription info
       const updateData = {
         plan: planName,
-        'subscription.stripeSubscriptionId': subscription.id,
-        'subscription.stripePriceId': priceId,
-        'subscription.status': subscription.status,
-        'subscription.billingCycle': billingCycle,
-        'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
-        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000),
+        "subscription.stripeSubscriptionId": subscription.id,
+        "subscription.stripePriceId": priceId,
+        "subscription.status": subscription.status,
+        "subscription.billingCycle": billingCycle,
+        "subscription.currentPeriodStart": new Date(
+          subscription.current_period_start * 1000,
+        ),
+        "subscription.currentPeriodEnd": new Date(
+          subscription.current_period_end * 1000,
+        ),
       };
 
       if (subscription.trial_end) {
-        updateData['subscription.trialStart'] = new Date();
-        updateData['subscription.trialEnd'] = new Date(subscription.trial_end * 1000);
+        updateData["subscription.trialStart"] = new Date();
+        updateData["subscription.trialEnd"] = new Date(
+          subscription.trial_end * 1000,
+        );
       }
 
       if (couponCode) {
-        updateData['subscription.discountCode'] = couponCode;
+        updateData["subscription.discountCode"] = couponCode;
         if (discountPercentage) {
-          updateData['subscription.discountPercentage'] = discountPercentage;
+          updateData["subscription.discountPercentage"] = discountPercentage;
         }
       }
 
@@ -135,7 +153,7 @@ class PaymentService {
 
       return subscription;
     } catch (error) {
-      console.error('Create subscription error:', error);
+      logger.error("Create subscription error:", error);
       throw error;
     }
   }
@@ -145,33 +163,38 @@ class PaymentService {
     try {
       const user = await User.findById(userId);
       if (!user || !user.subscription.stripeSubscriptionId) {
-        throw new Error('No active subscription found');
+        throw new Error("No active subscription found");
       }
 
       let subscription;
       if (immediate) {
         // Cancel immediately
-        subscription = await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
+        subscription = await stripe.subscriptions.cancel(
+          user.subscription.stripeSubscriptionId,
+        );
 
         await User.findByIdAndUpdate(userId, {
-          plan: 'free',
-          'subscription.status': 'cancelled',
-          'subscription.cancelAtPeriodEnd': false,
+          plan: "free",
+          "subscription.status": "cancelled",
+          "subscription.cancelAtPeriodEnd": false,
         });
       } else {
         // Cancel at period end
-        subscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
-          cancel_at_period_end: true,
-        });
+        subscription = await stripe.subscriptions.update(
+          user.subscription.stripeSubscriptionId,
+          {
+            cancel_at_period_end: true,
+          },
+        );
 
         await User.findByIdAndUpdate(userId, {
-          'subscription.cancelAtPeriodEnd': true,
+          "subscription.cancelAtPeriodEnd": true,
         });
       }
 
       return subscription;
     } catch (error) {
-      console.error('Cancel subscription error:', error);
+      logger.error("Cancel subscription error:", error);
       throw error;
     }
   }
@@ -183,30 +206,37 @@ class PaymentService {
       const newPlan = await Plan.getByName(newPlanName);
 
       if (!user || !newPlan || !user.subscription.stripeSubscriptionId) {
-        throw new Error('User, plan, or subscription not found');
+        throw new Error("User, plan, or subscription not found");
       }
 
       // Get current subscription
-      const subscription = await stripe.subscriptions.retrieve(user.subscription.stripeSubscriptionId);
+      const subscription = await stripe.subscriptions.retrieve(
+        user.subscription.stripeSubscriptionId,
+      );
 
       // Update subscription
-      const updatedSubscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
-        items: [{
-          id: subscription.items.data[0].id,
-          price: newPlan.stripePriceId.monthly,
-        }],
-        proration_behavior: 'create_prorations',
-      });
+      const updatedSubscription = await stripe.subscriptions.update(
+        user.subscription.stripeSubscriptionId,
+        {
+          items: [
+            {
+              id: subscription.items.data[0].id,
+              price: newPlan.stripePriceId.monthly,
+            },
+          ],
+          proration_behavior: "create_prorations",
+        },
+      );
 
       // Update user plan
       await User.findByIdAndUpdate(userId, {
         plan: newPlanName,
-        'subscription.status': updatedSubscription.status,
+        "subscription.status": updatedSubscription.status,
       });
 
       return updatedSubscription;
     } catch (error) {
-      console.error('Update subscription error:', error);
+      logger.error("Update subscription error:", error);
       throw error;
     }
   }
@@ -215,70 +245,84 @@ class PaymentService {
   async handleWebhook(event) {
     try {
       switch (event.type) {
-        case 'invoice.payment_succeeded':
+        case "invoice.payment_succeeded":
           await this.handlePaymentSucceeded(event.data.object);
           break;
 
-        case 'invoice.payment_failed':
+        case "invoice.payment_failed":
           await this.handlePaymentFailed(event.data.object);
           break;
 
-        case 'customer.subscription.updated':
+        case "customer.subscription.updated":
           await this.handleSubscriptionUpdated(event.data.object);
           break;
 
-        case 'customer.subscription.deleted':
+        case "customer.subscription.deleted":
           await this.handleSubscriptionDeleted(event.data.object);
           break;
 
         default:
-          console.log(`Unhandled event type: ${event.type}`);
+          logger.info(`Unhandled event type: ${event.type}`);
       }
     } catch (error) {
-      console.error('Webhook handling error:', error);
+      logger.error("Webhook handling error:", error);
     }
   }
 
   async handlePaymentSucceeded(invoice) {
-    const user = await User.findOne({ 'subscription.stripeCustomerId': invoice.customer });
+    const user = await User.findOne({
+      "subscription.stripeCustomerId": invoice.customer,
+    });
     if (user) {
       await User.findByIdAndUpdate(user._id, {
-        'subscription.status': 'active',
-        'subscription.currentPeriodStart': new Date(invoice.period_start * 1000),
-        'subscription.currentPeriodEnd': new Date(invoice.period_end * 1000),
+        "subscription.status": "active",
+        "subscription.currentPeriodStart": new Date(
+          invoice.period_start * 1000,
+        ),
+        "subscription.currentPeriodEnd": new Date(invoice.period_end * 1000),
       });
     }
   }
 
   async handlePaymentFailed(invoice) {
-    const user = await User.findOne({ 'subscription.stripeCustomerId': invoice.customer });
+    const user = await User.findOne({
+      "subscription.stripeCustomerId": invoice.customer,
+    });
     if (user) {
       await User.findByIdAndUpdate(user._id, {
-        'subscription.status': 'past_due',
+        "subscription.status": "past_due",
       });
     }
   }
 
   async handleSubscriptionUpdated(subscription) {
-    const user = await User.findOne({ 'subscription.stripeCustomerId': subscription.customer });
+    const user = await User.findOne({
+      "subscription.stripeCustomerId": subscription.customer,
+    });
     if (user) {
       await User.findByIdAndUpdate(user._id, {
-        'subscription.status': subscription.status,
-        'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
-        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000),
-        'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end,
+        "subscription.status": subscription.status,
+        "subscription.currentPeriodStart": new Date(
+          subscription.current_period_start * 1000,
+        ),
+        "subscription.currentPeriodEnd": new Date(
+          subscription.current_period_end * 1000,
+        ),
+        "subscription.cancelAtPeriodEnd": subscription.cancel_at_period_end,
       });
     }
   }
 
   async handleSubscriptionDeleted(subscription) {
-    const user = await User.findOne({ 'subscription.stripeCustomerId': subscription.customer });
+    const user = await User.findOne({
+      "subscription.stripeCustomerId": subscription.customer,
+    });
     if (user) {
       await User.findByIdAndUpdate(user._id, {
-        plan: 'free',
-        'subscription.status': 'cancelled',
-        'subscription.stripeSubscriptionId': null,
-        'subscription.cancelAtPeriodEnd': false,
+        plan: "free",
+        "subscription.status": "cancelled",
+        "subscription.stripeSubscriptionId": null,
+        "subscription.cancelAtPeriodEnd": false,
       });
     }
   }
@@ -296,7 +340,7 @@ class PaymentService {
         limit: 10,
       });
 
-      return invoices.data.map(invoice => ({
+      return invoices.data.map((invoice) => ({
         id: invoice.id,
         amount: invoice.amount_paid / 100,
         currency: invoice.currency,
@@ -305,7 +349,7 @@ class PaymentService {
         pdf: invoice.hosted_invoice_url,
       }));
     } catch (error) {
-      console.error('Get payment history error:', error);
+      logger.error("Get payment history error:", error);
       return [];
     }
   }
@@ -323,12 +367,12 @@ class PaymentService {
 
       const setupIntent = await stripe.setupIntents.create({
         customer: customerId,
-        usage: 'off_session',
+        usage: "off_session",
       });
 
       return setupIntent;
     } catch (error) {
-      console.error('Create setup intent error:', error);
+      logger.error("Create setup intent error:", error);
       throw error;
     }
   }
@@ -338,7 +382,7 @@ class PaymentService {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       let customerId = user.subscription.stripeCustomerId;
@@ -348,12 +392,18 @@ class PaymentService {
       }
 
       // Attach payment method to customer
-      const stripePaymentMethod = await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: customerId,
-      });
+      const stripePaymentMethod = await stripe.paymentMethods.attach(
+        paymentMethodId,
+        {
+          customer: customerId,
+        },
+      );
 
       // Check if this is the first payment method
-      const existingMethods = await PaymentMethod.countDocuments({ user: userId, isActive: true });
+      const existingMethods = await PaymentMethod.countDocuments({
+        user: userId,
+        isActive: true,
+      });
       const isFirstMethod = existingMethods === 0;
 
       // Save payment method to database
@@ -361,15 +411,17 @@ class PaymentService {
         user: userId,
         stripePaymentMethodId: paymentMethodId,
         type: stripePaymentMethod.type,
-        card: stripePaymentMethod.card ? {
-          brand: stripePaymentMethod.card.brand,
-          last4: stripePaymentMethod.card.last4,
-          expMonth: stripePaymentMethod.card.exp_month,
-          expYear: stripePaymentMethod.card.exp_year,
-          fingerprint: stripePaymentMethod.card.fingerprint
-        } : undefined,
+        card: stripePaymentMethod.card
+          ? {
+              brand: stripePaymentMethod.card.brand,
+              last4: stripePaymentMethod.card.last4,
+              expMonth: stripePaymentMethod.card.exp_month,
+              expYear: stripePaymentMethod.card.exp_year,
+              fingerprint: stripePaymentMethod.card.fingerprint,
+            }
+          : undefined,
         billing: stripePaymentMethod.billing_details,
-        isDefault: setAsDefault || isFirstMethod
+        isDefault: setAsDefault || isFirstMethod,
       });
 
       await paymentMethod.save();
@@ -385,7 +437,7 @@ class PaymentService {
 
       return paymentMethod;
     } catch (error) {
-      console.error('Add payment method error:', error);
+      logger.error("Add payment method error:", error);
       throw error;
     }
   }
@@ -395,11 +447,11 @@ class PaymentService {
       const paymentMethod = await PaymentMethod.findOne({
         user: userId,
         _id: paymentMethodId,
-        isActive: true
+        isActive: true,
       });
 
       if (!paymentMethod) {
-        throw new Error('Payment method not found');
+        throw new Error("Payment method not found");
       }
 
       // Check if it's the default method
@@ -407,7 +459,7 @@ class PaymentService {
         const otherMethods = await PaymentMethod.find({
           user: userId,
           _id: { $ne: paymentMethodId },
-          isActive: true
+          isActive: true,
         });
 
         if (otherMethods.length > 0) {
@@ -426,7 +478,7 @@ class PaymentService {
 
       return true;
     } catch (error) {
-      console.error('Remove payment method error:', error);
+      logger.error("Remove payment method error:", error);
       throw error;
     }
   }
@@ -437,11 +489,11 @@ class PaymentService {
       const paymentMethod = await PaymentMethod.findOne({
         user: userId,
         _id: paymentMethodId,
-        isActive: true
+        isActive: true,
       });
 
       if (!paymentMethod) {
-        throw new Error('Payment method not found');
+        throw new Error("Payment method not found");
       }
 
       // Update in Stripe
@@ -457,7 +509,7 @@ class PaymentService {
 
       return paymentMethod;
     } catch (error) {
-      console.error('Set default payment method error:', error);
+      logger.error("Set default payment method error:", error);
       throw error;
     }
   }
@@ -466,7 +518,7 @@ class PaymentService {
     try {
       return await PaymentMethod.getAllForUser(userId);
     } catch (error) {
-      console.error('Get payment methods error:', error);
+      logger.error("Get payment methods error:", error);
       throw error;
     }
   }
@@ -476,28 +528,30 @@ class PaymentService {
     try {
       const user = await User.findById(userId);
       if (!user || !user.subscription.stripeSubscriptionId) {
-        throw new Error('No active subscription found');
+        throw new Error("No active subscription found");
       }
 
       const pauseParams = {
         pause_collection: {
-          behavior: 'mark_uncollectible'
-        }
+          behavior: "mark_uncollectible",
+        },
       };
 
       if (resumeAt) {
-        pauseParams.pause_collection.resumes_at = Math.floor(resumeAt.getTime() / 1000);
+        pauseParams.pause_collection.resumes_at = Math.floor(
+          resumeAt.getTime() / 1000,
+        );
       }
 
       const subscription = await stripe.subscriptions.update(
         user.subscription.stripeSubscriptionId,
-        pauseParams
+        pauseParams,
       );
 
       await User.findByIdAndUpdate(userId, {
-        'subscription.status': 'paused',
-        'subscription.pausedAt': new Date(),
-        'subscription.resumeAt': resumeAt
+        "subscription.status": "paused",
+        "subscription.pausedAt": new Date(),
+        "subscription.resumeAt": resumeAt,
       });
 
       // Send email notification
@@ -505,7 +559,7 @@ class PaymentService {
 
       return subscription;
     } catch (error) {
-      console.error('Pause subscription error:', error);
+      logger.error("Pause subscription error:", error);
       throw error;
     }
   }
@@ -514,20 +568,20 @@ class PaymentService {
     try {
       const user = await User.findById(userId);
       if (!user || !user.subscription.stripeSubscriptionId) {
-        throw new Error('No subscription found');
+        throw new Error("No subscription found");
       }
 
       const subscription = await stripe.subscriptions.update(
         user.subscription.stripeSubscriptionId,
         {
-          pause_collection: ''
-        }
+          pause_collection: "",
+        },
       );
 
       await User.findByIdAndUpdate(userId, {
-        'subscription.status': 'active',
-        'subscription.pausedAt': null,
-        'subscription.resumeAt': null
+        "subscription.status": "active",
+        "subscription.pausedAt": null,
+        "subscription.resumeAt": null,
       });
 
       // Send email notification
@@ -535,7 +589,7 @@ class PaymentService {
 
       return subscription;
     } catch (error) {
-      console.error('Resume subscription error:', error);
+      logger.error("Resume subscription error:", error);
       throw error;
     }
   }
@@ -547,7 +601,7 @@ class PaymentService {
       await coupon.validateForUser(userId, planName);
       return coupon;
     } catch (error) {
-      console.error('Validate coupon error:', error);
+      logger.error("Validate coupon error:", error);
       throw error;
     }
   }
@@ -556,7 +610,7 @@ class PaymentService {
     try {
       const user = await User.findById(userId);
       if (!user || !user.subscription.stripeSubscriptionId) {
-        throw new Error('No active subscription found');
+        throw new Error("No active subscription found");
       }
 
       const coupon = await Coupon.findValidCoupon(couponCode);
@@ -564,20 +618,21 @@ class PaymentService {
       const subscription = await stripe.subscriptions.update(
         user.subscription.stripeSubscriptionId,
         {
-          coupon: coupon.stripeCouponId
-        }
+          coupon: coupon.stripeCouponId,
+        },
       );
 
       await coupon.applyCoupon(userId, subscription.id);
 
       await User.findByIdAndUpdate(userId, {
-        'subscription.discountCode': couponCode,
-        'subscription.discountPercentage': coupon.discountType === 'percentage' ? coupon.discountValue : null
+        "subscription.discountCode": couponCode,
+        "subscription.discountPercentage":
+          coupon.discountType === "percentage" ? coupon.discountValue : null,
       });
 
       return subscription;
     } catch (error) {
-      console.error('Apply coupon error:', error);
+      logger.error("Apply coupon error:", error);
       throw error;
     }
   }
@@ -591,9 +646,9 @@ class PaymentService {
       // Calculate overage charge based on plan and overage type
       let chargeAmount = 0;
 
-      if (type === 'urls' && plan.features.urlsPerMonth !== -1) {
+      if (type === "urls" && plan.features.urlsPerMonth !== -1) {
         chargeAmount = amount * 0.01; // $0.01 per URL overage
-      } else if (type === 'api_calls') {
+      } else if (type === "api_calls") {
         chargeAmount = amount * 0.001; // $0.001 per API call overage
       }
 
@@ -602,27 +657,32 @@ class PaymentService {
         await stripe.invoiceItems.create({
           customer: user.subscription.stripeCustomerId,
           amount: Math.round(chargeAmount * 100), // Convert to cents
-          currency: 'usd',
+          currency: "usd",
           description: `Overage charges for ${type}: ${amount} units`,
           metadata: {
-            type: 'overage',
+            type: "overage",
             overageType: type,
-            units: amount
-          }
+            units: amount,
+          },
         });
 
         // Update user overage tracking
         await User.findByIdAndUpdate(userId, {
-          $inc: { 'usage.overageCharges': chargeAmount }
+          $inc: { "usage.overageCharges": chargeAmount },
         });
 
         // Send overage notification
-        await emailService.sendOverageNotification(user, type, amount, chargeAmount);
+        await emailService.sendOverageNotification(
+          user,
+          type,
+          amount,
+          chargeAmount,
+        );
       }
 
       return { chargeAmount, type, amount };
     } catch (error) {
-      console.error('Record overage error:', error);
+      logger.error("Record overage error:", error);
       throw error;
     }
   }
@@ -630,26 +690,32 @@ class PaymentService {
   // Get detailed billing info
   async getBillingDetails(userId) {
     try {
-      const user = await User.findById(userId).select('plan subscription usage');
+      const user = await User.findById(userId).select(
+        "plan subscription usage",
+      );
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
-      const plan = await Plan.getByName(user.plan || 'free');
+      const plan = await Plan.getByName(user.plan || "free");
       let paymentMethods = [];
-      
+
       try {
         paymentMethods = await this.getPaymentMethods(userId);
       } catch (err) {
         // Payment methods not available
-        console.log('Could not fetch payment methods:', err.message);
+        logger.info("Could not fetch payment methods:", err.message);
       }
 
       let upcomingInvoice = null;
-      if (stripe && user.subscription?.stripeSubscriptionId && user.subscription?.stripeCustomerId) {
+      if (
+        stripe &&
+        user.subscription?.stripeSubscriptionId &&
+        user.subscription?.stripeCustomerId
+      ) {
         try {
           upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-            customer: user.subscription.stripeCustomerId
+            customer: user.subscription.stripeCustomerId,
           });
         } catch (err) {
           // No upcoming invoice
@@ -662,39 +728,41 @@ class PaymentService {
         urlsCreatedTotal: 0,
         customDomainsCount: 0,
         apiCallsThisMonth: 0,
-        overageCharges: 0
+        overageCharges: 0,
       };
 
       // Provide default subscription values if not set
       const subscription = user.subscription || {
-        status: 'active',
-        billingCycle: 'monthly'
+        status: "active",
+        billingCycle: "monthly",
       };
 
       return {
         plan: {
-          name: user.plan || 'free',
-          details: plan
+          name: user.plan || "free",
+          details: plan,
         },
         subscription: subscription,
         usage: usage,
         paymentMethods: paymentMethods || [],
-        upcomingInvoice: upcomingInvoice ? {
-          amount: upcomingInvoice.amount_due / 100,
-          currency: upcomingInvoice.currency,
-          date: new Date(upcomingInvoice.period_end * 1000),
-          lines: upcomingInvoice.lines.data.map(line => ({
-            description: line.description,
-            amount: line.amount / 100,
-            period: {
-              start: new Date(line.period.start * 1000),
-              end: new Date(line.period.end * 1000)
+        upcomingInvoice: upcomingInvoice
+          ? {
+              amount: upcomingInvoice.amount_due / 100,
+              currency: upcomingInvoice.currency,
+              date: new Date(upcomingInvoice.period_end * 1000),
+              lines: upcomingInvoice.lines.data.map((line) => ({
+                description: line.description,
+                amount: line.amount / 100,
+                period: {
+                  start: new Date(line.period.start * 1000),
+                  end: new Date(line.period.end * 1000),
+                },
+              })),
             }
-          }))
-        } : null
+          : null,
       };
     } catch (error) {
-      console.error('Get billing details error:', error);
+      logger.error("Get billing details error:", error);
       throw error;
     }
   }
@@ -707,15 +775,15 @@ class PaymentService {
 
       // Verify invoice belongs to user
       if (invoice.customer !== user.subscription.stripeCustomerId) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
 
       return {
         url: invoice.hosted_invoice_url,
-        pdf: invoice.invoice_pdf
+        pdf: invoice.invoice_pdf,
       };
     } catch (error) {
-      console.error('Download invoice error:', error);
+      logger.error("Download invoice error:", error);
       throw error;
     }
   }

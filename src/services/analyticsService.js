@@ -6,6 +6,7 @@ const axios = require("axios");
 const useragent = require("user-agent-parser");
 const { cacheGet, cacheSet } = require("../config/redis");
 const config = require("../config/environment");
+const logger = require("../config/logger");
 
 class AnalyticsService {
   // Helper method to check if a domain is a main/default domain
@@ -45,7 +46,7 @@ class AnalyticsService {
 
   async recordClick(shortCode, clickData) {
     try {
-      console.log("📊 Recording click for:", shortCode, {
+      logger.info("📊 Recording click for:", shortCode, {
         ip: clickData.ipAddress,
         trackingEnabled: config.ANALYTICS.TRACK_CLICKS,
       });
@@ -64,6 +65,7 @@ class AnalyticsService {
       // Build query with domain filtering for custom domains
       let query = {
         $or: [{ shortCode }, { customCode: shortCode }],
+        $or: [{ shortCode }, { customCode: shortCode }],
       };
 
       // Add domain filtering for custom domains to prevent duplicate counting
@@ -73,19 +75,21 @@ class AnalyticsService {
 
       const url = await Url.findOne(query);
 
+
       if (!url) {
-        console.error("❌ URL not found for click recording:", shortCode);
+        logger.error("❌ URL not found for click recording:", shortCode);
         throw new Error("URL not found");
       }
 
-      console.log("✅ Found URL for click:", {
+      logger.info("✅ Found URL for click:", {
         id: url._id,
         shortCode: url.shortCode,
         domain: url.domain,
       });
 
+
       if (!config.ANALYTICS.TRACK_CLICKS) {
-        console.warn("⚠️ Click tracking is disabled");
+        logger.warn("⚠️ Click tracking is disabled");
         return null;
       }
 
@@ -94,6 +98,7 @@ class AnalyticsService {
       const device = this.parseUserAgent(userAgent);
       const isBot = this.detectBot(userAgent);
       const isUnique = await this.isUniqueClick(url._id, ipHash);
+
 
       const clickRecord = {
         url: url._id,
@@ -114,7 +119,7 @@ class AnalyticsService {
       };
 
       const click = await Click.createClick(clickRecord);
-      console.log("✅ Click recorded:", {
+      logger.info("✅ Click recorded:", {
         clickId: click._id,
         urlId: url._id,
         isUnique,
@@ -134,7 +139,7 @@ class AnalyticsService {
           lastQrScanAt: new Date(),
         });
 
-        console.log("✅ QR scan tracked:", {
+        logger.info("✅ QR scan tracked:", {
           clickCount: url.clickCount + 1,
           qrScanCount: (url.qrScanCount || 0) + 1,
           uniqueQrScanCount: (url.uniqueQrScanCount || 0) + (isUnique ? 1 : 0),
@@ -145,14 +150,14 @@ class AnalyticsService {
           const qrCode = await QRCodeModel.findOne({ url: url._id });
           if (qrCode) {
             await qrCode.incrementScan(isUnique);
-            console.log("✅ QRCode model scan count updated");
+            logger.info("✅ QRCode model scan count updated");
           }
         } catch (qrError) {
-          console.error("❌ Error updating QRCode model scan count:", qrError);
+          logger.error("❌ Error updating QRCode model scan count:", qrError);
         }
       } else {
         await url.incrementClick(isUnique);
-        console.log("✅ URL click count incremented:", {
+        logger.info("✅ URL click count incremented:", {
           clickCount: url.clickCount + 1,
           uniqueClickCount: url.uniqueClickCount + (isUnique ? 1 : 0),
         });
@@ -162,7 +167,7 @@ class AnalyticsService {
 
       return click;
     } catch (error) {
-      console.error("Error recording click:", error);
+      logger.error("Error recording click:", error);
       throw error;
     }
   }
@@ -211,7 +216,7 @@ class AnalyticsService {
       const data = response.data;
 
       if (data.status === "fail") {
-        console.warn(
+        logger.warn(
           "⚠️ Geolocation lookup failed:",
           data.message,
           "for IP:",
@@ -237,7 +242,7 @@ class AnalyticsService {
 
       return location;
     } catch (error) {
-      console.error("❌ Error getting location from IP:", ipAddress, error);
+      logger.error("❌ Error getting location from IP:", ipAddress, error);
       return {};
     }
   }
@@ -266,7 +271,7 @@ class AnalyticsService {
         vendor: parsed.device?.vendor,
       };
     } catch (error) {
-      console.error("Error parsing user agent:", error);
+      logger.error("Error parsing user agent:", error);
       return { type: "unknown" };
     }
   }
@@ -323,7 +328,7 @@ class AnalyticsService {
 
       return !existingClick;
     } catch (error) {
-      console.error("Error checking unique click:", error);
+      logger.error("Error checking unique click:", error);
       return false;
     }
   }
@@ -381,7 +386,7 @@ class AnalyticsService {
         { upsert: true, new: true },
       );
     } catch (error) {
-      console.error("Error updating analytics summaries:", error);
+      logger.error("Error updating analytics summaries:", error);
     }
   }
 
@@ -451,7 +456,7 @@ class AnalyticsService {
 
       return analyticsData;
     } catch (error) {
-      console.error("Error getting URL analytics:", error);
+      logger.error("Error getting URL analytics:", error);
       throw error;
     }
   }
@@ -829,7 +834,7 @@ class AnalyticsService {
         },
       };
     } catch (error) {
-      console.error("Error getting dashboard analytics:", error);
+      logger.error("Error getting dashboard analytics:", error);
       throw error;
     }
   }
@@ -1058,7 +1063,7 @@ class AnalyticsService {
 
       return exportData;
     } catch (error) {
-      console.error("Error exporting analytics:", error);
+      logger.error("Error exporting analytics:", error);
       throw error;
     }
   }

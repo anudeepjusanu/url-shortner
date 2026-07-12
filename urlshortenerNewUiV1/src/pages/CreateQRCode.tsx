@@ -12,16 +12,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, QrCode, Palette, Maximize, Download, ChevronDown, Link2, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  QrCode,
+  Palette,
+  Maximize,
+  Download,
+  ChevronDown,
+  Link2,
+  Search,
+} from "lucide-react";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 import { myLinksService, qrCodeService } from "@/services/jwtService";
 import { QRCodeCanvas } from "qrcode.react";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const CreateQRCode = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  useRequireEditAccess("/dashboard/qr-codes");
+  const { activeProject, isAllProjectsView } = useProject();
   const [searchParams] = useSearchParams();
 
   // Link picker state
@@ -38,14 +51,19 @@ const CreateQRCode = () => {
   const [fgColor, setFgColor] = useState("#1a2744");
   const [bgColor, setBgColor] = useState("#ffffff");
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState<"shortening" | "generating" | null>(null);
+  const [loadingStep, setLoadingStep] = useState<
+    "shortening" | "generating" | null
+  >(null);
   const [error, setError] = useState("");
 
   // Fetch all user links on mount
   useEffect(() => {
     const fetchLinks = async () => {
       try {
-        const res = await myLinksService.getAll({ limit: 100 });
+        const res = await myLinksService.getAll({
+          limit: 100,
+          projectId: isAllProjectsView ? undefined : activeProject?.id,
+        });
         const links = res?.data?.urls ?? [];
         setAllLinks(links);
 
@@ -58,7 +76,9 @@ const CreateQRCode = () => {
             // Build the short URL to encode in the QR
             const code = match.customCode || match.shortCode || "";
             const domain = match.domain || window.location.origin;
-            const shortUrl = match.shortUrl || `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
+            const shortUrl =
+              match.shortUrl ||
+              `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
             setUrl(shortUrl);
             setLabel(match.title || "");
           }
@@ -70,12 +90,14 @@ const CreateQRCode = () => {
       }
     };
     fetchLinks();
-  }, []);
+  }, [activeProject?.id, isAllProjectsView]);
 
   // Close picker on outside click or Escape
   useEffect(() => {
     if (!pickerOpen) return;
-    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPickerOpen(false); };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPickerOpen(false);
+    };
     const handleClick = (e: MouseEvent) => {
       const picker = document.getElementById("link-picker-root");
       if (picker && !picker.contains(e.target as Node)) setPickerOpen(false);
@@ -102,7 +124,9 @@ const CreateQRCode = () => {
     setSelectedLink(link);
     const code = link.customCode || link.shortCode || "";
     const domain = link.domain || window.location.origin;
-    const shortUrl = link.shortUrl || `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
+    const shortUrl =
+      link.shortUrl ||
+      `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
     setUrl(shortUrl);
     setLabel(link.title || "");
     setPickerOpen(false);
@@ -112,7 +136,9 @@ const CreateQRCode = () => {
   // ── Resolve URL to a link ID ─────────────────────────────────────────────
   // Returns existing link ID if the URL is already a known short link,
   // otherwise creates a new short link and returns its ID.
-  const resolveToLinkId = async (inputUrl: string): Promise<{ urlId: string; isNew: boolean; hasExistingQR: boolean }> => {
+  const resolveToLinkId = async (
+    inputUrl: string,
+  ): Promise<{ urlId: string; isNew: boolean; hasExistingQR: boolean }> => {
     const trimmed = inputUrl.trim();
 
     // 1. If a link was explicitly selected from the picker, use it directly
@@ -128,9 +154,15 @@ const CreateQRCode = () => {
     //    (user may have pasted a short URL like https://snip.sa/abc)
     const existingMatch = allLinks.find((l) => {
       const code = l.customCode || l.shortCode || "";
-      const rawDomain = (l.domain || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
-      const shortUrl = (l.shortUrl || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
-      const trimmedClean = trimmed.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      const rawDomain = (l.domain || "")
+        .replace(/^https?:\/\//, "")
+        .replace(/\/$/, "");
+      const shortUrl = (l.shortUrl || "")
+        .replace(/^https?:\/\//, "")
+        .replace(/\/$/, "");
+      const trimmedClean = trimmed
+        .replace(/^https?:\/\//, "")
+        .replace(/\/$/, "");
 
       return (
         // Exact short URL match
@@ -157,6 +189,7 @@ const CreateQRCode = () => {
     const newLink = await myLinksService.create({
       originalUrl: trimmed,
       ...(label.trim() && { title: label.trim() }),
+      projectId: activeProject?.id,
     });
     const urlId = newLink?.data?.url?._id;
     if (!urlId) throw new Error("Failed to create short link");
@@ -187,11 +220,16 @@ const CreateQRCode = () => {
         await qrCodeService.generate(urlId, qrPayload);
       }
 
-      amplitudeService.track('QR Code', { autoShortened: isNew, updated: hasExistingQR });
-      fireConversion('qr_created');
+      amplitudeService.track("QR Code", {
+        autoShortened: isNew,
+        updated: hasExistingQR,
+      });
+      fireConversion("qr_created");
       navigate("/dashboard/qr-codes");
     } catch (err: any) {
-      setError(err.message || t("Failed to create QR code", "فشل إنشاء كود QR"));
+      setError(
+        err.message || t("Failed to create QR code", "فشل إنشاء كود QR"),
+      );
     } finally {
       setLoading(false);
       setLoadingStep(null);
@@ -218,7 +256,7 @@ const CreateQRCode = () => {
           <p className="text-muted-foreground font-body text-sm mb-8">
             {t(
               "Generate a QR code for any URL or short link",
-              "أنشئ كود QR لأي رابط أو رابط مختصر"
+              "أنشئ كود QR لأي رابط أو رابط مختصر",
             )}
           </p>
 
@@ -248,10 +286,18 @@ const CreateQRCode = () => {
                     <span className="text-muted-foreground">
                       {linksLoading
                         ? t("Loading links...", "جاري تحميل الروابط...")
-                        : t("Choose a link (optional)", "اختر رابطاً (اختياري)")}
+                        : t(
+                            "Choose a link (optional)",
+                            "اختر رابطاً (اختياري)",
+                          )}
                     </span>
                   )}
-                  <ChevronDown className={cn("w-4 h-4 text-muted-foreground shrink-0 transition-transform", pickerOpen && "rotate-180")} />
+                  <ChevronDown
+                    className={cn(
+                      "w-4 h-4 text-muted-foreground shrink-0 transition-transform",
+                      pickerOpen && "rotate-180",
+                    )}
+                  />
                 </button>
 
                 {pickerOpen && (
@@ -263,7 +309,10 @@ const CreateQRCode = () => {
                         <input
                           autoFocus
                           type="text"
-                          placeholder={t("Search links...", "ابحث في الروابط...")}
+                          placeholder={t(
+                            "Search links...",
+                            "ابحث في الروابط...",
+                          )}
                           value={pickerSearch}
                           onChange={(e) => setPickerSearch(e.target.value)}
                           className="w-full bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
@@ -280,7 +329,9 @@ const CreateQRCode = () => {
                         filteredLinks.map((link) => {
                           const code = link.customCode || link.shortCode || "";
                           const domain = link.domain || window.location.origin;
-                          const shortUrl = link.shortUrl || `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
+                          const shortUrl =
+                            link.shortUrl ||
+                            `${domain.startsWith("http") ? domain : `https://${domain}`}/${code}`;
                           return (
                             <button
                               key={link._id}
@@ -288,7 +339,8 @@ const CreateQRCode = () => {
                               onClick={() => handleSelectLink(link)}
                               className={cn(
                                 "w-full flex flex-col items-start px-4 py-3 text-start hover:bg-muted/60 transition-colors border-b border-border/50 last:border-0",
-                                selectedLink?._id === link._id && "bg-primary/5"
+                                selectedLink?._id === link._id &&
+                                  "bg-primary/5",
                               )}
                             >
                               <span className="text-sm font-medium text-foreground truncate w-full">
@@ -319,14 +371,24 @@ const CreateQRCode = () => {
               <Input
                 placeholder="https://example.com/your-page"
                 value={url}
-                onChange={(e) => { setUrl(e.target.value); setSelectedLink(null); }}
-                className={cn("h-12", selectedLink && "bg-muted/40 text-muted-foreground")}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setSelectedLink(null);
+                }}
+                className={cn(
+                  "h-12",
+                  selectedLink && "bg-muted/40 text-muted-foreground",
+                )}
                 readOnly={!!selectedLink}
                 dir="ltr"
               />
               {selectedLink && (
-                <p className="text-xs text-muted-foreground font-body truncate" title={selectedLink.originalUrl}>
-                  {t("Original URL:", "الرابط الأصلي:")} {selectedLink.originalUrl}
+                <p
+                  className="text-xs text-muted-foreground font-body truncate"
+                  title={selectedLink.originalUrl}
+                >
+                  {t("Original URL:", "الرابط الأصلي:")}{" "}
+                  {selectedLink.originalUrl}
                 </p>
               )}
             </div>
@@ -395,7 +457,11 @@ const CreateQRCode = () => {
                     onChange={(e) => setFgColor(e.target.value)}
                     className="w-12 h-12 rounded-lg border border-border cursor-pointer"
                   />
-                  <Input value={fgColor} onChange={(e) => setFgColor(e.target.value)} className="h-12 font-mono" />
+                  <Input
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="h-12 font-mono"
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -410,7 +476,11 @@ const CreateQRCode = () => {
                     onChange={(e) => setBgColor(e.target.value)}
                     className="w-12 h-12 rounded-lg border border-border cursor-pointer"
                   />
-                  <Input value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-12 font-mono" />
+                  <Input
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-12 font-mono"
+                  />
                 </div>
               </div>
             </div>
@@ -436,11 +506,13 @@ const CreateQRCode = () => {
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 {t(
                   "Auto-shortening your URL before generating the QR code...",
-                  "جاري اختصار الرابط تلقائياً قبل إنشاء كود QR..."
+                  "جاري اختصار الرابط تلقائياً قبل إنشاء كود QR...",
                 )}
               </p>
             )}
-            {error && <p className="text-sm text-destructive font-body">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive font-body">{error}</p>
+            )}
           </div>
         </div>
 
