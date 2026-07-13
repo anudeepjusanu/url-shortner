@@ -38,6 +38,16 @@ const dynamicQRCodeSchema = new mongoose.Schema(
       required: true,
       maxlength: 2048,
     },
+    // System domain this code's scanUrl was created under (e.g. qa.snip.sa
+    // vs qa.4r.sa) — pinned at creation so the displayed scanUrl doesn't
+    // drift if a second main domain is introduced later. Null for legacy
+    // codes created before this field existed.
+    domain: {
+      type: String,
+      default: null,
+      trim: true,
+      lowercase: true,
+    },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

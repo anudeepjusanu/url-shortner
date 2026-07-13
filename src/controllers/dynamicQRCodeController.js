@@ -7,6 +7,7 @@ const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
 const projectAccessService = require("../services/projectAccessService");
+const { resolvePublicDomain } = require("../utils/domainResolver");
 
 // Enterprise RBAC + legacy access checks. Solo accounts: unchanged,
 // creator-only. Enterprise accounts: governed by the code's own project +
@@ -57,7 +58,14 @@ const cacheKey = (code) => `dqr:${code}`;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const getScanUrl = (code) => {
+// Prefers the domain pinned at creation time so the displayed scanUrl
+// doesn't drift if a second main domain is introduced later; falls back to
+// the live env var for legacy codes created before `domain` was persisted.
+const getScanUrl = (code, domain) => {
+  if (domain) {
+    const protocol = domain.includes("localhost") ? "http://" : "https://";
+    return `${protocol}${domain}/dqr/${code}`;
+  }
   const base =
     config.BASE_URL || process.env.BASE_URL || "http://localhost:3015";
   return `${base}/dqr/${code}`;
@@ -185,7 +193,8 @@ exports.create = [
       );
 
       const code = await DynamicQRCode.generateUniqueCode();
-      const scanUrl = getScanUrl(code);
+      const domain = resolvePublicDomain(req);
+      const scanUrl = getScanUrl(code, domain);
 
       // Generate QR image and store as data URL
       const pngBuffer = await generateQRBuffer(scanUrl, customization);
@@ -198,6 +207,7 @@ exports.create = [
         creator,
         organization: req.user.organization || null,
         project: resolvedProjectId,
+        domain,
         customization,
         qrCodeData,
         destinationHistory: [{ url: destinationUrl, changedBy: creator }],
@@ -254,11 +264,9 @@ exports.list = async (req, res) => {
       DynamicQRCode.countDocuments(filter),
     ]);
 
-    const baseUrl =
-      config.BASE_URL || process.env.BASE_URL || "http://localhost:3015";
     const items = docs.map((d) => ({
       ...d,
-      scanUrl: `${baseUrl}/dqr/${d.code}`,
+      scanUrl: getScanUrl(d.code, d.domain),
     }));
 
     return res.json({
@@ -290,7 +298,7 @@ exports.get = async (req, res) => {
 
     return res.json({
       success: true,
-      data: { ...doc, scanUrl: getScanUrl(doc.code) },
+      data: { ...doc, scanUrl: getScanUrl(doc.code, doc.domain) },
     });
   } catch (err) {
     logger.error("DynamicQR get error:", err);
@@ -338,7 +346,7 @@ exports.update = async (req, res) => {
 
     if (regenerate) {
       const pngBuffer = await generateQRBuffer(
-        getScanUrl(doc.code),
+        getScanUrl(doc.code, doc.domain),
         doc.customization,
       );
       doc.qrCodeData = `data:image/png;base64,${pngBuffer.toString("base64")}`;
@@ -349,7 +357,7 @@ exports.update = async (req, res) => {
     return res.json({
       success: true,
       message: "Dynamic QR code updated",
-      data: { ...doc.toObject(), scanUrl: getScanUrl(doc.code) },
+      data: { ...doc.toObject(), scanUrl: getScanUrl(doc.code, doc.domain) },
     });
   } catch (err) {
     logger.error("DynamicQR update error:", err);
@@ -399,7 +407,7 @@ exports.updateDestination = [
         success: true,
         message:
           "Destination updated — existing QR codes now redirect to the new URL",
-        data: { ...doc.toObject(), scanUrl: getScanUrl(doc.code) },
+        data: { ...doc.toObject(), scanUrl: getScanUrl(doc.code, doc.domain) },
       });
     } catch (err) {
       logger.error("DynamicQR updateDestination error:", err);
@@ -442,7 +450,7 @@ exports.getAnalytics = async (req, res) => {
       scopedByIdFilter(req.params.id, req.user),
     )
       .select(
-        "code name destinationUrl scanCount uniqueScanCount lastScannedAt destinationHistory createdAt isActive creator organization project",
+        "code name destinationUrl domain scanCount uniqueScanCount lastScannedAt destinationHistory createdAt isActive creator organization project",
       )
       .lean();
 
@@ -456,7 +464,7 @@ exports.getAnalytics = async (req, res) => {
       success: true,
       data: {
         ...doc,
-        scanUrl: getScanUrl(doc.code),
+        scanUrl: getScanUrl(doc.code, doc.domain),
         destinationChanges: doc.destinationHistory.length,
       },
     });
@@ -485,7 +493,7 @@ exports.download = async (req, res) => {
       doc.customization.format ||
       "png"
     ).toLowerCase();
-    const scanUrl = getScanUrl(doc.code);
+    const scanUrl = getScanUrl(doc.code, doc.domain);
     const pngBuffer = await generateQRBuffer(scanUrl, doc.customization);
 
     const safeName = doc.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
