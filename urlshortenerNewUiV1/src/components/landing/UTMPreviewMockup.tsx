@@ -1,18 +1,35 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { Tag, Copy, Check, Link2 } from "lucide-react";
 import { useState } from "react";
 
 export const UTMPreview = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
   const [copied, setCopied] = useState(false);
 
   const params = [
-    { label: "Source", labelAr: "المصدر", value: "instagram", color: "hsl(var(--sky))" },
-    { label: "Medium", labelAr: "الوسيط", value: "story_link", color: "hsl(var(--navy))" },
-    { label: "Campaign", labelAr: "الحملة", value: "ramadan_2026", color: "hsl(340 60% 50%)" },
+    {
+      label: "Source",
+      labelAr: "المصدر",
+      value: "instagram",
+      color: "hsl(var(--sky))",
+    },
+    {
+      label: "Medium",
+      labelAr: "الوسيط",
+      value: "story_link",
+      color: "hsl(var(--navy))",
+    },
+    {
+      label: "Campaign",
+      labelAr: "الحملة",
+      value: "ramadan_2026",
+      color: "hsl(340 60% 50%)",
+    },
   ];
 
-  const finalUrl = "snip.sa/ramadan?utm_source=instagram&utm_medium=story_link&utm_campaign=ramadan_2026";
+  const finalUrl = `${brand.domain}/ramadan?utm_source=instagram&utm_medium=story_link&utm_campaign=ramadan_2026`;
 
   return (
     <div className="bg-white rounded-2xl border border-[hsl(var(--navy))]/10 shadow-elevated overflow-hidden">
@@ -32,7 +49,9 @@ export const UTMPreview = () => {
           </label>
           <div className="flex items-center gap-2 bg-[hsl(var(--navy))]/4 rounded-lg px-3 py-2.5">
             <Link2 className="w-3.5 h-3.5 text-[hsl(var(--navy))]/40 shrink-0" />
-            <span className="text-xs font-body text-[hsl(var(--navy))]/70 truncate">myshop.sa/offers/ramadan-2026</span>
+            <span className="text-xs font-body text-[hsl(var(--navy))]/70 truncate">
+              myshop.sa/offers/ramadan-2026
+            </span>
           </div>
         </div>
 
@@ -49,7 +68,9 @@ export const UTMPreview = () => {
                   {t(p.label, p.labelAr)}
                 </label>
                 <div className="bg-[hsl(var(--navy))]/4 rounded-md px-2.5 py-1.5">
-                  <span className="text-xs font-body text-[hsl(var(--navy))]">{p.value}</span>
+                  <span className="text-xs font-body text-[hsl(var(--navy))]">
+                    {p.value}
+                  </span>
                 </div>
               </div>
             </div>
@@ -66,7 +87,11 @@ export const UTMPreview = () => {
               onClick={() => setCopied(true)}
               className="flex items-center gap-1 text-[10px] font-body font-bold text-[hsl(var(--sky))] hover:text-[hsl(var(--navy))] transition-colors"
             >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copied ? (
+                <Check className="w-3 h-3" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
               {copied ? t("Copied!", "تم النسخ!") : t("Copy", "نسخ")}
             </button>
           </div>
@@ -85,8 +110,12 @@ export const UTMPreview = () => {
             { label: t("Conv.", "تحويل"), value: "12.4%" },
           ].map((stat, i) => (
             <div key={i} className="text-center flex-1">
-              <p className="text-sm font-display font-bold text-[hsl(var(--navy))]">{stat.value}</p>
-              <p className="text-[10px] font-body text-[hsl(var(--navy))]/40">{stat.label}</p>
+              <p className="text-sm font-display font-bold text-[hsl(var(--navy))]">
+                {stat.value}
+              </p>
+              <p className="text-[10px] font-body text-[hsl(var(--navy))]/40">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>

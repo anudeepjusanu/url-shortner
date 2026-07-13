@@ -29,6 +29,7 @@ const PageViewTracker = () => {
 
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { BrandProvider } from "@/contexts/BrandContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { UTMProvider } from "./contexts/UTMContext";
 import { ProjectProvider } from "./contexts/ProjectContext";
@@ -128,356 +129,358 @@ const PageLoader = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <ProjectProvider>
-            <UTMProvider>
-              <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <ScrollToTop />
-                  <AmplitudeInit />
-                  <PageViewTracker />
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route
-                        path="/forgot-password"
-                        element={<ForgotPassword />}
-                      />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/blog" element={<Blog />} />
-                      <Route path="/blog/:slug" element={<BlogPost />} />
-                      <Route
-                        path="/privacy-policy"
-                        element={<PrivacyPolicy />}
-                      />
-                      <Route path="/terms" element={<TermsAndConditions />} />
-                      <Route
-                        path="/dashboard"
-                        element={
-                          <ProtectedRoute>
-                            <Dashboard />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/links"
-                        element={
-                          <ProtectedRoute>
-                            <MyLinks />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/create-link"
-                        element={
-                          <ProtectedRoute>
-                            <CreateLink />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/qr-codes"
-                        element={
-                          <ProtectedRoute>
-                            <QRCodes />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/qr-codes/create"
-                        element={
-                          <ProtectedRoute>
-                            <CreateQRCode />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/analytics"
-                        element={
-                          <ProtectedRoute>
-                            <AnalyticsPage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/analytics/:linkId"
-                        element={
-                          <ProtectedRoute>
-                            <AnalyticsPage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/domains"
-                        element={
-                          <ProtectedRoute>
-                            <CustomDomains />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/domains/add"
-                        element={
-                          <ProtectedRoute>
-                            <AddDomain />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/profile"
-                        element={
-                          <ProtectedRoute>
-                            <Profile />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/api"
-                        element={
-                          <ProtectedRoute>
-                            <ApiDocs />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/users"
-                        element={
-                          <ProtectedRoute>
-                            <UserManagement />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/urls"
-                        element={
-                          <ProtectedRoute>
-                            <UrlManagement />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/team"
-                        element={
-                          <ProtectedRoute>
-                            <TeamOverview />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/team/:userId"
-                        element={
-                          <ProtectedRoute>
-                            <TeamMemberDetail />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/team-urls"
-                        element={
-                          <ProtectedRoute>
-                            <TeamUrls />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/invite/accept"
-                        element={
-                          <ProtectedRoute>
-                            <AcceptInvite />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-pages"
-                        element={
-                          <ProtectedRoute>
-                            <BioPages />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-pages/create"
-                        element={
-                          <ProtectedRoute>
-                            <BioPageEditor />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-pages/:id/edit"
-                        element={
-                          <ProtectedRoute>
-                            <BioPageEditor />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-wizard"
-                        element={
-                          <ProtectedRoute>
-                            <BioWizard />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-wizard/:id/edit"
-                        element={
-                          <ProtectedRoute>
-                            <BioWizard />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bio-builder/:id"
-                        element={
-                          <ProtectedRoute>
-                            <BioBuilder />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bulk-create"
-                        element={
-                          <ProtectedRoute>
-                            <BulkCreate />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/bulk-shorten"
-                        element={
-                          <ProtectedRoute>
-                            <BulkShorten />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/dynamic-qr"
-                        element={
-                          <ProtectedRoute>
-                            <DynamicQRCodes />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/dynamic-qr/create"
-                        element={
-                          <ProtectedRoute>
-                            <CreateDynamicQRCode />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/utm-builder"
-                        element={
-                          <ProtectedRoute>
-                            <UTMBuilder />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/utm-builder/create"
-                        element={
-                          <ProtectedRoute>
-                            <CreateUTMLink />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links"
-                        element={
-                          <ProtectedRoute>
-                            <DeepLinks />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links/apps"
-                        element={
-                          <ProtectedRoute>
-                            <AppRegistrations />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links/register-app"
-                        element={
-                          <ProtectedRoute>
-                            <CreateAppRegistration />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links/register-app/:id/edit"
-                        element={
-                          <ProtectedRoute>
-                            <CreateAppRegistration />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links/create"
-                        element={
-                          <ProtectedRoute>
-                            <CreateDeepLink />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard/deep-links/:urlId/edit"
-                        element={
-                          <ProtectedRoute>
-                            <CreateDeepLink />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/bio/:username"
-                        element={<PublicBioPage />}
-                      />
-                      {/* Public error page for failed dynamic QR scans — no auth required */}
-                      <Route path="/qr-error" element={<QRErrorPage />} />
-                      <Route
-                        path="/link-not-found"
-                        element={<LinkNotFoundPage />}
-                      />
-                      <Route path="/blocked" element={<BlockedLinkPage />} />
-                      <Route path="/shorten" element={<ShortenLinkFlow />} />
-                      <Route
-                        path="/features/url-shortening"
-                        element={<FeatureUrlShortening />}
-                      />
-                      <Route
-                        path="/features/qr-codes"
-                        element={<FeatureQRCodes />}
-                      />
-                      <Route
-                        path="/features/link-in-bio"
-                        element={<FeatureLinkInBio />}
-                      />
-                      <Route
-                        path="/features/utm-tracking"
-                        element={<FeatureUTMTracking />}
-                      />
-                      <Route
-                        path="/features/custom-domains"
-                        element={<FeatureCustomDomains />}
-                      />
-                      <Route path="/features/api" element={<FeatureAPI />} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </BrowserRouter>
-              </GoogleOAuthProvider>
-            </UTMProvider>
-          </ProjectProvider>
-        </AuthProvider>
-      </LanguageProvider>
+      <BrandProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <ProjectProvider>
+              <UTMProvider>
+                <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <ScrollToTop />
+                    <AmplitudeInit />
+                    <PageViewTracker />
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route
+                          path="/forgot-password"
+                          element={<ForgotPassword />}
+                        />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/blog/:slug" element={<BlogPost />} />
+                        <Route
+                          path="/privacy-policy"
+                          element={<PrivacyPolicy />}
+                        />
+                        <Route path="/terms" element={<TermsAndConditions />} />
+                        <Route
+                          path="/dashboard"
+                          element={
+                            <ProtectedRoute>
+                              <Dashboard />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/links"
+                          element={
+                            <ProtectedRoute>
+                              <MyLinks />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/create-link"
+                          element={
+                            <ProtectedRoute>
+                              <CreateLink />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/qr-codes"
+                          element={
+                            <ProtectedRoute>
+                              <QRCodes />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/qr-codes/create"
+                          element={
+                            <ProtectedRoute>
+                              <CreateQRCode />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/analytics"
+                          element={
+                            <ProtectedRoute>
+                              <AnalyticsPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/analytics/:linkId"
+                          element={
+                            <ProtectedRoute>
+                              <AnalyticsPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/domains"
+                          element={
+                            <ProtectedRoute>
+                              <CustomDomains />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/domains/add"
+                          element={
+                            <ProtectedRoute>
+                              <AddDomain />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/profile"
+                          element={
+                            <ProtectedRoute>
+                              <Profile />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/api"
+                          element={
+                            <ProtectedRoute>
+                              <ApiDocs />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/users"
+                          element={
+                            <ProtectedRoute>
+                              <UserManagement />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/urls"
+                          element={
+                            <ProtectedRoute>
+                              <UrlManagement />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/team"
+                          element={
+                            <ProtectedRoute>
+                              <TeamOverview />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/team/:userId"
+                          element={
+                            <ProtectedRoute>
+                              <TeamMemberDetail />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/team-urls"
+                          element={
+                            <ProtectedRoute>
+                              <TeamUrls />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/invite/accept"
+                          element={
+                            <ProtectedRoute>
+                              <AcceptInvite />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-pages"
+                          element={
+                            <ProtectedRoute>
+                              <BioPages />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-pages/create"
+                          element={
+                            <ProtectedRoute>
+                              <BioPageEditor />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-pages/:id/edit"
+                          element={
+                            <ProtectedRoute>
+                              <BioPageEditor />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-wizard"
+                          element={
+                            <ProtectedRoute>
+                              <BioWizard />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-wizard/:id/edit"
+                          element={
+                            <ProtectedRoute>
+                              <BioWizard />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bio-builder/:id"
+                          element={
+                            <ProtectedRoute>
+                              <BioBuilder />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bulk-create"
+                          element={
+                            <ProtectedRoute>
+                              <BulkCreate />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/bulk-shorten"
+                          element={
+                            <ProtectedRoute>
+                              <BulkShorten />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/dynamic-qr"
+                          element={
+                            <ProtectedRoute>
+                              <DynamicQRCodes />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/dynamic-qr/create"
+                          element={
+                            <ProtectedRoute>
+                              <CreateDynamicQRCode />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/utm-builder"
+                          element={
+                            <ProtectedRoute>
+                              <UTMBuilder />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/utm-builder/create"
+                          element={
+                            <ProtectedRoute>
+                              <CreateUTMLink />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links"
+                          element={
+                            <ProtectedRoute>
+                              <DeepLinks />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links/apps"
+                          element={
+                            <ProtectedRoute>
+                              <AppRegistrations />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links/register-app"
+                          element={
+                            <ProtectedRoute>
+                              <CreateAppRegistration />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links/register-app/:id/edit"
+                          element={
+                            <ProtectedRoute>
+                              <CreateAppRegistration />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links/create"
+                          element={
+                            <ProtectedRoute>
+                              <CreateDeepLink />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/dashboard/deep-links/:urlId/edit"
+                          element={
+                            <ProtectedRoute>
+                              <CreateDeepLink />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/bio/:username"
+                          element={<PublicBioPage />}
+                        />
+                        {/* Public error page for failed dynamic QR scans — no auth required */}
+                        <Route path="/qr-error" element={<QRErrorPage />} />
+                        <Route
+                          path="/link-not-found"
+                          element={<LinkNotFoundPage />}
+                        />
+                        <Route path="/blocked" element={<BlockedLinkPage />} />
+                        <Route path="/shorten" element={<ShortenLinkFlow />} />
+                        <Route
+                          path="/features/url-shortening"
+                          element={<FeatureUrlShortening />}
+                        />
+                        <Route
+                          path="/features/qr-codes"
+                          element={<FeatureQRCodes />}
+                        />
+                        <Route
+                          path="/features/link-in-bio"
+                          element={<FeatureLinkInBio />}
+                        />
+                        <Route
+                          path="/features/utm-tracking"
+                          element={<FeatureUTMTracking />}
+                        />
+                        <Route
+                          path="/features/custom-domains"
+                          element={<FeatureCustomDomains />}
+                        />
+                        <Route path="/features/api" element={<FeatureAPI />} />
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </BrowserRouter>
+                </GoogleOAuthProvider>
+              </UTMProvider>
+            </ProjectProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </BrandProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

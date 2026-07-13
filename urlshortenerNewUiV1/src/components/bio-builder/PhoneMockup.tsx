@@ -1,5 +1,12 @@
-import { BioBlock, BioTheme, LinkBlockData, SocialBlockData, WhatsAppBlockData } from "@/types/bio";
+import {
+  BioBlock,
+  BioTheme,
+  LinkBlockData,
+  SocialBlockData,
+  WhatsAppBlockData,
+} from "@/types/bio";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import BlockRenderer from "./BlockRenderer";
 import { getImageStyle } from "./ImageCropControl";
 import { allSocialPlatforms } from "./blocks/SocialIconsBlock";
@@ -12,10 +19,17 @@ interface Props {
   onSelectBlock: (id: string) => void;
 }
 
-const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) => {
+const PhoneMockup = ({
+  blocks,
+  theme,
+  selectedBlockId,
+  onSelectBlock,
+}: Props) => {
   const { lang, t } = useLanguage();
+  const brand = useBrand();
 
-  const isImageBackground = theme.backgroundType === "image" && theme.background.startsWith("url(");
+  const isImageBackground =
+    theme.backgroundType === "image" && theme.background.startsWith("url(");
   const imageUrl = isImageBackground
     ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
     : "";
@@ -31,7 +45,11 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
     theme.background.includes("gradient")
   ) {
     bgStyle = { background: theme.background };
-  } else if (theme.background.startsWith("#") || theme.background.startsWith("rgb") || theme.background.startsWith("hsl")) {
+  } else if (
+    theme.background.startsWith("#") ||
+    theme.background.startsWith("rgb") ||
+    theme.background.startsWith("hsl")
+  ) {
     bgStyle = { backgroundColor: theme.background };
   } else {
     bgStyle = { backgroundColor: "#ffffff" };
@@ -56,7 +74,10 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                 alt=""
                 aria-hidden="true"
                 className="absolute inset-0"
-                style={getImageStyle({ ...theme.backgroundTransform, fit: "cover" })}
+                style={getImageStyle({
+                  ...theme.backgroundTransform,
+                  fit: "cover",
+                })}
               />
             )}
 
@@ -67,13 +88,19 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
             <div className="relative z-0 h-full overflow-y-auto overflow-x-hidden scrollbar-hide">
               <div className="space-y-1.5 pb-4 pt-7 min-h-full flex flex-col">
                 {(() => {
-                  const visible = blocks.filter(b => b.visible);
+                  const visible = blocks.filter((b) => b.visible);
                   const linkLikeTypes = new Set(["link", "social", "whatsapp"]);
 
-                  const socialHref = (platform: string, username?: string, url?: string) => {
+                  const socialHref = (
+                    platform: string,
+                    username?: string,
+                    url?: string,
+                  ) => {
                     const social = allSocialPlatforms[platform];
                     if (url) return url;
-                    return username && social ? `${social.urlPrefix}${username.replace(/^@/, "")}` : "#";
+                    return username && social
+                      ? `${social.urlPrefix}${username.replace(/^@/, "")}`
+                      : "#";
                   };
 
                   type Item = { block: BioBlock; sourceId: string };
@@ -103,17 +130,26 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                     if (block.type === "social") {
                       const socialData = block.data as Partial<SocialBlockData>;
                       const platforms = socialData.platforms || [];
-                      const tagPlatforms = platforms.filter(p => (p.displayType || "tag") === "tag");
+                      const tagPlatforms = platforms.filter(
+                        (p) => (p.displayType || "tag") === "tag",
+                      );
                       if (tagPlatforms.length) {
-                        pushTag(block.id, { block: { ...block, data: { ...block.data, platforms: tagPlatforms } }, sourceId: block.id });
+                        pushTag(block.id, {
+                          block: {
+                            ...block,
+                            data: { ...block.data, platforms: tagPlatforms },
+                          },
+                          sourceId: block.id,
+                        });
                       }
                       platforms
-                        .filter(p => (p.displayType || "tag") === "button")
+                        .filter((p) => (p.displayType || "tag") === "button")
                         .forEach((p, idx) => {
                           const social = allSocialPlatforms[p.platform];
                           if (!social) return;
                           const useBrand = p.useBrandColors !== false;
-                          const brandFg = social.color === "#FFFC00" ? "#000" : "#fff";
+                          const brandFg =
+                            social.color === "#FFFC00" ? "#000" : "#fff";
                           pushButton(block.id, {
                             sourceId: block.id,
                             block: {
@@ -132,8 +168,12 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                                 buttonStyle: p.buttonStyle,
                                 cornerRadius: p.cornerRadius,
                                 shadow: p.shadow,
-                                buttonColor: p.buttonColor || (useBrand ? social.color : undefined),
-                                buttonTextColor: p.buttonTextColor || (useBrand ? brandFg : undefined),
+                                buttonColor:
+                                  p.buttonColor ||
+                                  (useBrand ? social.color : undefined),
+                                buttonTextColor:
+                                  p.buttonTextColor ||
+                                  (useBrand ? brandFg : undefined),
                                 shake: p.shake,
                                 useBrandColors: useBrand,
                                 brandPlatform: p.platform,
@@ -154,12 +194,16 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                     }
 
                     if (block.type === "whatsapp") {
-                      const whatsappData = block.data as Partial<WhatsAppBlockData>;
+                      const whatsappData =
+                        block.data as Partial<WhatsAppBlockData>;
                       const displayType = whatsappData.displayType || "tag";
                       if (displayType === "tag") {
                         pushTag(block.id, { block, sourceId: block.id });
                       } else {
-                        const phone = String(whatsappData.phone || "").replace(/\D/g, "");
+                        const phone = String(whatsappData.phone || "").replace(
+                          /\D/g,
+                          "",
+                        );
                         const message = String(whatsappData.message || "");
                         pushButton(block.id, {
                           sourceId: block.id,
@@ -180,7 +224,13 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                     }
                   });
 
-                  const renderItem = ({ block, sourceId }: { block: BioBlock; sourceId: string }) => (
+                  const renderItem = ({
+                    block,
+                    sourceId,
+                  }: {
+                    block: BioBlock;
+                    sourceId: string;
+                  }) => (
                     <BlockRenderer
                       key={block.id}
                       block={block}
@@ -198,7 +248,10 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                       const runTags: Item[] = [];
                       const runButtons: Item[] = [];
                       let j = i;
-                      while (j < visible.length && linkLikeTypes.has(visible[j].type)) {
+                      while (
+                        j < visible.length &&
+                        linkLikeTypes.has(visible[j].type)
+                      ) {
                         const id = visible[j].id;
                         const tItems = tagBuckets.get(id);
                         if (tItems) runTags.push(...tItems);
@@ -208,12 +261,17 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                       }
                       if (runTags.length) {
                         nodes.push(
-                          <div key={`tag-row-${i}`} className="flex items-center justify-center flex-wrap gap-2 px-4">
+                          <div
+                            key={`tag-row-${i}`}
+                            className="flex items-center justify-center flex-wrap gap-2 px-4"
+                          >
                             {runTags.map(renderItem)}
-                          </div>
+                          </div>,
                         );
                       }
-                      runButtons.forEach((item) => nodes.push(renderItem(item)));
+                      runButtons.forEach((item) =>
+                        nodes.push(renderItem(item)),
+                      );
                       i = j;
                       continue;
                     }
@@ -224,7 +282,7 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                         theme={theme}
                         isSelected={selectedBlockId === block.id}
                         onClick={() => onSelectBlock(block.id)}
-                      />
+                      />,
                     );
                     i++;
                   }
@@ -236,8 +294,12 @@ const PhoneMockup = ({ blocks, theme, selectedBlockId, onSelectBlock }: Props) =
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/20 text-xs font-semibold transition-all hover:scale-105 hover:bg-black/50"
                   >
                     <span>{t("Build your page at", "ابني صفحتك مع")}</span>
-                    <img src={logo} alt="logo" className="w-4 h-4 object-contain brightness-0 invert" />
-                    <span className="text-xs">SNIP</span>
+                    <img
+                      src={logo}
+                      alt="logo"
+                      className="w-4 h-4 object-contain brightness-0 invert"
+                    />
+                    <span className="text-xs">{brand.name.toUpperCase()}</span>
                   </a>
                 </div>
               </div>

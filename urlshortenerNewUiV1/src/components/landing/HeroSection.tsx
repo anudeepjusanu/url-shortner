@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
@@ -36,6 +37,7 @@ const HeroSection = () => {
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const { t } = useLanguage();
+  const brand = useBrand();
   const { user } = useAuth();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
@@ -243,7 +245,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="relative max-w-[360px] sm:max-w-md mx-auto lg:max-w-none lg:scale-[1.1] lg:translate-x-8 rtl:lg:-translate-x-8 origin-center"
           >
-            <UrlMorphCard />
+            <UrlMorphCard brandDomain={brand.domain} />
           </motion.div>
         </div>
       </div>
@@ -253,7 +255,7 @@ const HeroSection = () => {
 
 /* ─── URL morph + live analytics card ─── */
 
-const UrlMorphCard = () => {
+const UrlMorphCard = ({ brandDomain }: { brandDomain: string }) => {
   const { t } = useLanguage();
   const [step, setStep] = useState(0); // 0 = long, 1 = morphing, 2 = short + analytics
   const [clicks, setClicks] = useState(1247);
@@ -285,7 +287,7 @@ const UrlMorphCard = () => {
         <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
         <span className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--navy))]/15" />
         <span className="ms-3 text-[10px] font-body text-[hsl(var(--navy))]/40">
-          snip.sa · dashboard
+          {brandDomain} · dashboard
         </span>
       </div>
 
@@ -329,7 +331,8 @@ const UrlMorphCard = () => {
               className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-[hsl(var(--sky))]/8 border border-[hsl(var(--sky))]/25"
             >
               <span className="font-display font-bold text-base sm:text-lg text-[hsl(var(--navy))]">
-                snip.sa/<span className="text-[hsl(var(--sky))]">ramadan</span>
+                {brandDomain}/
+                <span className="text-[hsl(var(--sky))]">ramadan</span>
               </span>
               <span className="flex items-center gap-1 text-[10px] font-body font-bold text-[hsl(var(--sky))] bg-white px-2.5 py-1 rounded-full">
                 <Copy size={11} />

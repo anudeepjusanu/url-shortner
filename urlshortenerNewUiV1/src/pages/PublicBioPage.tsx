@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { bioPageAPI } from "@/services/api";
 import { Loader2, Link2, Share2, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -27,8 +28,14 @@ function useBioPageSEO(page: PublicPage | null) {
   useEffect(() => {
     if (!page) return;
 
-    const setMeta = (attr: "property" | "name", key: string, content: string) => {
-      let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+    const setMeta = (
+      attr: "property" | "name",
+      key: string,
+      content: string,
+    ) => {
+      let el = document.querySelector(
+        `meta[${attr}="${key}"]`,
+      ) as HTMLMetaElement | null;
       const created = !el;
       if (created) {
         el = document.createElement("meta");
@@ -63,6 +70,7 @@ function useBioPageSEO(page: PublicPage | null) {
 const PublicBioPage = () => {
   const { username } = useParams<{ username: string }>();
   const { t } = useLanguage();
+  const brand = useBrand();
   const [page, setPage] = useState<PublicPage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -72,16 +80,19 @@ const PublicBioPage = () => {
     if (!username) return;
     (async () => {
       try {
-        console.log('[PublicBioPage] Fetching bio page for username:', username);
-        const res = await bioPageAPI.getPublic(username) as any;
-        console.log('[PublicBioPage] Bio page data received:', res);
+        console.log(
+          "[PublicBioPage] Fetching bio page for username:",
+          username,
+        );
+        const res = (await bioPageAPI.getPublic(username)) as any;
+        console.log("[PublicBioPage] Bio page data received:", res);
         setPage(res.data);
         // Track view
         bioPageAPI.trackClick(username, "view").catch((err) => {
-          console.warn('[PublicBioPage] Failed to track view:', err);
+          console.warn("[PublicBioPage] Failed to track view:", err);
         });
       } catch (error) {
-        console.error('[PublicBioPage] Error fetching bio page:', error);
+        console.error("[PublicBioPage] Error fetching bio page:", error);
         setNotFound(true);
       } finally {
         setIsLoading(false);
@@ -98,9 +109,10 @@ const PublicBioPage = () => {
   const isImageBg = page
     ? theme.backgroundType === "image" && theme.background.startsWith("url(")
     : false;
-  const imageBgUrl = isImageBg && page
-    ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
-    : "";
+  const imageBgUrl =
+    isImageBg && page
+      ? theme.background.replace(/^url\((['"]?)(.*)\1\)$/, "$2")
+      : "";
 
   // Force html & body backgrounds to the bio page theme so no cream/white peeks
   // through at screen edges or behind browser chrome on mobile.
@@ -120,12 +132,12 @@ const PublicBioPage = () => {
     const bgValue = isImageBg
       ? "#000"
       : theme.backgroundType === "gradient" ||
-        theme.backgroundType === "mesh" ||
-        theme.backgroundType === "pattern" ||
-        theme.backgroundType === "noise" ||
-        theme.background.includes("gradient")
-      ? theme.background
-      : theme.background;
+          theme.backgroundType === "mesh" ||
+          theme.backgroundType === "pattern" ||
+          theme.backgroundType === "noise" ||
+          theme.background.includes("gradient")
+        ? theme.background
+        : theme.background;
 
     html.style.background = bgValue;
     html.style.backgroundColor = "";
@@ -168,7 +180,7 @@ const PublicBioPage = () => {
         <p className="text-muted-foreground max-w-sm">
           {t(
             `The bio page "@${username}" does not exist or has been unpublished.`,
-            `صفحة البايو "@${username}" غير موجودة أو تم إلغاء نشرها.`
+            `صفحة البايو "@${username}" غير موجودة أو تم إلغاء نشرها.`,
           )}
         </p>
         <Link
@@ -184,20 +196,26 @@ const PublicBioPage = () => {
   const bgStyle: React.CSSProperties = isImageBg
     ? { backgroundColor: "#000" }
     : theme.backgroundType === "gradient" ||
-      theme.backgroundType === "mesh" ||
-      theme.backgroundType === "pattern" ||
-      theme.backgroundType === "noise" ||
-      theme.background.includes("gradient")
-    ? { background: theme.background, backgroundSize: "cover", backgroundPosition: "center" }
-    : theme.background.startsWith("#") || theme.background.startsWith("rgb") || theme.background.startsWith("hsl")
-    ? { backgroundColor: theme.background }
-    : { backgroundColor: "#ffffff" };
+        theme.backgroundType === "mesh" ||
+        theme.backgroundType === "pattern" ||
+        theme.backgroundType === "noise" ||
+        theme.background.includes("gradient")
+      ? {
+          background: theme.background,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }
+      : theme.background.startsWith("#") ||
+          theme.background.startsWith("rgb") ||
+          theme.background.startsWith("hsl")
+        ? { backgroundColor: theme.background }
+        : { backgroundColor: "#ffffff" };
 
   const hasWhatsApp = page.blocks.some(
-    (b) => b.type === "whatsapp" && b.visible !== false
+    (b) => b.type === "whatsapp" && b.visible !== false,
   );
   const whatsAppBlock = page.blocks.find(
-    (b) => b.type === "whatsapp" && b.visible !== false
+    (b) => b.type === "whatsapp" && b.visible !== false,
   );
 
   const handleLinkClick = (blockId: string) => {
@@ -262,8 +280,12 @@ const PublicBioPage = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/20 text-sm font-semibold transition-all hover:scale-105 hover:bg-black/50 shadow-sm"
           >
             <span>{t("Build your page at", "ابني صفحتك مع")}</span>
-            <img src={logo} alt="SNIP" className="w-5 h-5 object-contain brightness-0 invert" />
-            <span className="text-base">SNIP</span>
+            <img
+              src={logo}
+              alt={brand.name}
+              className="w-5 h-5 object-contain brightness-0 invert"
+            />
+            <span className="text-base">{brand.name.toUpperCase()}</span>
           </Link>
         </div>
       </div>
@@ -290,7 +312,12 @@ const PublicBioPage = () => {
         >
           <div
             className="w-full max-w-[480px] rounded-t-2xl p-6"
-            style={{ backgroundColor: isImageBg || theme.backgroundType === "gradient" ? "#fff" : theme.background }}
+            style={{
+              backgroundColor:
+                isImageBg || theme.backgroundType === "gradient"
+                  ? "#fff"
+                  : theme.background,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-foreground mb-4">
@@ -298,14 +325,30 @@ const PublicBioPage = () => {
             </h3>
             <div className="flex gap-3 justify-center mb-4">
               {[
-                { label: "WhatsApp", action: () => window.open(`https://wa.me/?text=${encodeURIComponent(window.location.href)}`, "_blank") },
-                { label: "Twitter", action: () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`, "_blank") },
+                {
+                  label: "WhatsApp",
+                  action: () =>
+                    window.open(
+                      `https://wa.me/?text=${encodeURIComponent(window.location.href)}`,
+                      "_blank",
+                    ),
+                },
+                {
+                  label: "Twitter",
+                  action: () =>
+                    window.open(
+                      `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`,
+                      "_blank",
+                    ),
+                },
                 {
                   label: t("Copy Link", "نسخ الرابط"),
                   action: () => {
-                    navigator.clipboard.writeText(window.location.href).catch(() => {});
+                    navigator.clipboard
+                      .writeText(window.location.href)
+                      .catch(() => {});
                     setShowShare(false);
-                  }
+                  },
                 },
               ].map((item) => (
                 <button

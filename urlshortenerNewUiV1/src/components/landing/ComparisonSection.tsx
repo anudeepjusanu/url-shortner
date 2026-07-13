@@ -1,27 +1,91 @@
 import { Check, X, ShieldCheck, Zap, Globe, Languages } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { motion } from "framer-motion";
 
 const renderCell = (value: boolean | string, highlight = false) => {
-  if (value === true) return <div className={`w-7 h-7 rounded-full ${highlight ? "bg-[hsl(var(--sky))]/15" : "bg-[hsl(var(--navy))]/5"} flex items-center justify-center mx-auto`}><Check size={15} className="text-[hsl(var(--sky))]" /></div>;
-  if (value === false) return <div className="w-7 h-7 rounded-full bg-[hsl(var(--navy))]/5 flex items-center justify-center mx-auto"><X size={15} className="text-[hsl(var(--navy))]/30" /></div>;
-  if (value === "partial") return <span className="text-[hsl(var(--navy))]/60 text-sm">⚠️</span>;
-  if (highlight) return <span className="inline-flex items-center bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] font-body text-sm font-bold px-3 py-1 rounded-full">{value}</span>;
-  return <span className="text-[hsl(var(--navy))] font-body text-sm font-semibold">{value}</span>;
+  if (value === true)
+    return (
+      <div
+        className={`w-7 h-7 rounded-full ${highlight ? "bg-[hsl(var(--sky))]/15" : "bg-[hsl(var(--navy))]/5"} flex items-center justify-center mx-auto`}
+      >
+        <Check size={15} className="text-[hsl(var(--sky))]" />
+      </div>
+    );
+  if (value === false)
+    return (
+      <div className="w-7 h-7 rounded-full bg-[hsl(var(--navy))]/5 flex items-center justify-center mx-auto">
+        <X size={15} className="text-[hsl(var(--navy))]/30" />
+      </div>
+    );
+  if (value === "partial")
+    return <span className="text-[hsl(var(--navy))]/60 text-sm">⚠️</span>;
+  if (highlight)
+    return (
+      <span className="inline-flex items-center bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] font-body text-sm font-bold px-3 py-1 rounded-full">
+        {value}
+      </span>
+    );
+  return (
+    <span className="text-[hsl(var(--navy))] font-body text-sm font-semibold">
+      {value}
+    </span>
+  );
 };
 
 const ComparisonSection = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
 
   const comparisonData = [
-    { feature: t("Pricing", "السعر"), fourr: t("Free", "مجاني"), bitly: t("132 SAR/mo", "132 ريال/شهر"), tinyurl: t("60 SAR/mo", "60 ريال/شهر") },
-    { feature: t("Free Links/month", "روابط مجانية/شهر"), fourr: "1,000+", bitly: "500", tinyurl: "250" },
-    { feature: t("QR codes/month", "QR Codes/شهر"), fourr: "100+", bitly: "10", tinyurl: false },
-    { feature: t("Saudi hosting", "استضافة سعودية"), fourr: true, bitly: false, tinyurl: false },
-    { feature: t("Arabic interface", "واجهة عربية"), fourr: true, bitly: false, tinyurl: false },
-    { feature: t("WhatsApp support", "دعم واتساب"), fourr: true, bitly: false, tinyurl: false },
-    { feature: t("Redirect speed from Saudi", "سرعة التحويل من السعودية"), fourr: "10-30ms", bitly: "200-300ms", tinyurl: "250ms+" },
-    { feature: t("Hosted In KSA", "مستضاف في السعودية"), fourr: true, bitly: false, tinyurl: false },
+    {
+      feature: t("Pricing", "السعر"),
+      fourr: t("Free", "مجاني"),
+      bitly: t("132 SAR/mo", "132 ريال/شهر"),
+      tinyurl: t("60 SAR/mo", "60 ريال/شهر"),
+    },
+    {
+      feature: t("Free Links/month", "روابط مجانية/شهر"),
+      fourr: "1,000+",
+      bitly: "500",
+      tinyurl: "250",
+    },
+    {
+      feature: t("QR codes/month", "QR Codes/شهر"),
+      fourr: "100+",
+      bitly: "10",
+      tinyurl: false,
+    },
+    {
+      feature: t("Saudi hosting", "استضافة سعودية"),
+      fourr: true,
+      bitly: false,
+      tinyurl: false,
+    },
+    {
+      feature: t("Arabic interface", "واجهة عربية"),
+      fourr: true,
+      bitly: false,
+      tinyurl: false,
+    },
+    {
+      feature: t("WhatsApp support", "دعم واتساب"),
+      fourr: true,
+      bitly: false,
+      tinyurl: false,
+    },
+    {
+      feature: t("Redirect speed from Saudi", "سرعة التحويل من السعودية"),
+      fourr: "10-30ms",
+      bitly: "200-300ms",
+      tinyurl: "250ms+",
+    },
+    {
+      feature: t("Hosted In KSA", "مستضاف في السعودية"),
+      fourr: true,
+      bitly: false,
+      tinyurl: false,
+    },
   ];
 
   return (
@@ -35,12 +99,15 @@ const ComparisonSection = () => {
           className="text-center max-w-3xl mx-auto mb-14"
         >
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
-            {t("Built for the Saudi market not just translated", "مبني للسوق السعودي مو مجرد ترجمة")}
+            {t(
+              "Built for the Saudi market not just translated",
+              "مبني للسوق السعودي مو مجرد ترجمة",
+            )}
           </h2>
           <p className="mt-5 font-body text-base md:text-lg text-[hsl(var(--navy))]/65">
             {t(
-              "Sites like Bitly and other foreign platforms are generic. snip.sa is built from the ground up for the Saudi user.",
-              "مواقع مثل Bitly وغيرها منصات أجنبية عامة. أما snip.sa مبني من الصفر للمستخدم السعودي."
+              `Sites like Bitly and other foreign platforms are generic. ${brand.domain} is built from the ground up for the Saudi user.`,
+              `مواقع مثل Bitly وغيرها منصات أجنبية عامة. أما ${brand.domain} مبني من الصفر للمستخدم السعودي.`,
             )}
           </p>
         </motion.div>
@@ -50,18 +117,24 @@ const ComparisonSection = () => {
           {[
             {
               icon: ShieldCheck,
-              title: t("Your data protected inside the Kingdom", "بياناتك محمية داخل المملكة"),
+              title: t(
+                "Your data protected inside the Kingdom",
+                "بياناتك محمية داخل المملكة",
+              ),
               desc: t(
                 "Our servers are in Saudi Arabia, PDPL compliant. Your data never leaves the Kingdom or gets shared with any external party.",
-                "سيرفراتنا في السعودية، ممتثلون لنظام حماية البيانات الشخصية PDPL. بياناتك ما تطلع من المملكة ولا تُشارك مع أي جهة خارجية."
+                "سيرفراتنا في السعودية، ممتثلون لنظام حماية البيانات الشخصية PDPL. بياناتك ما تطلع من المملكة ولا تُشارك مع أي جهة خارجية.",
               ),
             },
             {
               icon: Zap,
-              title: t("Fastest redirect from inside the Kingdom", "أسرع إعادة توجيه من داخل المملكة"),
+              title: t(
+                "Fastest redirect from inside the Kingdom",
+                "أسرع إعادة توجيه من داخل المملكة",
+              ),
               desc: t(
                 "Less than 30ms redirect time from Saudi Arabia your Saudi audience doesn't wait, faster than any foreign platform.",
-                "أقل من 30 ميلي ثانية لإعادة التوجيه من السعودية جمهورك السعودي لا ينتظر، وذلك أسرع من أي منصة أجنبية."
+                "أقل من 30 ميلي ثانية لإعادة التوجيه من السعودية جمهورك السعودي لا ينتظر، وذلك أسرع من أي منصة أجنبية.",
               ),
             },
             {
@@ -69,7 +142,7 @@ const ComparisonSection = () => {
               title: t("Saudi .sa domain support", "دعم النطاقات السعودية .sa"),
               desc: t(
                 "Use your Saudi .sa domain in your short links a feature you won't find on any foreign platform.",
-                "استخدم نطاقك السعودي .sa في روابطك المختصرة ميزة لا تجدها في أي منصة أجنبية."
+                "استخدم نطاقك السعودي .sa في روابطك المختصرة ميزة لا تجدها في أي منصة أجنبية.",
               ),
             },
             {
@@ -77,7 +150,7 @@ const ComparisonSection = () => {
               title: t("Fully Arabic interface", "واجهة عربية كاملة"),
               desc: t(
                 "The full platform in Arabic, built for right-to-left reading not just a Google translation.",
-                "المنصة كاملة بالعربي، مبنية للقراءة من اليمين لليسار مش مجرد ترجمة جوجل."
+                "المنصة كاملة بالعربي، مبنية للقراءة من اليمين لليسار مش مجرد ترجمة جوجل.",
               ),
             },
           ].map((card, i) => (
@@ -102,7 +175,6 @@ const ComparisonSection = () => {
           ))}
         </div>
 
-
         {/* Desktop table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -114,21 +186,40 @@ const ComparisonSection = () => {
           <table className="w-full bg-white rounded-3xl overflow-hidden shadow-card">
             <thead>
               <tr className="border-b border-[hsl(var(--navy))]/10">
-                <th className="text-start font-display font-bold text-[hsl(var(--navy))] text-sm py-5 px-6">{t("Feature", "الميزة")}</th>
-                <th className="text-center py-5 px-4">
-                  <span className="inline-flex items-center gap-1.5 bg-[hsl(var(--sky))] text-white font-display font-bold text-sm px-4 py-1.5 rounded-full">snip.sa</span>
+                <th className="text-start font-display font-bold text-[hsl(var(--navy))] text-sm py-5 px-6">
+                  {t("Feature", "الميزة")}
                 </th>
-                <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">Bitly</th>
-                <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">TinyURL</th>
+                <th className="text-center py-5 px-4">
+                  <span className="inline-flex items-center gap-1.5 bg-[hsl(var(--sky))] text-white font-display font-bold text-sm px-4 py-1.5 rounded-full">
+                    {brand.domain}
+                  </span>
+                </th>
+                <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">
+                  Bitly
+                </th>
+                <th className="text-center font-display font-bold text-[hsl(var(--navy))]/50 text-sm py-5 px-4">
+                  TinyURL
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[hsl(var(--navy))]/10">
               {comparisonData.map((row, i) => (
-                <tr key={i} className="hover:bg-[hsl(var(--cream))]/50 transition-colors">
-                  <td className="text-start text-[hsl(var(--navy))] font-body text-sm py-4 px-6">{row.feature}</td>
-                  <td className="text-center py-4 px-4">{renderCell(row.fourr, true)}</td>
-                  <td className="text-center py-4 px-4">{renderCell(row.bitly)}</td>
-                  <td className="text-center py-4 px-4">{renderCell(row.tinyurl)}</td>
+                <tr
+                  key={i}
+                  className="hover:bg-[hsl(var(--cream))]/50 transition-colors"
+                >
+                  <td className="text-start text-[hsl(var(--navy))] font-body text-sm py-4 px-6">
+                    {row.feature}
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    {renderCell(row.fourr, true)}
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    {renderCell(row.bitly)}
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    {renderCell(row.tinyurl)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -146,18 +237,26 @@ const ComparisonSection = () => {
               transition={{ duration: 0.3, delay: i * 0.04 }}
               className="bg-white rounded-2xl p-4 shadow-soft border border-[hsl(var(--navy))]/5"
             >
-              <p className="font-body text-sm font-bold text-[hsl(var(--navy))] mb-3">{row.feature}</p>
+              <p className="font-body text-sm font-bold text-[hsl(var(--navy))] mb-3">
+                {row.feature}
+              </p>
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
-                  <span className="text-[10px] font-display font-bold text-white bg-[hsl(var(--sky))] px-2 py-0.5 rounded-full">snip.sa</span>
+                  <span className="text-[10px] font-display font-bold text-white bg-[hsl(var(--sky))] px-2 py-0.5 rounded-full">
+                    {brand.domain}
+                  </span>
                   <div className="mt-2">{renderCell(row.fourr)}</div>
                 </div>
                 <div className="text-center">
-                  <span className="text-[10px] font-display font-bold text-[hsl(var(--navy))]/50">Bitly</span>
+                  <span className="text-[10px] font-display font-bold text-[hsl(var(--navy))]/50">
+                    Bitly
+                  </span>
                   <div className="mt-2">{renderCell(row.bitly)}</div>
                 </div>
                 <div className="text-center">
-                  <span className="text-[10px] font-display font-bold text-[hsl(var(--navy))]/50">TinyURL</span>
+                  <span className="text-[10px] font-display font-bold text-[hsl(var(--navy))]/50">
+                    TinyURL
+                  </span>
                   <div className="mt-2">{renderCell(row.tinyurl)}</div>
                 </div>
               </div>

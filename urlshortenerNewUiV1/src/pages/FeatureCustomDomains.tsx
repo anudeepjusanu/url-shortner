@@ -2,9 +2,21 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Globe, ArrowRight, Zap, KeyRound, Timer, Building2, ArrowLeftRight, Check, Settings, Rocket } from "lucide-react";
+import {
+  Globe,
+  ArrowRight,
+  Zap,
+  KeyRound,
+  Timer,
+  Building2,
+  ArrowLeftRight,
+  Check,
+  Settings,
+  Rocket,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
@@ -19,6 +31,7 @@ const fadeUp = {
 
 const FeatureCustomDomains = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
   const { smartLink } = useSmartLink();
 
   const steps = [
@@ -26,19 +39,28 @@ const FeatureCustomDomains = () => {
       num: "1",
       icon: Globe,
       title: t("Add your domain", "أضف نطاقك"),
-      desc: t("Enter your custom domain in the dashboard. Like go.myshop.sa or links.agency.com.", "أدخل نطاقك المخصص في لوحة التحكم. مثل go.متجري.sa أو links.agency.com."),
+      desc: t(
+        "Enter your custom domain in the dashboard. Like go.myshop.sa or links.agency.com.",
+        "أدخل نطاقك المخصص في لوحة التحكم. مثل go.متجري.sa أو links.agency.com.",
+      ),
     },
     {
       num: "2",
       icon: Settings,
       title: t("Update DNS", "حدّث DNS"),
-      desc: t("Add one CNAME record pointing to cname.snip.sa. We'll verify it automatically.", "أضف سجل CNAME واحد يشير لـ cname.snip.sa. بنتحقق منه تلقائياً."),
+      desc: t(
+        "Add one CNAME record pointing to cname.snip.sa. We'll verify it automatically.",
+        "أضف سجل CNAME واحد يشير لـ cname.snip.sa. بنتحقق منه تلقائياً.",
+      ),
     },
     {
       num: "3",
       icon: Check,
       title: t("Start using it", "ابدأ استخدامه"),
-      desc: t("All your new links will use your domain. Existing links keep working too.", "كل روابطك الجديدة بتستخدم نطاقك. الروابط الموجودة تستمر بالعمل."),
+      desc: t(
+        "All your new links will use your domain. Existing links keep working too.",
+        "كل روابطك الجديدة بتستخدم نطاقك. الروابط الموجودة تستمر بالعمل.",
+      ),
     },
   ];
 
@@ -46,29 +68,53 @@ const FeatureCustomDomains = () => {
     {
       icon: KeyRound,
       title: t("Free SSL certificate", "شهادة SSL مجانية"),
-      desc: t("Every custom domain gets automatic HTTPS. No extra configuration needed.", "كل نطاق مخصص يحصل على HTTPS تلقائي. بدون إعدادات إضافية."),
+      desc: t(
+        "Every custom domain gets automatic HTTPS. No extra configuration needed.",
+        "كل نطاق مخصص يحصل على HTTPS تلقائي. بدون إعدادات إضافية.",
+      ),
     },
     {
       icon: Timer,
       title: t("Instant activation", "تفعيل فوري"),
-      desc: t("Once DNS propagates, your domain is live. Usually takes less than 5 minutes.", "بمجرد انتشار DNS، نطاقك يشتغل. عادة يأخذ أقل من 5 دقائق."),
+      desc: t(
+        "Once DNS propagates, your domain is live. Usually takes less than 5 minutes.",
+        "بمجرد انتشار DNS، نطاقك يشتغل. عادة يأخذ أقل من 5 دقائق.",
+      ),
     },
     {
       icon: Building2,
       title: t("Saudi infrastructure", "بنية تحتية سعودية"),
-      desc: t("Your branded links are served from Saudi servers. Fast response times for local users.", "روابطك المميزة تُقدم من خوادم سعودية. أوقات استجابة سريعة للمستخدمين المحليين."),
+      desc: t(
+        "Your branded links are served from Saudi servers. Fast response times for local users.",
+        "روابطك المميزة تُقدم من خوادم سعودية. أوقات استجابة سريعة للمستخدمين المحليين.",
+      ),
     },
     {
       icon: ArrowLeftRight,
       title: t("Keep existing links", "حافظ على الروابط الحالية"),
-      desc: t("Switch domains anytime. Old links on snip.sa will always keep working.", "غيّر النطاق في أي وقت. الروابط القديمة على snip.sa تظل تشتغل."),
+      desc: t(
+        `Switch domains anytime. Old links on ${brand.domain} will always keep working.`,
+        `غيّر النطاق في أي وقت. الروابط القديمة على ${brand.domain} تظل تشتغل.`,
+      ),
     },
   ];
 
   const examples = [
-    { domain: "go.myshop.sa", path: "/ramadan-sale", type: t("E-commerce", "تجارة إلكترونية") },
-    { domain: "links.agency.com", path: "/client-report", type: t("Agency", "وكالة") },
-    { domain: "qr.restaurant.sa", path: "/menu", type: t("Restaurant", "مطعم") },
+    {
+      domain: "go.myshop.sa",
+      path: "/ramadan-sale",
+      type: t("E-commerce", "تجارة إلكترونية"),
+    },
+    {
+      domain: "links.agency.com",
+      path: "/client-report",
+      type: t("Agency", "وكالة"),
+    },
+    {
+      domain: "qr.restaurant.sa",
+      path: "/menu",
+      type: t("Restaurant", "مطعم"),
+    },
   ];
 
   return (
@@ -89,14 +135,16 @@ const FeatureCustomDomains = () => {
               </span>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
                 {t("Your brand.", "علامتك.")}{" "}
-                <span className="text-[hsl(var(--sky))]">{t("Your domain.", "نطاقك.")}</span>
+                <span className="text-[hsl(var(--sky))]">
+                  {t("Your domain.", "نطاقك.")}
+                </span>
                 <br className="hidden md:block" />
                 {t("Your links.", "روابطك.")}
               </h1>
               <p className="font-body text-lg leading-relaxed mb-8 max-w-xl mx-auto text-[hsl(var(--navy))]/60">
                 {t(
                   "Stop using generic short links. Use your own domain to build trust and brand recognition with every link you share.",
-                  "توقف عن استخدام روابط قصيرة عامة. استخدم نطاقك الخاص لبناء الثقة والتعرف على علامتك مع كل رابط تشاركه."
+                  "توقف عن استخدام روابط قصيرة عامة. استخدم نطاقك الخاص لبناء الثقة والتعرف على علامتك مع كل رابط تشاركه.",
                 )}
               </p>
               <Link to={smartLink("/signup", "/dashboard/domains")}>
@@ -122,9 +170,15 @@ const FeatureCustomDomains = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                   </div>
                   <div className="flex-1 bg-[hsl(var(--navy))]/[0.04] rounded-lg px-3 py-1 ms-2">
-                    <span className="text-[11px] font-mono text-[hsl(var(--navy))]/50">https://</span>
-                    <span className="text-[11px] font-mono text-[hsl(var(--navy))] font-bold">go.yourshop.sa</span>
-                    <span className="text-[11px] font-mono text-[hsl(var(--sky))]">/ramadan</span>
+                    <span className="text-[11px] font-mono text-[hsl(var(--navy))]/50">
+                      https://
+                    </span>
+                    <span className="text-[11px] font-mono text-[hsl(var(--navy))] font-bold">
+                      go.yourshop.sa
+                    </span>
+                    <span className="text-[11px] font-mono text-[hsl(var(--sky))]">
+                      /ramadan
+                    </span>
                   </div>
                 </div>
                 <div className="p-5 space-y-3">
@@ -142,9 +196,14 @@ const FeatureCustomDomains = () => {
                         </div>
                         <div>
                           <span className="text-sm font-display font-bold text-[hsl(var(--navy))] block">
-                            {ex.domain}<span className="text-[hsl(var(--sky))]">{ex.path}</span>
+                            {ex.domain}
+                            <span className="text-[hsl(var(--sky))]">
+                              {ex.path}
+                            </span>
                           </span>
-                          <span className="text-[10px] font-body text-[hsl(var(--navy))]/40">{ex.type}</span>
+                          <span className="text-[10px] font-body text-[hsl(var(--navy))]/40">
+                            {ex.type}
+                          </span>
                         </div>
                       </div>
                       <Rocket className="w-4 h-4 text-[hsl(var(--sky))]" />
@@ -166,15 +225,30 @@ const FeatureCustomDomains = () => {
             viewport={{ once: true }}
             className="text-center mb-14 md:mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5">
+            <motion.span
+              variants={fadeUp}
+              custom={0}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5"
+            >
               <Zap className="w-3.5 h-3.5" />
               {t("QUICK SETUP", "إعداد سريع")}
             </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]">
+            <motion.h2
+              variants={fadeUp}
+              custom={1}
+              className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]"
+            >
               {t("Ready in 2 minutes", "جاهز في دقيقتين")}
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="font-body text-base mt-4 max-w-md mx-auto text-[hsl(var(--navy))]/50">
-              {t("Three simple steps to brand every link you share", "ثلاث خطوات بسيطة لتمييز كل رابط تشاركه")}
+            <motion.p
+              variants={fadeUp}
+              custom={2}
+              className="font-body text-base mt-4 max-w-md mx-auto text-[hsl(var(--navy))]/50"
+            >
+              {t(
+                "Three simple steps to brand every link you share",
+                "ثلاث خطوات بسيطة لتمييز كل رابط تشاركه",
+              )}
             </motion.p>
           </motion.div>
 
@@ -203,12 +277,16 @@ const FeatureCustomDomains = () => {
                     </div>
 
                     {/* Content */}
-                    <div className={`pb-10 ${isLast ? 'pb-0' : ''}`}>
+                    <div className={`pb-10 ${isLast ? "pb-0" : ""}`}>
                       <span className="text-[11px] font-body font-bold text-[hsl(var(--sky))]/60 uppercase tracking-wider">
                         {t("Step", "خطوة")} {s.num}
                       </span>
-                      <h3 className="font-display font-bold text-[hsl(var(--navy))] text-lg md:text-xl mt-1 mb-2">{s.title}</h3>
-                      <p className="font-body text-sm leading-relaxed text-[hsl(var(--navy))]/50 max-w-md">{s.desc}</p>
+                      <h3 className="font-display font-bold text-[hsl(var(--navy))] text-lg md:text-xl mt-1 mb-2">
+                        {s.title}
+                      </h3>
+                      <p className="font-body text-sm leading-relaxed text-[hsl(var(--navy))]/50 max-w-md">
+                        {s.desc}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -242,10 +320,18 @@ const FeatureCustomDomains = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5">
+            <motion.span
+              variants={fadeUp}
+              custom={0}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5"
+            >
               {t("BENEFITS", "المميزات")}
             </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]">
+            <motion.h2
+              variants={fadeUp}
+              custom={1}
+              className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]"
+            >
               {t("Why branded links matter", "ليش الروابط المميزة مهمة")}
             </motion.h2>
           </motion.div>
@@ -258,16 +344,22 @@ const FeatureCustomDomains = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.1 }}
-                className={`group flex flex-col md:flex-row items-center gap-6 md:gap-10 rounded-3xl bg-white border border-[hsl(var(--navy))]/[0.06] p-6 md:p-8 hover:shadow-elevated transition-all duration-300 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
+                className={`group flex flex-col md:flex-row items-center gap-6 md:gap-10 rounded-3xl bg-white border border-[hsl(var(--navy))]/[0.06] p-6 md:p-8 hover:shadow-elevated transition-all duration-300 ${i % 2 !== 0 ? "md:flex-row-reverse" : ""}`}
               >
                 {/* Icon area */}
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-[hsl(var(--sky))]/[0.07] flex items-center justify-center shrink-0 group-hover:bg-[hsl(var(--sky))]/[0.12] transition-colors duration-300">
                   <b.icon className="w-9 h-9 md:w-10 md:h-10 text-[hsl(var(--sky))]" />
                 </div>
                 {/* Text */}
-                <div className={`text-center md:text-start flex-1 ${i % 2 !== 0 ? 'md:text-end' : ''}`}>
-                  <h3 className="font-display font-bold text-[hsl(var(--navy))] text-lg md:text-xl mb-2">{b.title}</h3>
-                  <p className="font-body text-sm text-[hsl(var(--navy))]/50 leading-relaxed max-w-md">{b.desc}</p>
+                <div
+                  className={`text-center md:text-start flex-1 ${i % 2 !== 0 ? "md:text-end" : ""}`}
+                >
+                  <h3 className="font-display font-bold text-[hsl(var(--navy))] text-lg md:text-xl mb-2">
+                    {b.title}
+                  </h3>
+                  <p className="font-body text-sm text-[hsl(var(--navy))]/50 leading-relaxed max-w-md">
+                    {b.desc}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -284,10 +376,18 @@ const FeatureCustomDomains = () => {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5">
+            <motion.span
+              variants={fadeUp}
+              custom={0}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5"
+            >
               {t("COMPARISON", "مقارنة")}
             </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]">
+            <motion.h2
+              variants={fadeUp}
+              custom={1}
+              className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[hsl(var(--navy))]"
+            >
               {t("See the difference", "شف الفرق")}
             </motion.h2>
           </motion.div>
@@ -321,20 +421,43 @@ const FeatureCustomDomains = () => {
 
             {/* URL rows */}
             {[
-              { before: "snip.sa/xK9mzP", after: "go.myshop.sa/ramadan", label: t("Campaign link", "رابط حملة") },
-              { before: "snip.sa/abc123", after: "go.myshop.sa/newdrop", label: t("Product launch", "إطلاق منتج") },
-              { before: "snip.sa/7qRtWs", after: "go.myshop.sa/vip", label: t("VIP access", "وصول VIP") },
+              {
+                before: `${brand.domain}/xK9mzP`,
+                after: "go.myshop.sa/ramadan",
+                label: t("Campaign link", "رابط حملة"),
+              },
+              {
+                before: `${brand.domain}/abc123`,
+                after: "go.myshop.sa/newdrop",
+                label: t("Product launch", "إطلاق منتج"),
+              },
+              {
+                before: `${brand.domain}/7qRtWs`,
+                after: "go.myshop.sa/vip",
+                label: t("VIP access", "وصول VIP"),
+              },
             ].map((row, i) => (
-              <div key={i} className={`grid grid-cols-2 ${i < 2 ? 'border-b border-[hsl(var(--navy))]/[0.06]' : ''}`}>
+              <div
+                key={i}
+                className={`grid grid-cols-2 ${i < 2 ? "border-b border-[hsl(var(--navy))]/[0.06]" : ""}`}
+              >
                 {/* Before */}
                 <div className="px-6 py-5 border-e border-[hsl(var(--navy))]/[0.06]">
-                  <span className="text-[10px] font-body text-[hsl(var(--navy))]/30 block mb-1.5">{row.label}</span>
-                  <code className="text-sm font-mono text-[hsl(var(--navy))]/40 line-through decoration-red-300/50">{row.before}</code>
+                  <span className="text-[10px] font-body text-[hsl(var(--navy))]/30 block mb-1.5">
+                    {row.label}
+                  </span>
+                  <code className="text-sm font-mono text-[hsl(var(--navy))]/40 line-through decoration-red-300/50">
+                    {row.before}
+                  </code>
                 </div>
                 {/* After */}
                 <div className="px-6 py-5 bg-[hsl(var(--sky))]/[0.02]">
-                  <span className="text-[10px] font-body text-[hsl(var(--sky))]/50 block mb-1.5">{row.label}</span>
-                  <code className="text-sm font-mono text-[hsl(var(--navy))] font-medium">{row.after}</code>
+                  <span className="text-[10px] font-body text-[hsl(var(--sky))]/50 block mb-1.5">
+                    {row.label}
+                  </span>
+                  <code className="text-sm font-mono text-[hsl(var(--navy))] font-medium">
+                    {row.after}
+                  </code>
                 </div>
               </div>
             ))}
@@ -342,10 +465,14 @@ const FeatureCustomDomains = () => {
             {/* Bottom bar */}
             <div className="grid grid-cols-2 bg-[hsl(var(--navy))]/[0.02] border-t border-[hsl(var(--navy))]/[0.06]">
               <div className="px-6 py-4 border-e border-[hsl(var(--navy))]/[0.06]">
-                <p className="text-[11px] font-body text-[hsl(var(--navy))]/30">{t("Generic, forgettable", "عام وغير مميز")}</p>
+                <p className="text-[11px] font-body text-[hsl(var(--navy))]/30">
+                  {t("Generic, forgettable", "عام وغير مميز")}
+                </p>
               </div>
               <div className="px-6 py-4 bg-[hsl(var(--sky))]/[0.03]">
-                <p className="text-[11px] font-body text-[hsl(var(--sky))] font-semibold">{t("Branded, trustworthy", "مميز وموثوق")}</p>
+                <p className="text-[11px] font-body text-[hsl(var(--sky))] font-semibold">
+                  {t("Branded, trustworthy", "مميز وموثوق")}
+                </p>
               </div>
             </div>
           </motion.div>
