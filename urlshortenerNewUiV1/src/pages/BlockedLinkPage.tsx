@@ -1,12 +1,14 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
+import { useBrand } from "@/contexts/BrandContext";
 
 const APPEAL_EMAIL = "support@snip.sa";
 
 export default function BlockedLinkPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const brand = useBrand();
 
   const code = searchParams.get("code");
   const appealHref = `mailto:${APPEAL_EMAIL}?subject=${encodeURIComponent(
@@ -27,9 +29,9 @@ export default function BlockedLinkPage() {
       <div className="w-full max-w-6xl mx-auto px-6 md:px-12 py-16 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
         <div className="text-left">
           <div className="flex items-center gap-2 mb-10">
-            <img src={logoIcon} alt="Snip" className="h-6 w-6" />
+            <img src={logoIcon} alt={brand.name} className="h-6 w-6" />
             <span className="font-display font-bold text-lg text-foreground">
-              Snip
+              {brand.name}
             </span>
           </div>
 
@@ -47,18 +49,18 @@ export default function BlockedLinkPage() {
             dir="rtl"
             className="mt-6 text-left font-semibold text-sm md:text-base text-foreground"
           >
-            هذا الرابط يخالف سياسة الاستخدام المقبول لـ Snip
+            هذا الرابط يخالف سياسة الاستخدام المقبول لـ {brand.name}
           </p>
           <p className="mt-1 font-semibold text-sm md:text-base text-foreground">
-            This link violates Snip's acceptable use policy
+            This link violates {brand.name}'s acceptable use policy
           </p>
 
           <p
             dir="rtl"
             className="mt-6 text-left text-sm md:text-base text-muted-foreground leading-relaxed"
           >
-            قمنا بمراجعة هذا الرابط ووجدنا أنه يخالف سياساتنا. إذا كنت تعتقد
-            أن الرابط تم حظره عن طريق الخطأ، يمكنك التواصل معنا عبر {emailLink}
+            قمنا بمراجعة هذا الرابط ووجدنا أنه يخالف سياساتنا. إذا كنت تعتقد أن
+            الرابط تم حظره عن طريق الخطأ، يمكنك التواصل معنا عبر {emailLink}
           </p>
           <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">
             We reviewed this link and found it violates our policies. If you

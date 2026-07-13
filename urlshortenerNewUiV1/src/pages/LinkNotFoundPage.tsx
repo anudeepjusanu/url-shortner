@@ -1,6 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Link2Off, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useBrand } from "@/contexts/BrandContext";
 
 const STRINGS = {
   en: {
@@ -10,7 +11,7 @@ const STRINGS = {
     goHome: "Go to Home",
     code: "Link",
     dir: "ltr" as const,
-    fontClass: ""
+    fontClass: "",
   },
   ar: {
     title: "الرابط غير متاح",
@@ -19,8 +20,8 @@ const STRINGS = {
     goHome: "الصفحة الرئيسية",
     code: "الرابط",
     dir: "rtl" as const,
-    fontClass: "font-arabic"
-  }
+    fontClass: "font-arabic",
+  },
 } as const;
 
 type SupportedLang = keyof typeof STRINGS;
@@ -28,14 +29,15 @@ type SupportedLang = keyof typeof STRINGS;
 export default function LinkNotFoundPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const brand = useBrand();
 
   const rawLang = searchParams.get("lang") ?? "";
   const lang: SupportedLang =
     rawLang === "ar" || rawLang === "en"
       ? rawLang
       : navigator.language.startsWith("ar")
-      ? "ar"
-      : "en";
+        ? "ar"
+        : "en";
 
   const s = STRINGS[lang];
   const code = searchParams.get("code");
@@ -55,15 +57,21 @@ export default function LinkNotFoundPage() {
 
         <div className="space-y-3">
           <h1 className="text-2xl font-bold text-foreground">{s.title}</h1>
-          <p className="text-base font-medium text-muted-foreground">{s.subtitle}</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
+          <p className="text-base font-medium text-muted-foreground">
+            {s.subtitle}
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {s.body}
+          </p>
         </div>
 
         {code && (
           <div className="bg-muted rounded-lg px-4 py-3 inline-block">
             <p className="text-xs text-muted-foreground">
               {s.code}:{" "}
-              <span className="font-mono font-semibold text-foreground">{code}</span>
+              <span className="font-mono font-semibold text-foreground">
+                {code}
+              </span>
             </p>
           </div>
         )}
@@ -75,7 +83,7 @@ export default function LinkNotFoundPage() {
           </Button>
         </div>
 
-        <p className="text-xs text-muted-foreground/50">snip.sa</p>
+        <p className="text-xs text-muted-foreground/50">{brand.domain}</p>
       </div>
     </div>
   );

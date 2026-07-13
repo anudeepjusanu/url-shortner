@@ -1,18 +1,36 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
-  QrCode, ArrowRight, Scan, Smartphone, Palette, BarChart3,
-  Download, Globe, Check, Zap, Eye, RefreshCcw, Layers,
+  QrCode,
+  ArrowRight,
+  Scan,
+  Smartphone,
+  Palette,
+  BarChart3,
+  Download,
+  Globe,
+  Check,
+  Zap,
+  Eye,
+  RefreshCcw,
+  Layers,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
 /* ── Animated QR Grid ── */
-const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: number; color?: string }) => {
+const AnimatedQRGrid = ({
+  size = 240,
+  color = "hsl(350 54% 43%)",
+}: {
+  size?: number;
+  color?: string;
+}) => {
   const grid = 21;
   const cell = size / grid;
   // Generate a deterministic QR-like pattern
@@ -21,8 +39,17 @@ const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: num
       Array.from({ length: grid }, (_, x) => {
         // Finder patterns (top-left, top-right, bottom-left)
         const inFinder = (cx: number, cy: number) =>
-          x >= cx && x < cx + 7 && y >= cy && y < cy + 7 &&
-          !(x > cx && x < cx + 6 && y > cy && y < cy + 6 && !(x > cx + 1 && x < cx + 5 && y > cy + 1 && y < cy + 5));
+          x >= cx &&
+          x < cx + 7 &&
+          y >= cy &&
+          y < cy + 7 &&
+          !(
+            x > cx &&
+            x < cx + 6 &&
+            y > cy &&
+            y < cy + 6 &&
+            !(x > cx + 1 && x < cx + 5 && y > cy + 1 && y < cy + 5)
+          );
         if (inFinder(0, 0) || inFinder(14, 0) || inFinder(0, 14)) return 1;
         // Timing patterns
         if (y === 6 && x > 7 && x < 13) return x % 2 === 0 ? 1 : 0;
@@ -30,12 +57,17 @@ const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: num
         // Data area — seeded pseudo-random
         const seed = (x * 31 + y * 17 + x * y * 7) % 100;
         return seed < 45 ? 1 : 0;
-      })
-    )
+      }),
+    ),
   ).current;
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="drop-shadow-lg">
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="drop-shadow-lg"
+    >
       <rect width={size} height={size} rx={size * 0.06} fill="white" />
       {pattern.map((row, y) =>
         row.map((val, x) =>
@@ -50,20 +82,42 @@ const AnimatedQRGrid = ({ size = 240, color = "hsl(350 54% 43%)" }: { size?: num
               fill={color}
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + (x + y) * 0.008, duration: 0.25, type: "spring", stiffness: 400 }}
+              transition={{
+                delay: 0.4 + (x + y) * 0.008,
+                duration: 0.25,
+                type: "spring",
+                stiffness: 400,
+              }}
             />
-          ) : null
-        )
+          ) : null,
+        ),
       )}
     </svg>
   );
 };
 
 /* ── Orbiting dot ── */
-const OrbitDot = ({ radius, duration, delay, size = 6 }: { radius: number; duration: number; delay: number; size?: number }) => (
+const OrbitDot = ({
+  radius,
+  duration,
+  delay,
+  size = 6,
+}: {
+  radius: number;
+  duration: number;
+  delay: number;
+  size?: number;
+}) => (
   <motion.div
     className="absolute rounded-full bg-[hsl(var(--sky))] pointer-events-none"
-    style={{ width: size, height: size, top: "50%", left: "50%", marginTop: -size / 2, marginLeft: -size / 2 }}
+    style={{
+      width: size,
+      height: size,
+      top: "50%",
+      left: "50%",
+      marginTop: -size / 2,
+      marginLeft: -size / 2,
+    }}
     animate={{
       x: [radius, 0, -radius, 0, radius],
       y: [0, -radius, 0, radius, 0],
@@ -75,35 +129,82 @@ const OrbitDot = ({ radius, duration, delay, size = 6 }: { radius: number; durat
 
 const FeatureQRCodes = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
   const { smartLink } = useSmartLink();
   const [activeUseCase, setActiveUseCase] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const bentoRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const { scrollYProgress: bentoProgress } = useScroll({ target: bentoRef, offset: ["start end", "end start"] });
+  const { scrollYProgress: bentoProgress } = useScroll({
+    target: bentoRef,
+    offset: ["start end", "end start"],
+  });
   const bentoBlob1Y = useTransform(bentoProgress, [0, 1], [80, -80]);
   const bentoBlob2Y = useTransform(bentoProgress, [0, 1], [-60, 60]);
   const bentoBlob3Y = useTransform(bentoProgress, [0, 1], [40, -40]);
 
   const useCases = [
-    { emoji: "🍽️", title: t("Restaurant menus", "قوائم المطاعم"), desc: t("Customers scan to see your digital menu. Update dishes and prices anytime without reprinting.", "العملاء يمسحون لرؤية القائمة الرقمية. حدّث الأطباق والأسعار في أي وقت بدون إعادة طباعة."), url: "menu.restaurant.sa" },
-    { emoji: "📦", title: t("Product packaging", "تغليف المنتجات"), desc: t("Link to product details, usage instructions, or warranty registration directly from the box.", "وصّل لتفاصيل المنتج أو تعليمات الاستخدام أو تسجيل الضمان مباشرة من العلبة."), url: "product.sa/warranty" },
-    { emoji: "🎪", title: t("Events & expos", "الفعاليات والمعارض"), desc: t("Visitors scan for your portfolio, catalog, or contact form at your booth.", "الزوار يمسحون لمعرض أعمالك أو الكتالوج أو نموذج التواصل في ستاندك."), url: "expo.company.sa" },
-    { emoji: "💳", title: t("Business cards", "كروت العمل"), desc: t("Add a QR code to your card linking to your full digital profile.", "أضف كود QR لكرت العمل يوصل لملفك الرقمي الكامل."), url: "snip.sa/ahmed" },
+    {
+      emoji: "🍽️",
+      title: t("Restaurant menus", "قوائم المطاعم"),
+      desc: t(
+        "Customers scan to see your digital menu. Update dishes and prices anytime without reprinting.",
+        "العملاء يمسحون لرؤية القائمة الرقمية. حدّث الأطباق والأسعار في أي وقت بدون إعادة طباعة.",
+      ),
+      url: "menu.restaurant.sa",
+    },
+    {
+      emoji: "📦",
+      title: t("Product packaging", "تغليف المنتجات"),
+      desc: t(
+        "Link to product details, usage instructions, or warranty registration directly from the box.",
+        "وصّل لتفاصيل المنتج أو تعليمات الاستخدام أو تسجيل الضمان مباشرة من العلبة.",
+      ),
+      url: "product.sa/warranty",
+    },
+    {
+      emoji: "🎪",
+      title: t("Events & expos", "الفعاليات والمعارض"),
+      desc: t(
+        "Visitors scan for your portfolio, catalog, or contact form at your booth.",
+        "الزوار يمسحون لمعرض أعمالك أو الكتالوج أو نموذج التواصل في ستاندك.",
+      ),
+      url: "expo.company.sa",
+    },
+    {
+      emoji: "💳",
+      title: t("Business cards", "كروت العمل"),
+      desc: t(
+        "Add a QR code to your card linking to your full digital profile.",
+        "أضف كود QR لكرت العمل يوصل لملفك الرقمي الكامل.",
+      ),
+      url: `${brand.domain}/ahmed`,
+    },
   ];
 
   const bentoItems = [
     {
       title: t("Brand colors & logo", "ألوان وشعار البراند"),
-      desc: t("Match your brand identity perfectly", "طابق هوية علامتك بالكامل"),
+      desc: t(
+        "Match your brand identity perfectly",
+        "طابق هوية علامتك بالكامل",
+      ),
       icon: Palette,
       span: "md:col-span-1 md:row-span-2",
       visual: (
         <div className="mt-auto pt-6">
           <div className="flex gap-2 mb-4">
-            {["hsl(350 54% 43%)", "hsl(220 70% 55%)", "hsl(150 60% 45%)", "hsl(30 80% 55%)"].map((c, i) => (
+            {[
+              "hsl(350 54% 43%)",
+              "hsl(220 70% 55%)",
+              "hsl(150 60% 45%)",
+              "hsl(30 80% 55%)",
+            ].map((c, i) => (
               <motion.div
                 key={i}
                 initial={{ scale: 0 }}
@@ -116,7 +217,10 @@ const FeatureQRCodes = () => {
             ))}
           </div>
           <div className="bg-[hsl(var(--sky))]/5 rounded-xl p-4 flex items-center justify-center">
-            <motion.div animate={{ rotateY: [0, 8, -8, 0] }} transition={{ repeat: Infinity, duration: 5 }}>
+            <motion.div
+              animate={{ rotateY: [0, 8, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 5 }}
+            >
               <QrCode className="w-16 h-16 text-[hsl(var(--sky))]" />
             </motion.div>
           </div>
@@ -148,7 +252,10 @@ const FeatureQRCodes = () => {
     },
     {
       title: t("Dynamic QR codes", "أكواد QR ديناميكية"),
-      desc: t("Change destination without reprinting", "غيّر الوجهة بدون إعادة طباعة"),
+      desc: t(
+        "Change destination without reprinting",
+        "غيّر الوجهة بدون إعادة طباعة",
+      ),
       icon: RefreshCcw,
       span: "md:col-span-1",
       visual: (
@@ -185,7 +292,9 @@ const FeatureQRCodes = () => {
               transition={{ delay: 0.3 + i * 0.1 }}
               className="flex-1 bg-[hsl(var(--sky))]/5 rounded-lg py-2 text-center hover:bg-[hsl(var(--sky))]/10 transition-colors cursor-pointer"
             >
-              <p className="font-display font-bold text-xs text-[hsl(var(--navy))]">{f}</p>
+              <p className="font-display font-bold text-xs text-[hsl(var(--navy))]">
+                {f}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -215,12 +324,18 @@ const FeatureQRCodes = () => {
       <Navbar />
 
       {/* ═══ HERO — Immersive centered layout ═══ */}
-      <section ref={heroRef} className="section-cream min-h-[100vh] flex items-center relative overflow-hidden">
+      <section
+        ref={heroRef}
+        className="section-cream min-h-[100vh] flex items-center relative overflow-hidden"
+      >
         {/* Ambient */}
         <div className="absolute top-1/4 start-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[hsl(var(--sky))]/6 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 start-0 w-72 h-72 bg-[hsl(var(--navy))]/4 rounded-full blur-[80px] pointer-events-none" />
 
-        <motion.div style={{ scale: heroScale, opacity: heroOpacity }} className="container mx-auto px-6 relative py-32 md:py-40">
+        <motion.div
+          style={{ scale: heroScale, opacity: heroOpacity }}
+          className="container mx-auto px-6 relative py-32 md:py-40"
+        >
           <div className="max-w-5xl mx-auto text-center">
             <motion.span
               initial={{ opacity: 0, y: 10 }}
@@ -240,7 +355,9 @@ const FeatureQRCodes = () => {
             >
               {t("Print. Scan.", "اطبع. امسح.")}
               <br />
-              <span className="text-[hsl(var(--sky))]">{t("Track. Done.", "تابع. انجز.")}</span>
+              <span className="text-[hsl(var(--sky))]">
+                {t("Track. Done.", "تابع. انجز.")}
+              </span>
             </motion.h1>
 
             <motion.p
@@ -251,7 +368,7 @@ const FeatureQRCodes = () => {
             >
               {t(
                 "Branded QR codes with real time analytics. Free, customizable, and built for the Saudi market.",
-                "أكواد QR بعلامتك التجارية مع تحليلات لحظية. مجاناً، قابلة للتخصيص، ومبنية للسوق السعودي."
+                "أكواد QR بعلامتك التجارية مع تحليلات لحظية. مجاناً، قابلة للتخصيص، ومبنية للسوق السعودي.",
               )}
             </motion.p>
 
@@ -274,7 +391,9 @@ const FeatureQRCodes = () => {
               <div className="relative z-10 rounded-3xl p-5 bg-white shadow-elevated border border-[hsl(var(--navy))]/6">
                 <AnimatedQRGrid size={200} />
                 <div className="mt-3 text-center">
-                  <p className="font-mono text-xs text-[hsl(var(--sky))] font-bold">snip.sa/menu</p>
+                  <p className="font-mono text-xs text-[hsl(var(--sky))] font-bold">
+                    {brand.domain}/menu
+                  </p>
                 </div>
               </div>
 
@@ -289,8 +408,12 @@ const FeatureQRCodes = () => {
                   <Scan className="w-3.5 h-3.5 text-[hsl(var(--sky))]" />
                 </div>
                 <div>
-                  <p className="font-display text-[11px] font-bold text-[hsl(var(--navy))]">{t("Riyadh", "الرياض")}</p>
-                  <p className="text-[9px] font-body text-[hsl(var(--navy))]/35">iPhone 15</p>
+                  <p className="font-display text-[11px] font-bold text-[hsl(var(--navy))]">
+                    {t("Riyadh", "الرياض")}
+                  </p>
+                  <p className="text-[9px] font-body text-[hsl(var(--navy))]/35">
+                    iPhone 15
+                  </p>
                 </div>
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               </motion.div>
@@ -303,8 +426,12 @@ const FeatureQRCodes = () => {
               >
                 <BarChart3 className="w-4 h-4 text-[hsl(var(--sky))]" />
                 <div>
-                  <span className="font-display text-sm font-bold text-white">+23%</span>
-                  <span className="text-[10px] text-white/45 font-body ms-1.5">{t("this week", "هالأسبوع")}</span>
+                  <span className="font-display text-sm font-bold text-white">
+                    +23%
+                  </span>
+                  <span className="text-[10px] text-white/45 font-body ms-1.5">
+                    {t("this week", "هالأسبوع")}
+                  </span>
                 </div>
               </motion.div>
             </motion.div>
@@ -353,19 +480,28 @@ const FeatureQRCodes = () => {
                   num: "01",
                   icon: Globe,
                   title: t("Paste your link", "الصق رابطك"),
-                  desc: t("Enter any URL. Short link, menu, form, anything.", "أدخل أي رابط. رابط مختصر، قائمة، نموذج، أي شي."),
+                  desc: t(
+                    "Enter any URL. Short link, menu, form, anything.",
+                    "أدخل أي رابط. رابط مختصر، قائمة، نموذج، أي شي.",
+                  ),
                 },
                 {
                   num: "02",
                   icon: Palette,
                   title: t("Customize design", "خصّص التصميم"),
-                  desc: t("Pick your brand colors and add your logo.", "اختر ألوان علامتك وأضف شعارك."),
+                  desc: t(
+                    "Pick your brand colors and add your logo.",
+                    "اختر ألوان علامتك وأضف شعارك.",
+                  ),
                 },
                 {
                   num: "03",
                   icon: Download,
                   title: t("Download & track", "حمّل وتتبّع"),
-                  desc: t("Export as PNG or SVG. Every scan tracked automatically.", "صدّر بصيغة PNG أو SVG. كل مسح يتتبع تلقائياً."),
+                  desc: t(
+                    "Export as PNG or SVG. Every scan tracked automatically.",
+                    "صدّر بصيغة PNG أو SVG. كل مسح يتتبع تلقائياً.",
+                  ),
                 },
               ].map((step, i) => (
                 <motion.div
@@ -391,11 +527,17 @@ const FeatureQRCodes = () => {
                       >
                         <step.icon className="w-5 h-5 text-[hsl(var(--sky))]" />
                       </motion.div>
-                      <span className="font-display text-sm font-bold text-[hsl(var(--sky))]/40">{step.num}</span>
+                      <span className="font-display text-sm font-bold text-[hsl(var(--sky))]/40">
+                        {step.num}
+                      </span>
                     </div>
 
-                    <h3 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-2">{step.title}</h3>
-                    <p className="font-body text-sm text-[hsl(var(--navy))]/40 leading-relaxed">{step.desc}</p>
+                    <h3 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="font-body text-sm text-[hsl(var(--navy))]/40 leading-relaxed">
+                      {step.desc}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -405,10 +547,22 @@ const FeatureQRCodes = () => {
       </section>
 
       {/* ═══ CAPABILITIES — Bento grid ═══ */}
-      <section ref={bentoRef} className="section-cream-warm py-24 md:py-32 relative overflow-hidden">
-        <motion.div style={{ y: bentoBlob1Y }} className="absolute top-1/4 end-0 w-96 h-96 bg-[hsl(var(--sky))]/5 rounded-full blur-[100px] pointer-events-none" />
-        <motion.div style={{ y: bentoBlob2Y }} className="absolute bottom-1/4 start-0 w-72 h-72 bg-[hsl(var(--navy))]/4 rounded-full blur-[90px] pointer-events-none" />
-        <motion.div style={{ y: bentoBlob3Y }} className="absolute top-1/2 start-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[hsl(var(--sky))]/3 rounded-full blur-[140px] pointer-events-none" />
+      <section
+        ref={bentoRef}
+        className="section-cream-warm py-24 md:py-32 relative overflow-hidden"
+      >
+        <motion.div
+          style={{ y: bentoBlob1Y }}
+          className="absolute top-1/4 end-0 w-96 h-96 bg-[hsl(var(--sky))]/5 rounded-full blur-[100px] pointer-events-none"
+        />
+        <motion.div
+          style={{ y: bentoBlob2Y }}
+          className="absolute bottom-1/4 start-0 w-72 h-72 bg-[hsl(var(--navy))]/4 rounded-full blur-[90px] pointer-events-none"
+        />
+        <motion.div
+          style={{ y: bentoBlob3Y }}
+          className="absolute top-1/2 start-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[hsl(var(--sky))]/3 rounded-full blur-[140px] pointer-events-none"
+        />
 
         <div className="container mx-auto px-6 relative">
           <motion.div
@@ -421,7 +575,10 @@ const FeatureQRCodes = () => {
               {t("More than a QR code", "أكثر من مجرد كود QR")}
             </h2>
             <p className="font-body text-base text-[hsl(var(--navy))]/40 mt-4 max-w-md mx-auto">
-              {t("Everything you need to create, customize, and track your QR codes.", "كل اللي تحتاجه لإنشاء وتخصيص وتتبع أكوادك.")}
+              {t(
+                "Everything you need to create, customize, and track your QR codes.",
+                "كل اللي تحتاجه لإنشاء وتخصيص وتتبع أكوادك.",
+              )}
             </p>
           </motion.div>
 
@@ -439,9 +596,13 @@ const FeatureQRCodes = () => {
                   <div className="w-9 h-9 rounded-lg bg-[hsl(var(--sky))]/8 flex items-center justify-center shrink-0">
                     <item.icon className="w-4 h-4 text-[hsl(var(--sky))]" />
                   </div>
-                  <h3 className="font-display font-bold text-sm text-[hsl(var(--navy))]">{item.title}</h3>
+                  <h3 className="font-display font-bold text-sm text-[hsl(var(--navy))]">
+                    {item.title}
+                  </h3>
                 </div>
-                <p className="font-body text-xs text-[hsl(var(--navy))]/40 leading-relaxed">{item.desc}</p>
+                <p className="font-body text-xs text-[hsl(var(--navy))]/40 leading-relaxed">
+                  {item.desc}
+                </p>
                 {item.visual}
               </motion.div>
             ))}
@@ -494,7 +655,9 @@ const FeatureQRCodes = () => {
             >
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div>
-                  <span className="text-4xl mb-4 block">{useCases[activeUseCase].emoji}</span>
+                  <span className="text-4xl mb-4 block">
+                    {useCases[activeUseCase].emoji}
+                  </span>
                   <h3 className="font-display text-2xl md:text-3xl font-bold text-[hsl(var(--navy))] mb-3">
                     {useCases[activeUseCase].title}
                   </h3>
@@ -511,9 +674,14 @@ const FeatureQRCodes = () => {
                     className="bg-[hsl(var(--navy))]/[0.03] rounded-2xl p-5 flex flex-col items-center gap-3"
                   >
                     <QrCode className="w-14 h-14 text-[hsl(var(--navy))]/20" />
-                    <span className="font-mono text-[10px] text-[hsl(var(--navy))]/35">snip.sa/...</span>
+                    <span className="font-mono text-[10px] text-[hsl(var(--navy))]/35">
+                      {brand.domain}/...
+                    </span>
                   </motion.div>
-                  <motion.div animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                  <motion.div
+                    animate={{ x: [0, 6, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
                     <ArrowRight className="w-5 h-5 text-[hsl(var(--sky))]/50 rtl:rotate-180" />
                   </motion.div>
                   <motion.div
@@ -522,7 +690,9 @@ const FeatureQRCodes = () => {
                     className="bg-[hsl(var(--sky))]/[0.06] rounded-2xl p-5 flex flex-col items-center gap-3"
                   >
                     <Smartphone className="w-10 h-10 text-[hsl(var(--sky))]" />
-                    <span className="font-mono text-[10px] text-[hsl(var(--sky))]/50">{useCases[activeUseCase].url}</span>
+                    <span className="font-mono text-[10px] text-[hsl(var(--sky))]/50">
+                      {useCases[activeUseCase].url}
+                    </span>
                   </motion.div>
                 </div>
               </div>
@@ -550,10 +720,15 @@ const FeatureQRCodes = () => {
             </motion.div>
             <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--navy))] mb-5 leading-tight">
               {t("Your first QR code is", "أول كود QR لك")}{" "}
-              <span className="text-[hsl(var(--sky))]">{t("free.", "مجاناً.")}</span>
+              <span className="text-[hsl(var(--sky))]">
+                {t("free.", "مجاناً.")}
+              </span>
             </h2>
             <p className="font-body text-base md:text-lg text-[hsl(var(--navy))]/40 mb-10">
-              {t("No credit card. No limits. Start now.", "بدون بطاقة ائتمان. بدون حدود. ابدأ الحين.")}
+              {t(
+                "No credit card. No limits. Start now.",
+                "بدون بطاقة ائتمان. بدون حدود. ابدأ الحين.",
+              )}
             </p>
             <Link to={smartLink("/signup", "/dashboard/qr-codes")}>
               <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-10 py-7 text-lg hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/25">

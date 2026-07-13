@@ -1,9 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown, Link2, QrCode, User, Tag, Globe2, Code2 } from "lucide-react";
+import {
+  Menu,
+  X,
+  Globe,
+  ChevronDown,
+  Link2,
+  QrCode,
+  User,
+  Tag,
+  Globe2,
+  Code2,
+} from "lucide-react";
 import logoFull from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
 const Navbar = () => {
@@ -11,6 +23,7 @@ const Navbar = () => {
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [mobileFeatures, setMobileFeatures] = useState(false);
   const { lang, setLang, t } = useLanguage();
+  const brand = useBrand();
   const { isAuthenticated } = useSmartLink();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -21,7 +34,9 @@ const Navbar = () => {
   const handleSectionNav = (sectionId: string) => {
     setIsOpen(false);
     if (location.pathname === "/") {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      document
+        .getElementById(sectionId)
+        ?.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/", { state: { scrollTo: sectionId } });
     }
@@ -29,7 +44,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setFeaturesOpen(false);
       }
     };
@@ -38,12 +56,42 @@ const Navbar = () => {
   }, []);
 
   const featureLinks = [
-    { to: "/features/url-shortening", icon: Link2, label: t("URL Shortening", "اختصار الروابط"), desc: t("Shorten and track links", "اختصر وتتبع الروابط") },
-    { to: "/features/qr-codes", icon: QrCode, label: t("QR Codes", "أكواد QR"), desc: t("Scannable codes with analytics", "أكواد قابلة للمسح مع تحليلات") },
-    { to: "/features/link-in-bio", icon: User, label: t("Link in Bio", "رابط البايو"), desc: t("Beautiful bio pages", "صفحات بايو جميلة") },
-    { to: "/features/utm-tracking", icon: Tag, label: t("UTM Tracking", "تتبع UTM"), desc: t("Campaign parameter builder", "منشئ معلمات الحملات") },
-    { to: "/features/custom-domains", icon: Globe2, label: t("Custom Domains", "النطاقات المخصصة"), desc: t("Brand your short links", "ميّز روابطك بعلامتك") },
-    { to: "/features/api", icon: Code2, label: t("Developer API", "واجهة المطورين"), desc: t("REST API, SDKs, webhooks", "REST API ومكتبات وويب هوكس") },
+    {
+      to: "/features/url-shortening",
+      icon: Link2,
+      label: t("URL Shortening", "اختصار الروابط"),
+      desc: t("Shorten and track links", "اختصر وتتبع الروابط"),
+    },
+    {
+      to: "/features/qr-codes",
+      icon: QrCode,
+      label: t("QR Codes", "أكواد QR"),
+      desc: t("Scannable codes with analytics", "أكواد قابلة للمسح مع تحليلات"),
+    },
+    {
+      to: "/features/link-in-bio",
+      icon: User,
+      label: t("Link in Bio", "رابط البايو"),
+      desc: t("Beautiful bio pages", "صفحات بايو جميلة"),
+    },
+    {
+      to: "/features/utm-tracking",
+      icon: Tag,
+      label: t("UTM Tracking", "تتبع UTM"),
+      desc: t("Campaign parameter builder", "منشئ معلمات الحملات"),
+    },
+    {
+      to: "/features/custom-domains",
+      icon: Globe2,
+      label: t("Custom Domains", "النطاقات المخصصة"),
+      desc: t("Brand your short links", "ميّز روابطك بعلامتك"),
+    },
+    {
+      to: "/features/api",
+      icon: Code2,
+      label: t("Developer API", "واجهة المطورين"),
+      desc: t("REST API, SDKs, webhooks", "REST API ومكتبات وويب هوكس"),
+    },
   ];
 
   return (
@@ -51,8 +99,10 @@ const Navbar = () => {
       <div className="mx-auto w-full lg:container">
         <div className="bg-white rounded-full px-3 lg:px-6 py-2 flex items-center justify-between shadow-card gap-2">
           <a href="/" className="flex items-center gap-2 lg:-ms-3 shrink-0">
-            <img src={logoFull} alt="Snip" className="h-6 lg:h-8" />
-            <span className="font-display font-bold text-lg lg:text-xl text-foreground">Snip</span>
+            <img src={logoFull} alt={brand.name} className="h-6 lg:h-8" />
+            <span className="font-display font-bold text-lg lg:text-xl text-foreground">
+              {brand.name}
+            </span>
           </a>
 
           <div className="hidden lg:flex items-center gap-1">
@@ -63,7 +113,10 @@ const Navbar = () => {
                 className="flex items-center gap-1 text-[hsl(var(--navy))] hover:opacity-70 transition-opacity font-body text-sm font-medium px-4 py-1.5"
               >
                 {t("Features", "الميزات")}
-                <ChevronDown size={14} className={`transition-transform duration-200 ${featuresOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${featuresOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {featuresOpen && (
@@ -79,8 +132,12 @@ const Navbar = () => {
                         <item.icon className="w-4 h-4 text-[hsl(var(--sky))]" />
                       </div>
                       <div>
-                        <span className="font-body text-sm font-semibold text-[hsl(var(--navy))] block">{item.label}</span>
-                        <span className="font-body text-xs text-[hsl(var(--navy))]/45">{item.desc}</span>
+                        <span className="font-body text-sm font-semibold text-[hsl(var(--navy))] block">
+                          {item.label}
+                        </span>
+                        <span className="font-body text-xs text-[hsl(var(--navy))]/45">
+                          {item.desc}
+                        </span>
                       </div>
                     </Link>
                   ))}
@@ -100,7 +157,10 @@ const Navbar = () => {
             >
               {t("Developers", "المطورين")}
             </button>
-            <Link to="/blog" className="text-[hsl(var(--navy))] hover:opacity-70 transition-opacity font-body text-sm font-medium px-4 py-1.5">
+            <Link
+              to="/blog"
+              className="text-[hsl(var(--navy))] hover:opacity-70 transition-opacity font-body text-sm font-medium px-4 py-1.5"
+            >
               {t("Blog", "المدونة")}
             </Link>
           </div>
@@ -114,15 +174,30 @@ const Navbar = () => {
               {lang === "en" ? "العربية" : "English"}
             </button>
             {isAuthenticated ? (
-              <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all" asChild>
-                <Link to="/dashboard">{t("Go to Dashboard", "لوحة التحكم")}</Link>
+              <Button
+                size="sm"
+                className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all"
+                asChild
+              >
+                <Link to="/dashboard">
+                  {t("Go to Dashboard", "لوحة التحكم")}
+                </Link>
               </Button>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="text-[hsl(var(--navy))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--navy))]/20" asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-[hsl(var(--navy))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--navy))]/20"
+                  asChild
+                >
                   <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
                 </Button>
-                <Button size="sm" className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all" asChild>
+                <Button
+                  size="sm"
+                  className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:opacity-90 transition-all"
+                  asChild
+                >
                   <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
                 </Button>
               </>
@@ -131,23 +206,42 @@ const Navbar = () => {
 
           <div className="flex items-center gap-1.5 lg:hidden shrink-0">
             {isAuthenticated ? (
-              <Button size="sm" className="h-8 bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-3 text-xs hover:opacity-90 transition-all" asChild>
+              <Button
+                size="sm"
+                className="h-8 bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-3 text-xs hover:opacity-90 transition-all"
+                asChild
+              >
                 <Link to="/dashboard">{t("Dashboard", "لوحة التحكم")}</Link>
               </Button>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="h-8 text-[hsl(var(--navy))] font-body font-semibold rounded-full px-3 text-xs border border-[hsl(var(--navy))]/20" asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-[hsl(var(--navy))] font-body font-semibold rounded-full px-3 text-xs border border-[hsl(var(--navy))]/20"
+                  asChild
+                >
                   <Link to="/login">{t("Log in", "دخول")}</Link>
                 </Button>
-                <Button size="sm" className="h-8 bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-3 text-xs hover:opacity-90 transition-all" asChild>
+                <Button
+                  size="sm"
+                  className="h-8 bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-3 text-xs hover:opacity-90 transition-all"
+                  asChild
+                >
                   <Link to="/signup">{t("Sign up", "سجّل")}</Link>
                 </Button>
               </>
             )}
-            <button onClick={toggleLang} className="text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors p-1 shrink-0">
+            <button
+              onClick={toggleLang}
+              className="text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] transition-colors p-1 shrink-0"
+            >
               <Globe size={18} />
             </button>
-            <button onClick={() => setIsOpen(!isOpen)} className="text-[hsl(var(--navy))] p-1">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-[hsl(var(--navy))] p-1"
+            >
               {isOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
@@ -163,7 +257,10 @@ const Navbar = () => {
               className="flex items-center justify-between text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl"
             >
               {t("Features", "الميزات")}
-              <ChevronDown size={14} className={`transition-transform duration-200 ${mobileFeatures ? "rotate-180" : ""}`} />
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${mobileFeatures ? "rotate-180" : ""}`}
+              />
             </button>
             {mobileFeatures && (
               <div className="ps-3 space-y-0.5 mb-1">
@@ -171,7 +268,10 @@ const Navbar = () => {
                   <Link
                     key={item.to}
                     to={item.to}
-                    onClick={() => { setIsOpen(false); setMobileFeatures(false); }}
+                    onClick={() => {
+                      setIsOpen(false);
+                      setMobileFeatures(false);
+                    }}
                     className="flex items-center gap-2.5 py-2 px-3 rounded-xl text-[hsl(var(--navy))]/60 hover:text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))]/4 transition-colors"
                   >
                     <item.icon className="w-3.5 h-3.5 text-[hsl(var(--sky))]" />
@@ -180,19 +280,46 @@ const Navbar = () => {
                 ))}
               </div>
             )}
-            <button onClick={() => handleSectionNav("analytics")} className="text-start text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl">{t("Analytics", "التحليلات")}</button>
-            <button onClick={() => handleSectionNav("developers")} className="text-start text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl">{t("Developers", "المطورين")}</button>
-            <Link to="/blog" className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl">{t("Blog", "المدونة")}</Link>
+            <button
+              onClick={() => handleSectionNav("analytics")}
+              className="text-start text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl"
+            >
+              {t("Analytics", "التحليلات")}
+            </button>
+            <button
+              onClick={() => handleSectionNav("developers")}
+              className="text-start text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl"
+            >
+              {t("Developers", "المطورين")}
+            </button>
+            <Link
+              to="/blog"
+              className="text-[hsl(var(--navy))]/70 hover:text-[hsl(var(--navy))] py-2.5 px-3 rounded-xl"
+            >
+              {t("Blog", "المدونة")}
+            </Link>
             {isAuthenticated ? (
-              <Button className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full" asChild>
-                <Link to="/dashboard">{t("Go to Dashboard", "لوحة التحكم")}</Link>
+              <Button
+                className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full"
+                asChild
+              >
+                <Link to="/dashboard">
+                  {t("Go to Dashboard", "لوحة التحكم")}
+                </Link>
               </Button>
             ) : (
               <>
-                <Button className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full" asChild>
+                <Button
+                  className="bg-[hsl(var(--sky))] text-white font-bold mt-3 rounded-full"
+                  asChild
+                >
                   <Link to="/signup">{t("Sign up free", "سجّل مجاناً")}</Link>
                 </Button>
-                <Button variant="ghost" className="text-[hsl(var(--navy))]/70 rounded-full" asChild>
+                <Button
+                  variant="ghost"
+                  className="text-[hsl(var(--navy))]/70 rounded-full"
+                  asChild
+                >
                   <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
                 </Button>
               </>

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { Link2, QrCode, BarChart3, Tag, Globe, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 
 const SolutionSection = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
 
   const tools = [
     { icon: Link2, en: "Short links", ar: "اختصار الروابط" },
@@ -25,18 +27,18 @@ const SolutionSection = () => {
           className="text-center max-w-3xl mx-auto mb-12"
         >
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-5">
-            snip.sa
+            {brand.domain}
           </span>
           <h2 className="font-display text-2xl md:text-4xl font-bold tracking-tight leading-[1.1] text-[hsl(var(--navy))] mb-5">
             {t(
               "All your link management tools in one place",
-              "كل أدوات إدارة روابطك في مكان واحد"
+              "كل أدوات إدارة روابطك في مكان واحد",
             )}
           </h2>
           <p className="font-body text-base md:text-lg text-[hsl(var(--navy))]/60 leading-relaxed">
             {t(
               "A Saudi platform built for marketers and individuals who want to share their links professionally, understand their audience, and make decisions backed by data without complexity.",
-              "منصة سعودية مبنية للمسوّقين والأفراد اللي يبون يشاركون روابطهم باحترافية، يفهمون جمهورهم، ويحكمون قراراتهم بالبيانات بدون تعقيد."
+              "منصة سعودية مبنية للمسوّقين والأفراد اللي يبون يشاركون روابطهم باحترافية، يفهمون جمهورهم، ويحكمون قراراتهم بالبيانات بدون تعقيد.",
             )}
           </p>
         </motion.div>

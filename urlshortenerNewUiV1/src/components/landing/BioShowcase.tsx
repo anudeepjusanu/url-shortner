@@ -1,8 +1,29 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { showcasePages } from "@/data/sampleBioPage";
 import { bioThemes } from "@/data/bioThemes";
-import { ArrowRight, Calendar, Briefcase, MessageCircle, UtensilsCrossed, Truck, MapPin, Settings, Phone, Sparkles, Star, Zap, BadgeCheck, Instagram, Music, Globe, Signal, Wifi, BatteryFull } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  Briefcase,
+  MessageCircle,
+  UtensilsCrossed,
+  Truck,
+  MapPin,
+  Settings,
+  Phone,
+  Sparkles,
+  Star,
+  Zap,
+  BadgeCheck,
+  Instagram,
+  Music,
+  Globe,
+  Signal,
+  Wifi,
+  BatteryFull,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -21,31 +42,6 @@ const iconMap: Record<string, any> = {
 
 const categoryIcons = [Sparkles, Zap, Star];
 
-// Rich gradient + accent per persona (overrides the simple theme background for a polished preview)
-const personaVisual: Record<string, { bg: string; accent: string; socials: ("instagram" | "tiktok" | "whatsapp" | "globe" | "phone")[]; handle: string; statLabel: { en: string; ar: string } }> = {
-  "showcase-1": {
-    bg: "linear-gradient(160deg, hsl(350 55% 22%) 0%, hsl(350 60% 36%) 55%, hsl(350 70% 52%) 100%)",
-    accent: "hsl(350 80% 65%)",
-    socials: ["instagram", "tiktok", "whatsapp"],
-    handle: "snip.sa/khalid",
-    statLabel: { en: "12.4K views", ar: "12.4K مشاهدة" },
-  },
-  "showcase-2": {
-    bg: "linear-gradient(165deg, hsl(24 38% 16%) 0%, hsl(22 48% 28%) 55%, hsl(30 70% 50%) 100%)",
-    accent: "hsl(30 85% 60%)",
-    socials: ["instagram", "whatsapp", "phone"],
-    handle: "snip.sa/aldeera",
-    statLabel: { en: "Open · 11am 1am", ar: "مفتوح · ١١ص ١ص" },
-  },
-  "showcase-3": {
-    bg: "linear-gradient(170deg, hsl(220 50% 16%) 0%, hsl(215 45% 26%) 55%, hsl(210 60% 42%) 100%)",
-    accent: "hsl(210 75% 60%)",
-    socials: ["globe", "instagram", "whatsapp"],
-    handle: "snip.sa/techplus",
-    statLabel: { en: "240+ clients", ar: "+240 عميل" },
-  },
-};
-
 const socialIconMap = {
   instagram: Instagram,
   tiktok: Music,
@@ -56,9 +52,44 @@ const socialIconMap = {
 
 const BioShowcase = () => {
   const { t, lang } = useLanguage();
+  const brand = useBrand();
   const { smartLink } = useSmartLink();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+
+  // Rich gradient + accent per persona (overrides the simple theme background for a polished preview)
+  const personaVisual: Record<
+    string,
+    {
+      bg: string;
+      accent: string;
+      socials: ("instagram" | "tiktok" | "whatsapp" | "globe" | "phone")[];
+      handle: string;
+      statLabel: { en: string; ar: string };
+    }
+  > = {
+    "showcase-1": {
+      bg: "linear-gradient(160deg, hsl(350 55% 22%) 0%, hsl(350 60% 36%) 55%, hsl(350 70% 52%) 100%)",
+      accent: "hsl(350 80% 65%)",
+      socials: ["instagram", "tiktok", "whatsapp"],
+      handle: `${brand.domain}/khalid`,
+      statLabel: { en: "12.4K views", ar: "12.4K مشاهدة" },
+    },
+    "showcase-2": {
+      bg: "linear-gradient(165deg, hsl(24 38% 16%) 0%, hsl(22 48% 28%) 55%, hsl(30 70% 50%) 100%)",
+      accent: "hsl(30 85% 60%)",
+      socials: ["instagram", "whatsapp", "phone"],
+      handle: `${brand.domain}/aldeera`,
+      statLabel: { en: "Open · 11am 1am", ar: "مفتوح · ١١ص ١ص" },
+    },
+    "showcase-3": {
+      bg: "linear-gradient(170deg, hsl(220 50% 16%) 0%, hsl(215 45% 26%) 55%, hsl(210 60% 42%) 100%)",
+      accent: "hsl(210 75% 60%)",
+      socials: ["globe", "instagram", "whatsapp"],
+      handle: `${brand.domain}/techplus`,
+      statLabel: { en: "240+ clients", ar: "+240 عميل" },
+    },
+  };
 
   useEffect(() => {
     if (paused) return;
@@ -75,7 +106,8 @@ const BioShowcase = () => {
     (handleSelect as any)._t = window.setTimeout(() => setPaused(false), 8000);
   };
   const activePage = showcasePages[active];
-  const activeTheme = bioThemes.find(t => t.id === activePage.theme) || bioThemes[0];
+  const activeTheme =
+    bioThemes.find((t) => t.id === activePage.theme) || bioThemes[0];
   const visual = personaVisual[activePage.id] ?? personaVisual["showcase-1"];
 
   return (
@@ -123,7 +155,7 @@ const BioShowcase = () => {
           <p className="font-body text-lg text-[hsl(var(--navy))]/65">
             {t(
               "Three different use cases, one powerful platform.",
-              "ثلاث حالات استخدام مختلفة، منصة واحدة قوية."
+              "ثلاث حالات استخدام مختلفة، منصة واحدة قوية.",
             )}
           </p>
         </motion.div>
@@ -154,10 +186,7 @@ const BioShowcase = () => {
         {/* Main showcase area */}
         <div className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
           {/* Phone mockup */}
-          <motion.div
-            layout
-            className="relative"
-          >
+          <motion.div layout className="relative">
             {/* Glow behind phone */}
             <div
               className="absolute inset-0 blur-[60px] opacity-30 rounded-full scale-110 transition-all duration-700"
@@ -196,7 +225,9 @@ const BioShowcase = () => {
                       {/* Handle pill */}
                       <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-4">
                         <BadgeCheck className="w-2.5 h-2.5 text-white/85" />
-                        <span className="text-[10px] font-semibold text-white/85 tracking-wide">{visual.handle}</span>
+                        <span className="text-[10px] font-semibold text-white/85 tracking-wide">
+                          {visual.handle}
+                        </span>
                       </div>
 
                       {/* Avatar with glow */}
@@ -228,7 +259,10 @@ const BioShowcase = () => {
                         <h3 className="text-[15px] font-bold text-white leading-tight">
                           {lang === "ar" ? activePage.name : activePage.nameEn}
                         </h3>
-                        <BadgeCheck className="w-4 h-4 text-white" fill={visual.accent} />
+                        <BadgeCheck
+                          className="w-4 h-4 text-white"
+                          fill={visual.accent}
+                        />
                       </motion.div>
 
                       {/* Bio */}
@@ -244,10 +278,15 @@ const BioShowcase = () => {
                       {/* Stat chip */}
                       <span
                         className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide text-white mb-4"
-                        style={{ background: `${visual.accent}33`, border: `1px solid ${visual.accent}66` }}
+                        style={{
+                          background: `${visual.accent}33`,
+                          border: `1px solid ${visual.accent}66`,
+                        }}
                       >
                         <span className="w-1 h-1 rounded-full bg-white/80" />
-                        {lang === "ar" ? visual.statLabel.ar : visual.statLabel.en}
+                        {lang === "ar"
+                          ? visual.statLabel.ar
+                          : visual.statLabel.en}
                       </span>
 
                       {/* Social row */}
@@ -272,7 +311,10 @@ const BioShowcase = () => {
                           return (
                             <motion.div
                               key={li}
-                              initial={{ opacity: 0, x: lang === "ar" ? 16 : -16 }}
+                              initial={{
+                                opacity: 0,
+                                x: lang === "ar" ? 16 : -16,
+                              }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: 0.25 + li * 0.07 }}
                               className="w-full py-2.5 px-3.5 rounded-2xl flex items-center gap-2.5 bg-white/12 border border-white/22 backdrop-blur-sm hover:bg-white/18 transition-colors"
@@ -296,7 +338,9 @@ const BioShowcase = () => {
                     {/* Powered by snip */}
                     <div className="absolute bottom-3 inset-x-0 flex flex-col items-center gap-1 pointer-events-none">
                       <div className="text-[8px] font-bold tracking-[0.2em] text-white/45">
-                        {lang === "ar" ? "بدعم من SNIP" : "POWERED BY SNIP"}
+                        {lang === "ar"
+                          ? `بدعم من ${brand.name.toUpperCase()}`
+                          : `POWERED BY ${brand.name.toUpperCase()}`}
                       </div>
                       <div className="w-24 h-0.5 rounded-full bg-white/30" />
                     </div>
@@ -317,24 +361,29 @@ const BioShowcase = () => {
                 transition={{ duration: 0.35 }}
               >
                 <div className="inline-flex items-center gap-1.5 bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] rounded-full px-3 py-1 text-xs font-body font-bold mb-4">
-                  {lang === "ar" ? activePage.categoryAr : activePage.categoryEn}
+                  {lang === "ar"
+                    ? activePage.categoryAr
+                    : activePage.categoryEn}
                 </div>
                 <h3 className="font-display text-2xl md:text-3xl font-bold text-[hsl(var(--navy))] mb-3">
                   {lang === "ar" ? activePage.name : activePage.nameEn}
                 </h3>
                 <p className="font-body text-[hsl(var(--navy))]/60 mb-6 leading-relaxed">
-                  {active === 0 && t(
-                    "A designer sharing her portfolio, booking consultations, and connecting with clients through WhatsApp.",
-                    "مصممة تشارك معرض أعمالها، تحجز استشارات، وتتواصل مع العملاء عبر الواتساب."
-                  )}
-                  {active === 1 && t(
-                    "A restaurant showcasing its menu, enabling delivery orders, and sharing its location with customers.",
-                    "مطعم يعرض قائمة طعامه، يتيح طلبات التوصيل، ويشارك موقعه مع الزبائن."
-                  )}
-                  {active === 2 && t(
-                    "A tech company presenting its services and making it easy for clients to get in touch.",
-                    "شركة تقنية تعرض خدماتها وتسهّل التواصل مع العملاء."
-                  )}
+                  {active === 0 &&
+                    t(
+                      "A designer sharing her portfolio, booking consultations, and connecting with clients through WhatsApp.",
+                      "مصممة تشارك معرض أعمالها، تحجز استشارات، وتتواصل مع العملاء عبر الواتساب.",
+                    )}
+                  {active === 1 &&
+                    t(
+                      "A restaurant showcasing its menu, enabling delivery orders, and sharing its location with customers.",
+                      "مطعم يعرض قائمة طعامه، يتيح طلبات التوصيل، ويشارك موقعه مع الزبائن.",
+                    )}
+                  {active === 2 &&
+                    t(
+                      "A tech company presenting its services and making it easy for clients to get in touch.",
+                      "شركة تقنية تعرض خدماتها وتسهّل التواصل مع العملاء.",
+                    )}
                 </p>
 
                 {/* Feature tags */}
@@ -344,7 +393,10 @@ const BioShowcase = () => {
                       key={i}
                       className="inline-flex items-center gap-1.5 bg-white border border-[hsl(var(--navy))]/8 rounded-full px-3 py-1.5 text-xs font-body text-[hsl(var(--navy))]/70 shadow-sm"
                     >
-                      {(() => { const Icon = iconMap[link.icon] || ArrowRight; return <Icon className="w-3 h-3" />; })()}
+                      {(() => {
+                        const Icon = iconMap[link.icon] || ArrowRight;
+                        return <Icon className="w-3 h-3" />;
+                      })()}
                       {lang === "ar" ? link.title : link.titleEn}
                     </span>
                   ))}
@@ -367,7 +419,10 @@ const BioShowcase = () => {
               ))}
             </div>
 
-            <Button asChild className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/20">
+            <Button
+              asChild
+              className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-8 py-6 text-base hover:brightness-110 transition-all shadow-lg shadow-[hsl(var(--sky))]/20"
+            >
               <Link to={smartLink("/signup")}>
                 {t("Create Your Bio Page Free", "أنشئ صفحتك مجاناً")}
                 <ArrowRight size={16} className="ms-1.5" />
@@ -375,7 +430,6 @@ const BioShowcase = () => {
             </Button>
           </div>
         </div>
-
       </div>
     </section>
   );

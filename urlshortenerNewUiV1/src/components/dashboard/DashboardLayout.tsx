@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import {
   LayoutDashboard,
   Link2,
@@ -50,6 +51,7 @@ interface NavItemConfig {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang, isAr } = useLanguage();
+  const brand = useBrand();
   const { user, logout } = useAuth();
   const {
     isEnterpriseAccount,
@@ -287,9 +289,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <Menu className="w-5 h-5" />
           </Button>
           <Link to="/dashboard" className="flex items-center gap-1">
-            <img src={logoIcon} alt="snip" className="h-8 md:h-10" />
+            <img src={logoIcon} alt={brand.domain} className="h-8 md:h-10" />
             <span className="font-display font-bold text-lg text-foreground">
-              SNIP
+              {brand.name.toUpperCase()}
             </span>
           </Link>
           <ProjectSwitcher />
