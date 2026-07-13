@@ -22,8 +22,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, Pencil, Trash2, Copy, ExternalLink, Eye,
-  Loader2, Link2, MoreHorizontal, Check, Globe, EyeOff,
+  Plus,
+  Pencil,
+  Trash2,
+  Copy,
+  ExternalLink,
+  Eye,
+  Loader2,
+  Link2,
+  MoreHorizontal,
+  Check,
+  Globe,
+  EyeOff,
 } from "lucide-react";
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
@@ -42,9 +52,11 @@ interface BioPage {
   createdAt: string;
   blocks?: BioBlock[];
   bioTheme?: BioTheme | null;
+  domain?: string | null;
 }
 
-const fallbackTheme: BioTheme = bioThemes.find((t) => t.id === "minimal-light") || bioThemes[0];
+const fallbackTheme: BioTheme =
+  bioThemes.find((t) => t.id === "minimal-light") || bioThemes[0];
 
 const BioPages = () => {
   const { t } = useLanguage();
@@ -54,8 +66,14 @@ const BioPages = () => {
   const [pages, setPages] = useState<BioPage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null; title: string }>({
-    open: false, id: null, title: "",
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: string | null;
+    title: string;
+  }>({
+    open: false,
+    id: null,
+    title: "",
   });
   const [deleting, setDeleting] = useState(false);
   const [togglingPublish, setTogglingPublish] = useState<string | null>(null);
@@ -63,29 +81,44 @@ const BioPages = () => {
   const fetchPages = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await bioPageAPI.list() as any;
+      const res = (await bioPageAPI.list()) as any;
       setPages(res?.data ?? []);
     } catch {
-      toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Failed to load bio pages", "فشل تحميل صفحات البايو") });
+      toast({
+        variant: "destructive",
+        title: t("Error", "خطأ"),
+        description: t("Failed to load bio pages", "فشل تحميل صفحات البايو"),
+      });
     } finally {
       setIsLoading(false);
     }
   }, [toast, t]);
 
-  useEffect(() => { fetchPages(); }, [fetchPages]);
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
 
-  const getPublicUrl = (page: BioPage) => `${window.location.origin}/bio/${page.username}`;
+  const getPublicUrl = (page: BioPage) =>
+    `${page.domain ? `https://${page.domain}` : window.location.origin}/bio/${page.username}`;
 
-  const getDisplayUrl = (page: BioPage) => `${window.location.host}/bio/${page.username}`;
+  const getDisplayUrl = (page: BioPage) =>
+    `${page.domain || window.location.host}/bio/${page.username}`;
 
   const handleCopy = async (page: BioPage) => {
     try {
       await navigator.clipboard.writeText(getPublicUrl(page));
       setCopiedId(page._id);
       setTimeout(() => setCopiedId(null), 2000);
-      toast({ title: t("Copied!", "تم النسخ!"), description: t("Public URL copied to clipboard", "تم نسخ الرابط العام") });
+      toast({
+        title: t("Copied!", "تم النسخ!"),
+        description: t("Public URL copied to clipboard", "تم نسخ الرابط العام"),
+      });
     } catch {
-      toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Could not copy URL", "تعذر نسخ الرابط") });
+      toast({
+        variant: "destructive",
+        title: t("Error", "خطأ"),
+        description: t("Could not copy URL", "تعذر نسخ الرابط"),
+      });
     }
   };
 
@@ -93,15 +126,31 @@ const BioPages = () => {
     setTogglingPublish(page._id);
     try {
       await bioPageAPI.update(page._id, { isPublished: !page.isPublished });
-      setPages((prev) => prev.map((p) => p._id === page._id ? { ...p, isPublished: !page.isPublished } : p));
+      setPages((prev) =>
+        prev.map((p) =>
+          p._id === page._id ? { ...p, isPublished: !page.isPublished } : p,
+        ),
+      );
       toast({
-        title: page.isPublished ? t("Unpublished", "تم إلغاء النشر") : t("Published!", "تم النشر!"),
+        title: page.isPublished
+          ? t("Unpublished", "تم إلغاء النشر")
+          : t("Published!", "تم النشر!"),
         description: page.isPublished
-          ? t("Your page is now hidden from the public.", "صفحتك مخفية عن الجمهور الآن.")
+          ? t(
+              "Your page is now hidden from the public.",
+              "صفحتك مخفية عن الجمهور الآن.",
+            )
           : t("Your page is now live.", "صفحتك نشطة الآن."),
       });
     } catch {
-      toast({ variant: "destructive", title: t("Error", "خطأ"), description: t("Could not update publish status", "تعذر تحديث حالة النشر") });
+      toast({
+        variant: "destructive",
+        title: t("Error", "خطأ"),
+        description: t(
+          "Could not update publish status",
+          "تعذر تحديث حالة النشر",
+        ),
+      });
     } finally {
       setTogglingPublish(null);
     }
@@ -113,9 +162,16 @@ const BioPages = () => {
     try {
       await bioPageAPI.delete(deleteDialog.id);
       setPages((prev) => prev.filter((p) => p._id !== deleteDialog.id));
-      toast({ title: t("Deleted", "تم الحذف"), description: t("Bio page deleted successfully", "تم حذف صفحة البايو") });
+      toast({
+        title: t("Deleted", "تم الحذف"),
+        description: t("Bio page deleted successfully", "تم حذف صفحة البايو"),
+      });
     } catch (err: any) {
-      toast({ variant: "destructive", title: t("Error", "خطأ"), description: err.message });
+      toast({
+        variant: "destructive",
+        title: t("Error", "خطأ"),
+        description: err.message,
+      });
     } finally {
       setDeleting(false);
       setDeleteDialog({ open: false, id: null, title: "" });
@@ -132,10 +188,16 @@ const BioPages = () => {
               {t("Bio Pages", "صفحات البايو")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {t("Create and manage your link-in-bio pages", "أنشئ وأدر صفحات البايو")}
+              {t(
+                "Create and manage your link-in-bio pages",
+                "أنشئ وأدر صفحات البايو",
+              )}
             </p>
           </div>
-          <Button onClick={() => navigate("/dashboard/bio-wizard")} className="gap-2">
+          <Button
+            onClick={() => navigate("/dashboard/bio-wizard")}
+            className="gap-2"
+          >
             <Plus className="w-4 h-4" />
             {t("Create Page", "إنشاء صفحة")}
           </Button>
@@ -160,10 +222,13 @@ const BioPages = () => {
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
               {t(
                 "Create your first link-in-bio page and share all your important links in one place.",
-                "أنشئ صفحة بايو الأولى وشارك جميع روابطك المهمة في مكان واحد."
+                "أنشئ صفحة بايو الأولى وشارك جميع روابطك المهمة في مكان واحد.",
               )}
             </p>
-            <Button onClick={() => navigate("/dashboard/bio-wizard")} className="gap-2">
+            <Button
+              onClick={() => navigate("/dashboard/bio-wizard")}
+              className="gap-2"
+            >
               <Plus className="w-4 h-4" />
               {t("Create Your First Page", "إنشاء أول صفحة")}
             </Button>
@@ -180,7 +245,9 @@ const BioPages = () => {
                 <div
                   key={page._id}
                   className="bg-background border border-border rounded-2xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}
+                  onClick={() =>
+                    navigate(`/dashboard/bio-wizard/${page._id}/edit`)
+                  }
                 >
                   {/* Thumbnail */}
                   <div onClick={(e) => e.stopPropagation()}>
@@ -189,8 +256,12 @@ const BioPages = () => {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{page.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{getDisplayUrl(page)}</p>
+                    <h3 className="font-semibold text-foreground truncate">
+                      {page.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {getDisplayUrl(page)}
+                    </p>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Eye className="w-3.5 h-3.5" />
@@ -200,13 +271,18 @@ const BioPages = () => {
                         variant={page.isPublished ? "default" : "secondary"}
                         className="text-xs"
                       >
-                        {page.isPublished ? t("Published", "منشور") : t("Draft", "مسودة")}
+                        {page.isPublished
+                          ? t("Published", "منشور")
+                          : t("Draft", "مسودة")}
                       </Badge>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex items-center gap-1 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <a
                       href={getPublicUrl(page)}
                       target="_blank"
@@ -225,30 +301,48 @@ const BioPages = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/dashboard/bio-wizard/${page._id}/edit`)}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(`/dashboard/bio-wizard/${page._id}/edit`)
+                          }
+                        >
                           <Pencil className="w-4 h-4 me-2" />
                           {t("Edit", "تعديل")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleCopy(page)}>
+                          {copiedId === page._id ? (
+                            <Check className="w-4 h-4 me-2 text-green-500" />
+                          ) : (
+                            <Copy className="w-4 h-4 me-2" />
+                          )}
                           {copiedId === page._id
-                            ? <Check className="w-4 h-4 me-2 text-green-500" />
-                            : <Copy className="w-4 h-4 me-2" />}
-                          {copiedId === page._id ? t("Copied!", "تم النسخ!") : t("Copy URL", "نسخ الرابط")}
+                            ? t("Copied!", "تم النسخ!")
+                            : t("Copy URL", "نسخ الرابط")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleTogglePublish(page)}
                           disabled={togglingPublish === page._id}
                         >
-                          {togglingPublish === page._id
-                            ? <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                            : page.isPublished
-                            ? <EyeOff className="w-4 h-4 me-2" />
-                            : <Globe className="w-4 h-4 me-2" />}
-                          {page.isPublished ? t("Unpublish", "إلغاء النشر") : t("Publish", "نشر")}
+                          {togglingPublish === page._id ? (
+                            <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                          ) : page.isPublished ? (
+                            <EyeOff className="w-4 h-4 me-2" />
+                          ) : (
+                            <Globe className="w-4 h-4 me-2" />
+                          )}
+                          {page.isPublished
+                            ? t("Unpublish", "إلغاء النشر")
+                            : t("Publish", "نشر")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => setDeleteDialog({ open: true, id: page._id, title: page.title })}
+                          onClick={() =>
+                            setDeleteDialog({
+                              open: true,
+                              id: page._id,
+                              title: page.title,
+                            })
+                          }
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="w-4 h-4 me-2" />
@@ -265,25 +359,38 @@ const BioPages = () => {
       </div>
 
       {/* Delete dialog */}
-      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !deleting && setDeleteDialog({ open, id: null, title: "" })}>
+      <AlertDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) =>
+          !deleting && setDeleteDialog({ open, id: null, title: "" })
+        }
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete Bio Page", "حذف صفحة البايو")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("Delete Bio Page", "حذف صفحة البايو")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 `Are you sure you want to delete "${deleteDialog.title}"? This action cannot be undone.`,
-                `هل أنت متأكد من حذف "${deleteDialog.title}"؟ لا يمكن التراجع عن هذا الإجراء.`
+                `هل أنت متأكد من حذف "${deleteDialog.title}"؟ لا يمكن التراجع عن هذا الإجراء.`,
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t("Cancel", "إلغاء")}</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>
+              {t("Cancel", "إلغاء")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("Delete", "حذف")}
+              {deleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                t("Delete", "حذف")
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

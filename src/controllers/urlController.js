@@ -15,6 +15,7 @@ const safeBrowsingService = require("../services/safeBrowsingService");
 const { triggerUrlScan } = require("../services/urlScanner/scanTrigger");
 const redirectService = require("../services/redirectService");
 const logger = require("../config/logger");
+const { resolvePublicDomain } = require("../utils/domainResolver");
 
 // Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
 // ValidationError (each carrying a .statusCode) for ProjectId scope checks.
@@ -42,19 +43,7 @@ const getPublicBaseUrl = (req) => {
 
 // Derives the bare hostname from the canonical base URL so that both
 // fullDomain and shortUrl in responses are always consistent with each other.
-const getPublicBaseDomain = (req) => {
-  const requestHost = req?.get?.("host");
-  if (requestHost && redirectService.isMainDomain(requestHost)) {
-    return requestHost;
-  }
-  if (process.env.BASE_DOMAIN) return process.env.BASE_DOMAIN;
-  if (process.env.BASE_URL) {
-    try {
-      return new URL(process.env.BASE_URL).hostname;
-    } catch {}
-  }
-  return "snip.sa";
-};
+const getPublicBaseDomain = (req) => resolvePublicDomain(req);
 
 // Shared URL reachability check used by createUrl, updateUrl, and bulkCreate.
 // Returns { allowed: true } when the URL should be accepted, or
@@ -474,7 +463,7 @@ const createUrl = async (req, res) => {
       organization: req.user.organization,
       project: resolvedProjectId,
       domain: useBaseDomain
-        ? null
+        ? resolvePublicDomain(req)
         : selectedDomain
           ? selectedDomain.fullDomain
           : null,
@@ -1396,6 +1385,7 @@ const bulkCreate = async (req, res) => {
           creator: req.user.id,
           organization: req.user.organization,
           project: resolvedProjectId,
+          domain: resolvePublicDomain(req),
           tags,
           utm: hasUtm ? utm : {},
           bulkImportId,

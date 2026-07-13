@@ -1,12 +1,39 @@
-const BioPage = require('../models/BioPage');
-const https = require('https');
+const BioPage = require("../models/BioPage");
+const https = require("https");
 
 const RESERVED_USERNAMES = [
-  'admin', 'api', 'login', 'register', 'blog', 'bio', 'about',
-  'contact', 'home', 'dashboard', 'settings', 'profile', 'help',
-  'support', 'terms', 'privacy', 'www', 'mail', 'ftp', 'static',
-  'assets', 'app', 'auth', 'user', 'users', 'health', 'status',
-  'q', 'qr', 'preview', '4r', 'test',
+  "admin",
+  "api",
+  "login",
+  "register",
+  "blog",
+  "bio",
+  "about",
+  "contact",
+  "home",
+  "dashboard",
+  "settings",
+  "profile",
+  "help",
+  "support",
+  "terms",
+  "privacy",
+  "www",
+  "mail",
+  "ftp",
+  "static",
+  "assets",
+  "app",
+  "auth",
+  "user",
+  "users",
+  "health",
+  "status",
+  "q",
+  "qr",
+  "preview",
+  "4r",
+  "test",
 ];
 
 const makeError = (message, statusCode = 500) => {
@@ -20,11 +47,14 @@ const bioPageService = {
     const normalized = username.toLowerCase().trim();
 
     if (normalized.length < 3) {
-      return { available: false, reason: 'Username must be at least 3 characters' };
+      return {
+        available: false,
+        reason: "Username must be at least 3 characters",
+      };
     }
 
     if (RESERVED_USERNAMES.includes(normalized)) {
-      return { available: false, reason: 'This username is reserved' };
+      return { available: false, reason: "This username is reserved" };
     }
 
     const query = { username: normalized };
@@ -37,20 +67,34 @@ const bioPageService = {
   },
 
   async createBioPage(userId, data) {
-    const { username, title, description, avatarUrl, blocks, design, bioTheme, isPublished, quizPurpose, quizIndustry } = data;
+    const {
+      username,
+      title,
+      description,
+      avatarUrl,
+      blocks,
+      design,
+      bioTheme,
+      isPublished,
+      quizPurpose,
+      quizIndustry,
+      domain,
+    } = data;
 
-    if (!username) throw makeError('Username is required', 400);
-    if (!title) throw makeError('Title is required', 400);
+    if (!username) throw makeError("Username is required", 400);
+    if (!title) throw makeError("Title is required", 400);
 
-    const { available, reason } = await this.checkUsernameAvailability(username);
-    if (!available) throw makeError(reason || 'Username is already taken', 400);
+    const { available, reason } =
+      await this.checkUsernameAvailability(username);
+    if (!available) throw makeError(reason || "Username is already taken", 400);
 
     const bioPage = new BioPage({
       username: username.toLowerCase().trim(),
       title: title.trim(),
-      description: description?.trim() || '',
-      avatarUrl: avatarUrl || '',
+      description: description?.trim() || "",
+      avatarUrl: avatarUrl || "",
       owner: userId,
+      domain: domain || null,
       blocks: blocks || [],
       design: design || null,
       bioTheme: bioTheme || null,
@@ -65,27 +109,49 @@ const bioPageService = {
 
   async getUserBioPages(userId) {
     return BioPage.find({ owner: userId, isActive: true })
-      .select('-__v')
+      .select("-__v")
       .sort({ createdAt: -1 });
   },
 
   async getBioPageById(bioPageId, userId) {
-    const bioPage = await BioPage.findOne({ _id: bioPageId, owner: userId, isActive: true });
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    const bioPage = await BioPage.findOne({
+      _id: bioPageId,
+      owner: userId,
+      isActive: true,
+    });
+    if (!bioPage) throw makeError("Bio page not found", 404);
     return bioPage;
   },
 
   async updateBioPage(bioPageId, userId, data) {
-    const bioPage = await BioPage.findOne({ _id: bioPageId, owner: userId, isActive: true });
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    const bioPage = await BioPage.findOne({
+      _id: bioPageId,
+      owner: userId,
+      isActive: true,
+    });
+    if (!bioPage) throw makeError("Bio page not found", 404);
 
     if (data.username && data.username.toLowerCase() !== bioPage.username) {
-      const { available, reason } = await this.checkUsernameAvailability(data.username, bioPageId);
-      if (!available) throw makeError(reason || 'Username is already taken', 400);
+      const { available, reason } = await this.checkUsernameAvailability(
+        data.username,
+        bioPageId,
+      );
+      if (!available)
+        throw makeError(reason || "Username is already taken", 400);
       bioPage.username = data.username.toLowerCase().trim();
     }
 
-    const updatableFields = ['title', 'description', 'avatarUrl', 'blocks', 'design', 'bioTheme', 'isPublished', 'quizPurpose', 'quizIndustry'];
+    const updatableFields = [
+      "title",
+      "description",
+      "avatarUrl",
+      "blocks",
+      "design",
+      "bioTheme",
+      "isPublished",
+      "quizPurpose",
+      "quizIndustry",
+    ];
     for (const field of updatableFields) {
       if (data[field] !== undefined) {
         bioPage[field] = data[field];
@@ -93,17 +159,21 @@ const bioPageService = {
     }
 
     // Mark mixed fields as modified so Mongoose detects the change
-    bioPage.markModified('blocks');
-    bioPage.markModified('design');
-    bioPage.markModified('bioTheme');
+    bioPage.markModified("blocks");
+    bioPage.markModified("design");
+    bioPage.markModified("bioTheme");
 
     await bioPage.save();
     return bioPage;
   },
 
   async deleteBioPage(bioPageId, userId) {
-    const bioPage = await BioPage.findOne({ _id: bioPageId, owner: userId, isActive: true });
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    const bioPage = await BioPage.findOne({
+      _id: bioPageId,
+      owner: userId,
+      isActive: true,
+    });
+    if (!bioPage) throw makeError("Bio page not found", 404);
 
     bioPage.isActive = false;
     await bioPage.save();
@@ -117,7 +187,7 @@ const bioPageService = {
       isPublished: true,
     });
 
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    if (!bioPage) throw makeError("Bio page not found", 404);
 
     // Increment view count asynchronously
     BioPage.findByIdAndUpdate(bioPage._id, { $inc: { totalViews: 1 } })
@@ -149,13 +219,10 @@ const bioPageService = {
       isActive: true,
     });
 
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    if (!bioPage) throw makeError("Bio page not found", 404);
 
     const countKey = `blockClickCounts.${blockId}`;
-    await BioPage.findByIdAndUpdate(
-      bioPage._id,
-      { $inc: { [countKey]: 1 } },
-    );
+    await BioPage.findByIdAndUpdate(bioPage._id, { $inc: { [countKey]: 1 } });
 
     // Try to find the URL from blocks for the given blockId
     let url = null;
@@ -170,9 +237,12 @@ const bioPageService = {
   },
 
   async generateBgImage(prompt) {
-    const sanitizedPrompt = (prompt || '').replace(/[<>"'`\\]/g, '').trim().slice(0, 300);
+    const sanitizedPrompt = (prompt || "")
+      .replace(/[<>"'`\\]/g, "")
+      .trim()
+      .slice(0, 300);
     if (!sanitizedPrompt) {
-      throw makeError('Prompt must not be empty', 400);
+      throw makeError("Prompt must not be empty", 400);
     }
 
     // Pollinations.AI — free, no API key required.
@@ -182,57 +252,97 @@ const bioPageService = {
 
     // Proxy the image server-side so the frontend never hits Pollinations directly.
     // Returns a base64 data URL that is stored in MongoDB alongside the bio page.
-    const fetchImage = (url, redirectCount = 0) => new Promise((resolve, reject) => {
-      if (redirectCount > 5) return reject(makeError('Too many redirects from image service', 502));
-      const req = https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          return resolve(fetchImage(res.headers.location, redirectCount + 1));
-        }
-        if (res.statusCode !== 200) {
-          res.resume();
-          return reject(makeError(`AI image service returned ${res.statusCode}. Please try again.`, 502));
-        }
-        const chunks = [];
-        res.on('data', (chunk) => chunks.push(chunk));
-        res.on('end', () => {
-          const buffer = Buffer.concat(chunks);
-          const contentType = res.headers['content-type'] || 'image/jpeg';
-          resolve(`data:${contentType};base64,${buffer.toString('base64')}`);
+    const fetchImage = (url, redirectCount = 0) =>
+      new Promise((resolve, reject) => {
+        if (redirectCount > 5)
+          return reject(
+            makeError("Too many redirects from image service", 502),
+          );
+        const req = https.get(
+          url,
+          { headers: { "User-Agent": "Mozilla/5.0" } },
+          (res) => {
+            if (
+              res.statusCode >= 300 &&
+              res.statusCode < 400 &&
+              res.headers.location
+            ) {
+              return resolve(
+                fetchImage(res.headers.location, redirectCount + 1),
+              );
+            }
+            if (res.statusCode !== 200) {
+              res.resume();
+              return reject(
+                makeError(
+                  `AI image service returned ${res.statusCode}. Please try again.`,
+                  502,
+                ),
+              );
+            }
+            const chunks = [];
+            res.on("data", (chunk) => chunks.push(chunk));
+            res.on("end", () => {
+              const buffer = Buffer.concat(chunks);
+              const contentType = res.headers["content-type"] || "image/jpeg";
+              resolve(
+                `data:${contentType};base64,${buffer.toString("base64")}`,
+              );
+            });
+            res.on("error", (err) =>
+              reject(makeError(`Error reading response: ${err.message}`, 502)),
+            );
+          },
+        );
+        req.setTimeout(90000, () => {
+          req.destroy();
+          reject(
+            makeError("Image generation timed out. Please try again.", 504),
+          );
         });
-        res.on('error', (err) => reject(makeError(`Error reading response: ${err.message}`, 502)));
+        req.on("error", (err) =>
+          reject(
+            makeError(`Could not reach image service: ${err.message}`, 502),
+          ),
+        );
       });
-      req.setTimeout(90000, () => { req.destroy(); reject(makeError('Image generation timed out. Please try again.', 504)); });
-      req.on('error', (err) => reject(makeError(`Could not reach image service: ${err.message}`, 502)));
-    });
 
     const dataUrl = await fetchImage(imageUrl);
     return { url: dataUrl };
   },
 
   async getBioPageAnalytics(bioPageId, userId) {
-    const bioPage = await BioPage.findOne({ _id: bioPageId, owner: userId, isActive: true });
-    if (!bioPage) throw makeError('Bio page not found', 404);
+    const bioPage = await BioPage.findOne({
+      _id: bioPageId,
+      owner: userId,
+      isActive: true,
+    });
+    if (!bioPage) throw makeError("Bio page not found", 404);
 
     const blockClickCounts = bioPage.blockClickCounts
       ? Object.fromEntries(bioPage.blockClickCounts)
       : {};
 
-    const totalClicks = Object.values(blockClickCounts).reduce((s, c) => s + (c || 0), 0);
+    const totalClicks = Object.values(blockClickCounts).reduce(
+      (s, c) => s + (c || 0),
+      0,
+    );
 
     // Build per-link analytics from link blocks
     const linkAnalytics = [];
     if (bioPage.blocks && Array.isArray(bioPage.blocks)) {
       for (const block of bioPage.blocks) {
-        if (block.type === 'link' && block.visible) {
+        if (block.type === "link" && block.visible) {
           const clicks = blockClickCounts[block.id] || 0;
           linkAnalytics.push({
             blockId: block.id,
-            title: block.data?.titleEn || block.data?.title || 'Link',
-            url: block.data?.url || '',
+            title: block.data?.titleEn || block.data?.title || "Link",
+            url: block.data?.url || "",
             clickCount: clicks,
-            clickRate: bioPage.totalViews > 0
-              ? ((clicks / bioPage.totalViews) * 100).toFixed(1)
-              : '0.0',
+            clickRate:
+              bioPage.totalViews > 0
+                ? ((clicks / bioPage.totalViews) * 100).toFixed(1)
+                : "0.0",
           });
         }
       }
