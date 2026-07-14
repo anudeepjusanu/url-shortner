@@ -92,7 +92,7 @@ const DeveloperSection = () => {
 
             <div className="flex flex-wrap gap-3">
               <Button
-                onClick={() => window.open("https://docs.snip.sa", "_blank")}
+                onClick={() => window.open(`https://docs.${brand.domain}`, "_blank")}
                 className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6"
               >
                 {t("Read API Documentation", "شوف الـ API Docs")}

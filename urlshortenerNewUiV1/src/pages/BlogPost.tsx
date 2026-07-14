@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
 import { useMetaTags } from "@/hooks/useMetaTags";
 import { blogPosts } from "@/data/blogPosts";
+import { brandifyBlogPost } from "@/lib/brandifyBlogPost";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
@@ -12,7 +13,8 @@ const BlogPost = () => {
   const { t, lang } = useLanguage();
   const brand = useBrand();
 
-  const post = blogPosts.find((p) => p.slug === slug);
+  const rawPost = blogPosts.find((p) => p.slug === slug);
+  const post = rawPost && brandifyBlogPost(rawPost, brand);
 
   if (!post) {
     return (
@@ -272,7 +274,10 @@ const BlogPost = () => {
   };
 
   // Get other posts for "Read more"
-  const otherPosts = blogPosts.filter((p) => p.slug !== slug).slice(0, 2);
+  const otherPosts = blogPosts
+    .filter((p) => p.slug !== slug)
+    .slice(0, 2)
+    .map((p) => brandifyBlogPost(p, brand));
 
   return (
     <div className="min-h-screen">

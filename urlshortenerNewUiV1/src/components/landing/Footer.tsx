@@ -73,7 +73,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="https://docs.snip.sa"
+                  href={`https://docs.${brand.domain}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"
@@ -91,7 +91,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
               <li>
                 <a
-                  href="https://docs.snip.sa"
+                  href={`https://docs.${brand.domain}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"
@@ -141,7 +141,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
               <li>
                 <a
-                  href="https://docs.snip.sa"
+                  href={`https://docs.${brand.domain}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"
