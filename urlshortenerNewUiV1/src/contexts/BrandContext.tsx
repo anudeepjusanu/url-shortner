@@ -58,6 +58,15 @@ export const BrandProvider = ({ children }: { children: ReactNode }) => {
       .querySelector('meta[name="author"]')
       ?.setAttribute("content", brand.name);
 
+    const keywords = document.querySelector('meta[name="keywords"]');
+    if (keywords) {
+      keywords.setAttribute(
+        "content",
+        keywords.getAttribute("content")?.replace(/\bsnip\b/i, brand.name) ??
+          "",
+      );
+    }
+
     const jsonLd = document.querySelector('script[type="application/ld+json"]');
     if (jsonLd?.textContent) {
       try {
