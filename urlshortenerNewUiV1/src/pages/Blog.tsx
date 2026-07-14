@@ -3,6 +3,7 @@ import { ArrowRight, Clock, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
 import { blogPosts } from "@/data/blogPosts";
+import { brandifyBlogPost } from "@/lib/brandifyBlogPost";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useMetaTags } from "@/hooks/useMetaTags";
@@ -12,6 +13,7 @@ const Blog = () => {
   const brand = useBrand();
   const capitalizedBrand =
     brand.name.charAt(0).toUpperCase() + brand.name.slice(1);
+  const posts = blogPosts.map((post) => brandifyBlogPost(post, brand));
 
   // Set meta tags based on language
   useMetaTags({
@@ -66,7 +68,7 @@ const Blog = () => {
 
           {/* Posts grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.map((post, i) => (
+            {posts.map((post, i) => (
               <Link
                 to={`/blog/${post.slug}`}
                 key={post.slug}

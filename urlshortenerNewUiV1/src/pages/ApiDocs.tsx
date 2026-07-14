@@ -37,11 +37,12 @@ import { profileService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
-
-const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+import { useBrand } from "@/contexts/BrandContext";
 
 const ApiDocs = () => {
   useBrandMetaTags();
+  const brand = useBrand();
+  const MINTLIFY_DOCS_URL = `https://docs.${brand.domain}`;
   const { t } = useLanguage();
   const { toast } = useToast();
   const { canEdit, activeProject, isLoading: isProjectLoading } = useProject();

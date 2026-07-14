@@ -6,7 +6,7 @@ import {
   ReactNode,
 } from "react";
 
-interface Brand {
+export interface Brand {
   name: string;
   domain: string;
   title: string;
