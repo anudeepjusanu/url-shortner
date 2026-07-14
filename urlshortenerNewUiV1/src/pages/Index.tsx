@@ -65,7 +65,7 @@ const Index = () => {
         ? "أفضل منصة اختصار روابط للعرب. أنشئ روابط قصيرة تحمل علامتك التجارية مع تحليلات وتتبع الإحصاءات بسهولة. جرّب أداة اختصار الروابط مجانًا."
         : "Shorten links, generate QR codes, and track real-time analytics. Built for the Saudi market. Hosted in Saudi Arabia.",
     ogUrl: `https://${brand.domain}/`,
-    ogImage: "https://snip.sa/og-image.png",
+    ogImage: `https://${brand.domain}/og-image.png`,
     twitterTitle:
       lang === "ar"
         ? `اختصار الروابط مجانًا | أفضل موقع اختصار روابط ${brand.name}`
@@ -74,7 +74,7 @@ const Index = () => {
       lang === "ar"
         ? "أفضل منصة اختصار روابط للعرب. أنشئ روابط قصيرة تحمل علامتك التجارية مع تحليلات وتتبع الإحصاءات بسهولة."
         : "Shorten links, generate QR codes, and track real-time analytics. Built for the Saudi market.",
-    twitterImage: "https://snip.sa/og-image.png",
+    twitterImage: `https://${brand.domain}/og-image.png`,
     canonical: `https://${brand.domain}/`,
   });
 

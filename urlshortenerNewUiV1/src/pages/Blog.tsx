@@ -33,7 +33,7 @@ const Blog = () => {
         ? `اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة ${capitalizedBrand}.`
         : `Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with ${capitalizedBrand}.`,
     ogUrl: `https://${brand.domain}/blog`,
-    ogImage: "https://snip.sa/og-image.png",
+    ogImage: `https://${brand.domain}/og-image.png`,
     twitterTitle:
       lang === "ar"
         ? `اختصار الروابط | مدونة ${capitalizedBrand} لأفضل أدوات الروابط القصيرة`
@@ -42,7 +42,7 @@ const Blog = () => {
       lang === "ar"
         ? `اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة ${capitalizedBrand}.`
         : `Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with ${capitalizedBrand}.`,
-    twitterImage: "https://snip.sa/og-image.png",
+    twitterImage: `https://${brand.domain}/og-image.png`,
     canonical: `https://${brand.domain}/blog`,
   });
 
