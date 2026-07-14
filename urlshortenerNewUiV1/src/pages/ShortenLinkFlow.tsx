@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useToast } from "@/hooks/use-toast";
 import { authAPI, urlsAPI } from "@/services/api";
 import amplitudeService from "@/services/amplitude";
@@ -55,6 +56,7 @@ type FlowStep =
   | "result";
 
 const ShortenLinkFlow = () => {
+  useBrandMetaTags();
   const { t, isAr, lang, setLang } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();

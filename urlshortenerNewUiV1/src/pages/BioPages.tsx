@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import BioThumbnail from "@/components/bio-builder/BioThumbnail";
 import { BioTheme, BioBlock } from "@/types/bio";
 import { bioThemes } from "@/data/bioThemes";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 interface BioPage {
   _id: string;
@@ -59,6 +60,7 @@ const fallbackTheme: BioTheme =
   bioThemes.find((t) => t.id === "minimal-light") || bioThemes[0];
 
 const BioPages = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();

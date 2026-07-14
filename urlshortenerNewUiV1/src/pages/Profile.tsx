@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import amplitudeService from "@/services/amplitude";
 
 const Profile = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();

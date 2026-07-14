@@ -2,10 +2,12 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 const APPEAL_EMAIL = "support@snip.sa";
 
 export default function BlockedLinkPage() {
+  useBrandMetaTags();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const brand = useBrand();

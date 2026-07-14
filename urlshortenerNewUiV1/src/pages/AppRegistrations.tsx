@@ -36,6 +36,7 @@ import {
 import { appRegistrationAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 interface ScreenMapping {
   name: string;
@@ -59,13 +60,18 @@ interface AppRegistration {
 }
 
 export default function AppRegistrations() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { toast } = useToast();
 
-  const [deleteTarget, setDeleteTarget] = useState<AppRegistration | null>(null);
-  const [rotateTarget, setRotateTarget] = useState<AppRegistration | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AppRegistration | null>(
+    null,
+  );
+  const [rotateTarget, setRotateTarget] = useState<AppRegistration | null>(
+    null,
+  );
   const [rotateAcknowledged, setRotateAcknowledged] = useState(false);
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -98,7 +104,10 @@ export default function AppRegistrations() {
       setNewApiKey(res?.apiKey ?? null);
     },
     onError: () =>
-      toast({ variant: "destructive", title: t("Key rotation failed", "فشل تدوير المفتاح") }),
+      toast({
+        variant: "destructive",
+        title: t("Key rotation failed", "فشل تدوير المفتاح"),
+      }),
   });
 
   const handleCopyKey = async (key: string) => {
@@ -128,7 +137,7 @@ export default function AppRegistrations() {
             <p className="text-sm text-muted-foreground mt-1">
               {t(
                 "Register your iOS and Android apps to enable deep linking",
-                "سجّل تطبيقاتك لنظامي iOS وAndroid لتفعيل الروابط العميقة"
+                "سجّل تطبيقاتك لنظامي iOS وAndroid لتفعيل الروابط العميقة",
               )}
             </p>
           </div>
@@ -151,7 +160,10 @@ export default function AppRegistrations() {
         {/* Error */}
         {isError && (
           <div className="text-center py-20 text-muted-foreground">
-            {t("Failed to load app registrations", "فشل تحميل تسجيلات التطبيقات")}
+            {t(
+              "Failed to load app registrations",
+              "فشل تحميل تسجيلات التطبيقات",
+            )}
           </div>
         )}
 
@@ -162,7 +174,9 @@ export default function AppRegistrations() {
             <p className="text-muted-foreground">
               {t("No apps registered yet", "لا توجد تطبيقات مسجّلة بعد")}
             </p>
-            <Button onClick={() => navigate("/dashboard/deep-links/register-app")}>
+            <Button
+              onClick={() => navigate("/dashboard/deep-links/register-app")}
+            >
               <Plus className="w-4 h-4 me-2" />
               {t("Register your first app", "سجّل أول تطبيق")}
             </Button>
@@ -180,16 +194,24 @@ export default function AppRegistrations() {
                 {/* Name + status */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-foreground truncate">{app.name}</p>
+                    <p className="font-semibold text-foreground truncate">
+                      {app.name}
+                    </p>
                     <div className="flex gap-2 mt-1 flex-wrap">
                       {app.bundleId && (
-                        <Badge variant="secondary" className="text-[10px] gap-1">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] gap-1"
+                        >
                           <Apple className="w-3 h-3" />
                           iOS
                         </Badge>
                       )}
                       {app.packageName && (
-                        <Badge variant="secondary" className="text-[10px] gap-1">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] gap-1"
+                        >
                           <Smartphone className="w-3 h-3" />
                           Android
                         </Badge>
@@ -198,7 +220,9 @@ export default function AppRegistrations() {
                         variant={app.isActive ? "default" : "secondary"}
                         className="text-[10px]"
                       >
-                        {app.isActive ? t("Active", "نشط") : t("Inactive", "معطّل")}
+                        {app.isActive
+                          ? t("Active", "نشط")
+                          : t("Inactive", "معطّل")}
                       </Badge>
                     </div>
                   </div>
@@ -207,7 +231,11 @@ export default function AppRegistrations() {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      onClick={() => navigate(`/dashboard/deep-links/register-app/${app._id}/edit`)}
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/deep-links/register-app/${app._id}/edit`,
+                        )
+                      }
                       title={t("Edit", "تعديل")}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -227,21 +255,29 @@ export default function AppRegistrations() {
                 {/* Platform details */}
                 {app.bundleId && (
                   <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">{t("Bundle ID", "معرف التطبيق iOS")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("Bundle ID", "معرف التطبيق iOS")}
+                    </p>
                     <p className="text-xs font-mono">{app.bundleId}</p>
                   </div>
                 )}
                 {app.packageName && (
                   <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">{t("Package Name", "اسم الحزمة Android")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("Package Name", "اسم الحزمة Android")}
+                    </p>
                     <p className="text-xs font-mono">{app.packageName}</p>
                   </div>
                 )}
 
                 {/* Web fallback */}
                 <div className="space-y-0.5">
-                  <p className="text-xs text-muted-foreground">{t("Web Fallback", "الصفحة الاحتياطية")}</p>
-                  <p className="text-xs truncate text-foreground">{app.webFallbackUrl}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Web Fallback", "الصفحة الاحتياطية")}
+                  </p>
+                  <p className="text-xs truncate text-foreground">
+                    {app.webFallbackUrl}
+                  </p>
                 </div>
 
                 {/* Screen mappings count */}
@@ -286,14 +322,16 @@ export default function AppRegistrations() {
             <AlertDialogDescription>
               {t(
                 "This will permanently delete the registration and revoke its API key. Any deep links using this app will stop routing to the app.",
-                "سيؤدي هذا إلى حذف التسجيل بشكل دائم وإلغاء مفتاح API الخاص به. ستتوقف جميع الروابط العميقة التي تستخدم هذا التطبيق عن التوجيه إليه."
+                "سيؤدي هذا إلى حذف التسجيل بشكل دائم وإلغاء مفتاح API الخاص به. ستتوقف جميع الروابط العميقة التي تستخدم هذا التطبيق عن التوجيه إليه.",
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget._id)}
+              onClick={() =>
+                deleteTarget && deleteMutation.mutate(deleteTarget._id)
+              }
               className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {deleteMutation.isPending ? (
@@ -306,7 +344,10 @@ export default function AppRegistrations() {
       </AlertDialog>
 
       {/* Rotate key confirm */}
-      <Dialog open={!!rotateTarget} onOpenChange={(open) => !open && setRotateTarget(null)}>
+      <Dialog
+        open={!!rotateTarget}
+        onOpenChange={(open) => !open && setRotateTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("Rotate API Key", "تدوير مفتاح API")}</DialogTitle>
@@ -317,7 +358,7 @@ export default function AppRegistrations() {
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {t(
                   "The old API key will stop working immediately. You must update your mobile app with the new key before deploying. This is only safe to do before the app ships.",
-                  "سيتوقف مفتاح API القديم عن العمل فوراً. يجب عليك تحديث تطبيقك المحمول بالمفتاح الجديد قبل النشر. هذا الإجراء آمن فقط قبل نشر التطبيق."
+                  "سيتوقف مفتاح API القديم عن العمل فوراً. يجب عليك تحديث تطبيقك المحمول بالمفتاح الجديد قبل النشر. هذا الإجراء آمن فقط قبل نشر التطبيق.",
                 )}
               </p>
             </div>
@@ -331,7 +372,7 @@ export default function AppRegistrations() {
               <span className="text-sm text-foreground">
                 {t(
                   "I understand the old key will stop working immediately",
-                  "أفهم أن المفتاح القديم سيتوقف عن العمل فوراً"
+                  "أفهم أن المفتاح القديم سيتوقف عن العمل فوراً",
                 )}
               </span>
             </label>
@@ -343,7 +384,9 @@ export default function AppRegistrations() {
             <Button
               variant="destructive"
               disabled={!rotateAcknowledged || rotateMutation.isPending}
-              onClick={() => rotateTarget && rotateMutation.mutate(rotateTarget._id)}
+              onClick={() =>
+                rotateTarget && rotateMutation.mutate(rotateTarget._id)
+              }
             >
               {rotateMutation.isPending && (
                 <Loader2 className="w-4 h-4 animate-spin me-2" />
@@ -355,16 +398,21 @@ export default function AppRegistrations() {
       </Dialog>
 
       {/* New API key display (copy-once dialog) */}
-      <Dialog open={!!newApiKey} onOpenChange={(open) => !open && setNewApiKey(null)}>
+      <Dialog
+        open={!!newApiKey}
+        onOpenChange={(open) => !open && setNewApiKey(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("New API Key Generated", "تم إنشاء مفتاح API جديد")}</DialogTitle>
+            <DialogTitle>
+              {t("New API Key Generated", "تم إنشاء مفتاح API جديد")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
               {t(
                 "Copy this key now — it will be masked after you close this dialog.",
-                "انسخ هذا المفتاح الآن — سيتم إخفاؤه بعد إغلاق هذا الحوار."
+                "انسخ هذا المفتاح الآن — سيتم إخفاؤه بعد إغلاق هذا الحوار.",
               )}
             </p>
             <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2.5">

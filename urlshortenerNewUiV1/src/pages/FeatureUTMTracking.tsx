@@ -3,6 +3,7 @@ import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import { useState } from "react";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
 const FeatureUTMTracking = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const brand = useBrand();
   const { smartLink } = useSmartLink();

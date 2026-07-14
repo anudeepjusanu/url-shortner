@@ -2,6 +2,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Link2Off, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 const STRINGS = {
   en: {
@@ -27,6 +28,7 @@ const STRINGS = {
 type SupportedLang = keyof typeof STRINGS;
 
 export default function LinkNotFoundPage() {
+  useBrandMetaTags();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const brand = useBrand();

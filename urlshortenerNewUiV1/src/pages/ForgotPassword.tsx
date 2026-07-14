@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useToast } from "@/hooks/use-toast";
 import {
   Zap,
@@ -27,6 +28,7 @@ type Step = "email" | "otp" | "password";
 const OTP_LENGTH = 4;
 
 const ForgotPassword = () => {
+  useBrandMetaTags();
   const { t, isAr, lang, setLang } = useLanguage();
   const brand = useBrand();
   const navigate = useNavigate();

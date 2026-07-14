@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useProject } from "@/contexts/ProjectContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ import { useToast } from "@/hooks/use-toast";
 const PAGE_LIMIT = 100;
 
 const TeamUrls = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -223,8 +225,7 @@ const TeamUrls = () => {
     const byProject = new Map<string, { name: string; urls: any[] }>();
     filtered.forEach((url) => {
       const key = url.project?._id || "__unassigned__";
-      const name =
-        url.project?.name || t("Unassigned", "غير مخصص لمشروع");
+      const name = url.project?.name || t("Unassigned", "غير مخصص لمشروع");
       if (!byProject.has(key)) byProject.set(key, { name, urls: [] });
       byProject.get(key)!.urls.push(url);
     });
