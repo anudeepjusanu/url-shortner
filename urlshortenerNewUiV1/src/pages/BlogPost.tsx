@@ -58,10 +58,10 @@ const BlogPost = () => {
     ogTitle: seoTitle,
     ogDescription: seoDescription,
     ogUrl: `https://${brand.domain}/blog/${slug}`,
-    ogImage: post.image || "https://snip.sa/og-image.png",
+    ogImage: post.image || `https://${brand.domain}/og-image.png`,
     twitterTitle: seoTitle,
     twitterDescription: seoDescription,
-    twitterImage: post.image || "https://snip.sa/og-image.png",
+    twitterImage: post.image || `https://${brand.domain}/og-image.png`,
     canonical: `https://${brand.domain}/blog/${slug}`,
   });
 

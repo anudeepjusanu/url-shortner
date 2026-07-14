@@ -99,7 +99,7 @@ const Signup = () => {
         ? `أنشئ حسابك المجاني في ${capitalizedBrand} وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.`
         : `Create your free account on ${capitalizedBrand} and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.`,
     ogUrl: `https://${brand.domain}/signup`,
-    ogImage: "https://snip.sa/og-image.png",
+    ogImage: `https://${brand.domain}/og-image.png`,
     twitterTitle:
       lang === "ar"
         ? `تقصير الروابط | إنشاء حساب مجاني في منصة ${capitalizedBrand} اليوم`
@@ -108,7 +108,7 @@ const Signup = () => {
       lang === "ar"
         ? `أنشئ حسابك المجاني في ${capitalizedBrand} وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.`
         : `Create your free account on ${capitalizedBrand} and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.`,
-    twitterImage: "https://snip.sa/og-image.png",
+    twitterImage: `https://${brand.domain}/og-image.png`,
     canonical: `https://${brand.domain}/signup`,
   });
 

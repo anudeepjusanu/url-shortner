@@ -1,9 +1,11 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 const TermsAndConditions = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
 
   return (
     <div className="min-h-screen bg-background">
@@ -11,7 +13,6 @@ const TermsAndConditions = () => {
 
       <main className="pt-28 pb-20">
         <div className="container mx-auto px-6 max-w-3xl">
-
           {/* Header */}
           <div className="mb-10">
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2">
@@ -23,7 +24,6 @@ const TermsAndConditions = () => {
           </div>
 
           <div className="space-y-10 font-body text-muted-foreground leading-relaxed">
-
             {/* Preamble */}
             <section className="space-y-2">
               <h2 className="font-display text-lg font-bold text-foreground">
@@ -31,8 +31,8 @@ const TermsAndConditions = () => {
               </h2>
               <p>
                 {t(
-                  'This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: "we," "the Company," "the Service," or "this Contract" refer to Snip Company. "The Second Party" refers to the person who requested the service.',
-                  'يُعدّ هذا التمهيد والبنود التالية جزءاً لا يتجزأ من الشروط والأحكام العامة للاستخدام لهذا المستند. تشير المصطلحات: "نحن" و"الشركة" و"الخدمة" أو "هذا العقد" إلى شركة فرصة. ويشير مصطلح "الطرف الثاني" إلى الشخص الذي طلب الخدمة.'
+                  `This preamble and the clauses that follow are an integral part of the general terms and conditions of use for this document. The terms: "we," "the Company," "the Service," or "this Contract" refer to ${brand.name} Company. "The Second Party" refers to the person who requested the service.`,
+                  'يُعدّ هذا التمهيد والبنود التالية جزءاً لا يتجزأ من الشروط والأحكام العامة للاستخدام لهذا المستند. تشير المصطلحات: "نحن" و"الشركة" و"الخدمة" أو "هذا العقد" إلى شركة فرصة. ويشير مصطلح "الطرف الثاني" إلى الشخص الذي طلب الخدمة.',
                 )}
               </p>
             </section>
@@ -45,7 +45,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "These terms and conditions apply to all our technical services and applications provided through our website. By accessing the website or using any of our services or applications, you agree to comply with these terms and conditions. If you do not agree to these terms, you must stop using the website and services.",
-                  "تسري هذه الشروط والأحكام على جميع خدماتنا التقنية والتطبيقات المقدمة عبر موقعنا الإلكتروني. بالوصول إلى الموقع أو استخدام أي من خدماتنا أو تطبيقاتنا، فأنت توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على هذه الشروط، يجب عليك التوقف عن استخدام الموقع والخدمات."
+                  "تسري هذه الشروط والأحكام على جميع خدماتنا التقنية والتطبيقات المقدمة عبر موقعنا الإلكتروني. بالوصول إلى الموقع أو استخدام أي من خدماتنا أو تطبيقاتنا، فأنت توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على هذه الشروط، يجب عليك التوقف عن استخدام الموقع والخدمات.",
                 )}
               </p>
             </section>
@@ -91,7 +91,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "By accessing the website and using our services, you agree to the terms and conditions stated in this document and to comply with all regulations and laws. If you do not agree to any of the terms, you must stop using the website and services.",
-                  "بالوصول إلى الموقع الإلكتروني واستخدام خدماتنا، فأنت توافق على الشروط والأحكام المنصوص عليها في هذا المستند وعلى الامتثال لجميع الأنظمة والقوانين. إذا كنت لا توافق على أي من الشروط، يجب عليك التوقف عن استخدام الموقع والخدمات."
+                  "بالوصول إلى الموقع الإلكتروني واستخدام خدماتنا، فأنت توافق على الشروط والأحكام المنصوص عليها في هذا المستند وعلى الامتثال لجميع الأنظمة والقوانين. إذا كنت لا توافق على أي من الشروط، يجب عليك التوقف عن استخدام الموقع والخدمات.",
                 )}
               </p>
             </section>
@@ -104,7 +104,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "To obtain our services, you may need to register through the website and provide accurate and complete information. The Client is responsible for the accuracy of this information and updating it periodically.",
-                  "للحصول على خدماتنا، قد تحتاج إلى التسجيل عبر الموقع الإلكتروني وتقديم معلومات دقيقة وكاملة. يتحمل العميل مسؤولية دقة هذه المعلومات وتحديثها بشكل دوري."
+                  "للحصول على خدماتنا، قد تحتاج إلى التسجيل عبر الموقع الإلكتروني وتقديم معلومات دقيقة وكاملة. يتحمل العميل مسؤولية دقة هذه المعلومات وتحديثها بشكل دوري.",
                 )}
               </p>
             </section>
@@ -146,7 +146,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "The service contract begins from the date of service activation for the Client.",
-                  "يبدأ عقد الخدمة من تاريخ تفعيل الخدمة للعميل."
+                  "يبدأ عقد الخدمة من تاريخ تفعيل الخدمة للعميل.",
                 )}
               </p>
             </section>
@@ -154,7 +154,10 @@ const TermsAndConditions = () => {
             {/* 6. IP */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("6. Intellectual Property Rights", "6. حقوق الملكية الفكرية")}
+                {t(
+                  "6. Intellectual Property Rights",
+                  "6. حقوق الملكية الفكرية",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -163,7 +166,7 @@ const TermsAndConditions = () => {
                     ar: 'يحتوي الموقع الإلكتروني على مواد محمية بحقوق الملكية الفكرية، بما في ذلك النصوص والبرامج والصور والرسومات والأسماء والشعارات والألوان والتطبيقات والبرمجيات والملفات الصوتية ("المحتوى"). وهي محمية بموجب حقوق النشر وحقوق العلامات التجارية والقوانين المعمول بها في المملكة العربية السعودية.',
                   },
                   {
-                    en: "All intellectual property rights related to applications, software, and designs are the exclusive property of Snip Company or authorized service providers.",
+                    en: `All intellectual property rights related to applications, software, and designs are the exclusive property of ${brand.name} Company or authorized service providers.`,
                     ar: "جميع حقوق الملكية الفكرية المتعلقة بالتطبيقات والبرمجيات والتصاميم هي الملكية الحصرية لشركة فرصة أو مزودي الخدمة المرخصين.",
                   },
                   {
@@ -200,20 +203,27 @@ const TermsAndConditions = () => {
             {/* 8. Obligations */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("8. Obligations and Responsibilities", "8. الالتزامات والمسؤوليات")}
+                {t(
+                  "8. Obligations and Responsibilities",
+                  "8. الالتزامات والمسؤوليات",
+                )}
               </h2>
               <div className="space-y-3">
                 <div>
-                  <p className="font-semibold text-foreground mb-1">{t("Our Obligations:", "التزاماتنا:")}</p>
+                  <p className="font-semibold text-foreground mb-1">
+                    {t("Our Obligations:", "التزاماتنا:")}
+                  </p>
                   <p>
                     {t(
                       "We are committed to providing technical services in accordance with the standards and contracts agreed upon with the Client, implementing requirements accurately and professionally.",
-                      "نلتزم بتقديم الخدمات التقنية وفقاً للمعايير والعقود المتفق عليها مع العميل، وتنفيذ المتطلبات بدقة واحترافية."
+                      "نلتزم بتقديم الخدمات التقنية وفقاً للمعايير والعقود المتفق عليها مع العميل، وتنفيذ المتطلبات بدقة واحترافية.",
                     )}
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground mb-1">{t("Client Responsibility:", "مسؤولية العميل:")}</p>
+                  <p className="font-semibold text-foreground mb-1">
+                    {t("Client Responsibility:", "مسؤولية العميل:")}
+                  </p>
                   <ul className="space-y-2 list-disc list-inside ps-2">
                     {[
                       {
@@ -247,7 +257,10 @@ const TermsAndConditions = () => {
             {/* 9. Privacy */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("9. Privacy and Data Protection", "9. الخصوصية وحماية البيانات")}
+                {t(
+                  "9. Privacy and Data Protection",
+                  "9. الخصوصية وحماية البيانات",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -280,7 +293,10 @@ const TermsAndConditions = () => {
             {/* 10. Modifications */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("10. Modifications to Services and Terms", "10. التعديلات على الخدمات والشروط")}
+                {t(
+                  "10. Modifications to Services and Terms",
+                  "10. التعديلات على الخدمات والشروط",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -369,7 +385,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "We are not responsible for any delay or disruption resulting from circumstances beyond the Company's control such as natural disasters, government decisions, cyber attacks, and others.",
-                  "لا نتحمل المسؤولية عن أي تأخير أو انقطاع ناجم عن ظروف خارجة عن سيطرة الشركة كالكوارث الطبيعية والقرارات الحكومية والهجمات الإلكترونية وغيرها."
+                  "لا نتحمل المسؤولية عن أي تأخير أو انقطاع ناجم عن ظروف خارجة عن سيطرة الشركة كالكوارث الطبيعية والقرارات الحكومية والهجمات الإلكترونية وغيرها.",
                 )}
               </p>
             </section>
@@ -377,7 +393,10 @@ const TermsAndConditions = () => {
             {/* 15. Applicable Laws */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("15. Applicable Laws and Dispute Resolution", "15. القوانين المطبقة وتسوية النزاعات")}
+                {t(
+                  "15. Applicable Laws and Dispute Resolution",
+                  "15. القوانين المطبقة وتسوية النزاعات",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -429,13 +448,19 @@ const TermsAndConditions = () => {
               <ul className="space-y-1 ps-2">
                 <li>
                   {t("Email:", "البريد الإلكتروني:")}{" "}
-                  <a href="mailto:support@snip.sa" className="text-primary hover:underline">
+                  <a
+                    href="mailto:support@snip.sa"
+                    className="text-primary hover:underline"
+                  >
                     support@snip.sa
                   </a>
                 </li>
                 <li>
                   {t("Phone:", "الهاتف:")}{" "}
-                  <a href="tel:01151083470" className="text-primary hover:underline">
+                  <a
+                    href="tel:01151083470"
+                    className="text-primary hover:underline"
+                  >
                     01151083470
                   </a>
                 </li>
@@ -450,7 +475,7 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "The website may contain links to external websites, which are beyond our control, and we are not responsible for their content.",
-                  "قد يحتوي الموقع الإلكتروني على روابط لمواقع إلكترونية خارجية، تقع خارج نطاق سيطرتنا، ولا نتحمل المسؤولية عن محتواها."
+                  "قد يحتوي الموقع الإلكتروني على روابط لمواقع إلكترونية خارجية، تقع خارج نطاق سيطرتنا، ولا نتحمل المسؤولية عن محتواها.",
                 )}
               </p>
             </section>
@@ -458,7 +483,10 @@ const TermsAndConditions = () => {
             {/* 19. Refund */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("19. Cancellation and Refund Policy", "19. سياسة الإلغاء واسترداد المبالغ")}
+                {t(
+                  "19. Cancellation and Refund Policy",
+                  "19. سياسة الإلغاء واسترداد المبالغ",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -491,7 +519,10 @@ const TermsAndConditions = () => {
             {/* 20. Notices */}
             <section className="space-y-3">
               <h2 className="font-display text-lg font-bold text-foreground">
-                {t("20. Notices and Communications", "20. الإشعارات والاتصالات")}
+                {t(
+                  "20. Notices and Communications",
+                  "20. الإشعارات والاتصالات",
+                )}
               </h2>
               <ul className="space-y-2 list-disc list-inside ps-2">
                 {[
@@ -517,11 +548,10 @@ const TermsAndConditions = () => {
               <p>
                 {t(
                   "The Client is obligated to provide accurate information for communication, technical support, and assistance in providing the service.",
-                  "يلتزم العميل بتقديم معلومات دقيقة للتواصل والدعم الفني والمساعدة في تقديم الخدمة."
+                  "يلتزم العميل بتقديم معلومات دقيقة للتواصل والدعم الفني والمساعدة في تقديم الخدمة.",
                 )}
               </p>
             </section>
-
           </div>
         </div>
       </main>

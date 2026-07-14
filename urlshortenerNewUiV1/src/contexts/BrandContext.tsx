@@ -1,4 +1,10 @@
-import { createContext, useContext, useMemo, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from "react";
 
 interface Brand {
   name: string;
@@ -39,6 +45,30 @@ const BrandContext = createContext<Brand | undefined>(undefined);
 
 export const BrandProvider = ({ children }: { children: ReactNode }) => {
   const brand = useMemo(() => resolveBrand(window.location.hostname), []);
+
+  // These elements are static in index.html and don't vary per-route, so no
+  // page-level hook (e.g. useMetaTags) owns them — safe to update once here
+  // without colliding with per-page title/description/OG meta management.
+  useEffect(() => {
+    document
+      .querySelectorAll('link[rel="alternate"][hreflang]')
+      .forEach((el) => el.setAttribute("href", `https://${brand.domain}/`));
+
+    document
+      .querySelector('meta[name="author"]')
+      ?.setAttribute("content", brand.name);
+
+    const jsonLd = document.querySelector('script[type="application/ld+json"]');
+    if (jsonLd?.textContent) {
+      try {
+        const data = JSON.parse(jsonLd.textContent);
+        data.name = brand.name;
+        data.url = `https://${brand.domain}/`;
+        data.description = brand.description;
+        jsonLd.textContent = JSON.stringify(data, null, 2);
+      } catch {}
+    }
+  }, [brand]);
 
   return (
     <BrandContext.Provider value={brand}>{children}</BrandContext.Provider>
