@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
@@ -930,6 +931,7 @@ const StepsAnimationSection = ({
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════════ */
 const FeatureLinkInBio = () => {
+  useBrandMetaTags();
   const { t, isAr } = useLanguage();
   const brand = useBrand();
   const { smartLink } = useSmartLink();

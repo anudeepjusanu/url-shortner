@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUTM } from "@/contexts/UTMContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ const isValidUrl = (value: string): boolean => {
 };
 
 const CreateUTMLink = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   useRequireEditAccess("/dashboard/utm-builder");

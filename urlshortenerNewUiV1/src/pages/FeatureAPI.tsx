@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
@@ -88,6 +89,7 @@ echo $res["data"]["domain"]["shortUrl"] . "/" . $res["data"]["url"]["shortCode"]
 };
 
 const FeatureAPI = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const { smartLink } = useSmartLink();
   const [tab, setTab] = useState<keyof typeof SNIPPETS>("node");
@@ -113,7 +115,7 @@ const FeatureAPI = () => {
       title: t("URL shortening", "اختصار الروابط"),
       desc: t(
         "Create shortened URLs with custom codes, expiration dates, and password protection.",
-        "أنشئ روابط مختصرة مع رموز مخصصة وتواريخ انتهاء وحماية بكلمة مرور."
+        "أنشئ روابط مختصرة مع رموز مخصصة وتواريخ انتهاء وحماية بكلمة مرور.",
       ),
     },
     {
@@ -121,7 +123,7 @@ const FeatureAPI = () => {
       title: t("Security features", "ميزات الأمان"),
       desc: t(
         "Password protection, geo restrictions, and device filtering on every link.",
-        "حماية بكلمة مرور، قيود جغرافية، وتصفية حسب الجهاز لكل رابط."
+        "حماية بكلمة مرور، قيود جغرافية، وتصفية حسب الجهاز لكل رابط.",
       ),
     },
     {
@@ -129,7 +131,7 @@ const FeatureAPI = () => {
       title: t("Advanced analytics", "تحليلات متقدمة"),
       desc: t(
         "Track clicks, geographic data, devices, referrers, and campaign performance.",
-        "تابع الضغطات والبيانات الجغرافية والأجهزة والمصادر وأداء الحملات."
+        "تابع الضغطات والبيانات الجغرافية والأجهزة والمصادر وأداء الحملات.",
       ),
     },
     {
@@ -137,7 +139,7 @@ const FeatureAPI = () => {
       title: t("QR code generation", "توليد رموز QR"),
       desc: t(
         "Generate customizable QR codes for any shortened URL through a single endpoint.",
-        "أنشئ رموز QR قابلة للتخصيص لأي رابط مختصر من خلال نقطة واحدة."
+        "أنشئ رموز QR قابلة للتخصيص لأي رابط مختصر من خلال نقطة واحدة.",
       ),
     },
     {
@@ -145,7 +147,7 @@ const FeatureAPI = () => {
       title: t("Custom domains & UTM", "نطاقات مخصصة و UTM"),
       desc: t(
         "Use your own branded domains and append UTM parameters for campaign tracking.",
-        "استخدم نطاقاتك الخاصة وأضف معاملات UTM لتتبع الحملات."
+        "استخدم نطاقاتك الخاصة وأضف معاملات UTM لتتبع الحملات.",
       ),
     },
     {
@@ -153,20 +155,58 @@ const FeatureAPI = () => {
       title: t("Hosted in Saudi Arabia", "مستضاف في السعودية"),
       desc: t(
         "Low latency for Gulf traffic and full PDPL compliance for your customers' data.",
-        "زمن استجابة منخفض في الخليج والتزام كامل بنظام حماية البيانات."
+        "زمن استجابة منخفض في الخليج والتزام كامل بنظام حماية البيانات.",
       ),
     },
   ];
 
   const endpoints = [
-    { method: "POST", path: "/api/urls", desc: t("Create a shortened URL", "إنشاء رابط مختصر") },
-    { method: "GET", path: "/api/urls", desc: t("List all your URLs", "عرض جميع روابطك") },
-    { method: "GET", path: "/api/urls/:id", desc: t("Retrieve a URL", "استرجاع رابط") },
-    { method: "PATCH", path: "/api/urls/:id", desc: t("Update destination, code, settings", "تحديث الوجهة أو الرمز أو الإعدادات") },
-    { method: "DELETE", path: "/api/urls/:id", desc: t("Delete a URL", "حذف رابط") },
-    { method: "GET", path: "/api/analytics/:id", desc: t("Click analytics & geo data", "تحليلات الضغطات والبيانات الجغرافية") },
-    { method: "POST", path: "/api/qr-codes", desc: t("Generate a QR code", "إنشاء رمز QR") },
-    { method: "GET", path: "/api/domains", desc: t("List custom domains", "عرض النطاقات المخصصة") },
+    {
+      method: "POST",
+      path: "/api/urls",
+      desc: t("Create a shortened URL", "إنشاء رابط مختصر"),
+    },
+    {
+      method: "GET",
+      path: "/api/urls",
+      desc: t("List all your URLs", "عرض جميع روابطك"),
+    },
+    {
+      method: "GET",
+      path: "/api/urls/:id",
+      desc: t("Retrieve a URL", "استرجاع رابط"),
+    },
+    {
+      method: "PATCH",
+      path: "/api/urls/:id",
+      desc: t(
+        "Update destination, code, settings",
+        "تحديث الوجهة أو الرمز أو الإعدادات",
+      ),
+    },
+    {
+      method: "DELETE",
+      path: "/api/urls/:id",
+      desc: t("Delete a URL", "حذف رابط"),
+    },
+    {
+      method: "GET",
+      path: "/api/analytics/:id",
+      desc: t(
+        "Click analytics & geo data",
+        "تحليلات الضغطات والبيانات الجغرافية",
+      ),
+    },
+    {
+      method: "POST",
+      path: "/api/qr-codes",
+      desc: t("Generate a QR code", "إنشاء رمز QR"),
+    },
+    {
+      method: "GET",
+      path: "/api/domains",
+      desc: t("List custom domains", "عرض النطاقات المخصصة"),
+    },
   ];
 
   const tabs: { id: keyof typeof SNIPPETS; label: string }[] = [
@@ -199,23 +239,32 @@ const FeatureAPI = () => {
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
                 {t("Ship short links", "أطلق روابطك")}{" "}
                 <br className="hidden md:block" />
-                <span className="text-[hsl(var(--sky))]">{t("in 3 lines of code.", "بثلاثة أسطر فقط.")}</span>
+                <span className="text-[hsl(var(--sky))]">
+                  {t("in 3 lines of code.", "بثلاثة أسطر فقط.")}
+                </span>
               </h1>
               <p className="font-body text-lg leading-relaxed mb-8 max-w-md text-[hsl(var(--navy))]/60">
                 {t(
                   "A simple REST API to create, manage, and track shortened URLs with custom domains, QR codes, analytics, and more.",
-                  "واجهة REST بسيطة لإنشاء وإدارة وتتبع الروابط المختصرة مع نطاقات مخصصة، رموز QR، تحليلات، والمزيد."
+                  "واجهة REST بسيطة لإنشاء وإدارة وتتبع الروابط المختصرة مع نطاقات مخصصة، رموز QR، تحليلات، والمزيد.",
                 )}
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <Button asChild className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 text-base px-7 py-6">
+                <Button
+                  asChild
+                  className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 text-base px-7 py-6"
+                >
                   <Link to={smartLink("/signup", "/dashboard/api")}>
                     <KeyRound className="w-4 h-4 me-1.5" />
                     {t("Get your API key", "احصل على مفتاحك")}
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/15 text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))]/5 bg-transparent py-6 px-7">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/15 text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))]/5 bg-transparent py-6 px-7"
+                >
                   <a href="#endpoints">
                     <BookOpen className="w-4 h-4 me-1.5" />
                     {t("Read the docs", "اقرأ الوثائق")}
@@ -232,7 +281,10 @@ const FeatureAPI = () => {
               className="relative"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sky))]/15 to-[hsl(var(--navy))]/10 rounded-3xl blur-2xl scale-105 pointer-events-none" />
-              <div dir="ltr" className="relative bg-[hsl(var(--navy))] rounded-3xl overflow-hidden shadow-2xl">
+              <div
+                dir="ltr"
+                className="relative bg-[hsl(var(--navy))] rounded-3xl overflow-hidden shadow-2xl"
+              >
                 <div className="flex items-center justify-between px-4 pt-3 border-b border-white/10">
                   <div className="flex items-center gap-1.5">
                     {tabs.map((tb) => (
@@ -279,8 +331,12 @@ const FeatureAPI = () => {
                 transition={{ delay: i * 0.08 }}
                 className="bg-white rounded-2xl p-5 border border-[hsl(var(--navy))]/6 text-center"
               >
-                <p className="font-display text-xl md:text-2xl font-bold text-[hsl(var(--sky))] mb-1">{stat.value}</p>
-                <p className="font-body text-xs text-[hsl(var(--navy))]/45">{stat.label}</p>
+                <p className="font-display text-xl md:text-2xl font-bold text-[hsl(var(--sky))] mb-1">
+                  {stat.value}
+                </p>
+                <p className="font-body text-xs text-[hsl(var(--navy))]/45">
+                  {stat.label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -306,7 +362,7 @@ const FeatureAPI = () => {
             <p className="font-body text-lg text-[hsl(var(--navy))]/50 max-w-lg mx-auto">
               {t(
                 "Everything you need to integrate short links into your stack, with none of the surprises.",
-                "كل ما تحتاجه لدمج الروابط القصيرة في مشروعك، بدون مفاجآت."
+                "كل ما تحتاجه لدمج الروابط القصيرة في مشروعك، بدون مفاجآت.",
               )}
             </p>
           </motion.div>
@@ -324,8 +380,12 @@ const FeatureAPI = () => {
                 <div className="w-10 h-10 rounded-xl bg-[hsl(var(--sky))]/10 flex items-center justify-center mb-4">
                   <b.icon className="w-5 h-5 text-[hsl(var(--sky))]" />
                 </div>
-                <h3 className="font-display font-bold text-base text-[hsl(var(--navy))] mb-2">{b.title}</h3>
-                <p className="font-body text-sm text-[hsl(var(--navy))]/55 leading-relaxed">{b.desc}</p>
+                <h3 className="font-display font-bold text-base text-[hsl(var(--navy))] mb-2">
+                  {b.title}
+                </h3>
+                <p className="font-body text-sm text-[hsl(var(--navy))]/55 leading-relaxed">
+                  {b.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -351,12 +411,15 @@ const FeatureAPI = () => {
               <p className="font-body text-lg text-[hsl(var(--navy))]/55 mb-6 leading-relaxed">
                 {t(
                   "Base URL: https://api.snip.sa. Every response is a JSON envelope: { success, message, data }. ISO timestamps throughout.",
-                  "الرابط الأساسي: https://api.snip.sa. كل استجابة مغلفة بصيغة JSON: { success, message, data }. مع توقيتات ISO."
+                  "الرابط الأساسي: https://api.snip.sa. كل استجابة مغلفة بصيغة JSON: { success, message, data }. مع توقيتات ISO.",
                 )}
               </p>
               <div className="flex items-center gap-2 text-sm font-body text-[hsl(var(--navy))]/60">
                 <Shield className="w-4 h-4 text-[hsl(var(--sky))]" />
-                {t("X-API-Key or Bearer JWT auth · password protection · geo & device filtering", "مصادقة X-API-Key أو Bearer JWT · حماية بكلمة مرور · تصفية جغرافية وجهازية")}
+                {t(
+                  "X-API-Key or Bearer JWT auth · password protection · geo & device filtering",
+                  "مصادقة X-API-Key أو Bearer JWT · حماية بكلمة مرور · تصفية جغرافية وجهازية",
+                )}
               </div>
             </motion.div>
 
@@ -374,16 +437,20 @@ const FeatureAPI = () => {
                       e.method === "GET"
                         ? "bg-emerald-100 text-emerald-700"
                         : e.method === "POST"
-                        ? "bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]"
-                        : e.method === "PATCH"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-rose-100 text-rose-700"
+                          ? "bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]"
+                          : e.method === "PATCH"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-rose-100 text-rose-700"
                     }`}
                   >
                     {e.method}
                   </span>
-                  <code className="font-mono text-sm text-[hsl(var(--navy))] shrink-0">{e.path}</code>
-                  <span className="font-body text-xs text-[hsl(var(--navy))]/45 ms-auto text-end">{e.desc}</span>
+                  <code className="font-mono text-sm text-[hsl(var(--navy))] shrink-0">
+                    {e.path}
+                  </code>
+                  <span className="font-body text-xs text-[hsl(var(--navy))]/45 ms-auto text-end">
+                    {e.desc}
+                  </span>
                 </div>
               ))}
             </motion.div>

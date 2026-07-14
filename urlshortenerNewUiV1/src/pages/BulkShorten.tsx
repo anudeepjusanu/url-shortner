@@ -39,6 +39,7 @@ import { myLinksService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 import { cn } from "@/lib/utils";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 1000;
@@ -235,6 +236,7 @@ function isValidUrl(url: string) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const BulkShorten = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();

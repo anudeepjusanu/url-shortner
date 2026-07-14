@@ -41,6 +41,7 @@ import { analyticsService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Constants ───
 const HOUR = 3600_000;
@@ -297,6 +298,7 @@ function buildStatList(items: { name: string; value: number }[]) {
 }
 
 const AnalyticsPage = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const { toast } = useToast();
   const { linkId } = useParams<{ linkId?: string }>();

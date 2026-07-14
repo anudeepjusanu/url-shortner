@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { bioPageAPI } from "@/services/api";
 import { Loader2, Link2, Share2, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -68,6 +69,7 @@ function useBioPageSEO(page: PublicPage | null) {
 }
 
 const PublicBioPage = () => {
+  useBrandMetaTags();
   const { username } = useParams<{ username: string }>();
   const { t } = useLanguage();
   const brand = useBrand();

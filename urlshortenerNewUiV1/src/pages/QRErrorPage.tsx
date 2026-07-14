@@ -2,6 +2,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { QrCode, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ type SupportedLang = keyof typeof STRINGS;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function QRErrorPage() {
+  useBrandMetaTags();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const brand = useBrand();

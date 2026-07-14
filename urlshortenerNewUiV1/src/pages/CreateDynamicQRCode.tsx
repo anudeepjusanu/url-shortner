@@ -25,6 +25,7 @@ import { dynamicQRCodeAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -67,6 +68,7 @@ const DEFAULT_FORM: FormState = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function CreateDynamicQRCode() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();

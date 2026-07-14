@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useToast } from "@/hooks/use-toast";
 import {
   Zap,
@@ -27,6 +28,7 @@ import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 // ];
 
 const Login = () => {
+  useBrandMetaTags();
   const { t, isAr, lang, setLang } = useLanguage();
   const brand = useBrand();
   const navigate = useNavigate();

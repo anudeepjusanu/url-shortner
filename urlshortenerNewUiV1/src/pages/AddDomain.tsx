@@ -19,10 +19,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
 import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 type Step = "enter" | "dns" | "done";
 
 const AddDomain = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();

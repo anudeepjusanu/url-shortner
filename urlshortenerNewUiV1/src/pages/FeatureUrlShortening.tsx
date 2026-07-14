@@ -3,6 +3,7 @@ import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,7 @@ const isValidUrl = (value: string) => {
 };
 
 const FeatureUrlShortening = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const brand = useBrand();
   const navigate = useNavigate();

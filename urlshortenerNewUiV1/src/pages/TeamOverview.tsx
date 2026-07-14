@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, UserPlus, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useProject } from "@/contexts/ProjectContext";
 import { accountMembersAPI } from "@/services/api";
 import InviteUserDialog from "@/components/team/InviteUserDialog";
@@ -26,13 +27,22 @@ interface PendingInvitation {
 }
 
 const TeamOverview = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { isEnterpriseAccount, isPersonalActive, canManageUsers, isAccountOwner, sharedProjects, isLoading: projectsLoading } =
-    useProject();
+  const {
+    isEnterpriseAccount,
+    isPersonalActive,
+    canManageUsers,
+    isAccountOwner,
+    sharedProjects,
+    isLoading: projectsLoading,
+  } = useProject();
 
   const [members, setMembers] = useState<MemberRow[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<
+    PendingInvitation[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
 
@@ -54,10 +64,19 @@ const TeamOverview = () => {
   }, [canManageUsers, load]);
 
   useEffect(() => {
-    if (!projectsLoading && (!isEnterpriseAccount || (!isPersonalActive && !canManageUsers))) {
+    if (
+      !projectsLoading &&
+      (!isEnterpriseAccount || (!isPersonalActive && !canManageUsers))
+    ) {
       navigate("/dashboard", { replace: true });
     }
-  }, [projectsLoading, isEnterpriseAccount, isPersonalActive, canManageUsers, navigate]);
+  }, [
+    projectsLoading,
+    isEnterpriseAccount,
+    isPersonalActive,
+    canManageUsers,
+    navigate,
+  ]);
 
   if (projectsLoading) {
     return (
@@ -77,7 +96,7 @@ const TeamOverview = () => {
           <p className="text-muted-foreground">
             {t(
               "Personal projects don't have team members or roles — switch to a shared project to manage users.",
-              "المشاريع الشخصية لا تحتوي على أعضاء فريق أو أدوار — قم بالتبديل إلى مشروع مشترك لإدارة المستخدمين."
+              "المشاريع الشخصية لا تحتوي على أعضاء فريق أو أدوار — قم بالتبديل إلى مشروع مشترك لإدارة المستخدمين.",
             )}
           </p>
         </div>
@@ -89,16 +108,25 @@ const TeamOverview = () => {
     return null;
   }
 
-  const administerableProjects = sharedProjects.filter((p) => p.role === "owner" || p.role === "admin");
-  const assignableRoles = isAccountOwner ? ["admin", "editor", "viewer"] : ["editor", "viewer"];
+  const administerableProjects = sharedProjects.filter(
+    (p) => p.role === "owner" || p.role === "admin",
+  );
+  const assignableRoles = isAccountOwner
+    ? ["admin", "editor", "viewer"]
+    : ["editor", "viewer"];
 
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">{t("Team", "الفريق")}</h1>
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            {t("Team", "الفريق")}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {t("Manage who has access to your projects", "إدارة من لديه حق الوصول إلى مشاريعك")}
+            {t(
+              "Manage who has access to your projects",
+              "إدارة من لديه حق الوصول إلى مشاريعك",
+            )}
           </p>
         </div>
         <Button onClick={() => setInviteOpen(true)} className="gap-2">
@@ -117,9 +145,15 @@ const TeamOverview = () => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide">
                 <tr>
-                  <th className="text-start px-4 py-3">{t("Member", "العضو")}</th>
-                  <th className="text-start px-4 py-3">{t("Roles", "الأدوار")}</th>
-                  <th className="text-start px-4 py-3">{t("Projects", "المشاريع")}</th>
+                  <th className="text-start px-4 py-3">
+                    {t("Member", "العضو")}
+                  </th>
+                  <th className="text-start px-4 py-3">
+                    {t("Roles", "الأدوار")}
+                  </th>
+                  <th className="text-start px-4 py-3">
+                    {t("Projects", "المشاريع")}
+                  </th>
                   <th className="text-end px-4 py-3" />
                 </tr>
               </thead>
@@ -130,23 +164,33 @@ const TeamOverview = () => {
                       <div className="font-medium text-foreground">
                         {member.firstName} {member.lastName || ""}
                       </div>
-                      <div className="text-muted-foreground text-xs">{member.email}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {member.email}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {member.roles.map((r) => (
-                          <Badge key={r.projectId} variant="secondary" className="text-[10px]">
+                          <Badge
+                            key={r.projectId}
+                            variant="secondary"
+                            className="text-[10px]"
+                          >
                             {r.projectName}: {r.role}
                           </Badge>
                         ))}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{member.projectCount}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {member.projectCount}
+                    </td>
                     <td className="px-4 py-3 text-end">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/dashboard/team/${member.userId}`)}
+                        onClick={() =>
+                          navigate(`/dashboard/team/${member.userId}`)
+                        }
                       >
                         {t("Manage", "إدارة")}
                       </Button>
@@ -155,7 +199,10 @@ const TeamOverview = () => {
                 ))}
                 {members.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                    <td
+                      colSpan={4}
+                      className="px-4 py-10 text-center text-muted-foreground"
+                    >
                       {t("No team members yet", "لا يوجد أعضاء فريق بعد")}
                     </td>
                   </tr>
@@ -167,7 +214,9 @@ const TeamOverview = () => {
           {pendingInvitations.length > 0 && (
             <div className="bg-background border border-border rounded-xl overflow-hidden">
               <div className="px-4 py-3 border-b border-border">
-                <h2 className="text-sm font-semibold text-foreground">{t("Pending invitations", "الدعوات المعلقة")}</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  {t("Pending invitations", "الدعوات المعلقة")}
+                </h2>
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-border">
@@ -199,7 +248,10 @@ const TeamOverview = () => {
       <InviteUserDialog
         open={inviteOpen}
         onOpenChange={setInviteOpen}
-        availableProjects={administerableProjects.map((p) => ({ id: p.id, name: p.name }))}
+        availableProjects={administerableProjects.map((p) => ({
+          id: p.id,
+          name: p.name,
+        }))}
         assignableRoles={assignableRoles}
         onInvited={load}
       />

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useUTM, UTMLink } from "@/contexts/UTMContext";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -22,6 +23,7 @@ import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const UTMBuilder = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { canEdit } = useProject();

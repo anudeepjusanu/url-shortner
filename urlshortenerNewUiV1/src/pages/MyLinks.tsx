@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,7 @@ import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const MyLinks = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,7 @@ const DOWNLOAD_FORMATS = ["png", "jpeg", "webp", "svg", "pdf"] as const;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function DynamicQRCodes() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, isAr } = useLanguage();

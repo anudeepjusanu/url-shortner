@@ -6,15 +6,19 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProject } from "@/contexts/ProjectContext";
 import { accountMembersAPI } from "@/services/api";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 const AcceptInvite = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refresh } = useProject();
   const token = searchParams.get("token");
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -48,7 +52,9 @@ const AcceptInvite = () => {
         {status === "loading" && (
           <>
             <Loader2 className="w-10 h-10 mx-auto animate-spin text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">{t("Accepting invitation…", "جارٍ قبول الدعوة…")}</p>
+            <p className="text-muted-foreground">
+              {t("Accepting invitation…", "جارٍ قبول الدعوة…")}
+            </p>
           </>
         )}
         {status === "success" && (
@@ -58,9 +64,14 @@ const AcceptInvite = () => {
               {t("You're in!", "لقد انضممت!")}
             </h1>
             <p className="text-muted-foreground mb-6">
-              {t("You now have access to the shared projects you were invited to.", "أصبح لديك الآن حق الوصول إلى المشاريع المشتركة التي تمت دعوتك إليها.")}
+              {t(
+                "You now have access to the shared projects you were invited to.",
+                "أصبح لديك الآن حق الوصول إلى المشاريع المشتركة التي تمت دعوتك إليها.",
+              )}
             </p>
-            <Button onClick={() => navigate("/dashboard")}>{t("Go to Dashboard", "الذهاب إلى لوحة التحكم")}</Button>
+            <Button onClick={() => navigate("/dashboard")}>
+              {t("Go to Dashboard", "الذهاب إلى لوحة التحكم")}
+            </Button>
           </>
         )}
         {status === "error" && (

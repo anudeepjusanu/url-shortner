@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const CreateQRCode = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   useRequireEditAccess("/dashboard/qr-codes");

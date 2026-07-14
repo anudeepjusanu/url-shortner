@@ -26,6 +26,7 @@ import {
 import { appRegistrationAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 interface ScreenParam {
   key: string;
@@ -43,6 +44,7 @@ type Tab = (typeof TABS)[number];
 const emptyMapping = (): ScreenMapping => ({ name: "", path: "", params: [] });
 
 export default function CreateAppRegistration() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = !!id;
@@ -61,7 +63,9 @@ export default function CreateAppRegistration() {
   const [sha256, setSha256] = useState("");
   const [androidStoreUrl, setAndroidStoreUrl] = useState("");
   const [webFallbackUrl, setWebFallbackUrl] = useState("");
-  const [screenMappings, setScreenMappings] = useState<ScreenMapping[]>([emptyMapping()]);
+  const [screenMappings, setScreenMappings] = useState<ScreenMapping[]>([
+    emptyMapping(),
+  ]);
 
   const [formError, setFormError] = useState("");
   const [successKey, setSuccessKey] = useState<string | null>(null);
@@ -94,14 +98,16 @@ export default function CreateAppRegistration() {
           name: s.name ?? "",
           path: s.path ?? "",
           params: s.params ?? [],
-        }))
+        })),
       );
     }
   }, [editData]);
 
   const createMutation = useMutation({
     mutationFn: (data: any) =>
-      isEdit ? appRegistrationAPI.update(id!, data) : appRegistrationAPI.create(data),
+      isEdit
+        ? appRegistrationAPI.update(id!, data)
+        : appRegistrationAPI.create(data),
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["app-registrations"] });
       if (!isEdit && res?.data?.apiKey) {
@@ -125,15 +131,17 @@ export default function CreateAppRegistration() {
       return;
     }
     if (!webFallbackUrl.trim()) {
-      setFormError(t("Web fallback URL is required", "رابط الصفحة الاحتياطية مطلوب"));
+      setFormError(
+        t("Web fallback URL is required", "رابط الصفحة الاحتياطية مطلوب"),
+      );
       return;
     }
     if (!bundleId.trim() && !packageName.trim()) {
       setFormError(
         t(
           "At least one of Bundle ID (iOS) or Package Name (Android) is required",
-          "يجب تحديد معرف تطبيق iOS أو اسم حزمة Android على الأقل"
-        )
+          "يجب تحديد معرف تطبيق iOS أو اسم حزمة Android على الأقل",
+        ),
       );
       return;
     }
@@ -141,12 +149,17 @@ export default function CreateAppRegistration() {
     try {
       new URL(webFallbackUrl);
     } catch {
-      setFormError(t("Web fallback URL must be a valid URL", "يجب أن يكون رابط الصفحة الاحتياطية صالحاً"));
+      setFormError(
+        t(
+          "Web fallback URL must be a valid URL",
+          "يجب أن يكون رابط الصفحة الاحتياطية صالحاً",
+        ),
+      );
       return;
     }
 
     const validMappings = screenMappings.filter(
-      (m) => m.name.trim() && m.path.trim()
+      (m) => m.name.trim() && m.path.trim(),
     );
 
     createMutation.mutate({
@@ -162,36 +175,46 @@ export default function CreateAppRegistration() {
     });
   };
 
-  const addMapping = () => setScreenMappings((prev) => [...prev, emptyMapping()]);
+  const addMapping = () =>
+    setScreenMappings((prev) => [...prev, emptyMapping()]);
   const removeMapping = (i: number) =>
     setScreenMappings((prev) => prev.filter((_, idx) => idx !== i));
   const updateMapping = (i: number, field: keyof ScreenMapping, value: any) =>
     setScreenMappings((prev) =>
-      prev.map((m, idx) => (idx === i ? { ...m, [field]: value } : m))
+      prev.map((m, idx) => (idx === i ? { ...m, [field]: value } : m)),
     );
 
   const addParam = (i: number) =>
     setScreenMappings((prev) =>
       prev.map((m, idx) =>
-        idx === i ? { ...m, params: [...m.params, { key: "", description: "" }] } : m
-      )
+        idx === i
+          ? { ...m, params: [...m.params, { key: "", description: "" }] }
+          : m,
+      ),
     );
   const removeParam = (mi: number, pi: number) =>
     setScreenMappings((prev) =>
       prev.map((m, idx) =>
-        idx === mi ? { ...m, params: m.params.filter((_, i) => i !== pi) } : m
-      )
+        idx === mi ? { ...m, params: m.params.filter((_, i) => i !== pi) } : m,
+      ),
     );
-  const updateParam = (mi: number, pi: number, field: keyof ScreenParam, value: string) =>
+  const updateParam = (
+    mi: number,
+    pi: number,
+    field: keyof ScreenParam,
+    value: string,
+  ) =>
     setScreenMappings((prev) =>
       prev.map((m, idx) =>
         idx === mi
           ? {
               ...m,
-              params: m.params.map((p, i) => (i === pi ? { ...p, [field]: value } : p)),
+              params: m.params.map((p, i) =>
+                i === pi ? { ...p, [field]: value } : p,
+              ),
             }
-          : m
-      )
+          : m,
+      ),
     );
 
   const handleCopyKey = async () => {
@@ -223,7 +246,11 @@ export default function CreateAppRegistration() {
             size="icon"
             onClick={() => navigate("/dashboard/deep-links")}
           >
-            {isAr ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {isAr ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">
@@ -234,7 +261,7 @@ export default function CreateAppRegistration() {
             <p className="text-sm text-muted-foreground mt-0.5">
               {t(
                 "Configure iOS / Android deep linking for your app",
-                "اضبط إعدادات الروابط العميقة لنظامي iOS وAndroid"
+                "اضبط إعدادات الروابط العميقة لنظامي iOS وAndroid",
               )}
             </p>
           </div>
@@ -261,7 +288,7 @@ export default function CreateAppRegistration() {
             <p className="text-xs text-muted-foreground">
               {t(
                 "Where users land when the app is not installed (desktop or in-app browser)",
-                "الصفحة التي يصل إليها المستخدمون عند عدم تثبيت التطبيق (سطح المكتب أو المتصفح الداخلي)"
+                "الصفحة التي يصل إليها المستخدمون عند عدم تثبيت التطبيق (سطح المكتب أو المتصفح الداخلي)",
               )}
             </p>
           </div>
@@ -292,9 +319,7 @@ export default function CreateAppRegistration() {
             {activeTab === "ios" && (
               <>
                 <div className="space-y-1.5">
-                  <Label>
-                    {t("Bundle ID", "معرف التطبيق")}
-                  </Label>
+                  <Label>{t("Bundle ID", "معرف التطبيق")}</Label>
                   <Input
                     value={bundleId}
                     onChange={(e) => setBundleId(e.target.value)}
@@ -304,17 +329,19 @@ export default function CreateAppRegistration() {
                   <p className="text-xs text-muted-foreground">
                     {t(
                       "Found in Xcode → Targets → General → Bundle Identifier",
-                      "موجود في Xcode → Targets → General → Bundle Identifier"
+                      "موجود في Xcode → Targets → General → Bundle Identifier",
                     )}
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>
-                    {t("Apple Team ID", "معرف فريق Apple")}
-                  </Label>
+                  <Label>{t("Apple Team ID", "معرف فريق Apple")}</Label>
                   <Input
                     value={teamId}
-                    onChange={(e) => setTeamId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                    onChange={(e) =>
+                      setTeamId(
+                        e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""),
+                      )
+                    }
                     placeholder="ABCDE12345"
                     maxLength={10}
                     dir="ltr"
@@ -322,7 +349,7 @@ export default function CreateAppRegistration() {
                   <p className="text-xs text-muted-foreground">
                     {t(
                       "10-character ID from Apple Developer → Membership. Required for Universal Links to work.",
-                      "المعرف المكون من 10 أحرف من Apple Developer → Membership. مطلوب لعمل Universal Links."
+                      "المعرف المكون من 10 أحرف من Apple Developer → Membership. مطلوب لعمل Universal Links.",
                     )}
                   </p>
                 </div>
@@ -337,18 +364,21 @@ export default function CreateAppRegistration() {
                   <p className="text-xs text-muted-foreground">
                     {t(
                       "Where to send users if the app is not installed (iOS only)",
-                      "حيث يتم إرسال المستخدمين إذا لم يكن التطبيق مثبتاً (iOS فقط)"
+                      "حيث يتم إرسال المستخدمين إذا لم يكن التطبيق مثبتاً (iOS فقط)",
                     )}
                   </p>
                 </div>
                 <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 px-4 py-3 space-y-1">
                   <p className="text-xs font-semibold text-blue-800 dark:text-blue-200">
-                    {t("Apple App Site Association", "ملف Apple App Site Association")}
+                    {t(
+                      "Apple App Site Association",
+                      "ملف Apple App Site Association",
+                    )}
                   </p>
                   <p className="text-xs text-blue-700 dark:text-blue-300">
                     {t(
                       "The AASA file is automatically served at /.well-known/apple-app-site-association once you save this registration.",
-                      "يتم تقديم ملف AASA تلقائياً على /.well-known/apple-app-site-association بمجرد حفظ هذا التسجيل."
+                      "يتم تقديم ملف AASA تلقائياً على /.well-known/apple-app-site-association بمجرد حفظ هذا التسجيل.",
                     )}
                   </p>
                 </div>
@@ -380,7 +410,7 @@ export default function CreateAppRegistration() {
                   <p className="text-xs text-muted-foreground">
                     {t(
                       'Run: keytool -list -v -keystore <keystore> | grep "SHA256:"',
-                      'نفّذ: keytool -list -v -keystore <keystore> | grep "SHA256:"'
+                      'نفّذ: keytool -list -v -keystore <keystore> | grep "SHA256:"',
                     )}
                   </p>
                 </div>
@@ -400,7 +430,7 @@ export default function CreateAppRegistration() {
                   <p className="text-xs text-green-700 dark:text-green-300">
                     {t(
                       "The assetlinks.json file is automatically served at /.well-known/assetlinks.json once you save this registration.",
-                      "يتم تقديم ملف assetlinks.json تلقائياً على /.well-known/assetlinks.json بمجرد حفظ هذا التسجيل."
+                      "يتم تقديم ملف assetlinks.json تلقائياً على /.well-known/assetlinks.json بمجرد حفظ هذا التسجيل.",
                     )}
                   </p>
                 </div>
@@ -413,11 +443,14 @@ export default function CreateAppRegistration() {
                 <p className="text-sm text-muted-foreground">
                   {t(
                     "Define which screens deep links can route to. The mobile app uses these names to navigate after a deferred link match.",
-                    "حدّد الشاشات التي يمكن للروابط العميقة التوجيه إليها. يستخدم التطبيق هذه الأسماء للتنقل بعد مطابقة الرابط المؤجل."
+                    "حدّد الشاشات التي يمكن للروابط العميقة التوجيه إليها. يستخدم التطبيق هذه الأسماء للتنقل بعد مطابقة الرابط المؤجل.",
                   )}
                 </p>
                 {screenMappings.map((mapping, mi) => (
-                  <div key={mi} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                  <div
+                    key={mi}
+                    className="border rounded-lg p-4 space-y-3 bg-muted/30"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {t("Screen", "الشاشة")} {mi + 1}
@@ -435,19 +468,27 @@ export default function CreateAppRegistration() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">{t("Screen name", "اسم الشاشة")}</Label>
+                        <Label className="text-xs">
+                          {t("Screen name", "اسم الشاشة")}
+                        </Label>
                         <Input
                           value={mapping.name}
-                          onChange={(e) => updateMapping(mi, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateMapping(mi, "name", e.target.value)
+                          }
                           placeholder="product"
                           className="h-8 text-sm"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">{t("Route path", "مسار الشاشة")}</Label>
+                        <Label className="text-xs">
+                          {t("Route path", "مسار الشاشة")}
+                        </Label>
                         <Input
                           value={mapping.path}
-                          onChange={(e) => updateMapping(mi, "path", e.target.value)}
+                          onChange={(e) =>
+                            updateMapping(mi, "path", e.target.value)
+                          }
                           placeholder="/product/:id"
                           className="h-8 text-sm"
                           dir="ltr"
@@ -458,18 +499,29 @@ export default function CreateAppRegistration() {
                     {/* Params */}
                     {mapping.params.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">{t("Parameters", "المعاملات")}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("Parameters", "المعاملات")}
+                        </p>
                         {mapping.params.map((param, pi) => (
                           <div key={pi} className="flex items-center gap-2">
                             <Input
                               value={param.key}
-                              onChange={(e) => updateParam(mi, pi, "key", e.target.value)}
+                              onChange={(e) =>
+                                updateParam(mi, pi, "key", e.target.value)
+                              }
                               placeholder={t("key", "المفتاح")}
                               className="h-7 text-xs flex-1"
                             />
                             <Input
                               value={param.description}
-                              onChange={(e) => updateParam(mi, pi, "description", e.target.value)}
+                              onChange={(e) =>
+                                updateParam(
+                                  mi,
+                                  pi,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
                               placeholder={t("description", "الوصف")}
                               className="h-7 text-xs flex-1"
                             />
@@ -511,9 +563,7 @@ export default function CreateAppRegistration() {
         </div>
 
         {/* Error */}
-        {formError && (
-          <p className="text-sm text-destructive">{formError}</p>
-        )}
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
 
         {/* Submit */}
         <div className="flex justify-end gap-3">
@@ -523,29 +573,38 @@ export default function CreateAppRegistration() {
           >
             {t("Cancel", "إلغاء")}
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={createMutation.isPending}
-          >
+          <Button onClick={handleSubmit} disabled={createMutation.isPending}>
             {createMutation.isPending && (
               <Loader2 className="w-4 h-4 animate-spin me-2" />
             )}
-            {isEdit ? t("Save changes", "حفظ التغييرات") : t("Register", "تسجيل")}
+            {isEdit
+              ? t("Save changes", "حفظ التغييرات")
+              : t("Register", "تسجيل")}
           </Button>
         </div>
       </div>
 
       {/* Copy-once API key dialog */}
-      <Dialog open={!!successKey} onOpenChange={(open) => { if (!open) { setSuccessKey(null); navigate("/dashboard/deep-links"); } }}>
+      <Dialog
+        open={!!successKey}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSuccessKey(null);
+            navigate("/dashboard/deep-links");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("App Registered!", "تم تسجيل التطبيق!")}</DialogTitle>
+            <DialogTitle>
+              {t("App Registered!", "تم تسجيل التطبيق!")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
               {t(
                 "Your API key is shown below. Copy it now and store it securely — it will be masked after you close this dialog.",
-                "مفتاح API الخاص بك معروض أدناه. انسخه الآن واحفظه بأمان — سيتم إخفاؤه بعد إغلاق هذا الحوار."
+                "مفتاح API الخاص بك معروض أدناه. انسخه الآن واحفظه بأمان — سيتم إخفاؤه بعد إغلاق هذا الحوار.",
               )}
             </p>
             <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-3">
@@ -564,12 +623,17 @@ export default function CreateAppRegistration() {
             <p className="text-xs text-muted-foreground">
               {t(
                 "Use this key in your mobile app as a Bearer token when calling POST /api/v1/deferred-link on first launch.",
-                "استخدم هذا المفتاح في تطبيقك المحمول كـ Bearer token عند استدعاء POST /api/v1/deferred-link عند التشغيل الأول."
+                "استخدم هذا المفتاح في تطبيقك المحمول كـ Bearer token عند استدعاء POST /api/v1/deferred-link عند التشغيل الأول.",
               )}
             </p>
           </div>
           <DialogFooter>
-            <Button onClick={() => { setSuccessKey(null); navigate("/dashboard/deep-links"); }}>
+            <Button
+              onClick={() => {
+                setSuccessKey(null);
+                navigate("/dashboard/deep-links");
+              }}
+            >
               {t("Done", "تم")}
             </Button>
           </DialogFooter>

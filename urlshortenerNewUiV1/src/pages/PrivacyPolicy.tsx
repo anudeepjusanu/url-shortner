@@ -1,9 +1,11 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 const PrivacyPolicy = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const brand = useBrand();
 

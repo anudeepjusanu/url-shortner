@@ -22,6 +22,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -183,6 +184,7 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const BulkCreate = () => {
+  useBrandMetaTags();
   useRequireEditAccess("/dashboard/links");
   const { activeProject } = useProject();
   const { toast } = useToast();
