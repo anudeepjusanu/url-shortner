@@ -41,6 +41,7 @@ import BioThumbnail from "@/components/bio-builder/BioThumbnail";
 import { BioTheme, BioBlock } from "@/types/bio";
 import { bioThemes } from "@/data/bioThemes";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { resolveBrand } from "@/contexts/BrandContext";
 
 interface BioPage {
   _id: string;
@@ -54,6 +55,7 @@ interface BioPage {
   blocks?: BioBlock[];
   bioTheme?: BioTheme | null;
   domain?: string | null;
+  brandDomain?: string | null;
 }
 
 const fallbackTheme: BioTheme =
@@ -277,6 +279,11 @@ const BioPages = () => {
                           ? t("Published", "منشور")
                           : t("Draft", "مسودة")}
                       </Badge>
+                      {page.brandDomain && (
+                        <Badge variant="outline" className="text-xs">
+                          {resolveBrand(page.brandDomain).name}
+                        </Badge>
+                      )}
                     </div>
                   </div>
 

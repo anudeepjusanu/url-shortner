@@ -79,6 +79,7 @@ const bioPageService = {
       quizPurpose,
       quizIndustry,
       domain,
+      brandDomain,
     } = data;
 
     if (!username) throw makeError("Username is required", 400);
@@ -95,6 +96,7 @@ const bioPageService = {
       avatarUrl: avatarUrl || "",
       owner: userId,
       domain: domain || null,
+      brandDomain: brandDomain || domain || null,
       blocks: blocks || [],
       design: design || null,
       bioTheme: bioTheme || null,
@@ -156,6 +158,13 @@ const bioPageService = {
       if (data[field] !== undefined) {
         bioPage[field] = data[field];
       }
+    }
+
+    // brandDomain (display-only tag) follows whichever system domain this
+    // edit came in on. `domain` (the real public URL) is intentionally left
+    // untouched here — it stays pinned to whatever it was at creation.
+    if (data.brandDomain) {
+      bioPage.brandDomain = data.brandDomain;
     }
 
     // Mark mixed fields as modified so Mongoose detects the change

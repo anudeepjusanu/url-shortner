@@ -271,18 +271,19 @@ class DomainService {
     }
   }
 
-  async generateCNAMERecord(domain, subdomain = null) {
+  async generateCNAMERecord(domain, subdomain = null, cnameTarget = null) {
     const fullDomain = subdomain ? `${subdomain}.${domain}` : domain;
+    const target = cnameTarget || this.cnameTarget;
 
     return {
       type: "CNAME",
       name: fullDomain,
-      value: this.cnameTarget,
-      description: `Point ${fullDomain} to ${this.cnameTarget}`,
+      value: target,
+      description: `Point ${fullDomain} to ${target}`,
       instructions: {
         type: "CNAME",
         host: subdomain || "@",
-        value: this.cnameTarget,
+        value: target,
         ttl: 300,
       },
     };
@@ -361,7 +362,8 @@ class DomainService {
     }
   }
 
-  getSetupInstructions(domain, recordType = "CNAME") {
+  getSetupInstructions(domain, recordType = "CNAME", cnameTarget = null) {
+    const target = cnameTarget || this.cnameTarget;
     const instructions = {
       CNAME: {
         title: "Add CNAME Record",
@@ -371,7 +373,7 @@ class DomainService {
           "Add a new CNAME record with these values:",
           `  - Type: CNAME`,
           `  - Name: ${domain}`,
-          `  - Value: ${this.cnameTarget}`,
+          `  - Value: ${target}`,
           `  - TTL: 300 (or leave default)`,
           "Save the changes",
           "Wait for DNS propagation (up to 24 hours)",
