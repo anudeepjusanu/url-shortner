@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-dark.png";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
+// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
+// docs site isn't live yet.
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+
 const Footer = () => {
   const { t } = useLanguage();
   const brand = useBrand();
@@ -73,7 +77,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href={`https://docs.${brand.domain}`}
+                  href={MINTLIFY_DOCS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"
@@ -91,7 +95,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
               <li>
                 <a
-                  href={`https://docs.${brand.domain}`}
+                  href={MINTLIFY_DOCS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"
@@ -141,7 +145,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
               <li>
                 <a
-                  href={`https://docs.${brand.domain}`}
+                  href={MINTLIFY_DOCS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[hsl(var(--cream))]/80 transition-colors"

@@ -23,6 +23,10 @@ const response = await axios.post('https://${brandDomain}/api/urls', {
 });
 `;
 
+// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
+// docs site isn't live yet.
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+
 const DeveloperSection = () => {
   const [copied, setCopied] = useState(false);
   const { t } = useLanguage();
@@ -92,7 +96,7 @@ const DeveloperSection = () => {
 
             <div className="flex flex-wrap gap-3">
               <Button
-                onClick={() => window.open(`https://docs.${brand.domain}`, "_blank")}
+                onClick={() => window.open(MINTLIFY_DOCS_URL, "_blank")}
                 className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6"
               >
                 {t("Read API Documentation", "شوف الـ API Docs")}
