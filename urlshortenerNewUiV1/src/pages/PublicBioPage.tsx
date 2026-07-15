@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useBrand } from "@/contexts/BrandContext";
+import { useBrand, resolveBrand } from "@/contexts/BrandContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { bioPageAPI } from "@/services/api";
 import { Loader2, Link2, Share2, MessageCircle } from "lucide-react";
@@ -20,6 +20,7 @@ interface PublicPage {
   blocks: BioBlock[];
   bioTheme: BioTheme | null;
   totalViews: number;
+  brandDomain?: string | null;
 }
 
 function useBioPageSEO(page: PublicPage | null) {
@@ -226,6 +227,11 @@ const PublicBioPage = () => {
 
   const visibleBlocks = page.blocks.filter((b) => b.visible !== false);
 
+  // Footer brand follows this page's own brandDomain (whichever system
+  // domain it was last edited under), not the viewer's current hostname —
+  // so it stays consistent no matter which domain someone views it from.
+  const footerBrand = page.brandDomain ? resolveBrand(page.brandDomain) : brand;
+
   return (
     <div
       className="min-h-[100dvh] w-full relative"
@@ -284,10 +290,10 @@ const PublicBioPage = () => {
             <span>{t("Build your page at", "ابني صفحتك مع")}</span>
             <img
               src={logo}
-              alt={brand.name}
+              alt={footerBrand.name}
               className="w-5 h-5 object-contain brightness-0 invert"
             />
-            <span className="text-base">{brand.name.toUpperCase()}</span>
+            <span className="text-base">{footerBrand.name.toUpperCase()}</span>
           </Link>
         </div>
       </div>

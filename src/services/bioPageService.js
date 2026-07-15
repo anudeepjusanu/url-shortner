@@ -219,6 +219,7 @@ const bioPageService = {
       design: bioPage.design || null,
       blockClickCounts,
       totalViews: bioPage.totalViews,
+      brandDomain: bioPage.brandDomain || null,
     };
   },
 
