@@ -213,10 +213,19 @@ app.use("/api/account", require("./routes/accountMembers"));
 // SEO routes - sitemap.xml and robots.txt (MUST come before catch-all routes)
 app.use("/", require("./routes/sitemapRoutes"));
 
-// Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
-const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+// Bio page clean-URL redirect: /bio/:username → frontend HashRouter route.
+// Redirect target follows whichever system domain the request came in on
+// (e.g. qa.snip.sa vs qa.4r.sa) rather than a single static BASE_URL, so the
+// brand shown on the public bio page matches wherever the visitor actually
+// landed instead of always falling back to the default brand.
+const redirectService = require("./services/redirectService");
 app.get("/bio/:username", (req, res) => {
-  res.redirect(`${frontendUrl}/bio/${req.params.username}`);
+  const requestHost = req.get("host");
+  const targetOrigin =
+    requestHost && redirectService.isMainDomain(requestHost)
+      ? `${req.protocol}://${requestHost}`
+      : process.env.BASE_URL || "http://localhost:5173";
+  res.redirect(`${targetOrigin}/bio/${req.params.username}`);
 });
 
 // Redirect route - must be after API routes but before 404 handler
