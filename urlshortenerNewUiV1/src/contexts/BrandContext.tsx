@@ -35,7 +35,7 @@ const BRANDS: { domains: string[]; brand: Brand }[] = [
   },
 ];
 
-const resolveBrand = (hostname: string): Brand => {
+export const resolveBrand = (hostname: string): Brand => {
   const host = hostname.toLowerCase();
   const match = BRANDS.find((entry) => entry.domains.includes(host));
   return match ? match.brand : DEFAULT_BRAND;

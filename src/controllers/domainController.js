@@ -7,6 +7,7 @@ const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
 const config = require("../config/environment");
 const logger = require("../config/logger");
 const projectAccessService = require("../services/projectAccessService");
+const { resolvePublicDomain } = require("../utils/domainResolver");
 
 // Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
 // ValidationError (each carrying a .statusCode). See urlController.js for
@@ -116,10 +117,15 @@ const addDomain = async (req, res) => {
       });
     }
 
+    // CNAME target follows whichever system domain the request came in on
+    // (e.g. qa.snip.sa vs qa.4r.sa), not a single static env var.
+    const cnameTarget = resolvePublicDomain(req);
+
     // Generate CNAME record details
     const cnameRecord = await domainService.generateCNAMERecord(
       domain,
       subdomain,
+      cnameTarget,
     );
 
     // Create domain
@@ -164,10 +170,11 @@ const addDomain = async (req, res) => {
       message: "Domain added successfully",
       data: {
         domain: populatedDomain,
-        cnameTarget: domainService.cnameTarget,
+        cnameTarget,
         setupInstructions: domainService.getSetupInstructions(
           fullDomain,
           "CNAME",
+          cnameTarget,
         ),
       },
     });
@@ -345,6 +352,7 @@ const getDomain = async (req, res) => {
         setupInstructions: domainService.getSetupInstructions(
           domain.fullDomain,
           domain.verificationRecord.type,
+          domain.verificationRecord.value,
         ),
       },
     });

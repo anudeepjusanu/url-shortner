@@ -3,9 +3,11 @@ const { resolvePublicDomain } = require("../utils/domainResolver");
 
 const createBioPage = async (req, res) => {
   try {
+    const currentDomain = resolvePublicDomain(req);
     const bioPage = await bioPageService.createBioPage(req.user.id, {
       ...req.body,
-      domain: resolvePublicDomain(req),
+      domain: currentDomain,
+      brandDomain: currentDomain,
     });
     res.status(201).json({
       success: true,
@@ -44,10 +46,13 @@ const getBioPageById = async (req, res) => {
 
 const updateBioPage = async (req, res) => {
   try {
+    // `domain` stays pinned at creation (the real public URL never drifts).
+    // `brandDomain` re-resolves on every edit — display-only tag for which
+    // system brand (snip vs 4r) last touched this page.
     const bioPage = await bioPageService.updateBioPage(
       req.params.id,
       req.user.id,
-      req.body,
+      { ...req.body, brandDomain: resolvePublicDomain(req) },
     );
     res.json({
       success: true,
