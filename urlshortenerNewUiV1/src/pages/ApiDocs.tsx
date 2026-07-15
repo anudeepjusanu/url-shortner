@@ -37,12 +37,13 @@ import { profileService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
-import { useBrand } from "@/contexts/BrandContext";
+
+// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
+// docs site isn't live yet.
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
 
 const ApiDocs = () => {
   useBrandMetaTags();
-  const brand = useBrand();
-  const MINTLIFY_DOCS_URL = `https://docs.${brand.domain}`;
   const { t } = useLanguage();
   const { toast } = useToast();
   const { canEdit, activeProject, isLoading: isProjectLoading } = useProject();
