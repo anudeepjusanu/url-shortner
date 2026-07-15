@@ -46,15 +46,6 @@ const BioPageSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    // System domain this page was most recently edited under. Display-only
-    // (drives a "snip"/"4r" badge in the dashboard) — unlike `domain`, it
-    // re-resolves on every save and never affects the real public URL.
-    brandDomain: {
-      type: String,
-      default: null,
-      trim: true,
-      lowercase: true,
-    },
     // New blocks-based content (array of BioBlock objects from the enhanced editor)
     blocks: {
       type: mongoose.Schema.Types.Mixed,
