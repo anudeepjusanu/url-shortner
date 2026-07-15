@@ -73,9 +73,15 @@ const AddDomain = () => {
     return "";
   };
 
+  const validateSubdomain = (s: string) => {
+    if (!s.trim())
+      return t("Subdomain prefix is required", "بادئة النطاق الفرعي مطلوبة");
+    return "";
+  };
+
   // Step 1 → Step 2: create domain on backend to get real CNAME target, then show DNS
   const handleContinue = async () => {
-    const err = validateDomain(domain);
+    const err = validateDomain(domain) || validateSubdomain(subdomain);
     if (err) {
       setDomainError(err);
       return;
@@ -216,10 +222,7 @@ const AddDomain = () => {
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5 text-foreground text-xs sm:text-sm">
                 <Globe className="w-3.5 h-3.5" />
-                {t("Subdomain Prefix", "بادئة النطاق الفرعي")}{" "}
-                <span className="text-muted-foreground font-normal">
-                  ({t("Optional", "اختياري")})
-                </span>
+                {t("Subdomain Prefix", "بادئة النطاق الفرعي")} *
               </Label>
               <div className="flex items-center gap-0">
                 <Input
@@ -253,7 +256,7 @@ const AddDomain = () => {
             <Button
               onClick={handleContinue}
               className="h-10 sm:h-12 w-full bg-primary text-primary-foreground text-sm"
-              disabled={!domain.trim() || isSubmitting}
+              disabled={!domain.trim() || !subdomain.trim() || isSubmitting}
             >
               {isSubmitting ? (
                 <>
