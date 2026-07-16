@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useBrand } from "@/contexts/BrandContext";
+import { useBrand, matchBrand } from "@/contexts/BrandContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { bioPageAPI } from "@/services/api";
 import { Loader2, Link2, Share2, MessageCircle } from "lucide-react";
@@ -73,6 +73,19 @@ const PublicBioPage = () => {
   const { username } = useParams<{ username: string }>();
   const { t } = useLanguage();
   const brand = useBrand();
+  // The footer badge should reflect the brand the visitor arrived from (e.g.
+  // clicking "open" from the qa.4r.sa dashboard on a bio page whose own URL
+  // is still pinned to qa.snip.sa), not just this page's own hostname — so
+  // prefer a recognized brand from the referrer, falling back to the
+  // hostname-based brand for everyone else (direct visits, shared links, etc).
+  const footerBrand = useMemo(() => {
+    if (!document.referrer) return brand;
+    try {
+      return matchBrand(new URL(document.referrer).hostname) ?? brand;
+    } catch {
+      return brand;
+    }
+  }, [brand]);
   const [page, setPage] = useState<PublicPage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -284,10 +297,10 @@ const PublicBioPage = () => {
             <span>{t("Build your page at", "ابني صفحتك مع")}</span>
             <img
               src={logo}
-              alt={brand.name}
+              alt={footerBrand.name}
               className="w-5 h-5 object-contain brightness-0 invert"
             />
-            <span className="text-base">{brand.name.toUpperCase()}</span>
+            <span className="text-base">{footerBrand.name.toUpperCase()}</span>
           </Link>
         </div>
       </div>

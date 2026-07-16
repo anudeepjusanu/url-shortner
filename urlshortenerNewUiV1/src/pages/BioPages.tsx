@@ -288,7 +288,7 @@ const BioPages = () => {
                     <a
                       href={getPublicUrl(page)}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener"
                       title={t("Open public page", "فتح الصفحة العامة")}
                     >
                       <Button variant="ghost" size="icon" className="w-8 h-8">

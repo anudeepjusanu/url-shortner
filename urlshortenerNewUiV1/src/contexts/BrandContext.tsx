@@ -35,11 +35,16 @@ const BRANDS: { domains: string[]; brand: Brand }[] = [
   },
 ];
 
-const resolveBrand = (hostname: string): Brand => {
+// Returns null when the hostname isn't an explicitly recognized brand domain,
+// as opposed to resolveBrand() which always falls back to DEFAULT_BRAND.
+export const matchBrand = (hostname: string): Brand | null => {
   const host = hostname.toLowerCase();
   const match = BRANDS.find((entry) => entry.domains.includes(host));
-  return match ? match.brand : DEFAULT_BRAND;
+  return match ? match.brand : null;
 };
+
+const resolveBrand = (hostname: string): Brand =>
+  matchBrand(hostname) ?? DEFAULT_BRAND;
 
 const BrandContext = createContext<Brand | undefined>(undefined);
 
