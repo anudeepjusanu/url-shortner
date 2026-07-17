@@ -759,12 +759,10 @@ const updateQRCodeCustomization = async (req, res) => {
       });
     }
 
-    // Check if user owns this URL
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    // Enterprise RBAC: governed by the link's own project + the caller's
+    // current role there, not just organization membership (a Viewer, or an
+    // Editor on a different project, must not be able to edit this).
+    if (!(await canEditQrUrl(url, req.user))) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -891,11 +889,9 @@ const deleteQRCode = async (req, res) => {
       return res.status(404).json({ success: false, message: "URL not found" });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    // Enterprise RBAC: governed by the link's own project + the caller's
+    // current role there, not just organization membership.
+    if (!(await canEditQrUrl(url, req.user))) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 

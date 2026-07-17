@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const config = require("../config/environment");
 const logger = require("../config/logger");
+const { currentBrand: brand } = require("../config/brand");
 
 class EmailService {
   constructor() {
@@ -31,9 +32,9 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: "Welcome to LaghhuLink! 🚀",
+      subject: `Welcome to ${brand.name}! 🚀`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -53,36 +54,36 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to LaghhuLink!</h1>
+              <h1>Welcome to ${brand.name}!</h1>
               <p>Your professional URL shortener is ready</p>
             </div>
 
             <div class="content">
               <h2>Hi ${user.firstName}!</h2>
 
-              <p>Thank you for joining LaghhuLink! We're excited to help you create powerful short links with advanced analytics.</p>
+              <p>Thank you for joining ${brand.name}! We're excited to help you create powerful short links with advanced analytics.</p>
 
               <div class="features">
                 <h3>🎉 Your Free Account Includes:</h3>
                 <div class="feature">✅ <strong>100 URLs per month</strong></div>
                 <div class="feature">✅ <strong>Basic analytics</strong></div>
                 <div class="feature">✅ <strong>Standard support</strong></div>
-                <div class="feature">✅ <strong>Reliable laghhu.link domain</strong></div>
+                <div class="feature">✅ <strong>Reliable ${brand.domain} domain</strong></div>
               </div>
 
               <p>Ready to create your first short link?</p>
 
-              <a href="https://laghhu.link/dashboard" class="button">Start Creating Links</a>
+              <a href="https://${brand.domain}/dashboard" class="button">Start Creating Links</a>
 
               <p><strong>Need custom domains or unlimited links?</strong><br>
               Upgrade to Pro for just $9/month and unlock advanced features like custom domains, unlimited URLs, and priority support.</p>
 
-              <a href="https://laghhu.link/pricing" class="button" style="background: #10B981;">View Pro Features</a>
+              <a href="https://${brand.domain}/pricing" class="button" style="background: #10B981;">View Pro Features</a>
 
               <hr>
 
               <p><small>
-                Questions? Reply to this email or contact us at support@laghhu.link<br>
+                Questions? Reply to this email or contact us at support@${brand.domain}<br>
                 Follow us: <a href="#">Twitter</a> | <a href="#">LinkedIn</a>
               </small></p>
             </div>
@@ -104,9 +105,9 @@ class EmailService {
     if (!this.transporter) return;
 
     const mailOptions = {
-      from: `"LaghhuLink System" <${config.SMTP_USER}>`,
+      from: `"${brand.name} System" <${config.SMTP_USER}>`,
       to: "info@syberviz.com",
-      subject: "🎉 New User Registration - LaghhuLink",
+      subject: `🎉 New User Registration - ${brand.name}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -126,7 +127,7 @@ class EmailService {
             </div>
 
             <div class="content">
-              <h3>A new user has registered on LaghhuLink!</h3>
+              <h3>A new user has registered on ${brand.name}!</h3>
 
               <div class="user-info">
                 <strong>User Details:</strong><br>
@@ -137,10 +138,10 @@ class EmailService {
                 🆔 <strong>User ID:</strong> ${user._id}
               </div>
 
-              <p><a href="https://laghhu.link/admin/users/${user._id}">View User Profile</a></p>
+              <p><a href="https://${brand.domain}/admin/users/${user._id}">View User Profile</a></p>
 
               <hr>
-              <p><small>This is an automated notification from LaghhuLink system.</small></p>
+              <p><small>This is an automated notification from ${brand.name} system.</small></p>
             </div>
           </div>
         </body>
@@ -160,7 +161,7 @@ class EmailService {
     if (!this.transporter) return;
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: `⚠️ You've used ${usagePercentage}% of your monthly URL limit`,
       html: `
@@ -188,7 +189,7 @@ class EmailService {
                   : "<p>No action needed yet, but consider upgrading if you need more URLs.</p>"
               }
 
-              <a href="https://laghhu.link/pricing" class="button">Upgrade to Pro</a>
+              <a href="https://${brand.domain}/pricing" class="button">Upgrade to Pro</a>
             </div>
           </div>
         </body>
@@ -207,9 +208,9 @@ class EmailService {
     if (!this.transporter) return;
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
-      subject: `🎉 Welcome to LaghhuLink ${plan.charAt(0).toUpperCase() + plan.slice(1)}!`,
+      subject: `🎉 Welcome to ${brand.name} ${plan.charAt(0).toUpperCase() + plan.slice(1)}!`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -226,12 +227,12 @@ class EmailService {
           <div class="container">
             <div class="header">
               <h1>🎉 Upgrade Successful!</h1>
-              <p>Welcome to LaghhuLink ${plan.charAt(0).toUpperCase() + plan.slice(1)}</p>
+              <p>Welcome to ${brand.name} ${plan.charAt(0).toUpperCase() + plan.slice(1)}</p>
             </div>
 
             <div class="content">
               <h2>Hi ${user.firstName}!</h2>
-              <p>Your account has been successfully upgraded to LaghhuLink ${plan.charAt(0).toUpperCase() + plan.slice(1)}!</p>
+              <p>Your account has been successfully upgraded to ${brand.name} ${plan.charAt(0).toUpperCase() + plan.slice(1)}!</p>
 
               <div class="features">
                 <h3>🚀 Your new features include:</h3>
@@ -256,7 +257,7 @@ class EmailService {
               </div>
 
               <p>Start using your new features right away!</p>
-              <a href="https://laghhu.link/dashboard" style="display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px;">Go to Dashboard</a>
+              <a href="https://${brand.domain}/dashboard" style="display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px;">Go to Dashboard</a>
             </div>
           </div>
         </body>
@@ -278,7 +279,7 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: `Payment Reminder - Due in ${daysUntilDue} days`,
       html: `
@@ -302,12 +303,12 @@ class EmailService {
             </div>
             <div class="content">
               <h2>Hi ${user.firstName},</h2>
-              <p>This is a friendly reminder that your LaghhuLink ${user.plan} plan payment is coming up.</p>
+              <p>This is a friendly reminder that your ${brand.name} ${user.plan} plan payment is coming up.</p>
               <div class="amount">Amount Due: $${amount.toFixed(2)}</div>
               <p><strong>Due in ${daysUntilDue} days</strong></p>
               <p>We'll automatically charge your payment method on file. No action needed!</p>
-              <a href="https://laghhu.link/billing" class="button">View Billing Details</a>
-              <p><small>Having trouble? Contact us at billing@laghhu.link</small></p>
+              <a href="https://${brand.domain}/billing" class="button">View Billing Details</a>
+              <p><small>Having trouble? Contact us at billing@${brand.domain}</small></p>
             </div>
           </div>
         </body>
@@ -329,7 +330,7 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: "Action Required - Payment Failed",
       html: `
@@ -352,16 +353,16 @@ class EmailService {
             </div>
             <div class="content">
               <h2>Hi ${user.firstName},</h2>
-              <p>We were unable to process your payment of <strong>$${amount.toFixed(2)}</strong> for your LaghhuLink subscription.</p>
+              <p>We were unable to process your payment of <strong>$${amount.toFixed(2)}</strong> for your ${brand.name} subscription.</p>
               <p>To continue using your ${user.plan} plan features, please update your payment method.</p>
-              <a href="https://laghhu.link/billing" class="button">Update Payment Method</a>
+              <a href="https://${brand.domain}/billing" class="button">Update Payment Method</a>
               <p><strong>What happens next?</strong></p>
               <ul>
                 <li>Your account will remain active for the next 7 days</li>
                 <li>After 7 days, your account will be downgraded to the free plan</li>
                 <li>Your data will be preserved</li>
               </ul>
-              <p><small>Need help? Contact us at billing@laghhu.link</small></p>
+              <p><small>Need help? Contact us at billing@${brand.domain}</small></p>
             </div>
           </div>
         </body>
@@ -383,7 +384,7 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: "Your Subscription Has Been Paused",
       html: `
@@ -406,7 +407,7 @@ class EmailService {
             </div>
             <div class="content">
               <h2>Hi ${user.firstName},</h2>
-              <p>Your LaghhuLink ${user.plan} subscription has been paused.</p>
+              <p>Your ${brand.name} ${user.plan} subscription has been paused.</p>
               <p>While paused:</p>
               <ul>
                 <li>You won't be charged</li>
@@ -415,8 +416,8 @@ class EmailService {
                 <li>You can't create new links</li>
               </ul>
               <p>Ready to resume?</p>
-              <a href="https://laghhu.link/billing" class="button">Resume Subscription</a>
-              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+              <a href="https://${brand.domain}/billing" class="button">Resume Subscription</a>
+              <p><small>Questions? Contact us at support@${brand.domain}</small></p>
             </div>
           </div>
         </body>
@@ -438,7 +439,7 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: "Welcome Back! Subscription Resumed",
       html: `
@@ -461,7 +462,7 @@ class EmailService {
             </div>
             <div class="content">
               <h2>Hi ${user.firstName},</h2>
-              <p>Great news! Your LaghhuLink ${user.plan} subscription has been resumed.</p>
+              <p>Great news! Your ${brand.name} ${user.plan} subscription has been resumed.</p>
               <p>You now have full access to all features again:</p>
               <ul>
                 <li>Create unlimited short links</li>
@@ -469,8 +470,8 @@ class EmailService {
                 <li>Use custom domains</li>
                 <li>All premium features enabled</li>
               </ul>
-              <a href="https://laghhu.link/dashboard" class="button">Go to Dashboard</a>
-              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+              <a href="https://${brand.domain}/dashboard" class="button">Go to Dashboard</a>
+              <p><small>Questions? Contact us at support@${brand.domain}</small></p>
             </div>
           </div>
         </body>
@@ -499,7 +500,7 @@ class EmailService {
           : type;
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: "Usage Overage Notification",
       html: `
@@ -532,8 +533,8 @@ class EmailService {
               <div class="charge">Overage charge: $${chargeAmount.toFixed(2)}</div>
               <p>This amount will be added to your next invoice.</p>
               <p><strong>Want to avoid overage charges?</strong> Consider upgrading to a higher plan with more included usage.</p>
-              <a href="https://laghhu.link/pricing" class="button">View Plans</a>
-              <p><small>Questions? Contact us at billing@laghhu.link</small></p>
+              <a href="https://${brand.domain}/pricing" class="button">View Plans</a>
+              <p><small>Questions? Contact us at billing@${brand.domain}</small></p>
             </div>
           </div>
         </body>
@@ -548,19 +549,24 @@ class EmailService {
     }
   }
 
-  async sendInvitationEmail({ toEmail, inviterName, role, token }) {
+  async sendInvitationEmail({ toEmail, inviterName, projectRoles, token }) {
     if (!this.transporter) {
       logger.info("Email service not available");
       return;
     }
 
     const acceptUrl = `${config.BASE_URL}/invite/accept?token=${token}`;
-    const roleDisplay = role.charAt(0).toUpperCase() + role.slice(1);
+    const projectRolesList = projectRoles
+      .map(
+        ({ projectName, role }) =>
+          `<li>${projectName}: <strong>${role.charAt(0).toUpperCase() + role.slice(1)}</strong></li>`,
+      )
+      .join("");
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: toEmail,
-      subject: `${inviterName || "Someone"} invited you to join their Snip account`,
+      subject: `${inviterName || "Someone"} invited you to join their ${brand.name} account`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -580,7 +586,8 @@ class EmailService {
               <h1>You've been invited</h1>
             </div>
             <div class="content">
-              <p><strong>${inviterName || "A team admin"}</strong> invited you to join their Snip enterprise account as a <strong>${roleDisplay}</strong>.</p>
+              <p><strong>${inviterName || "A team admin"}</strong> invited you to join their ${brand.name} enterprise account with access to:</p>
+              <ul>${projectRolesList}</ul>
               <a href="${acceptUrl}" class="button">Accept Invitation</a>
               <p><small>This invitation expires in 7 days. If you weren't expecting this, you can ignore this email.</small></p>
             </div>
@@ -605,7 +612,7 @@ class EmailService {
     }
 
     const mailOptions = {
-      from: `"LaghhuLink" <${config.SMTP_USER}>`,
+      from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: user.email,
       subject: `Your trial ends in ${daysRemaining} days`,
       html: `
@@ -639,9 +646,9 @@ class EmailService {
                 </ul>
               </div>
               <p>No action needed - we'll handle everything automatically!</p>
-              <a href="https://laghhu.link/billing" class="button">View Billing Details</a>
+              <a href="https://${brand.domain}/billing" class="button">View Billing Details</a>
               <p>Want to cancel? No problem - you can cancel anytime before your trial ends with no charges.</p>
-              <p><small>Questions? Contact us at support@laghhu.link</small></p>
+              <p><small>Questions? Contact us at support@${brand.domain}</small></p>
             </div>
           </div>
         </body>

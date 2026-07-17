@@ -53,6 +53,21 @@ const getAccountOwnerId = async (organizationId) => {
   return organization ? organization.owner.toString() : null;
 };
 
+/**
+ * Every shared project this user administers (accepted "admin" membership),
+ * as string ids. Used to scope account-wide views (Team page, "Team URLs")
+ * to only the projects an Admin actually manages, never the whole org.
+ */
+const getAdminProjectIds = async (userId, organizationId) => {
+  const rows = await ProjectMembership.find({
+    user: userId,
+    organization: organizationId,
+    role: "admin",
+    acceptedAt: { $ne: null },
+  }).select("project");
+  return rows.map((r) => r.project.toString());
+};
+
 const getMembership = async (userId, projectId) => {
   return ProjectMembership.findOne({
     user: userId,
@@ -276,27 +291,31 @@ const promoteToAccountOwner = async (userId, organizationName) => {
 const generateToken = () => crypto.randomBytes(32).toString("hex");
 
 /**
- * Mirrors the prototype's inviteUser(email, projectIds[], role) helper.
+ * Mirrors the prototype's inviteUser(email, projectIds[], role) helper, but
+ * lets each selected project carry its own role instead of one role shared
+ * across every project in the invite.
  * Creates one pending ProjectInvitation covering every selected project.
  */
 const inviteUser = async ({
   actingUserId,
   organizationId,
   email,
-  projectIds,
-  role,
+  projectRoles,
   inviterName,
 }) => {
-  if (!projectIds || projectIds.length === 0) {
+  if (!projectRoles || projectRoles.length === 0) {
     throw new ValidationError("At least one project must be selected");
   }
-  if (!["admin", "editor", "viewer"].includes(role)) {
-    throw new ValidationError("Invalid role");
+  for (const { projectId, role } of projectRoles) {
+    if (!projectId || !["admin", "editor", "viewer"].includes(role)) {
+      throw new ValidationError("Invalid project or role");
+    }
   }
 
   const isOwner = await isAccountOwner(actingUserId, organizationId);
 
-  for (const projectId of projectIds) {
+  const resolvedProjects = [];
+  for (const { projectId, role } of projectRoles) {
     const project = await Project.findOne({
       _id: projectId,
       organization: organizationId,
@@ -316,14 +335,17 @@ const inviteUser = async ({
         );
       }
     }
+    resolvedProjects.push({ project, role });
   }
 
   const normalizedEmail = email.toLowerCase().trim();
   const invitation = await ProjectInvitation.create({
     organization: organizationId,
     email: normalizedEmail,
-    role,
-    projects: projectIds,
+    projectRoles: resolvedProjects.map(({ project, role }) => ({
+      project: project._id,
+      role,
+    })),
     invitedBy: actingUserId,
     token: generateToken(),
     status: "pending",
@@ -334,7 +356,10 @@ const inviteUser = async ({
     await emailService.sendInvitationEmail({
       toEmail: normalizedEmail,
       inviterName,
-      role,
+      projectRoles: resolvedProjects.map(({ project, role }) => ({
+        projectName: project.name,
+        role,
+      })),
       token: invitation.token,
     });
   } catch (error) {
@@ -460,7 +485,7 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
 
   const now = new Date();
   const memberships = [];
-  for (const projectId of invitation.projects) {
+  for (const { project: projectId, role } of invitation.projectRoles) {
     const membership = await ProjectMembership.findOneAndUpdate(
       { project: projectId, user: user._id },
       {
@@ -468,7 +493,7 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
           organization: invitation.organization,
           project: projectId,
           user: user._id,
-          role: invitation.role,
+          role,
           invitedBy: invitation.invitedBy,
           invitedAt: invitation.createdAt,
         },
@@ -540,7 +565,23 @@ const resolveReadScope = async (user, requestedProjectId) => {
   }
 
   if (await isAccountOwner(user.id, user.organization)) {
-    return { organization: user.organization };
+    // Personal projects are private even from the Account Owner (spec 2.5 /
+    // user story 8) — exclude them from the "All projects" aggregate.
+    // Resources with no project set at all (pre-migration legacy rows) are
+    // intentionally left in scope; see assertCanViewResource.
+    const personalProjects = await Project.find({
+      organization: user.organization,
+      isPersonal: true,
+    }).select("_id");
+    return {
+      organization: user.organization,
+      project: { $nin: personalProjects.map((p) => p._id) },
+    };
+  }
+
+  const adminProjectIds = await getAdminProjectIds(user.id, user.organization);
+  if (adminProjectIds.length > 0) {
+    return { project: { $in: adminProjectIds } };
   }
 
   throw new ValidationError("projectId is required");
@@ -635,6 +676,7 @@ module.exports = {
   ValidationError,
   isAccountOwner,
   getAccountOwnerId,
+  getAdminProjectIds,
   getMembership,
   getEffectiveRole,
   hasAdminOn,

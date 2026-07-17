@@ -53,12 +53,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang, isAr } = useLanguage();
   const brand = useBrand();
   const { user, logout } = useAuth();
-  const {
-    isEnterpriseAccount,
-    canManageUsers,
-    isPersonalActive,
-    isAccountOwner,
-  } = useProject();
+  const { isEnterpriseAccount, canManageUsers, isPersonalActive } =
+    useProject();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -122,16 +118,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       icon: Users,
       path: "/dashboard/team",
     },
-    // Account-Owner-only: org-wide links across every project.
-    ...(isAccountOwner
-      ? [
-          {
-            label: t("Team URLs", "روابط الفريق"),
-            icon: LinkIcon,
-            path: "/dashboard/team-urls",
-          },
-        ]
-      : []),
+    // Owner sees org-wide links across every project; an Admin sees links
+    // scoped to the project(s) they administer (same visibility rule as the
+    // "Team" page above — showTeamNav already gates this whole section on
+    // canManageUsers, so no extra condition is needed here).
+    {
+      label: t("Team URLs", "روابط الفريق"),
+      icon: LinkIcon,
+      path: "/dashboard/team-urls",
+    },
   ];
 
   const settingsNav: NavItemConfig[] = [
