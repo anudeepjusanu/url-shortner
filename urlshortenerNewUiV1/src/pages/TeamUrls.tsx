@@ -54,7 +54,7 @@ const TeamUrls = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAccountOwner, isLoading: isProjectLoading } = useProject();
+  const { canManageUsers, isLoading: isProjectLoading } = useProject();
 
   const [urls, setUrls] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,14 +75,16 @@ const TeamUrls = () => {
   const [editDestAcknowledged, setEditDestAcknowledged] = useState(false);
   const [editDestSaving, setEditDestSaving] = useState(false);
 
-  // Account-Owner-only page — org-wide across every project, regardless of
-  // the active project switcher selection, so projectId is never sent.
+  // Account Owner sees every project's links; a project Admin sees only the
+  // links of the project(s) they administer (backend scopes this via
+  // resolveReadScope — no projectId is ever sent from here). Editors/Viewers
+  // can't manage users on any project, so they're excluded here too.
   useEffect(() => {
     if (isProjectLoading) return;
-    if (!isAccountOwner) {
+    if (!canManageUsers) {
       navigate("/dashboard", { replace: true });
     }
-  }, [isProjectLoading, isAccountOwner, navigate]);
+  }, [isProjectLoading, canManageUsers, navigate]);
 
   const fetchUrls = useCallback(async () => {
     setIsLoading(true);
@@ -108,9 +110,9 @@ const TeamUrls = () => {
   }, []);
 
   useEffect(() => {
-    if (isProjectLoading || !isAccountOwner) return;
+    if (isProjectLoading || !canManageUsers) return;
     fetchUrls();
-  }, [isProjectLoading, isAccountOwner, fetchUrls]);
+  }, [isProjectLoading, canManageUsers, fetchUrls]);
 
   const getShortUrl = (url: any) => {
     const code = url.customCode || url.shortCode || "";
@@ -250,7 +252,7 @@ const TeamUrls = () => {
     );
   }
 
-  if (!isAccountOwner) return null;
+  if (!canManageUsers) return null;
 
   return (
     <DashboardLayout>

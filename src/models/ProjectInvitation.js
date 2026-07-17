@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// A pending email invitation to one or more projects with a single role.
+// A pending email invitation to one or more projects, each with its own role.
 // Converted into ProjectMembership rows (one per project) on acceptance.
 // Kept separate from ProjectMembership because the invitee may not have a
 // User account yet — see claude-implementation-docs/Architecture/rbac-enterprise-project-roles.md
@@ -17,16 +17,19 @@ const projectInvitationSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    role: {
-      type: String,
-      enum: ["admin", "editor", "viewer"],
-      required: true,
-    },
-    projects: [
+    projectRoles: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Project",
-        required: true,
+        _id: false,
+        project: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Project",
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ["admin", "editor", "viewer"],
+          required: true,
+        },
       },
     ],
     invitedBy: {

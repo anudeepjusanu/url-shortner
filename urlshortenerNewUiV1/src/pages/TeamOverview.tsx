@@ -22,8 +22,7 @@ interface MemberRow {
 interface PendingInvitation {
   id: string;
   email: string;
-  role: string;
-  projects: { id: string; name: string }[];
+  projectRoles: { projectId: string; projectName: string; role: string }[];
 }
 
 const TeamOverview = () => {
@@ -224,12 +223,20 @@ const TeamOverview = () => {
                     <tr key={invitation.id}>
                       <td className="px-4 py-3">{invitation.email}</td>
                       <td className="px-4 py-3">
-                        <Badge variant="outline" className="text-[10px]">
-                          {invitation.role}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {invitation.projectRoles.map((pr) => (
+                            <Badge
+                              key={pr.projectId}
+                              variant="outline"
+                              className="text-[10px]"
+                            >
+                              {pr.projectName}: {pr.role}
+                            </Badge>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {invitation.projects.map((p) => p.name).join(", ")}
+                        {invitation.projectRoles.length}
                       </td>
                       <td className="px-4 py-3 text-end">
                         <Badge variant="secondary" className="text-[10px]">

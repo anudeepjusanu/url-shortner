@@ -39,26 +39,38 @@ const InviteUserDialog = ({
   const { t } = useLanguage();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
-  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
-  const [role, setRole] = useState(assignableRoles[assignableRoles.length - 1] || "viewer");
+  const [projectRoles, setProjectRoles] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  const defaultRole = assignableRoles[assignableRoles.length - 1] || "viewer";
+
   const toggleProject = (id: string) => {
-    setSelectedProjectIds((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
+    setProjectRoles((prev) => {
+      if (id in prev) {
+        const { [id]: _removed, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [id]: defaultRole };
+    });
+  };
+
+  const setRoleForProject = (id: string, role: string) => {
+    setProjectRoles((prev) => ({ ...prev, [id]: role }));
   };
 
   const reset = () => {
     setEmail("");
-    setSelectedProjectIds([]);
-    setRole(assignableRoles[assignableRoles.length - 1] || "viewer");
+    setProjectRoles({});
   };
 
   const handleSubmit = async () => {
+    const selectedProjectIds = Object.keys(projectRoles);
     if (!email.trim() || selectedProjectIds.length === 0) {
       toast({
-        title: t("Email and at least one project are required", "البريد الإلكتروني ومشروع واحد على الأقل مطلوبان"),
+        title: t(
+          "Email and at least one project are required",
+          "البريد الإلكتروني ومشروع واحد على الأقل مطلوبان",
+        ),
         variant: "destructive",
       });
       return;
@@ -66,7 +78,13 @@ const InviteUserDialog = ({
 
     setSubmitting(true);
     try {
-      await accountMembersAPI.invite(email.trim(), selectedProjectIds, role);
+      await accountMembersAPI.invite(
+        email.trim(),
+        selectedProjectIds.map((projectId) => ({
+          projectId,
+          role: projectRoles[projectId],
+        })),
+      );
       toast({ title: t("Invitation sent", "تم إرسال الدعوة") });
       reset();
       onOpenChange(false);
@@ -101,39 +119,48 @@ const InviteUserDialog = ({
           </div>
 
           <div className="space-y-1.5">
-            <Label>{t("Projects", "المشاريع")}</Label>
-            <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
+            <Label>{t("Projects & roles", "المشاريع والأدوار")}</Label>
+            <div className="space-y-2 max-h-56 overflow-y-auto border rounded-md p-2">
               {availableProjects.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   {t("No projects available", "لا توجد مشاريع متاحة")}
                 </p>
               )}
-              {availableProjects.map((project) => (
-                <label key={project.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <Checkbox
-                    checked={selectedProjectIds.includes(project.id)}
-                    onCheckedChange={() => toggleProject(project.id)}
-                  />
-                  {project.name}
-                </label>
-              ))}
+              {availableProjects.map((project) => {
+                const checked = project.id in projectRoles;
+                return (
+                  <div
+                    key={project.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <label className="flex items-center gap-2 text-sm cursor-pointer flex-1 min-w-0">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleProject(project.id)}
+                      />
+                      <span className="truncate">{project.name}</span>
+                    </label>
+                    {checked && (
+                      <Select
+                        value={projectRoles[project.id]}
+                        onValueChange={(r) => setRoleForProject(project.id, r)}
+                      >
+                        <SelectTrigger className="w-28 h-8 shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {assignableRoles.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {r.charAt(0).toUpperCase() + r.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>{t("Role", "الدور")}</Label>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {assignableRoles.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r.charAt(0).toUpperCase() + r.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -141,7 +168,14 @@ const InviteUserDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("Cancel", "إلغاء")}
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              submitting ||
+              !email.trim() ||
+              Object.keys(projectRoles).length === 0
+            }
+          >
             {t("Send invitation", "إرسال الدعوة")}
           </Button>
         </DialogFooter>
