@@ -1185,26 +1185,29 @@ const loginWithPhoneOtp = async (req, res) => {
   }
 };
 
-// Get the caller's API key for a project (or their account-wide key, for
-// solo accounts / an Account Owner in the "All projects" view).
+// Scope for the caller's active API key: enterprise accounts share one key
+// per project (not per user); solo accounts (no organization, no Project
+// entity to bind to) keep their own single account-wide key.
+const apiKeyScope = (user, projectId) =>
+  projectId
+    ? { project: projectId, isActive: true }
+    : { user: user.id, project: null, isActive: true };
+
+// Get the project's API key (or the caller's account-wide key, for solo
+// accounts). Enterprise accounts must specify a projectId — a key belongs
+// to one specific project.
 const getApiKey = async (req, res) => {
   try {
-    // Enterprise RBAC: the key is scoped per (user, project) — a Viewer on
-    // the caller's active project still can't reveal/regenerate/delete it —
-    // same "sensitive action" treatment as Custom Domains/API Keys
-    // elsewhere. No-op for solo accounts. Account Owners may omit
-    // projectId (the "All projects" aggregate has no single active project).
+    // Enterprise RBAC: a Viewer on the target project still can't
+    // reveal/regenerate/delete its key — same "sensitive action" treatment
+    // as Custom Domains/API Keys elsewhere. No-op for solo accounts.
     const projectId = req.query.projectId || null;
     await projectAccessService.assertAccountLevelEditAccess(
       req.user,
       projectId,
     );
 
-    const activeKey = await ApiKey.findOne({
-      user: req.user.id,
-      project: projectId,
-      isActive: true,
-    });
+    const activeKey = await ApiKey.findOne(apiKeyScope(req.user, projectId));
 
     res.json({
       success: true,
@@ -1223,8 +1226,10 @@ const getApiKey = async (req, res) => {
   }
 };
 
-// Regenerate the caller's API key for a project — deactivates the previous
-// key for that same (user, project) pair rather than deleting it.
+// Regenerate the project's API key — deactivates the previous key for that
+// same scope rather than deleting it. For a project-scoped key this affects
+// every member with write access to the project at once; `user` on the new
+// key records who generated it (audit only, not part of the key's scope).
 const regenerateApiKey = async (req, res) => {
   try {
     const projectId = req.body.projectId || null;
@@ -1233,10 +1238,9 @@ const regenerateApiKey = async (req, res) => {
       projectId,
     );
 
-    await ApiKey.updateMany(
-      { user: req.user.id, project: projectId, isActive: true },
-      { $set: { isActive: false } },
-    );
+    await ApiKey.updateMany(apiKeyScope(req.user, projectId), {
+      $set: { isActive: false },
+    });
 
     const newApiKey = crypto.randomBytes(32).toString("hex");
     await ApiKey.create({
@@ -1266,9 +1270,8 @@ const regenerateApiKey = async (req, res) => {
   }
 };
 
-// Delete the caller's API key for a project, without generating a
-// replacement — the project returns to "No API key yet" until one is
-// created again.
+// Delete the project's API key, without generating a replacement — the
+// project returns to "No API key yet" until one is created again.
 const deleteApiKey = async (req, res) => {
   try {
     const projectId = req.body.projectId || null;
@@ -1277,10 +1280,9 @@ const deleteApiKey = async (req, res) => {
       projectId,
     );
 
-    await ApiKey.updateMany(
-      { user: req.user.id, project: projectId, isActive: true },
-      { $set: { isActive: false } },
-    );
+    await ApiKey.updateMany(apiKeyScope(req.user, projectId), {
+      $set: { isActive: false },
+    });
 
     res.json({
       success: true,

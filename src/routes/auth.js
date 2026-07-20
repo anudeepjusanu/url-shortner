@@ -6,6 +6,7 @@ const googleAuthController = require("../controllers/googleAuthController");
 const { authenticate, optionalAuth } = require("../middleware/auth");
 const {
   authLimiter,
+  loginLimiter,
   strictAuthLimiter,
   passwordResetLimiter,
   otpVerificationLimiter,
@@ -44,13 +45,14 @@ router.post(
   authController.register,
 );
 
-// Temporarily disable strict rate limiter for debugging
-router.post("/login", authLimiter, validateLogin, authController.login);
+// Own bucket (keyed by email) so login isn't starved by register/OTP/Google
+// traffic sharing authLimiter's IP-only pool — see loginLimiter for details.
+router.post("/login", loginLimiter, validateLogin, authController.login);
 
 // Phone number OTP login (no password required)
 router.post(
   "/login-with-phone",
-  authLimiter,
+  loginLimiter,
   validatePhoneLogin,
   authController.loginWithPhoneOtp,
 );

@@ -723,17 +723,16 @@ const assertCanEditResource = async (user, resource) => {
 
 /**
  * Guards account-level (not project-owned) sensitive actions — namely the
- * single per-user API key — that still need to respect per-project roles.
- * No-op for solo accounts. For enterprise accounts: a specific projectId
- * requires a write-capable role there; omitting it is only allowed for the
- * Account Owner (mirroring the "All projects" aggregate view, where there
- * is no single active project to check against).
+ * project-scoped API key — that still need to respect per-project roles.
+ * No-op for solo accounts. Enterprise accounts must always supply a
+ * projectId: a key belongs to one specific project, so there is no "All
+ * projects" equivalent to check against (unlike resolveReadScope/
+ * resolveWriteProject). Requires a write-capable role on that project.
  */
 const assertAccountLevelEditAccess = async (user, projectId) => {
   if (!user.organization) return;
 
   if (!projectId) {
-    if (await isAccountOwner(user.id, user.organization)) return;
     throw new ValidationError("projectId is required");
   }
   const project = await loadOwnProject(user, projectId);

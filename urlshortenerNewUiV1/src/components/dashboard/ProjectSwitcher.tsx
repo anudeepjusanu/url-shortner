@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProject } from "@/contexts/ProjectContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 const ProjectSwitcher = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const {
     isEnterpriseAccount,
     isAccountOwner,
@@ -49,9 +51,24 @@ const ProjectSwitcher = () => {
     return null;
   }
 
+  // Solo accounts have no organization, so there's no real Project entity to
+  // back a personal project (Projects are always org-scoped) — this is a
+  // display-only stand-in so the switcher defaults to something instead of
+  // an empty "Select project", without ever touching activeProjectId/backend.
+  const soloPersonalProjectLabel = !isEnterpriseAccount
+    ? user?.firstName
+      ? t(
+          `${user.firstName}'s Personal Project`,
+          `مشروع ${user.firstName} الشخصي`,
+        )
+      : t("Personal Project", "المشروع الشخصي")
+    : null;
+
   const currentLabel = isAllProjectsView
     ? t("All projects", "كل المشاريع")
-    : activeProject?.name || t("Select project", "اختر مشروعًا");
+    : activeProject?.name ||
+      soloPersonalProjectLabel ||
+      t("Select project", "اختر مشروعًا");
 
   // Non-enterprise accounts see the switcher too (so the entry point to
   // upgrade is discoverable), but "New project" is a paywall nudge instead
@@ -98,7 +115,7 @@ const ProjectSwitcher = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-64">
-          {personalProject && (
+          {personalProject ? (
             <>
               <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
                 {t("Personal", "شخصي")}
@@ -119,6 +136,28 @@ const ProjectSwitcher = () => {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
+          ) : (
+            soloPersonalProjectLabel && (
+              <>
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  {t("Personal", "شخصي")}
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="flex items-center gap-2 cursor-default"
+                >
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate flex-1">
+                    {soloPersonalProjectLabel}
+                  </span>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {t("Private", "خاص")}
+                  </Badge>
+                  <Check className="w-3.5 h-3.5 shrink-0" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )
           )}
 
           {(sharedProjects.length > 0 || isAccountOwner) && (

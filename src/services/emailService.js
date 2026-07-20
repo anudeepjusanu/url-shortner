@@ -106,7 +106,7 @@ class EmailService {
 
     const mailOptions = {
       from: `"${brand.name} System" <${config.SMTP_USER}>`,
-      to: "info@syberviz.com",
+      to: "support@snip.sa",
       subject: `🎉 New User Registration - ${brand.name}`,
       html: `
         <!DOCTYPE html>
