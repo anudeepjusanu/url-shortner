@@ -86,11 +86,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       path: "/dashboard/qr-codes",
     },
     // { label: t("Dynamic QR", "QR ديناميكي"), icon: ScanLine, path: "/dashboard/dynamic-qr" },
-    {
-      label: t("Bio Pages", "صفحات البايو"),
-      icon: LayoutList,
-      path: "/dashboard/bio-pages",
-    },
+    // Bio Pages are personal by nature — never part of a shared/team project.
+    ...(isEnterpriseAccount && !isPersonalActive
+      ? []
+      : [
+          {
+            label: t("Bio Pages", "صفحات البايو"),
+            icon: LayoutList,
+            path: "/dashboard/bio-pages",
+          },
+        ]),
     {
       label: t("UTM Builder", "منشئ UTM"),
       icon: Tag,

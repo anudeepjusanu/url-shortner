@@ -54,7 +54,12 @@ const TeamUrls = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { canManageUsers, isLoading: isProjectLoading } = useProject();
+  const {
+    canManageUsers,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
 
   const [urls, setUrls] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,17 +91,32 @@ const TeamUrls = () => {
     }
   }, [isProjectLoading, canManageUsers, navigate]);
 
+  // Enterprise RBAC: scope to the currently selected project (never the
+  // combined aggregate) and never personal projects — matches the pattern
+  // used by CustomDomains.tsx. Omitted only in the Account Owner's "All
+  // projects" aggregate view, which already excludes personal projects
+  // server-side.
+  const projectId = isAllProjectsView ? undefined : activeProject?.id;
+
   const fetchUrls = useCallback(async () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const first = await myLinksService.getAll({ page: 1, limit: PAGE_LIMIT });
+      const first = await myLinksService.getAll({
+        page: 1,
+        limit: PAGE_LIMIT,
+        projectId,
+      });
       const all = [...(first?.data?.urls ?? [])];
       const totalPages = first?.data?.pagination?.pages ?? 1;
       if (totalPages > 1) {
         const rest = await Promise.all(
           Array.from({ length: totalPages - 1 }, (_, i) =>
-            myLinksService.getAll({ page: i + 2, limit: PAGE_LIMIT }),
+            myLinksService.getAll({
+              page: i + 2,
+              limit: PAGE_LIMIT,
+              projectId,
+            }),
           ),
         );
         rest.forEach((res: any) => all.push(...(res?.data?.urls ?? [])));
@@ -107,7 +127,7 @@ const TeamUrls = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     if (isProjectLoading || !canManageUsers) return;
@@ -379,10 +399,17 @@ const TeamUrls = () => {
           <Search size={16} className="text-muted-foreground shrink-0" />
           <input
             type="text"
-            placeholder={t(
-              "Search links across all projects...",
-              "ابحث في الروابط عبر كل المشاريع...",
-            )}
+            placeholder={
+              isAllProjectsView
+                ? t(
+                    "Search links across all projects...",
+                    "ابحث في الروابط عبر كل المشاريع...",
+                  )
+                : t(
+                    "Search links in this project...",
+                    "ابحث في روابط هذا المشروع...",
+                  )
+            }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none py-3 font-body text-sm"
@@ -438,6 +465,7 @@ const TeamUrls = () => {
                         {t("Clicks", "الضغطات")}
                       </TableHead>
                       <TableHead>{t("Created", "الإنشاء")}</TableHead>
+                      <TableHead>{t("Created By", "أنشئ بواسطة")}</TableHead>
                       <TableHead className="text-center">
                         {t("Actions", "الإجراءات")}
                       </TableHead>
@@ -489,6 +517,13 @@ const TeamUrls = () => {
                           <TableCell>
                             <span className="text-xs text-muted-foreground font-body">
                               {formatDate(url.createdAt)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-xs text-foreground font-body">
+                              {url.creator
+                                ? `${url.creator.firstName} ${url.creator.lastName || ""}`.trim()
+                                : t("Unknown", "غير معروف")}
                             </span>
                           </TableCell>
                           <TableCell>

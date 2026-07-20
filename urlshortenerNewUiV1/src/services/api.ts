@@ -793,6 +793,8 @@ export const accountMembersAPI = {
     email: string,
     projectRoles: { projectId: string; role: string }[],
   ) => apiClient.post(endpoints.account.invitations, { email, projectRoles }),
+  cancelInvitation: (invitationId: string) =>
+    apiClient.delete(`${endpoints.account.invitations}/${invitationId}`),
   acceptInvitation: (token: string) =>
     apiClient.post(`${endpoints.account.invitations}/${token}/accept`),
 };

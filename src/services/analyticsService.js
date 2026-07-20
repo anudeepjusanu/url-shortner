@@ -34,6 +34,8 @@ class AnalyticsService {
       "snip.sa",
       "www.snip.sa",
       "shortener.snip.sa",
+      "4r.sa",
+      "www.4r.sa",
       "qa.snip.sa",
       "qa.4r.sa",
       "localhost",
@@ -75,7 +77,6 @@ class AnalyticsService {
 
       const url = await Url.findOne(query);
 
-
       if (!url) {
         logger.error("❌ URL not found for click recording:", shortCode);
         throw new Error("URL not found");
@@ -87,7 +88,6 @@ class AnalyticsService {
         domain: url.domain,
       });
 
-
       if (!config.ANALYTICS.TRACK_CLICKS) {
         logger.warn("⚠️ Click tracking is disabled");
         return null;
@@ -98,7 +98,6 @@ class AnalyticsService {
       const device = this.parseUserAgent(userAgent);
       const isBot = this.detectBot(userAgent);
       const isUnique = await this.isUniqueClick(url._id, ipHash);
-
 
       const clickRecord = {
         url: url._id,

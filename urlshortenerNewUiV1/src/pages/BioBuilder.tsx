@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
 const blocksToDraft = (
   blocks: BioBlock[],
@@ -112,6 +113,7 @@ const BioBuilder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  useRequirePersonalProject("/dashboard");
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

@@ -73,9 +73,11 @@ const ApiDocs = () => {
   }, [activeProject?.id]);
 
   useEffect(() => {
-    if (isProjectLoading) return;
+    // A Viewer never gets to see the API key section at all — don't even
+    // fetch it.
+    if (isProjectLoading || !canEdit) return;
     loadApiKey();
-  }, [loadApiKey, isProjectLoading]);
+  }, [loadApiKey, isProjectLoading, canEdit]);
 
   const handleRegenerateKey = async () => {
     setRegenConfirmOpen(false);
@@ -192,144 +194,163 @@ const ApiDocs = () => {
           </p>
         </div>
 
-        {/* API Key */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-4">
-            <CardTitle className="text-sm sm:text-base font-display flex items-center gap-2">
-              <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-              {t("API Key", "مفتاح API")}
-            </CardTitle>
-            <CardDescription className="font-body text-xs sm:text-sm">
-              {t(
-                "Use your API key to integrate with our REST API. Keep it secret.",
-                "استخدم مفتاح API لربط تطبيقاتك بواجهة البرمجة. حافظ على سريته.",
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-            {isLoadingKey ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        {/* API Key — hidden entirely for Viewers, not just read-only */}
+        {!canEdit ? (
+          <Card>
+            <CardContent className="px-4 sm:px-6 py-6 sm:py-8 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+                <Key className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground" />
               </div>
-            ) : !apiKey ? (
-              <div className="text-center py-4 sm:py-6 space-y-3 sm:space-y-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <Key className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs sm:text-sm text-foreground font-body font-medium">
-                    {t("No API key yet", "لا يوجد مفتاح API بعد")}
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground font-body mt-1">
-                    {t(
-                      "Generate an API key to start using our REST API for link shortening, QR codes, and analytics.",
-                      "أنشئ مفتاح API للبدء باستخدام واجهة البرمجة لاختصار الروابط وأكواد QR والتحليلات.",
-                    )}
-                  </p>
-                </div>
-                {canEdit && (
-                  <Button
-                    className="font-body text-sm"
-                    disabled={isRegeneratingKey}
-                    onClick={() => setRegenConfirmOpen(true)}
-                  >
-                    {isRegeneratingKey ? (
-                      <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
-                    ) : (
-                      <Key className="w-4 h-4 me-1.5" />
-                    )}
-                    {t("Generate API Key", "إنشاء مفتاح API")}
-                  </Button>
+              <p className="text-xs sm:text-sm text-foreground font-body font-medium">
+                {t("API key access restricted", "الوصول إلى مفتاح API مقيد")}
+              </p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-body mt-1">
+                {t(
+                  "Viewers don't have access to this project's API key. Ask a project Admin or the Account Owner.",
+                  "لا يملك المشاهدون حق الوصول إلى مفتاح API لهذا المشروع. تواصل مع مسؤول المشروع أو مالك الحساب.",
                 )}
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 relative">
-                    <Input
-                      readOnly
-                      value={
-                        canEdit && showKey
-                          ? apiKey
-                          : "sk_•••••••••••••••••••••••••••••••••"
-                      }
-                      className="font-mono text-xs sm:text-sm pe-20"
-                    />
-                    {canEdit && (
-                      <div className="absolute end-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => setShowKey(!showKey)}
-                        >
-                          {showKey ? (
-                            <EyeOff className="w-3.5 h-3.5" />
-                          ) : (
-                            <Eye className="w-3.5 h-3.5" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={handleCopyKey}
-                        >
-                          {copiedKey ? (
-                            <Check className="w-3.5 h-3.5 text-green-600" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </Button>
-                      </div>
-                    )}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base font-display flex items-center gap-2">
+                <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                {t("API Key", "مفتاح API")}
+              </CardTitle>
+              <CardDescription className="font-body text-xs sm:text-sm">
+                {t(
+                  "Use your API key to integrate with our REST API. Keep it secret.",
+                  "استخدم مفتاح API لربط تطبيقاتك بواجهة البرمجة. حافظ على سريته.",
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+              {isLoadingKey ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : !apiKey ? (
+                <div className="text-center py-4 sm:py-6 space-y-3 sm:space-y-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+                    <Key className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm text-foreground font-body font-medium">
+                      {t("No API key yet", "لا يوجد مفتاح API بعد")}
+                    </p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground font-body mt-1">
+                      {t(
+                        "Generate an API key to start using our REST API for link shortening, QR codes, and analytics.",
+                        "أنشئ مفتاح API للبدء باستخدام واجهة البرمجة لاختصار الروابط وأكواد QR والتحليلات.",
+                      )}
+                    </p>
                   </div>
                   {canEdit && (
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="font-body text-xs shrink-0"
-                      disabled={isRegeneratingKey || isDeletingKey}
+                      className="font-body text-sm"
+                      disabled={isRegeneratingKey}
                       onClick={() => setRegenConfirmOpen(true)}
                     >
                       {isRegeneratingKey ? (
-                        <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                       ) : (
-                        <RefreshCw className="w-3 h-3 me-1" />
+                        <Key className="w-4 h-4 me-1.5" />
                       )}
-                      {t("Regenerate", "إعادة إنشاء")}
-                    </Button>
-                  )}
-                  {canEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="font-body text-xs shrink-0 text-destructive hover:text-destructive"
-                      disabled={isRegeneratingKey || isDeletingKey}
-                      onClick={() => setDeleteConfirmOpen(true)}
-                    >
-                      {isDeletingKey ? (
-                        <Loader2 className="w-3 h-3 me-1 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-3 h-3 me-1" />
-                      )}
-                      {t("Delete", "حذف")}
+                      {t("Generate API Key", "إنشاء مفتاح API")}
                     </Button>
                   )}
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3 border border-border">
-                  <p className="text-[11px] sm:text-xs text-muted-foreground font-body leading-relaxed">
-                    ⚠️{" "}
-                    {t(
-                      "Keep your API key secure. Do not share it publicly or commit it to version control. If compromised, regenerate it immediately.",
-                      "حافظ على سرية مفتاح API. لا تشاركه علنًا أو تضعه في الكود المصدري. إذا تم اختراقه، أعد إنشاءه فورًا.",
+              ) : (
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 relative">
+                      <Input
+                        readOnly
+                        value={
+                          canEdit && showKey
+                            ? apiKey
+                            : "sk_•••••••••••••••••••••••••••••••••"
+                        }
+                        className="font-mono text-xs sm:text-sm pe-20"
+                      />
+                      {canEdit && (
+                        <div className="absolute end-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => setShowKey(!showKey)}
+                          >
+                            {showKey ? (
+                              <EyeOff className="w-3.5 h-3.5" />
+                            ) : (
+                              <Eye className="w-3.5 h-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={handleCopyKey}
+                          >
+                            {copiedKey ? (
+                              <Check className="w-3.5 h-3.5 text-green-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {canEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-body text-xs shrink-0"
+                        disabled={isRegeneratingKey || isDeletingKey}
+                        onClick={() => setRegenConfirmOpen(true)}
+                      >
+                        {isRegeneratingKey ? (
+                          <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-3 h-3 me-1" />
+                        )}
+                        {t("Regenerate", "إعادة إنشاء")}
+                      </Button>
                     )}
-                  </p>
+                    {canEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-body text-xs shrink-0 text-destructive hover:text-destructive"
+                        disabled={isRegeneratingKey || isDeletingKey}
+                        onClick={() => setDeleteConfirmOpen(true)}
+                      >
+                        {isDeletingKey ? (
+                          <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3 me-1" />
+                        )}
+                        {t("Delete", "حذف")}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-3 border border-border">
+                    <p className="text-[11px] sm:text-xs text-muted-foreground font-body leading-relaxed">
+                      ⚠️{" "}
+                      {t(
+                        "Keep your API key secure. Do not share it publicly or commit it to version control. If compromised, regenerate it immediately.",
+                        "حافظ على سرية مفتاح API. لا تشاركه علنًا أو تضعه في الكود المصدري. إذا تم اختراقه، أعد إنشاءه فورًا.",
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Documentation */}
         <Card>

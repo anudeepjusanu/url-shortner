@@ -3,11 +3,22 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, UserPlus, Users } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, UserPlus, Users, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useProject } from "@/contexts/ProjectContext";
 import { accountMembersAPI } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 import InviteUserDialog from "@/components/team/InviteUserDialog";
 
 interface MemberRow {
@@ -16,6 +27,7 @@ interface MemberRow {
   lastName?: string;
   email: string;
   projectCount: number;
+  isOwner?: boolean;
   roles: { projectId: string; projectName: string; role: string }[];
 }
 
@@ -29,6 +41,7 @@ const TeamOverview = () => {
   useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     isEnterpriseAccount,
     isPersonalActive,
@@ -44,6 +57,10 @@ const TeamOverview = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<PendingInvitation | null>(
+    null,
+  );
+  const [cancelling, setCancelling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,6 +78,25 @@ const TeamOverview = () => {
   useEffect(() => {
     if (canManageUsers) load();
   }, [canManageUsers, load]);
+
+  const handleCancelInvitation = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      await accountMembersAPI.cancelInvitation(cancelTarget.id);
+      toast({ title: t("Invitation cancelled", "تم إلغاء الدعوة") });
+      setCancelTarget(null);
+      load();
+    } catch (error: any) {
+      toast({
+        title: t("Failed to cancel invitation", "فشل إلغاء الدعوة"),
+        description: error?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (
@@ -184,15 +220,17 @@ const TeamOverview = () => {
                       {member.projectCount}
                     </td>
                     <td className="px-4 py-3 text-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          navigate(`/dashboard/team/${member.userId}`)
-                        }
-                      >
-                        {t("Manage", "إدارة")}
-                      </Button>
+                      {!member.isOwner && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(`/dashboard/team/${member.userId}`)
+                          }
+                        >
+                          {t("Manage", "إدارة")}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -239,9 +277,20 @@ const TeamOverview = () => {
                         {invitation.projectRoles.length}
                       </td>
                       <td className="px-4 py-3 text-end">
-                        <Badge variant="secondary" className="text-[10px]">
-                          {t("Pending", "معلق")}
-                        </Badge>
+                        <div className="flex items-center justify-end gap-2">
+                          <Badge variant="secondary" className="text-[10px]">
+                            {t("Pending", "معلق")}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title={t("Cancel invitation", "إلغاء الدعوة")}
+                            onClick={() => setCancelTarget(invitation)}
+                          >
+                            <X className="w-3.5 h-3.5 text-destructive" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -262,6 +311,41 @@ const TeamOverview = () => {
         assignableRoles={assignableRoles}
         onInvited={load}
       />
+
+      <AlertDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("Cancel invitation?", "إلغاء الدعوة؟")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                `This cancels the pending invitation to "${cancelTarget?.email}". They will no longer be able to accept it.`,
+                `سيؤدي هذا إلى إلغاء الدعوة المعلقة إلى "${cancelTarget?.email}". لن يتمكنوا بعد الآن من قبولها.`,
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>
+              {t("Back", "رجوع")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelInvitation}
+              disabled={cancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancelling ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                t("Cancel invitation", "إلغاء الدعوة")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

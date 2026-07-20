@@ -22,8 +22,9 @@ import { useProject } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 
-// Top-bar project switcher — only renders for enterprise accounts. Solo
-// accounts see nothing here, matching today's behavior exactly.
+// Top-bar project switcher — visible for every account. Solo (non-enterprise)
+// accounts see it too, with "New project" acting as an upgrade nudge instead
+// of the real creation flow (only an enterprise Account Owner can create).
 const ProjectSwitcher = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -42,14 +43,27 @@ const ProjectSwitcher = () => {
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  if (!isEnterpriseAccount || isLoading) {
+  if (isLoading) {
     return null;
   }
 
   const currentLabel = isAllProjectsView
     ? t("All projects", "كل المشاريع")
     : activeProject?.name || t("Select project", "اختر مشروعًا");
+
+  // Non-enterprise accounts see the switcher too (so the entry point to
+  // upgrade is discoverable), but "New project" is a paywall nudge instead
+  // of the real creation flow — only an Account Owner on an enterprise
+  // account can actually create projects.
+  const handleNewProjectClick = () => {
+    if (!isEnterpriseAccount) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setNewProjectOpen(true);
+  };
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
@@ -98,14 +112,20 @@ const ProjectSwitcher = () => {
                 <Badge variant="secondary" className="text-[10px]">
                   {t("Private", "خاص")}
                 </Badge>
-                {!isAllProjectsView && activeProject?.id === personalProject.id && (
-                  <Check className="w-3.5 h-3.5 shrink-0" />
-                )}
+                {!isAllProjectsView &&
+                  activeProject?.id === personalProject.id && (
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                  )}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           )}
 
+          {(sharedProjects.length > 0 || isAccountOwner) && (
+            <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              {t("Shared projects", "المشاريع المشتركة")}
+            </DropdownMenuLabel>
+          )}
           {isAccountOwner && (
             <DropdownMenuItem
               onClick={() => setActiveProjectId(null)}
@@ -115,12 +135,6 @@ const ProjectSwitcher = () => {
               <span className="flex-1">{t("All projects", "كل المشاريع")}</span>
               {isAllProjectsView && <Check className="w-3.5 h-3.5 shrink-0" />}
             </DropdownMenuItem>
-          )}
-
-          {sharedProjects.length > 0 && (
-            <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              {t("Shared projects", "المشاريع المشتركة")}
-            </DropdownMenuLabel>
           )}
           {sharedProjects.map((project) => (
             <DropdownMenuItem
@@ -135,11 +149,11 @@ const ProjectSwitcher = () => {
             </DropdownMenuItem>
           ))}
 
-          {isAccountOwner && (
+          {(isAccountOwner || !isEnterpriseAccount) && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => setNewProjectOpen(true)}
+                onClick={handleNewProjectClick}
                 className="flex items-center gap-2"
               >
                 <Plus className="w-3.5 h-3.5 shrink-0" />
@@ -165,8 +179,32 @@ const ProjectSwitcher = () => {
             <Button variant="outline" onClick={() => setNewProjectOpen(false)}>
               {t("Cancel", "إلغاء")}
             </Button>
-            <Button onClick={handleCreateProject} disabled={creating || !newProjectName.trim()}>
+            <Button
+              onClick={handleCreateProject}
+              disabled={creating || !newProjectName.trim()}
+            >
               {t("Create", "إنشاء")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t("Upgrade to Enterprise", "الترقية إلى مؤسسة")}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {t(
+              "Projects let your team organize links, QR codes, and domains together with shared access. Upgrade to an Enterprise account to create projects and invite teammates.",
+              "تتيح لك المشاريع تنظيم الروابط وأكواد QR والدومينات مع فريقك عبر وصول مشترك. قم بالترقية إلى حساب مؤسسة لإنشاء المشاريع ودعوة زملائك.",
+            )}
+          </p>
+          <DialogFooter>
+            <Button onClick={() => setUpgradeOpen(false)}>
+              {t("Got it", "حسنًا")}
             </Button>
           </DialogFooter>
         </DialogContent>

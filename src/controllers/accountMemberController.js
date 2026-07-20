@@ -53,6 +53,38 @@ const getOverview = async (req, res) => {
       });
     }
 
+    // The Account Owner is tracked exclusively via Organization.owner, never
+    // as a ProjectMembership row, so they'd otherwise never appear on this
+    // page — surface them as a synthetic row with role "owner" across every
+    // project this caller can see, listed first.
+    const ownerId = await projectAccessService.getAccountOwnerId(
+      req.user.organization,
+    );
+    let ownerRow = null;
+    if (ownerId) {
+      membersByUser.delete(ownerId);
+      const ownerUser = await User.findById(ownerId).select(
+        "firstName lastName email",
+      );
+      if (ownerUser) {
+        const visibleProjects = await Project.find({
+          _id: { $in: visibleProjectIds },
+        }).select("name");
+        ownerRow = {
+          userId: ownerId,
+          firstName: ownerUser.firstName,
+          lastName: ownerUser.lastName,
+          email: ownerUser.email,
+          isOwner: true,
+          roles: visibleProjects.map((project) => ({
+            projectId: project._id,
+            projectName: project.name,
+            role: "owner",
+          })),
+        };
+      }
+    }
+
     const invitations = await ProjectInvitation.find({
       status: "pending",
       expiresAt: { $gt: new Date() },
@@ -63,7 +95,10 @@ const getOverview = async (req, res) => {
       success: true,
       data: {
         isAccountOwner: !!req.isAccountOwner,
-        members: Array.from(membersByUser.values()).map((m) => ({
+        members: [
+          ...(ownerRow ? [ownerRow] : []),
+          ...Array.from(membersByUser.values()),
+        ].map((m) => ({
           ...m,
           projectCount: m.roles.length,
         })),
@@ -180,6 +215,28 @@ const inviteMember = async (req, res) => {
   }
 };
 
+// DELETE /api/account/invitations/:invitationId — Owner (any) or Admin (their own project(s)).
+const cancelInvitation = async (req, res) => {
+  try {
+    await projectAccessService.cancelInvitation({
+      actingUserId: req.user.id,
+      organizationId: req.user.organization,
+      invitationId: req.params.invitationId,
+    });
+    res.json({ success: true, message: "Invitation cancelled" });
+  } catch (error) {
+    if (error.statusCode) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
+    logger.error("cancelInvitation error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to cancel invitation" });
+  }
+};
+
 // DELETE /api/account/members/:userId — Account Owner only, page-level "Remove from account".
 const removeFromAccount = async (req, res) => {
   try {
@@ -228,5 +285,6 @@ module.exports = {
   getMemberDetail,
   inviteMember,
   removeFromAccount,
+  cancelInvitation,
   acceptInvitation,
 };

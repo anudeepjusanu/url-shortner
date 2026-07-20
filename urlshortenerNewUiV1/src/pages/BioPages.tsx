@@ -41,6 +41,7 @@ import BioThumbnail from "@/components/bio-builder/BioThumbnail";
 import { BioTheme, BioBlock } from "@/types/bio";
 import { bioThemes } from "@/data/bioThemes";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
 interface BioPage {
   _id: string;
@@ -64,6 +65,7 @@ const BioPages = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  useRequirePersonalProject("/dashboard");
 
   const [pages, setPages] = useState<BioPage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
