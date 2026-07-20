@@ -56,6 +56,25 @@ const authLimiter = createRateLimiter({
   skip: (req) => req.method !== "POST",
 });
 
+// Login has its own bucket, keyed by email (falling back to IP), so it isn't
+// starved by register/OTP/Google traffic sharing authLimiter's IP-only bucket,
+// and so unrelated users behind the same NAT/office IP don't share one pool.
+// max is higher than authLimiter's 20 because a single login with OTP
+// verification is 2 requests to this same route, plus room for retries.
+const loginLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: "Too many login attempts, please try again later",
+  keyGenerator: (req) => {
+    const normalizedEmail = req.body?.email
+      ? req.body.email.trim().toLowerCase()
+      : null;
+    return normalizedEmail
+      ? `login:${normalizedEmail}`
+      : `login:${ipKeyGenerator(req)}`;
+  },
+});
+
 const urlCreationLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   max: (req) => {
@@ -198,6 +217,7 @@ module.exports = {
   createRateLimiter,
   generalLimiter,
   authLimiter,
+  loginLimiter,
   urlCreationLimiter,
   apiLimiter,
   redirectLimiter,

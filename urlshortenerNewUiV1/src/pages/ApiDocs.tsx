@@ -46,7 +46,12 @@ const ApiDocs = () => {
   useBrandMetaTags();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { canEdit, activeProject, isLoading: isProjectLoading } = useProject();
+  const {
+    canEdit,
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
 
   // ── API Key ──────────────────────────────────────────────────────────────────
   const [isLoadingKey, setIsLoadingKey] = useState(true);
@@ -74,10 +79,11 @@ const ApiDocs = () => {
 
   useEffect(() => {
     // A Viewer never gets to see the API key section at all — don't even
-    // fetch it.
-    if (isProjectLoading || !canEdit) return;
+    // fetch it. A key belongs to one specific project, so the "All
+    // projects" aggregate (no single active project) has nothing to fetch.
+    if (isProjectLoading || !canEdit || isAllProjectsView) return;
     loadApiKey();
-  }, [loadApiKey, isProjectLoading, canEdit]);
+  }, [loadApiKey, isProjectLoading, canEdit, isAllProjectsView]);
 
   const handleRegenerateKey = async () => {
     setRegenConfirmOpen(false);
@@ -208,6 +214,25 @@ const ApiDocs = () => {
                 {t(
                   "Viewers don't have access to this project's API key. Ask a project Admin or the Account Owner.",
                   "لا يملك المشاهدون حق الوصول إلى مفتاح API لهذا المشروع. تواصل مع مسؤول المشروع أو مالك الحساب.",
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        ) : isAllProjectsView ? (
+          // A key belongs to one specific project — nothing to show while
+          // viewing the "All projects" aggregate.
+          <Card>
+            <CardContent className="px-4 sm:px-6 py-6 sm:py-8 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+                <Key className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground" />
+              </div>
+              <p className="text-xs sm:text-sm text-foreground font-body font-medium">
+                {t("Select a project", "اختر مشروعًا")}
+              </p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-body mt-1">
+                {t(
+                  "API keys belong to a specific project. Switch to a project from the sidebar to view or manage its key.",
+                  "مفاتيح API خاصة بمشروع معين. بدّل إلى أحد المشاريع من الشريط الجانبي لعرض مفتاحه أو إدارته.",
                 )}
               </p>
             </CardContent>

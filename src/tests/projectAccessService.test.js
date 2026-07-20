@@ -408,15 +408,13 @@ describe("projectAccessService.assertAccountLevelEditAccess", () => {
     ).resolves.toBeUndefined();
   });
 
-  test("the Account Owner may omit projectId — mirrors the All projects aggregate", async () => {
-    mockOrgSelect(OWNER_ID);
+  test("the Account Owner omitting projectId is rejected — a key always belongs to one project", async () => {
     await expect(
       service.assertAccountLevelEditAccess(ownerUser, undefined),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(service.ValidationError);
   });
 
   test("a non-owner omitting projectId is rejected", async () => {
-    mockOrgSelect(OWNER_ID);
     await expect(
       service.assertAccountLevelEditAccess(viewerUser, undefined),
     ).rejects.toThrow(service.ValidationError);

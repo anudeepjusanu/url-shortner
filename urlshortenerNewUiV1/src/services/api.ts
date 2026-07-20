@@ -356,7 +356,9 @@ export const authAPI = {
 
       if (!res.ok) {
         throw new Error(
-          response.message || `HTTP ${res.status}: ${res.statusText}`,
+          response.message ||
+            response.error ||
+            `HTTP ${res.status}: ${res.statusText}`,
         );
       }
 
@@ -403,7 +405,9 @@ export const authAPI = {
 
       if (!res.ok) {
         throw new Error(
-          response.message || `HTTP ${res.status}: ${res.statusText}`,
+          response.message ||
+            response.error ||
+            `HTTP ${res.status}: ${res.statusText}`,
         );
       }
 
