@@ -349,6 +349,8 @@ class RedirectService {
       "snip.sa",
       "www.snip.sa",
       "shortener.snip.sa",
+      "4r.sa",
+      "www.4r.sa",
       "qa.snip.sa",
       "qa.4r.sa",
       "localhost",

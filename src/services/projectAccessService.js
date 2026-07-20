@@ -313,6 +313,13 @@ const inviteUser = async ({
   }
 
   const isOwner = await isAccountOwner(actingUserId, organizationId);
+  const normalizedEmail = email.toLowerCase().trim();
+  // Look up by email (not just by a pending invitation) so we catch the
+  // common case: the invitee already has an account and is already an
+  // accepted member of one of the selected projects.
+  const invitedUser = await User.findOne({ email: normalizedEmail }).select(
+    "_id",
+  );
 
   const resolvedProjects = [];
   for (const { projectId, role } of projectRoles) {
@@ -335,10 +342,35 @@ const inviteUser = async ({
         );
       }
     }
+
+    if (invitedUser) {
+      const existingMembership = await ProjectMembership.findOne({
+        user: invitedUser._id,
+        project: project._id,
+        acceptedAt: { $ne: null },
+      });
+      if (existingMembership) {
+        throw new ValidationError(
+          `${normalizedEmail} is already a member of "${project.name}"`,
+        );
+      }
+    }
+
+    const existingInvitation = await ProjectInvitation.findOne({
+      email: normalizedEmail,
+      status: "pending",
+      expiresAt: { $gt: new Date() },
+      "projectRoles.project": project._id,
+    });
+    if (existingInvitation) {
+      throw new ValidationError(
+        `${normalizedEmail} already has a pending invitation for "${project.name}"`,
+      );
+    }
+
     resolvedProjects.push({ project, role });
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
   const invitation = await ProjectInvitation.create({
     organization: organizationId,
     email: normalizedEmail,
@@ -366,6 +398,47 @@ const inviteUser = async ({
     logger.error("Failed to send invitation email:", error);
   }
 
+  return invitation;
+};
+
+/**
+ * Cancels a still-pending invitation (soft: marks it "revoked" rather than
+ * deleting, keeping an audit trail). Owner can cancel any invitation on the
+ * account; an Admin can only cancel one where every selected project is one
+ * they administer — an invitation spanning a project outside their scope is
+ * left to the Owner.
+ */
+const cancelInvitation = async ({
+  actingUserId,
+  organizationId,
+  invitationId,
+}) => {
+  const invitation = await ProjectInvitation.findOne({
+    _id: invitationId,
+    organization: organizationId,
+  });
+  if (!invitation) {
+    throw new NotFoundError("Invitation not found");
+  }
+  if (invitation.status !== "pending") {
+    throw new ValidationError("Only pending invitations can be cancelled");
+  }
+
+  if (!(await isAccountOwner(actingUserId, organizationId))) {
+    const adminProjectIds = await getAdminProjectIds(
+      actingUserId,
+      organizationId,
+    );
+    const withinAdminScope = invitation.projectRoles.every((pr) =>
+      adminProjectIds.includes(pr.project.toString()),
+    );
+    if (!withinAdminScope) {
+      throw new ForbiddenError("You cannot cancel this invitation");
+    }
+  }
+
+  invitation.status = "revoked";
+  await invitation.save();
   return invitation;
 };
 
@@ -689,6 +762,7 @@ module.exports = {
   createProject,
   promoteToAccountOwner,
   inviteUser,
+  cancelInvitation,
   changeMemberRole,
   removeMemberFromProject,
   removeUserFromAccount,

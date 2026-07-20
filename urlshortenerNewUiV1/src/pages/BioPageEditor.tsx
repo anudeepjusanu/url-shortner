@@ -49,6 +49,7 @@ import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { fireConversion } from "@/lib/conversion";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -574,6 +575,7 @@ const BioPageEditor = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  useRequirePersonalProject("/dashboard");
   const isEditMode = !!id;
 
   const [form, setForm] = useState<FormData>(DEFAULT_FORM);

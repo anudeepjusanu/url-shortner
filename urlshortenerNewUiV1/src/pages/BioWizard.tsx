@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fireConversion } from "@/lib/conversion";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
 type Stage = "loading" | "manual" | "publishing" | "published";
 
@@ -26,6 +27,7 @@ const BioWizard = () => {
   const isEdit = !!id;
   const { toast } = useToast();
   const { t } = useLanguage();
+  useRequirePersonalProject("/dashboard");
 
   const [stage, setStage] = useState<Stage>(isEdit ? "loading" : "manual");
   const [draft, setDraft] = useState<BioDraft>({ ...emptyDraft });

@@ -372,22 +372,24 @@ const CustomDomains = () => {
                       ? t("Verify & View DNS", "تحقق وعرض DNS")
                       : t("View DNS", "عرض DNS")}
                   </Button>
-                  {d.verificationStatus === "verified" && !d.isDefault && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-8"
-                      onClick={() => handleSetDefault(d._id)}
-                      disabled={settingDefaultId === d._id}
-                    >
-                      {settingDefaultId === d._id ? (
-                        <Loader2 className="w-3 h-3 me-1 animate-spin" />
-                      ) : (
-                        <CheckCircle className="w-3 h-3 me-1" />
-                      )}
-                      {t("Set Default", "تعيين كافتراضي")}
-                    </Button>
-                  )}
+                  {canEdit &&
+                    d.verificationStatus === "verified" &&
+                    !d.isDefault && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={() => handleSetDefault(d._id)}
+                        disabled={settingDefaultId === d._id}
+                      >
+                        {settingDefaultId === d._id ? (
+                          <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-3 h-3 me-1" />
+                        )}
+                        {t("Set Default", "تعيين كافتراضي")}
+                      </Button>
+                    )}
                   {canEdit && (
                     <Button
                       variant="outline"
@@ -503,23 +505,25 @@ const CustomDomains = () => {
                   </div>
                 ))}
               </div>
-              <Button
-                className="w-full h-9 sm:h-10 bg-primary text-primary-foreground text-xs sm:text-sm"
-                onClick={() => handleVerify(dnsDialog._id)}
-                disabled={verifyingId === dnsDialog._id}
-              >
-                {verifyingId === dnsDialog._id ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 animate-spin" />
-                    {t("Verifying...", "جاري التحقق...")}
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5" />
-                    {t("Verify DNS", "تحقق من DNS")}
-                  </>
-                )}
-              </Button>
+              {canEdit && (
+                <Button
+                  className="w-full h-9 sm:h-10 bg-primary text-primary-foreground text-xs sm:text-sm"
+                  onClick={() => handleVerify(dnsDialog._id)}
+                  disabled={verifyingId === dnsDialog._id}
+                >
+                  {verifyingId === dnsDialog._id ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5 animate-spin" />
+                      {t("Verifying...", "جاري التحقق...")}
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 me-1.5" />
+                      {t("Verify DNS", "تحقق من DNS")}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
           {dnsDialog && showVerified && (
