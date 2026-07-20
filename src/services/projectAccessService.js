@@ -393,6 +393,7 @@ const inviteUser = async ({
         role,
       })),
       token: invitation.token,
+      expiryDays: Math.round(INVITATION_TTL_MS / (24 * 60 * 60 * 1000)),
     });
   } catch (error) {
     logger.error("Failed to send invitation email:", error);

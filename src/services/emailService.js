@@ -3,6 +3,16 @@ const config = require("../config/environment");
 const logger = require("../config/logger");
 const { currentBrand: brand } = require("../config/brand");
 
+const HTML_ESCAPES = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+const escapeHtml = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+
 class EmailService {
   constructor() {
     this.transporter = null;
@@ -549,49 +559,141 @@ class EmailService {
     }
   }
 
-  async sendInvitationEmail({ toEmail, inviterName, projectRoles, token }) {
+  async sendInvitationEmail({
+    toEmail,
+    inviterName,
+    projectRoles,
+    token,
+    expiryDays,
+  }) {
     if (!this.transporter) {
       logger.info("Email service not available");
       return;
     }
 
     const acceptUrl = `${config.BASE_URL}/invite/accept?token=${token}`;
-    const projectRolesList = projectRoles
-      .map(
-        ({ projectName, role }) =>
-          `<li>${projectName}: <strong>${role.charAt(0).toUpperCase() + role.slice(1)}</strong></li>`,
-      )
-      .join("");
+    const days = expiryDays || 7;
+    const inviterDisplay = escapeHtml(inviterName || "Someone");
+    const roleLabel = (role) => role.charAt(0).toUpperCase() + role.slice(1);
+
+    const bodyMarkup =
+      projectRoles.length === 1
+        ? `
+              <p class="ar" style="margin:0 0 6px 0; font-size:16px; line-height:1.7; color:#3D2A2E; text-align:right;">
+                دعاك <strong style="color:#7A253A;">${inviterDisplay}</strong> للانضمام إلى حساب ${brand.name} بصلاحية <strong style="color:#7A253A;">${roleLabel(projectRoles[0].role)}</strong> على <strong style="color:#7A253A;">${escapeHtml(projectRoles[0].projectName)}</strong>.
+              </p>
+              <p class="en" style="margin:0 0 28px 0; font-size:14px; line-height:1.6; color:#6B5A5E; text-align:left; direction:ltr;">
+                ${inviterDisplay} invited you to join their ${brand.name} account as <strong style="color:#7A253A;">${roleLabel(projectRoles[0].role)}</strong> on <strong style="color:#7A253A;">${escapeHtml(projectRoles[0].projectName)}</strong>.
+              </p>
+        `
+        : `
+              <p class="ar" style="margin:0 0 6px 0; font-size:16px; line-height:1.7; color:#3D2A2E; text-align:right;">
+                دعاك <strong style="color:#7A253A;">${inviterDisplay}</strong> للانضمام إلى حساب ${brand.name} بالصلاحيات التالية:
+              </p>
+              <p class="en" style="margin:0 0 16px 0; font-size:14px; line-height:1.6; color:#6B5A5E; text-align:left; direction:ltr;">
+                ${inviterDisplay} invited you to join their ${brand.name} account with the following access:
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
+                ${projectRoles
+                  .map(
+                    ({ projectName, role }) => `
+                <tr>
+                  <td style="padding:12px 16px; background-color:#FBF3EF; border-radius:8px;">
+                    <p class="ar" style="margin:0; font-size:15px; line-height:1.6; color:#3D2A2E; text-align:right;">
+                      <strong style="color:#7A253A;">${escapeHtml(projectName)}</strong> — ${roleLabel(role)}
+                    </p>
+                    <p class="en" style="margin:2px 0 0 0; font-size:13px; line-height:1.5; color:#6B5A5E; text-align:left; direction:ltr;">
+                      ${escapeHtml(projectName)}: <strong style="color:#7A253A;">${roleLabel(role)}</strong>
+                    </p>
+                  </td>
+                </tr>
+                <tr><td style="height:8px; line-height:8px; font-size:0;">&nbsp;</td></tr>
+                `,
+                  )
+                  .join("")}
+              </table>
+        `;
 
     const mailOptions = {
       from: `"${brand.name}" <${config.SMTP_USER}>`,
       to: toEmail,
-      subject: `${inviterName || "Someone"} invited you to join their ${brand.name} account`,
+      subject: `دعوة للانضمام · You've been invited · ${brand.name}`,
       html: `
         <!DOCTYPE html>
-        <html>
+        <html lang="ar" dir="rtl" xmlns="http://www.w3.org/1999/xhtml">
         <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #3B82F6; color: white; text-align: center; padding: 30px; border-radius: 8px 8px 0 0; }
-            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
-            .button { display: inline-block; background: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin: 20px 0; }
-          </style>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>دعوة للانضمام · You've been invited · ${brand.name}</title>
+        <style type="text/css">
+          body { margin:0; padding:0; width:100% !important; -webkit-text-size-adjust:100%; }
+          table { border-collapse:collapse; }
+          img { border:0; outline:none; text-decoration:none; }
+          @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+          .ar { font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif; }
+          .en { font-family:'Inter','Segoe UI',Arial,sans-serif; }
+          @media only screen and (max-width:600px){
+            .container{ width:100% !important; }
+            .px{ padding-left:28px !important; padding-right:28px !important; }
+          }
+        </style>
         </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>You've been invited</h1>
-            </div>
-            <div class="content">
-              <p><strong>${inviterName || "A team admin"}</strong> invited you to join their ${brand.name} enterprise account with access to:</p>
-              <ul>${projectRolesList}</ul>
-              <a href="${acceptUrl}" class="button">Accept Invitation</a>
-              <p><small>This invitation expires in 7 days. If you weren't expecting this, you can ignore this email.</small></p>
-            </div>
-          </div>
+        <body style="margin:0; padding:0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding:40px 16px;">
+
+                <!-- Card -->
+                <table role="presentation" class="container" width="560" cellpadding="0" cellspacing="0" style="width:560px; max-width:560px; background-color:#FFFFFF; border:1px solid #EADFD0; border-radius:16px; overflow:hidden;">
+
+                  <!-- Brand bar -->
+                  <tr>
+                    <td align="center" style="background-color:#7A253A; padding:20px;">
+                      <span class="en" style="font-size:22px; font-weight:700; color:#FFFFFF; letter-spacing:0.5px;">${brand.name.toUpperCase()}</span>
+                    </td>
+                  </tr>
+
+                  <!-- Content -->
+                  <tr>
+                    <td class="px" style="padding:40px;">
+
+                      <h1 class="ar" style="margin:0 0 4px 0; font-size:26px; font-weight:700; color:#7A253A; text-align:right;">
+                        لقد تمت دعوتك
+                      </h1>
+                      <p class="en" style="margin:0 0 24px 0; font-size:15px; font-weight:600; color:#A83244; text-align:left; direction:ltr;">
+                        You've been invited
+                      </p>
+
+                      ${bodyMarkup}
+
+                      <!-- CTA -->
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td align="right">
+                            <a href="${acceptUrl}" class="ar" style="display:inline-block; background-color:#7A253A; color:#FFFFFF; font-size:16px; font-weight:600; line-height:50px; text-decoration:none; border-radius:12px; padding:0 40px;">
+                              قبول الدعوة &nbsp;·&nbsp; <span class="en">Accept</span>
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <p class="ar" style="margin:28px 0 2px 0; font-size:13px; line-height:1.7; color:#8A7A7D; text-align:right;">
+                        تنتهي صلاحية الدعوة خلال ${days} أيام. إذا لم تكن تتوقعها، يمكنك تجاهل هذا البريد.
+                      </p>
+                      <p class="en" style="margin:0; font-size:12px; line-height:1.6; color:#A2969A; text-align:left; direction:ltr;">
+                        This invitation expires in ${days} days. If you weren't expecting it, you can ignore this email.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Footer -->
+                <p class="en" style="margin:20px 0 0 0; font-size:12px; color:#A2969A; text-align:center;">${brand.name} · ${brand.domain}</p>
+
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `,
