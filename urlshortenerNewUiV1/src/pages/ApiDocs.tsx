@@ -37,6 +37,7 @@ import { profileService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
 import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
 
 // Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
 // docs site isn't live yet.
@@ -52,6 +53,10 @@ const ApiDocs = () => {
     isAllProjectsView,
     isLoading: isProjectLoading,
   } = useProject();
+
+  // A Viewer must not reach this page at all, not just see a blocked key —
+  // the nav entry is hidden too (DashboardLayout), this guards direct URLs.
+  useRequireEditAccess("/dashboard");
 
   // ── API Key ──────────────────────────────────────────────────────────────────
   const [isLoadingKey, setIsLoadingKey] = useState(true);

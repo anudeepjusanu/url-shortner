@@ -53,7 +53,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t, lang, setLang, isAr } = useLanguage();
   const brand = useBrand();
   const { user, logout } = useAuth();
-  const { isEnterpriseAccount, canManageUsers, isPersonalActive } =
+  const { isEnterpriseAccount, canManageUsers, isPersonalActive, canEdit } =
     useProject();
   const location = useLocation();
   const navigate = useNavigate();
@@ -140,11 +140,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       icon: Globe,
       path: "/dashboard/domains",
     },
-    {
-      label: t("API Key & Docs", "مفتاح API والمستندات"),
-      icon: FileText,
-      path: "/dashboard/api",
-    },
+    // A Viewer on the active project must not see the API key at all — hide
+    // the nav entry entirely rather than link to a page that just tells them
+    // no (the route itself is also guarded — see useRequireEditAccess in
+    // ApiDocs.tsx).
+    ...(canEdit
+      ? [
+          {
+            label: t("API Key & Docs", "مفتاح API والمستندات"),
+            icon: FileText,
+            path: "/dashboard/api",
+          },
+        ]
+      : []),
   ];
 
   const isActive = (path: string) => {
