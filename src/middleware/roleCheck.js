@@ -20,7 +20,7 @@ const requirePremium = (req, res, next) => {
 const checkResourceLimits = (resourceType) => {
   return async (req, res, next) => {
     try {
-      if (req.user.role === "admin") {
+      if (req.user.role === "admin" || req.user.plan === "enterprise") {
         return next();
       }
 

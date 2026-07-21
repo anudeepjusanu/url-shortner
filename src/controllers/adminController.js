@@ -968,6 +968,45 @@ const getOrganizations = async (req, res) => {
   }
 };
 
+const updateOrganization = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { plan, limits } = req.body;
+
+    const organization = await Organization.findById(id);
+    if (!organization) {
+      return res.status(404).json({
+        success: false,
+        message: "Organization not found",
+      });
+    }
+
+    const updateData = {};
+    if (plan !== undefined) updateData["subscription.plan"] = plan;
+    if (limits !== undefined) {
+      updateData.limits = { ...organization.limits, ...limits };
+    }
+
+    const updatedOrganization = await Organization.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true },
+    ).populate("owner", "firstName lastName email");
+
+    res.json({
+      success: true,
+      message: "Organization updated successfully",
+      data: { organization: updatedOrganization },
+    });
+  } catch (error) {
+    logger.error("Update organization error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update organization",
+    });
+  }
+};
+
 const getApiUsers = async (req, res) => {
   try {
     const results = await Url.aggregate([
@@ -1136,6 +1175,7 @@ module.exports = {
   getAllUtmLinks,
   deleteUtmLinkAdmin,
   getOrganizations,
+  updateOrganization,
   getApiUsers,
   exportLinks,
   exportUsers,

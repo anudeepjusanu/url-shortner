@@ -41,7 +41,7 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 // The one system domain that existed for every record created before this
 // fix shipped. Change this if reusing the script in another environment.
-const LEGACY_SYSTEM_DOMAIN = "qa.snip.sa";
+const LEGACY_SYSTEM_DOMAIN = "snip.sa";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {

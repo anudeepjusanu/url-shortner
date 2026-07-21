@@ -3,6 +3,7 @@ const ProjectInvitation = require("../models/ProjectInvitation");
 const Project = require("../models/Project");
 const User = require("../models/User");
 const projectAccessService = require("../services/projectAccessService");
+const { cacheDel } = require("../config/redis");
 const logger = require("../config/logger");
 
 // Projects this caller is allowed to see members/invitations for: every
@@ -266,6 +267,9 @@ const acceptInvitation = async (req, res) => {
       token: req.params.token,
       acceptingUser: req.user,
     });
+    // Invitation acceptance can change/set the user's organization —
+    // invalidate so the very next request sees it, not a stale cached copy.
+    await cacheDel(`user:${req.user.id}`);
     res.json({ success: true, data: result });
   } catch (error) {
     if (error.statusCode) {

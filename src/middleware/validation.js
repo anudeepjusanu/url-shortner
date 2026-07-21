@@ -354,6 +354,34 @@ const validateAdminUserUpdate = [
   handleValidationErrors,
 ];
 
+const validateAdminOrgUpdate = [
+  body("plan")
+    .optional()
+    .isIn(["free", "pro", "enterprise"])
+    .withMessage("Plan must be one of: free, pro, enterprise"),
+  body("limits.maxUrls")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("maxUrls limit must be a non-negative integer"),
+  body("limits.maxMembers")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("maxMembers limit must be a non-negative integer"),
+  body("limits.customDomains")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("customDomains limit must be a non-negative integer"),
+  body("limits.analyticsRetention")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("analyticsRetention must be a positive integer"),
+  body("limits.apiCalls")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("apiCalls limit must be a non-negative integer"),
+  handleValidationErrors,
+];
+
 const validateDomain = [
   body("domain")
     .notEmpty()
@@ -464,6 +492,7 @@ module.exports = {
   validateAnalyticsQuery,
   validateExportQuery,
   validateAdminUserUpdate,
+  validateAdminOrgUpdate,
   validateDomain,
   validateDomainUpdate,
   validateBulkCreate,
