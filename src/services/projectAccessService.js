@@ -5,6 +5,10 @@ const Project = require("../models/Project");
 const ProjectMembership = require("../models/ProjectMembership");
 const ProjectInvitation = require("../models/ProjectInvitation");
 const User = require("../models/User");
+const Url = require("../models/Url");
+const Domain = require("../models/Domain");
+const QRCode = require("../models/QRCode");
+const DynamicQRCode = require("../models/DynamicQRCode");
 const emailService = require("./emailService");
 const logger = require("../config/logger");
 
@@ -236,11 +240,37 @@ const uniqueOrgSlug = async (base) => {
 };
 
 /**
- * Promotes an existing user into the Account Owner of a brand-new
- * Organization — there is currently no self-serve product flow (signup,
- * plan upgrade) that does this, so it's a deliberate, manual action.
- * Idempotent: if the user already belongs to an organization, that one is
- * reused instead of creating a second.
+ * The moment a user gets a personal project for the first time, retroactively
+ * assigns any of their own pre-existing, fully-untagged resources (created
+ * before they ever had an organization) into it — otherwise project-scoped
+ * list queries would make those links/domains/QR codes disappear from view.
+ * Scoped strictly to resources this exact user created; never touches
+ * anyone else's data.
+ */
+const backfillOwnResourcesToProject = async (
+  userId,
+  organizationId,
+  projectId,
+) => {
+  const untagged = { organization: null, project: null };
+  const update = { $set: { organization: organizationId, project: projectId } };
+  await Promise.all([
+    Url.updateMany({ ...untagged, creator: userId }, update),
+    Domain.updateMany({ ...untagged, owner: userId }, update),
+    QRCode.updateMany({ ...untagged, creator: userId }, update),
+    DynamicQRCode.updateMany({ ...untagged, creator: userId }, update),
+  ]);
+};
+
+/**
+ * Ensures this user has an Organization (creating a personal one if they
+ * don't already belong to any — every account is entitled to a default
+ * project and the ability to invite people, no plan or subscription
+ * required) and is set up as its Account Owner, with a default shared
+ * "Main" project and their own personal project. Idempotent at every step —
+ * whatever already exists is reused as-is — so this is safe to call on
+ * every `/api/projects` load, not just as the one-time manual staff action
+ * it started out as (see routes/superAdmin.js).
  */
 const promoteToAccountOwner = async (userId, organizationName) => {
   const user = await User.findById(userId);
@@ -251,6 +281,7 @@ const promoteToAccountOwner = async (userId, organizationName) => {
   let organization = user.organization
     ? await Organization.findById(user.organization)
     : null;
+  const organizationCreated = !organization;
 
   if (!organization) {
     const name =
@@ -280,12 +311,23 @@ const promoteToAccountOwner = async (userId, organizationName) => {
     });
   }
 
-  const personalProject = await createPersonalProject(
+  const existingPersonalProject = await getPersonalProject(
     user._id,
     organization._id,
   );
+  const personalProject =
+    existingPersonalProject ||
+    (await createPersonalProject(user._id, organization._id));
 
-  return { organization, mainProject, personalProject };
+  if (!existingPersonalProject) {
+    await backfillOwnResourcesToProject(
+      user._id,
+      organization._id,
+      personalProject._id,
+    );
+  }
+
+  return { organization, mainProject, personalProject, organizationCreated };
 };
 
 const generateToken = () => crypto.randomBytes(32).toString("hex");
@@ -492,8 +534,12 @@ const removeMemberFromProject = async ({ actingUserId, userId, projectId }) => {
 
 /**
  * Mirrors the prototype's removeUserFromAccount(userId) helper — deletes all
- * of a user's shared-project memberships. Their personal project is
- * untouched (spec 2.5 / user story 9).
+ * of a user's shared-project memberships. `user.organization` is
+ * deliberately left as-is: their personal project lives there and must
+ * remain their default fallback (spec 2.5 / user story 9 — "personal
+ * project survives removal", which for a full account removal means
+ * survives as the account's new default, not just "still exists somewhere
+ * unreachable").
  */
 const removeUserFromAccount = async ({
   actingUserId,
@@ -509,16 +555,27 @@ const removeUserFromAccount = async ({
     user: userId,
     organization: organizationId,
   });
+};
 
-  const user = await User.findById(userId);
-  if (
-    user &&
-    user.organization &&
-    user.organization.toString() === organizationId.toString()
-  ) {
-    user.organization = null;
-    await user.save();
+/**
+ * True if `organizationId` is just `userId`'s own self-serve solo setup —
+ * they own it and nobody else has ever accepted a membership on any project
+ * in it — making it safe to abandon in favor of joining a real inviting
+ * organization. Every account now gets an organization like this by default
+ * (see promoteToAccountOwner), so without this check almost every invite
+ * acceptance would hit the cross-org guard below.
+ */
+const isTrivialSoloOrganization = async (organizationId, userId) => {
+  const organization =
+    await Organization.findById(organizationId).select("owner");
+  if (!organization || organization.owner.toString() !== userId.toString()) {
+    return false;
   }
+  const hasOtherMembers = await ProjectMembership.exists({
+    organization: organizationId,
+    user: { $ne: userId },
+  });
+  return !hasOtherMembers;
 };
 
 /**
@@ -544,15 +601,21 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
   }
 
   const user = await User.findById(acceptingUser.id);
-  if (
+  const switchingOrganization =
     user.organization &&
-    user.organization.toString() !== invitation.organization.toString()
-  ) {
-    throw new ForbiddenError(
-      "This account already belongs to a different enterprise account",
+    user.organization.toString() !== invitation.organization.toString();
+  if (switchingOrganization) {
+    const canSwitch = await isTrivialSoloOrganization(
+      user.organization,
+      user._id,
     );
+    if (!canSwitch) {
+      throw new ForbiddenError(
+        "This account already belongs to a different enterprise account",
+      );
+    }
   }
-  if (!user.organization) {
+  if (!user.organization || switchingOrganization) {
     user.organization = invitation.organization;
     await user.save();
   }
@@ -583,10 +646,21 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
   invitation.acceptedUser = user._id;
   await invitation.save();
 
-  const personalProject = await createPersonalProject(
+  const existingPersonalProject = await getPersonalProject(
     user._id,
     invitation.organization,
   );
+  const personalProject =
+    existingPersonalProject ||
+    (await createPersonalProject(user._id, invitation.organization));
+
+  if (!existingPersonalProject) {
+    await backfillOwnResourcesToProject(
+      user._id,
+      invitation.organization,
+      personalProject._id,
+    );
+  }
 
   return { memberships, personalProject };
 };

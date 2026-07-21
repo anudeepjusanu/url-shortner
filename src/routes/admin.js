@@ -8,6 +8,7 @@ const {
   validateObjectId,
   validatePagination,
   validateAdminUserUpdate,
+  validateAdminOrgUpdate,
   sanitizeInput,
 } = require("../middleware/validation");
 
@@ -56,6 +57,12 @@ router.get(
   "/organizations",
   validatePagination,
   adminController.getOrganizations,
+);
+router.put(
+  "/organizations/:id",
+  validateObjectId,
+  validateAdminOrgUpdate,
+  adminController.updateOrganization,
 );
 
 router.get("/stats/api-users", adminController.getApiUsers);

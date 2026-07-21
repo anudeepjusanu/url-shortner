@@ -17,6 +17,12 @@ const getFrontendBaseUrl = (req) => {
   );
 };
 
+// Enterprise plan means no usage ceiling — skip these usage-based limiters
+// entirely rather than just handing out a bigger bucket. Auth/login/password
+// limiters intentionally don't check this: those are brute-force protections,
+// not usage caps, and shouldn't bend for plan.
+const isEnterprisePlan = (req) => req.user?.plan === "enterprise";
+
 const createRateLimiter = (options = {}) => {
   const {
     windowMs = 15 * 60 * 1000,
@@ -91,6 +97,7 @@ const urlCreationLimiter = createRateLimiter({
     }
     return `url_creation:ip:${ipKeyGenerator(req)}`;
   },
+  skip: isEnterprisePlan,
 });
 
 const apiLimiter = createRateLimiter({
@@ -112,6 +119,7 @@ const apiLimiter = createRateLimiter({
       ? `api:user:${req.user.id}`
       : `api:ip:${ipKeyGenerator(req)}`;
   },
+  skip: isEnterprisePlan,
 });
 
 const redirectLimiter = rateLimit({
@@ -185,6 +193,7 @@ const qrDownloadLimiter = createRateLimiter({
       ? `qr_download:user:${req.user.id}`
       : `qr_download:ip:${ipKeyGenerator(req)}`;
   },
+  skip: isEnterprisePlan,
 });
 
 const dynamicLimiter = (req, res, next) => {
