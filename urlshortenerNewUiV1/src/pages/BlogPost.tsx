@@ -1,16 +1,20 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { useMetaTags } from "@/hooks/useMetaTags";
 import { blogPosts } from "@/data/blogPosts";
+import { brandifyBlogPost } from "@/lib/brandifyBlogPost";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const { t, lang } = useLanguage();
+  const brand = useBrand();
 
-  const post = blogPosts.find((p) => p.slug === slug);
+  const rawPost = blogPosts.find((p) => p.slug === slug);
+  const post = rawPost && brandifyBlogPost(rawPost, brand);
 
   if (!post) {
     return (
@@ -55,12 +59,12 @@ const BlogPost = () => {
     description: seoDescription,
     ogTitle: seoTitle,
     ogDescription: seoDescription,
-    ogUrl: `https://snip.sa/blog/${slug}`,
-    ogImage: post.image || "https://snip.sa/og-image.png",
+    ogUrl: `https://${brand.domain}/blog/${slug}`,
+    ogImage: post.image || `https://${brand.domain}/og-image.png`,
     twitterTitle: seoTitle,
     twitterDescription: seoDescription,
-    twitterImage: post.image || "https://snip.sa/og-image.png",
-    canonical: `https://snip.sa/blog/${slug}`,
+    twitterImage: post.image || `https://${brand.domain}/og-image.png`,
+    canonical: `https://${brand.domain}/blog/${slug}`,
   });
 
   // Renders inline markdown: **bold**, `code`, [text](url)
@@ -270,7 +274,10 @@ const BlogPost = () => {
   };
 
   // Get other posts for "Read more"
-  const otherPosts = blogPosts.filter((p) => p.slug !== slug).slice(0, 2);
+  const otherPosts = blogPosts
+    .filter((p) => p.slug !== slug)
+    .slice(0, 2)
+    .map((p) => brandifyBlogPost(p, brand));
 
   return (
     <div className="min-h-screen">

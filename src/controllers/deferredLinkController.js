@@ -1,6 +1,7 @@
-const AppRegistration = require('../models/AppRegistration');
-const deferredLinkService = require('../services/deferredLinkService');
-const deepLinkService = require('../services/deepLinkService');
+const AppRegistration = require("../models/AppRegistration");
+const deferredLinkService = require("../services/deferredLinkService");
+const deepLinkService = require("../services/deepLinkService");
+const logger = require("../config/logger");
 
 /**
  * POST /api/v1/deferred-link
@@ -23,30 +24,44 @@ const deepLinkService = require('../services/deepLinkService');
 const handleDeferredLink = async (req, res) => {
   try {
     // ── 1. Authenticate via API key ──────────────────────────────────────────
-    const authHeader = req.get('Authorization') || '';
-    const apiKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+    const authHeader = req.get("Authorization") || "";
+    const apiKey = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
 
     if (!apiKey) {
-      return res.status(401).json({ success: false, message: 'Missing Authorization header' });
+      return res
+        .status(401)
+        .json({ success: false, message: "Missing Authorization header" });
     }
 
-    const app = await AppRegistration.findOne({ apiKey, isActive: true }).lean();
+    const app = await AppRegistration.findOne({
+      apiKey,
+      isActive: true,
+    }).lean();
     if (!app) {
-      return res.status(401).json({ success: false, message: 'Invalid API key' });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid API key" });
     }
 
     // ── 2. Extract fingerprint from request body ──────────────────────────────
     const {
-      platform,       // 'ios' | 'android'
+      platform, // 'ios' | 'android'
       app_version,
       os_version,
       screen_width,
       screen_height,
-      install_time    // unix timestamp (seconds) of first launch
+      install_time, // unix timestamp (seconds) of first launch
     } = req.body;
 
-    if (!platform || !['ios', 'android'].includes(platform)) {
-      return res.status(400).json({ success: false, message: "platform must be 'ios' or 'android'" });
+    if (!platform || !["ios", "android"].includes(platform)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "platform must be 'ios' or 'android'",
+        });
     }
 
     // Derive the client IP — same logic used at click time
@@ -60,7 +75,7 @@ const handleDeferredLink = async (req, res) => {
       screenWidth: screen_width ? parseInt(screen_width) : null,
       screenHeight: screen_height ? parseInt(screen_height) : null,
       installTime: install_time || null,
-      appRegistrationId: app._id.toString()
+      appRegistrationId: app._id.toString(),
     });
 
     if (!result.matched) {
@@ -71,10 +86,10 @@ const handleDeferredLink = async (req, res) => {
       matched: true,
       screen: result.screen,
       params: result.params || {},
-      confidence: result.confidence
+      confidence: result.confidence,
     });
   } catch (err) {
-    console.error('[deferredLink] error:', err.message);
+    logger.error("[deferredLink] error:", err.message);
     // Always return matched: false on error — never risk showing a wrong screen
     return res.json({ matched: false });
   }

@@ -1,4 +1,5 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -6,6 +7,7 @@ import { useSmartLink } from "@/hooks/useSmartLink";
 
 const BioPricing = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
   const { smartLink } = useSmartLink();
 
   const plans = [
@@ -17,7 +19,7 @@ const BioPricing = () => {
         t("1 bio page", "صفحة بايو واحدة"),
         t("5 links", "5 روابط"),
         t("Basic themes", "ثيمات أساسية"),
-        t("snip branding", "شعار snip"),
+        t(`${brand.name} branding`, `شعار ${brand.name}`),
         t("Basic analytics", "تحليلات أساسية"),
       ],
       cta: t("Start Free", "ابدأ مجاناً"),
@@ -32,7 +34,7 @@ const BioPricing = () => {
         t("Unlimited bio pages", "صفحات بايو غير محدودة"),
         t("Unlimited links", "روابط غير محدودة"),
         t("All themes + custom", "جميع الثيمات + مخصص"),
-        t("No snip branding", "بدون شعار snip"),
+        t(`No ${brand.name} branding`, `بدون شعار ${brand.name}`),
         t("Custom domain", "نطاق مخصص"),
         t("Advanced analytics", "تحليلات متقدمة"),
         t("WhatsApp integration", "تكامل واتساب"),
@@ -66,7 +68,10 @@ const BioPricing = () => {
             {t("Simple, transparent pricing", "أسعار بسيطة وشفافة")}
           </h2>
           <p className="text-muted-foreground font-body">
-            {t("Start free, upgrade when you need more", "ابدأ مجاناً، وترقى عند الحاجة")}
+            {t(
+              "Start free, upgrade when you need more",
+              "ابدأ مجاناً، وترقى عند الحاجة",
+            )}
           </p>
         </div>
 
@@ -89,12 +94,19 @@ const BioPricing = () => {
                 </div>
               )}
 
-              <h3 className="font-display text-lg font-bold text-foreground mb-1">{plan.name}</h3>
-              <p className="text-2xl font-bold text-foreground mb-6">{plan.price}</p>
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">
+                {plan.name}
+              </h3>
+              <p className="text-2xl font-bold text-foreground mb-6">
+                {plan.price}
+              </p>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, fi) => (
-                  <li key={fi} className="flex items-start gap-2 text-sm text-foreground">
+                  <li
+                    key={fi}
+                    className="flex items-start gap-2 text-sm text-foreground"
+                  >
                     <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     {feature}
                   </li>

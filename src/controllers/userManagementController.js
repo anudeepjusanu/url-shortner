@@ -1,47 +1,41 @@
-const User = require('../models/User');
-const Url = require('../models/Url');
-const Domain = require('../models/Domain');
-const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
-const userService = require('../services/userService');
+const User = require("../models/User");
+const Url = require("../models/Url");
+const Domain = require("../models/Domain");
+const { cacheGet, cacheSet, cacheDel } = require("../config/redis");
+const userService = require("../services/userService");
+const logger = require("../config/logger");
 
 /**
  * Get all users with filters (admin and super_admin only)
  */
 const getAllUsers = async (req, res) => {
   try {
-    const {
-      page,
-      limit,
-      search,
-      role,
-      plan,
-      isActive,
-      sortBy,
-      sortOrder
-    } = req.query;
+    const { page, limit, search, role, plan, isActive, sortBy, sortOrder } =
+      req.query;
 
     // Determine organization filter
-    const organizationId = (req.user.role === 'admin' && req.user.organization) 
-      ? req.user.organization 
-      : null;
+    const organizationId =
+      req.user.role === "admin" && req.user.organization
+        ? req.user.organization
+        : null;
 
     const result = await userService.getAllUsers(
       { search, role, plan, isActive, organizationId },
-      { page, limit, sortBy, sortOrder }
+      { page, limit, sortBy, sortOrder },
     );
 
-    console.log(`Found ${result.pagination.total} users`);
+    logger.info(`Found ${result.pagination.total} users`);
 
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
-    console.error('Get all users error:', error);
+    logger.error("Get all users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch users',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Failed to fetch users",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -54,22 +48,25 @@ const getUser = async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findById(userId)
-      .select('-password -passwordResetToken -emailVerificationToken')
-      .populate('organization', 'name slug limits');
+      .select("-password -passwordResetToken -emailVerificationToken")
+      .populate("organization", "name slug limits");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Admin can only view users in their organization
-    if (req.user.role === 'admin') {
-      if (!req.user.organization || user.organization?.toString() !== req.user.organization.toString()) {
+    if (req.user.role === "admin") {
+      if (
+        !req.user.organization ||
+        user.organization?.toString() !== req.user.organization.toString()
+      ) {
         return res.status(403).json({
           success: false,
-          message: 'You can only view users in your organization'
+          message: "You can only view users in your organization",
         });
       }
     }
@@ -94,15 +91,15 @@ const getUser = async (req, res) => {
         stats: {
           urlCount,
           domainCount,
-          totalClicks: user.usage?.urlsCreatedTotal || 0
-        }
-      }
+          totalClicks: user.usage?.urlsCreatedTotal || 0,
+        },
+      },
     });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error("Get user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user details'
+      message: "Failed to fetch user details",
     });
   }
 };
@@ -120,34 +117,37 @@ const updateUserStatus = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Admin can only update users in their organization
-    if (req.user.role === 'admin') {
-      if (!req.user.organization || user.organization?.toString() !== req.user.organization.toString()) {
+    if (req.user.role === "admin") {
+      if (
+        !req.user.organization ||
+        user.organization?.toString() !== req.user.organization.toString()
+      ) {
         return res.status(403).json({
           success: false,
-          message: 'You can only update users in your organization'
+          message: "You can only update users in your organization",
         });
       }
 
       // Admin cannot modify admin or super_admin
-      if (user.role === 'admin' || user.role === 'super_admin') {
+      if (user.role === "admin" || user.role === "super_admin") {
         return res.status(403).json({
           success: false,
-          message: 'You cannot modify admin or super_admin users'
+          message: "You cannot modify admin or super_admin users",
         });
       }
     }
 
     // Update fields
-    if (typeof isActive === 'boolean') {
+    if (typeof isActive === "boolean") {
       user.isActive = isActive;
     }
 
-    if (plan && ['free', 'pro', 'enterprise'].includes(plan)) {
+    if (plan && ["free", "pro", "enterprise"].includes(plan)) {
       user.plan = plan;
     }
 
@@ -158,14 +158,14 @@ const updateUserStatus = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User status updated successfully',
-      data: { user }
+      message: "User status updated successfully",
+      data: { user },
     });
   } catch (error) {
-    console.error('Update user status error:', error);
+    logger.error("Update user status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user status'
+      message: "Failed to update user status",
     });
   }
 };
@@ -182,24 +182,27 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Admin can only delete users in their organization
-    if (req.user.role === 'admin') {
-      if (!req.user.organization || user.organization?.toString() !== req.user.organization.toString()) {
+    if (req.user.role === "admin") {
+      if (
+        !req.user.organization ||
+        user.organization?.toString() !== req.user.organization.toString()
+      ) {
         return res.status(403).json({
           success: false,
-          message: 'You can only delete users in your organization'
+          message: "You can only delete users in your organization",
         });
       }
 
       // Admin cannot delete admin or super_admin
-      if (user.role === 'admin' || user.role === 'super_admin') {
+      if (user.role === "admin" || user.role === "super_admin") {
         return res.status(403).json({
           success: false,
-          message: 'You cannot delete admin or super_admin users'
+          message: "You cannot delete admin or super_admin users",
         });
       }
     }
@@ -208,7 +211,7 @@ const deleteUser = async (req, res) => {
     if (userId === req.user.id) {
       return res.status(400).json({
         success: false,
-        message: 'You cannot delete your own account'
+        message: "You cannot delete your own account",
       });
     }
 
@@ -226,13 +229,13 @@ const deleteUser = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User and associated data deleted successfully'
+      message: "User and associated data deleted successfully",
     });
   } catch (error) {
-    console.error('Delete user error:', error);
+    logger.error("Delete user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete user'
+      message: "Failed to delete user",
     });
   }
 };
@@ -243,24 +246,25 @@ const deleteUser = async (req, res) => {
 const getUserStats = async (req, res) => {
   try {
     // Determine organization filter
-    const organizationId = (req.user.role === 'admin' && req.user.organization) 
-      ? req.user.organization 
-      : null;
+    const organizationId =
+      req.user.role === "admin" && req.user.organization
+        ? req.user.organization
+        : null;
 
     const stats = await userService.getUserStats(organizationId);
 
-    console.log('User stats:', stats);
+    logger.info("User stats:", stats);
 
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
-    console.error('Get user stats error:', error);
+    logger.error("Get user stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user statistics',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Failed to fetch user statistics",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -270,5 +274,5 @@ module.exports = {
   getUser,
   updateUserStatus,
   deleteUser,
-  getUserStats
+  getUserStats,
 };

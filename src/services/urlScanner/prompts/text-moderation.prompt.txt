@@ -31,6 +31,7 @@ The destination domain is the tie-breaker between a SafeBrowz signal and a conte
 CASE A — KNOWN-LEGITIMATE FILE-HOST DOMAIN (see status above):
 - These domains (SharePoint, Drive, Dropbox, etc.) commonly trigger false-positive "caution" or "danger" flags from reputation services purely because of their long tokenized URL structures. This is a known pattern, not a reliable signal on these hosts.
 - If the destination is a known-legitimate host AND Firecrawl successfully read real content (content_accessed) AND that content is genuinely benign → ALLOW, even if SafeBrowz shows "caution" or "danger". Treat that SafeBrowz flag as low-confidence noise on this host type.
+- If Firecrawl's scraped content IS that same host's own authentication/sign-in page (for example, a Google Sign-in screen encountered on drive.google.com, docs.google.com, or accounts.google.com; or a Microsoft login screen on sharepoint.com, onedrive.live.com, or login.microsoftonline.com; or the equivalent for Dropbox/Box), this is normal access-gating on a known-legitimate host — it is NOT evidence of phishing or credential harvesting, and must NOT be classified under category 3. A private or restricted file legitimately shows the provider's own login wall; the scanner simply cannot get past it, which is expected. Treat this the same as if Firecrawl could not read the content: ALLOW with could_not_verify and low confidence.
 - HOWEVER, still fully evaluate the actual scraped content against categories 1-8 above. If the content itself is genuinely malicious → BLOCK based on that content, regardless of the domain being a known host. Known-host status affects how much you trust SafeBrowz, not how carefully you read the content.
 - If the destination is a known-legitimate host but Firecrawl could NOT read the content → treat as could_not_verify and lean ALLOW, since SafeBrowz noise on these hosts is common and not on its own sufficient grounds to block.
 
@@ -38,6 +39,7 @@ CASE B — NOT a known-legitimate file-host domain (unknown, random, or lookalik
 - Trust SafeBrowz more heavily here. A "danger" verdict on an unknown/lookalike domain is meaningful and should lead to BLOCK even if the scraped content looks superficially benign (this is exactly the pattern used by credential-harvesting pages designed to look legitimate).
 - A "caution" verdict on an unknown domain warrants careful review of the Firecrawl content.
 - If Firecrawl content is available, still use it for categories 5-8 (content-based judgments), but do not let benign-looking content override a "danger" signal from SafeBrowz on an untrusted domain.
+- A sign-in or login page found on an unknown/lookalike domain remains a strong phishing signal, especially if it visually imitates a well-known brand while the domain does not match that brand — this is the opposite of the Case A situation above and should still weigh toward BLOCK under category 3.
 
 GENERAL RULES:
 - If Firecrawl content is available, prioritize it for categories 5-8 since SafeBrowz does not assess political/religious content.
@@ -55,7 +57,7 @@ Return ONLY valid JSON, nothing else:
   "decision": "ALLOW" or "BLOCK",
   "category": "site type, e.g. E-commerce, News, Gambling, Adult, Phishing, Political, File Share, Unknown",
   "confidence": 0-100,
-  "flags": ["violations found, safebrowz_likely_false_positive, safebrowz_unavailable, firecrawl_unavailable, could_not_verify, etc — empty if clean"],
+  "flags": ["violations found, safebrowz_likely_false_positive, provider_auth_wall, safebrowz_unavailable, firecrawl_unavailable, could_not_verify, etc — empty if clean"],
   "content_accessed": true if Firecrawl returned actual page content, false otherwise,
   "known_legit_host": {{KNOWN_LEGIT_HOST_BOOL}},
   "reason": "one or two sentences referencing which source(s) drove the decision and why"

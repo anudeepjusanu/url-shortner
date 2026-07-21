@@ -1,13 +1,17 @@
-const { OAuth2Client } = require('google-auth-library');
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
-const User = require('../models/User');
-const config = require('../config/environment');
-const { cacheSet, cacheGet, cacheDel } = require('../config/redis');
-const otpService = require('../services/otpService');
-const emailService = require('../services/emailService');
-const { getLocationFromIP, getClientIP } = require('../services/geoLocationService');
-const { normalizeEmail } = require('../utils/normalizeEmail');
+const { OAuth2Client } = require("google-auth-library");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const User = require("../models/User");
+const config = require("../config/environment");
+const { cacheSet, cacheGet, cacheDel } = require("../config/redis");
+const otpService = require("../services/otpService");
+const emailService = require("../services/emailService");
+const {
+  getLocationFromIP,
+  getClientIP,
+} = require("../services/geoLocationService");
+const { normalizeEmail } = require("../utils/normalizeEmail");
+const logger = require("../config/logger");
 
 const SAUDI_PHONE_REGEX = /^5\d{8}$/;
 const INDIA_PHONE_REGEX = /^[6-9]\d{9}$/;
@@ -35,7 +39,7 @@ const maskPhone = (phone) => {
   return `${phone.slice(0, 4)}****${phone.slice(-3)}`;
 };
 
-const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const buildUserResponse = (user) => ({
   id: user._id,
@@ -82,30 +86,33 @@ const verifyGoogleToken = async (params) => {
     return {
       googleId: payload.sub,
       email: payload.email,
-      firstName: payload.given_name || '',
-      lastName: payload.family_name || '',
-      picture: payload.picture || '',
+      firstName: payload.given_name || "",
+      lastName: payload.family_name || "",
+      picture: payload.picture || "",
       emailVerified: payload.email_verified || false,
     };
   }
 
   // If access token provided, call Google userinfo API
   if (accessToken) {
-    const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const { data } = await axios.get(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
 
     return {
       googleId: data.sub,
       email: data.email,
-      firstName: data.given_name || '',
-      lastName: data.family_name || '',
-      picture: data.picture || '',
+      firstName: data.given_name || "",
+      lastName: data.family_name || "",
+      picture: data.picture || "",
       emailVerified: data.email_verified !== false,
     };
   }
 
-  throw new Error('No credential or access token provided');
+  throw new Error("No credential or access token provided");
 };
 
 // Step 1: Authenticate with Google token
@@ -116,7 +123,7 @@ const googleAuthenticate = async (req, res) => {
     if (!credential && !accessToken) {
       return res.status(400).json({
         success: false,
-        message: 'Google credential or access token is required',
+        message: "Google credential or access token is required",
       });
     }
 
@@ -124,17 +131,17 @@ const googleAuthenticate = async (req, res) => {
     try {
       googleUser = await verifyGoogleToken({ credential, accessToken });
     } catch (err) {
-      console.error('Google token verification failed:', err.message);
+      logger.error("Google token verification failed:", err.message);
       return res.status(401).json({
         success: false,
-        message: 'Invalid Google credential',
+        message: "Invalid Google credential",
       });
     }
 
     if (!googleUser.emailVerified) {
       return res.status(400).json({
         success: false,
-        message: 'Google account email is not verified',
+        message: "Google account email is not verified",
       });
     }
 
@@ -153,7 +160,7 @@ const googleAuthenticate = async (req, res) => {
       if (!existingUser.isActive) {
         return res.status(403).json({
           success: false,
-          message: 'Account deactivated',
+          message: "Account deactivated",
         });
       }
 
@@ -164,7 +171,9 @@ const googleAuthenticate = async (req, res) => {
 
       // Update googleId if not already set (account linking)
       if (!existingUser.googleId) {
-        console.log('Account linking: Adding Google ID to existing manual account');
+        logger.info(
+          "Account linking: Adding Google ID to existing manual account",
+        );
         existingUser.googleId = googleUser.googleId;
       }
 
@@ -188,7 +197,7 @@ const googleAuthenticate = async (req, res) => {
 
       return res.json({
         success: true,
-        message: 'Login successful',
+        message: "Login successful",
         isExistingUser: true,
         accountLinked: wasLinked, // Indicate if account was just linked
         data: {
@@ -209,7 +218,7 @@ const googleAuthenticate = async (req, res) => {
         picture: googleUser.picture,
       },
       config.JWT_SECRET,
-      { expiresIn: '10m' },
+      { expiresIn: "10m" },
     );
 
     // Store Google user data in cache for 10 minutes
@@ -231,7 +240,7 @@ const googleAuthenticate = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Mobile number verification required',
+      message: "Mobile number verification required",
       isExistingUser: false,
       data: {
         sessionToken,
@@ -239,11 +248,11 @@ const googleAuthenticate = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Google authenticate error:', error);
+    logger.error("Google authenticate error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Authentication failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: "Authentication failed",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -256,18 +265,19 @@ const sendGoogleSignupOTP = async (req, res) => {
     if (!sessionToken || !phoneNumber) {
       return res.status(400).json({
         success: false,
-        message: 'Session token and phone number are required',
+        message: "Session token and phone number are required",
       });
     }
 
     // Validate phone number is Saudi or India format
     const isSaudiNumber = SAUDI_PHONE_REGEX.test(phoneNumber);
     const isIndiaNumber = INDIA_PHONE_REGEX.test(phoneNumber);
-    
+
     if (!isSaudiNumber && !isIndiaNumber) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
+        message:
+          "Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)",
       });
     }
 
@@ -278,7 +288,7 @@ const sendGoogleSignupOTP = async (req, res) => {
     } catch {
       return res.status(401).json({
         success: false,
-        message: 'Session expired. Please try signing up again.',
+        message: "Session expired. Please try signing up again.",
       });
     }
 
@@ -288,7 +298,7 @@ const sendGoogleSignupOTP = async (req, res) => {
     if (!cachedData) {
       return res.status(401).json({
         success: false,
-        message: 'Session expired. Please try signing up again.',
+        message: "Session expired. Please try signing up again.",
       });
     }
 
@@ -297,21 +307,22 @@ const sendGoogleSignupOTP = async (req, res) => {
     if (session.locked) {
       return res.status(423).json({
         success: false,
-        message: 'Verification locked due to too many failed attempts. Please try again later.',
+        message:
+          "Verification locked due to too many failed attempts. Please try again later.",
       });
     }
 
     if (session.otpResends >= 3) {
       return res.status(429).json({
         success: false,
-        message: 'Maximum OTP resends reached. Please try signing up again.',
+        message: "Maximum OTP resends reached. Please try signing up again.",
       });
     }
 
     const otp = generateOtpCode();
 
     // Determine country code based on phone number format
-    const countryCode = isSaudiNumber ? '+966' : '+91';
+    const countryCode = isSaudiNumber ? "+966" : "+91";
     const fullPhoneNumber = `${countryCode}${phoneNumber}`;
 
     // Update session with new OTP
@@ -327,15 +338,16 @@ const sendGoogleSignupOTP = async (req, res) => {
       email: session.email,
       phone: session.phone,
       otp,
-      method: 'sms',
+      method: "sms",
     });
 
     // TEMPORARY: Return OTP in response for Indian numbers in non-production (Authentica SA doesn't support +91)
-    const isDevIndiaNumber = process.env.NODE_ENV !== 'production' && isIndiaNumber;
+    const isDevIndiaNumber =
+      process.env.NODE_ENV !== "production" && isIndiaNumber;
 
     return res.json({
       success: true,
-      message: 'Verification code sent to your mobile number',
+      message: "Verification code sent to your mobile number",
       data: {
         phone: maskPhone(session.phone),
         expiresIn: 300,
@@ -343,11 +355,11 @@ const sendGoogleSignupOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Google signup send OTP error:', error);
+    logger.error("Google signup send OTP error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to send verification code',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: "Failed to send verification code",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -360,7 +372,7 @@ const verifyGoogleSignupOTP = async (req, res) => {
     if (!sessionToken || !otp) {
       return res.status(400).json({
         success: false,
-        message: 'Session token and OTP are required',
+        message: "Session token and OTP are required",
       });
     }
 
@@ -371,7 +383,7 @@ const verifyGoogleSignupOTP = async (req, res) => {
     } catch {
       return res.status(401).json({
         success: false,
-        message: 'Session expired. Please try signing up again.',
+        message: "Session expired. Please try signing up again.",
       });
     }
 
@@ -381,7 +393,7 @@ const verifyGoogleSignupOTP = async (req, res) => {
     if (!cachedData) {
       return res.status(401).json({
         success: false,
-        message: 'Session expired. Please try signing up again.',
+        message: "Session expired. Please try signing up again.",
       });
     }
 
@@ -390,21 +402,22 @@ const verifyGoogleSignupOTP = async (req, res) => {
     if (session.locked) {
       return res.status(423).json({
         success: false,
-        message: 'Verification locked due to too many failed attempts. Please try again later.',
+        message:
+          "Verification locked due to too many failed attempts. Please try again later.",
       });
     }
 
     if (!session.otp || !session.otpExpiresAt) {
       return res.status(400).json({
         success: false,
-        message: 'No OTP was sent. Please request a verification code first.',
+        message: "No OTP was sent. Please request a verification code first.",
       });
     }
 
     if (Date.now() > session.otpExpiresAt) {
       return res.status(401).json({
         success: false,
-        message: 'OTP expired. Please request a new one.',
+        message: "OTP expired. Please request a new one.",
       });
     }
 
@@ -416,7 +429,8 @@ const verifyGoogleSignupOTP = async (req, res) => {
         await cacheSet(cacheKey, JSON.stringify(session), 10 * 60);
         return res.status(423).json({
           success: false,
-          message: 'Too many failed attempts. Verification locked. Please try again later.',
+          message:
+            "Too many failed attempts. Verification locked. Please try again later.",
         });
       }
 
@@ -428,7 +442,9 @@ const verifyGoogleSignupOTP = async (req, res) => {
     }
 
     // OTP verified — check if user exists by googleId first, then by normalized email
-    let existingUserForLinking = await User.findOne({ googleId: session.googleId });
+    let existingUserForLinking = await User.findOne({
+      googleId: session.googleId,
+    });
 
     if (!existingUserForLinking) {
       existingUserForLinking = await User.findOne({ email: session.email });
@@ -437,7 +453,9 @@ const verifyGoogleSignupOTP = async (req, res) => {
     let user;
     if (existingUserForLinking) {
       // Account linking: This shouldn't happen normally, but handle it gracefully
-      console.log('Account linking during Google signup: User exists, linking Google ID');
+      logger.info(
+        "Account linking during Google signup: User exists, linking Google ID",
+      );
 
       if (!existingUserForLinking.googleId) {
         existingUserForLinking.googleId = session.googleId;
@@ -447,12 +465,12 @@ const verifyGoogleSignupOTP = async (req, res) => {
       if (existingUserForLinking.email !== session.email) {
         existingUserForLinking.email = session.email;
       }
-      
+
       // Update phone if provided and not already set
       if (session.phone && !existingUserForLinking.phone) {
         existingUserForLinking.phone = session.phone;
       }
-      
+
       // Update name if not already set
       if (!existingUserForLinking.firstName && session.firstName) {
         existingUserForLinking.firstName = session.firstName;
@@ -460,11 +478,14 @@ const verifyGoogleSignupOTP = async (req, res) => {
       if (!existingUserForLinking.lastName && session.lastName) {
         existingUserForLinking.lastName = session.lastName;
       }
-      
+
       existingUserForLinking.lastLogin = new Date();
       await existingUserForLinking.save();
       user = existingUserForLinking;
-      console.log('Account linked successfully during Google signup:', user.email);
+      logger.info(
+        "Account linked successfully during Google signup:",
+        user.email,
+      );
     } else {
       // Create new user account
       const clientIP = getClientIP(req);
@@ -472,7 +493,7 @@ const verifyGoogleSignupOTP = async (req, res) => {
       try {
         registrationLocation = await getLocationFromIP(clientIP);
       } catch (locError) {
-        console.error('Failed to get location:', locError.message);
+        logger.error("Failed to get location:", locError.message);
       }
 
       user = new User({
@@ -490,7 +511,9 @@ const verifyGoogleSignupOTP = async (req, res) => {
       } catch (saveError) {
         // Handle duplicate key errors (race condition or missing index)
         if (saveError.code === 11000) {
-          console.log('Duplicate key error during Google signup, re-querying existing user');
+          logger.info(
+            "Duplicate key error during Google signup, re-querying existing user",
+          );
           let fallbackUser = await User.findOne({ googleId: session.googleId });
           if (!fallbackUser) {
             fallbackUser = await User.findOne({ email: session.email });
@@ -515,14 +538,14 @@ const verifyGoogleSignupOTP = async (req, res) => {
     try {
       await emailService.sendWelcomeEmail(user);
     } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
+      logger.error("Failed to send welcome email:", emailError);
     }
 
     // Send admin notification
     try {
       await emailService.sendAdminNotification(user);
     } catch (emailError) {
-      console.error('Failed to send admin notification:', emailError);
+      logger.error("Failed to send admin notification:", emailError);
     }
 
     await setUserCache(user);
@@ -531,7 +554,7 @@ const verifyGoogleSignupOTP = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Account created successfully',
+      message: "Account created successfully",
       data: {
         user: buildUserResponse(user),
         accessToken,
@@ -539,11 +562,11 @@ const verifyGoogleSignupOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Google signup verify OTP error:', error);
+    logger.error("Google signup verify OTP error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to verify code',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: "Failed to verify code",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -560,13 +583,13 @@ const cancelGoogleSignup = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Sign-up cancelled',
+      message: "Sign-up cancelled",
     });
   } catch (error) {
-    console.error('Cancel Google signup error:', error);
+    logger.error("Cancel Google signup error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to cancel sign-up',
+      message: "Failed to cancel sign-up",
     });
   }
 };
@@ -578,34 +601,42 @@ const sendPhoneOTP = async (req, res) => {
   try {
     const { email, phoneNumber } = req.body;
     if (!email || !phoneNumber) {
-      return res.status(400).json({ success: false, message: 'Email and phone number are required' });
+      return res.status(400).json({
+        success: false,
+        message: "Email and phone number are required",
+      });
     }
 
-    const digits = phoneNumber.replace(/\D/g, '');
+    const digits = phoneNumber.replace(/\D/g, "");
     const isSaudiNumber = SAUDI_PHONE_REGEX.test(digits);
     const isIndiaNumber = INDIA_PHONE_REGEX.test(digits);
 
     if (!isSaudiNumber && !isIndiaNumber) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)',
+        message:
+          "Please enter a valid mobile number (Saudi: 5XXXXXXXX or India: 9XXXXXXXXX)",
       });
     }
 
-    const countryCode = isSaudiNumber ? '+966' : '+91';
+    const countryCode = isSaudiNumber ? "+966" : "+91";
     const fullPhone = `${countryCode}${digits}`;
     const otp = generateOtpCode();
     const sessionKey = `phone_otp:${fullPhone}`;
 
-    await cacheSet(sessionKey, JSON.stringify({ otp, email, phone: fullPhone, attempts: 0 }), 5 * 60);
+    await cacheSet(
+      sessionKey,
+      JSON.stringify({ otp, email, phone: fullPhone, attempts: 0 }),
+      5 * 60,
+    );
 
-    await otpService.sendOtp({ email, phone: fullPhone, otp, method: 'sms' });
+    await otpService.sendOtp({ email, phone: fullPhone, otp, method: "sms" });
 
-    const isDevIndia = process.env.NODE_ENV !== 'production' && isIndiaNumber;
+    const isDevIndia = process.env.NODE_ENV !== "production" && isIndiaNumber;
 
     return res.json({
       success: true,
-      message: 'Verification code sent to your mobile number',
+      message: "Verification code sent to your mobile number",
       data: {
         phone: maskPhone(fullPhone),
         sessionKey,
@@ -614,11 +645,11 @@ const sendPhoneOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('sendPhoneOTP error:', error);
+    logger.error("sendPhoneOTP error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to send verification code',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: "Failed to send verification code",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -627,19 +658,27 @@ const verifyPhoneOTP = async (req, res) => {
   try {
     const { sessionKey, otp } = req.body;
     if (!sessionKey || !otp) {
-      return res.status(400).json({ success: false, message: 'Session key and OTP are required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Session key and OTP are required" });
     }
 
     const cached = await cacheGet(sessionKey);
     if (!cached) {
-      return res.status(401).json({ success: false, message: 'OTP expired or invalid. Please request a new one.' });
+      return res.status(401).json({
+        success: false,
+        message: "OTP expired or invalid. Please request a new one.",
+      });
     }
 
     const session = JSON.parse(cached);
 
     if (session.attempts >= 5) {
       await cacheDel(sessionKey);
-      return res.status(423).json({ success: false, message: 'Too many failed attempts. Please request a new code.' });
+      return res.status(423).json({
+        success: false,
+        message: "Too many failed attempts. Please request a new code.",
+      });
     }
 
     if (session.otp !== otp) {
@@ -647,7 +686,7 @@ const verifyPhoneOTP = async (req, res) => {
       await cacheSet(sessionKey, JSON.stringify(session), 5 * 60);
       return res.status(400).json({
         success: false,
-        message: `Invalid OTP. ${5 - session.attempts} attempt${5 - session.attempts === 1 ? '' : 's'} remaining.`,
+        message: `Invalid OTP. ${5 - session.attempts} attempt${5 - session.attempts === 1 ? "" : "s"} remaining.`,
       });
     }
 
@@ -655,19 +694,23 @@ const verifyPhoneOTP = async (req, res) => {
 
     // Mark phone as verified for this email so register can skip its own OTP step
     const phoneVerifiedKey = `phone_verified:${session.email}`;
-    await cacheSet(phoneVerifiedKey, JSON.stringify({ phone: session.phone }), 10 * 60);
+    await cacheSet(
+      phoneVerifiedKey,
+      JSON.stringify({ phone: session.phone }),
+      10 * 60,
+    );
 
     return res.json({
       success: true,
-      message: 'Phone number verified successfully',
+      message: "Phone number verified successfully",
       data: { phone: session.phone, email: session.email },
     });
   } catch (error) {
-    console.error('verifyPhoneOTP error:', error);
+    logger.error("verifyPhoneOTP error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to verify OTP',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: "Failed to verify OTP",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };

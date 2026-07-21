@@ -1,4 +1,5 @@
 const axios = require("axios");
+const logger = require("../config/logger");
 
 /**
  * Google Safe Browsing / Web Risk Service
@@ -72,7 +73,7 @@ class SafeBrowsingService {
         const threats = threat.threatTypes.map((threatType) => ({
           threatType,
         }));
-        console.log("🚨 Unsafe URL detected (Web Risk):", url, threats);
+        logger.info("🚨 Unsafe URL detected (Web Risk):", url, threats);
         return {
           isSafe: false,
           threats,
@@ -80,20 +81,20 @@ class SafeBrowsingService {
         };
       }
 
-      console.log("✅ URL passed safety check (Web Risk):", url);
+      logger.info("✅ URL passed safety check (Web Risk):", url);
       return { isSafe: true, threats: [], message: "URL is safe" };
     } catch (error) {
       const status = error.response?.status;
       if (status === 429) {
-        console.error("❌ Web Risk API rate limit exceeded");
+        logger.error("❌ Web Risk API rate limit exceeded");
       } else if (status === 401 || status === 403) {
-        console.error(
+        logger.error(
           "❌ Web Risk API authentication error — check WEBRISK_API_KEY",
         );
       } else if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
-        console.error("❌ Web Risk API timed out");
+        logger.error("❌ Web Risk API timed out");
       } else {
-        console.error("❌ Web Risk API error:", error.message);
+        logger.error("❌ Web Risk API error:", error.message);
       }
       return {
         isSafe: true, // fail open — never block a legitimate link on infra errors
@@ -113,7 +114,7 @@ class SafeBrowsingService {
   async checkUrl(url) {
     // If no key is configured at all, skip the check
     if (!this.enabled) {
-      console.warn(
+      logger.warn(
         "⚠️ No Safe Browsing / Web Risk API key configured. Skipping safety check.",
       );
       return {
@@ -165,7 +166,7 @@ class SafeBrowsingService {
           threatEntryType: match.threatEntryType,
         }));
 
-        console.log("🚨 Unsafe URL detected:", url, threats);
+        logger.info("🚨 Unsafe URL detected:", url, threats);
 
         return {
           isSafe: false,
@@ -175,14 +176,14 @@ class SafeBrowsingService {
       }
 
       // No matches found - URL is safe
-      console.log("✅ URL passed safety check:", url);
+      logger.info("✅ URL passed safety check:", url);
       return {
         isSafe: true,
         threats: [],
         message: "URL is safe",
       };
     } catch (error) {
-      console.error("❌ Google Safe Browsing API error:", error.message);
+      logger.error("❌ Google Safe Browsing API error:", error.message);
 
       // Handle specific error cases
       if (error.response) {
@@ -190,7 +191,7 @@ class SafeBrowsingService {
         const errorData = error.response.data;
 
         if (status === 400) {
-          console.error("Bad request to Safe Browsing API:", errorData);
+          logger.error("Bad request to Safe Browsing API:", errorData);
           return {
             isSafe: true, // Allow URL on API error (fail open)
             threats: [],
@@ -200,7 +201,7 @@ class SafeBrowsingService {
         }
 
         if (status === 401 || status === 403) {
-          console.error("Authentication error with Safe Browsing API");
+          logger.error("Authentication error with Safe Browsing API");
           return {
             isSafe: true, // Allow URL on auth error
             threats: [],
@@ -210,7 +211,7 @@ class SafeBrowsingService {
         }
 
         if (status === 429) {
-          console.error("Rate limit exceeded for Safe Browsing API");
+          logger.error("Rate limit exceeded for Safe Browsing API");
           return {
             isSafe: true, // Allow URL on rate limit
             threats: [],
@@ -222,7 +223,7 @@ class SafeBrowsingService {
 
       // Network or timeout errors - fail open (allow the URL)
       if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
-        console.error("Timeout checking URL safety");
+        logger.error("Timeout checking URL safety");
         return {
           isSafe: true,
           threats: [],
@@ -297,7 +298,7 @@ class SafeBrowsingService {
     );
 
     if (!this.enabled) {
-      console.warn(
+      logger.warn(
         "⚠️ Google Safe Browsing API key not configured. Skipping batch safety check.",
       );
       urls.forEach((url) =>
@@ -367,7 +368,7 @@ class SafeBrowsingService {
           });
 
           matchesByUrl.forEach((threats, url) => {
-            console.log("🚨 Unsafe URL detected (batch):", url, threats);
+            logger.info("🚨 Unsafe URL detected (batch):", url, threats);
             resultMap.set(url, {
               isSafe: false,
               threats,
@@ -389,7 +390,7 @@ class SafeBrowsingService {
           }
         });
       } catch (error) {
-        console.error("❌ Safe Browsing batch check error:", error.message);
+        logger.error("❌ Safe Browsing batch check error:", error.message);
         // Mark this batch as skipped due to error rather than verified safe
         batch.forEach((url) => {
           if (resultMap.get(url).verified === false) {

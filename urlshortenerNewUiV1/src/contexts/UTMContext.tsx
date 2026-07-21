@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { utmLinkService, UtmLinkPayload } from "@/services/jwtService";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProject } from "@/contexts/ProjectContext";
 
 export interface UTMLink {
   id: string;
@@ -39,17 +46,27 @@ const UTMContext = createContext<UTMContextValue | undefined>(undefined);
 
 export const UTMProvider = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
+  const {
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   const [utmLinks, setUtmLinks] = useState<UTMLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Enterprise RBAC: scope the list to the active project. Omitted only in
+  // the Account Owner's "All projects" aggregate view (or for solo accounts,
+  // where activeProject is always null).
+  const projectId = isAllProjectsView ? undefined : activeProject?.id;
+
   const refetch = useCallback(async () => {
-    if (!isAuthenticated) {
-      setUtmLinks([]);
+    if (!isAuthenticated || isProjectLoading) {
+      if (!isAuthenticated) setUtmLinks([]);
       return;
     }
     setIsLoading(true);
     try {
-      const res: any = await utmLinkService.getAll();
+      const res: any = await utmLinkService.getAll(projectId);
       const links = (res?.data?.utmLinks ?? []).map(mapFromApi);
       setUtmLinks(links);
     } catch {
@@ -57,7 +74,7 @@ export const UTMProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isProjectLoading, projectId]);
 
   useEffect(() => {
     refetch();
@@ -73,13 +90,14 @@ export const UTMProvider = ({ children }: { children: React.ReactNode }) => {
         utmCampaign: link.utmCampaign,
         utmTerm: link.utmTerm,
         utmContent: link.utmContent,
+        projectId: activeProject?.id,
       };
       const res: any = await utmLinkService.create(payload);
       const newLink = mapFromApi(res.data.utmLink);
       setUtmLinks((prev) => [newLink, ...prev]);
       return newLink;
     },
-    [],
+    [activeProject?.id],
   );
 
   const deleteUTMLink = useCallback(async (id: string) => {
@@ -88,7 +106,9 @@ export const UTMProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <UTMContext.Provider value={{ utmLinks, isLoading, addUTMLink, deleteUTMLink }}>
+    <UTMContext.Provider
+      value={{ utmLinks, isLoading, addUTMLink, deleteUTMLink }}
+    >
       {children}
     </UTMContext.Provider>
   );

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // Derive the backend root URL from the API URL (strip /api suffix).
 // In dev: http://localhost:3015/api → http://localhost:3015
 // In prod: https://snip.sa/api → https://snip.sa
-const SHORT_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3015/api').replace(/\/api\/?$/, '');
+const SHORT_BASE = (
+  import.meta.env.VITE_API_URL || "http://localhost:3015/api"
+).replace(/\/api\/?$/, "");
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -49,7 +52,12 @@ interface DeepLinkedUrl {
   clickCount: number;
   deepLink: {
     enabled: boolean;
-    appRegistration?: { _id: string; name: string; bundleId?: string; packageName?: string } | null;
+    appRegistration?: {
+      _id: string;
+      name: string;
+      bundleId?: string;
+      packageName?: string;
+    } | null;
     screen?: string | null;
     params?: Record<string, string> | null;
     webFallbackUrl?: string | null;
@@ -60,6 +68,7 @@ interface DeepLinkedUrl {
 type ViewTab = "deep-links" | "apps";
 
 export default function DeepLinks() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
@@ -67,7 +76,9 @@ export default function DeepLinks() {
 
   const [tab, setTab] = useState<ViewTab>("deep-links");
   const [search, setSearch] = useState("");
-  const [disableTarget, setDisableTarget] = useState<DeepLinkedUrl | null>(null);
+  const [disableTarget, setDisableTarget] = useState<DeepLinkedUrl | null>(
+    null,
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
@@ -76,14 +87,15 @@ export default function DeepLinks() {
     staleTime: 30_000,
   });
 
-  const allItems: DeepLinkedUrl[] = (data as any)?.data?.urls ?? (data as any)?.data ?? [];
+  const allItems: DeepLinkedUrl[] =
+    (data as any)?.data?.urls ?? (data as any)?.data ?? [];
   const items = search.trim()
     ? allItems.filter(
         (item) =>
           item.title?.toLowerCase().includes(search.toLowerCase()) ||
           item.shortCode?.toLowerCase().includes(search.toLowerCase()) ||
           item.originalUrl?.toLowerCase().includes(search.toLowerCase()) ||
-          item.deepLink?.screen?.toLowerCase().includes(search.toLowerCase())
+          item.deepLink?.screen?.toLowerCase().includes(search.toLowerCase()),
       )
     : allItems;
 
@@ -103,7 +115,10 @@ export default function DeepLinks() {
       toast({ title: t("Deep link disabled", "تم تعطيل الرابط العميق") });
     },
     onError: () =>
-      toast({ variant: "destructive", title: t("Action failed", "فشل الإجراء") }),
+      toast({
+        variant: "destructive",
+        title: t("Action failed", "فشل الإجراء"),
+      }),
   });
 
   const handleCopyLink = async (item: DeepLinkedUrl) => {
@@ -132,7 +147,7 @@ export default function DeepLinks() {
             <p className="text-sm text-muted-foreground mt-1">
               {t(
                 "Route users directly into your app screen, with a store redirect for non-installed apps",
-                "وجّه المستخدمين مباشرةً إلى شاشة التطبيق، مع إعادة التوجيه إلى المتجر إذا لم يكن التطبيق مثبتاً"
+                "وجّه المستخدمين مباشرةً إلى شاشة التطبيق، مع إعادة التوجيه إلى المتجر إذا لم يكن التطبيق مثبتاً",
               )}
             </p>
           </div>
@@ -159,7 +174,7 @@ export default function DeepLinks() {
           <p className="text-xs text-blue-700 dark:text-blue-300">
             {t(
               "Share /dl/{code} links. iOS/Android users with the app installed open the exact screen. Users without the app are sent to the store, and the app opens the right screen on first launch. Desktop and in-app browsers (Instagram, WhatsApp) see the web fallback page.",
-              "شارك روابط /dl/{code}. يفتح المستخدمون الذين لديهم التطبيق مثبتاً الشاشة المحددة مباشرةً. يُوجَّه المستخدمون بدون التطبيق إلى المتجر، ويفتح التطبيق الشاشة الصحيحة عند أول تشغيل. يرى مستخدمو سطح المكتب والمتصفحات الداخلية صفحة الاحتياطية."
+              "شارك روابط /dl/{code}. يفتح المستخدمون الذين لديهم التطبيق مثبتاً الشاشة المحددة مباشرةً. يُوجَّه المستخدمون بدون التطبيق إلى المتجر، ويفتح التطبيق الشاشة الصحيحة عند أول تشغيل. يرى مستخدمو سطح المكتب والمتصفحات الداخلية صفحة الاحتياطية.",
             )}
           </p>
         </div>
@@ -196,7 +211,10 @@ export default function DeepLinks() {
             <p className="text-muted-foreground">
               {search
                 ? t("No results found", "لا توجد نتائج")
-                : t("No deep links configured yet", "لا توجد روابط عميقة مهيأة بعد")}
+                : t(
+                    "No deep links configured yet",
+                    "لا توجد روابط عميقة مهيأة بعد",
+                  )}
             </p>
             {!search && (
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -207,7 +225,9 @@ export default function DeepLinks() {
                   <Settings2 className="w-4 h-4 me-2" />
                   {t("1. Register your app first", "1. سجّل تطبيقك أولاً")}
                 </Button>
-                <Button onClick={() => navigate("/dashboard/deep-links/create")}>
+                <Button
+                  onClick={() => navigate("/dashboard/deep-links/create")}
+                >
                   <Plus className="w-4 h-4 me-2" />
                   {t("2. Create a deep link", "2. أنشئ رابطاً عميقاً")}
                 </Button>
@@ -227,7 +247,7 @@ export default function DeepLinks() {
                   key={item._id}
                   className={cn(
                     "border rounded-xl p-4 space-y-3 bg-card shadow-sm",
-                    !item.isActive && "opacity-60"
+                    !item.isActive && "opacity-60",
                   )}
                 >
                   {/* Title + actions */}
@@ -285,8 +305,12 @@ export default function DeepLinks() {
                   {/* Screen + params */}
                   {item.deepLink?.screen && (
                     <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">{t("Screen", "الشاشة")}</p>
-                      <p className="text-xs font-mono">{item.deepLink.screen}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("Screen", "الشاشة")}
+                      </p>
+                      <p className="text-xs font-mono">
+                        {item.deepLink.screen}
+                      </p>
                     </div>
                   )}
                   {item.deepLink?.params &&
@@ -335,7 +359,9 @@ export default function DeepLinks() {
                   {/* Web fallback */}
                   {item.deepLink?.webFallbackUrl && (
                     <div className="text-xs text-muted-foreground truncate">
-                      <span className="font-medium">{t("Web fallback:", "الاحتياطي:")}</span>{" "}
+                      <span className="font-medium">
+                        {t("Web fallback:", "الاحتياطي:")}
+                      </span>{" "}
                       {item.deepLink.webFallbackUrl}
                     </div>
                   )}
@@ -359,14 +385,16 @@ export default function DeepLinks() {
             <AlertDialogDescription>
               {t(
                 "The /dl/ route will stop routing this link to the app. The underlying short URL and its destination remain unchanged.",
-                "سيتوقف مسار /dl/ عن توجيه هذا الرابط إلى التطبيق. يبقى الرابط المختصر الأصلي ووجهته دون تغيير."
+                "سيتوقف مسار /dl/ عن توجيه هذا الرابط إلى التطبيق. يبقى الرابط المختصر الأصلي ووجهته دون تغيير.",
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => disableTarget && disableMutation.mutate(disableTarget)}
+              onClick={() =>
+                disableTarget && disableMutation.mutate(disableTarget)
+              }
               className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {disableMutation.isPending ? (

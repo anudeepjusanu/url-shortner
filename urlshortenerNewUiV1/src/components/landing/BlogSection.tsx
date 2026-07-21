@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { blogPosts } from "@/data/blogPosts";
+import { brandifyBlogPost } from "@/lib/brandifyBlogPost";
 import { motion } from "framer-motion";
 
 const BlogSection = () => {
   const { t, lang } = useLanguage();
+  const brand = useBrand();
   const featured = blogPosts[0];
-  const rest = blogPosts.slice(1, 3);
+  const rest = blogPosts
+    .slice(1, 3)
+    .map((post) => brandifyBlogPost(post, brand));
 
   return (
     <section id="blog" className="section-cream-blush py-28 md:py-36">

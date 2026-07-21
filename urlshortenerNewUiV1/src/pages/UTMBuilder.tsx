@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useUTM, UTMLink } from "@/contexts/UTMContext";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -18,11 +19,14 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 const UTMBuilder = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { canEdit } = useProject();
   const { utmLinks, deleteUTMLink, isLoading } = useUTM();
   const createUrl = useCreateUrl();
   const { data: domainsData } = useAvailableDomains();
@@ -122,13 +126,15 @@ const UTMBuilder = () => {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => navigate("/dashboard/utm-builder/create")}
-          className="bg-primary text-primary-foreground shrink-0"
-        >
-          <Plus className="w-4 h-4 me-2" />
-          {t(" New UTM", " UTM جديد")}
-        </Button>
+        {canEdit && (
+          <Button
+            onClick={() => navigate("/dashboard/utm-builder/create")}
+            className="bg-primary text-primary-foreground shrink-0"
+          >
+            <Plus className="w-4 h-4 me-2" />
+            {t(" New UTM", " UTM جديد")}
+          </Button>
+        )}
       </div>
 
       {/* Controls */}
@@ -205,13 +211,15 @@ const UTMBuilder = () => {
                   "أنشئ أول رابط موسوم لبدء تتبع الحملات",
                 )}
               </p>
-              <Button
-                onClick={() => navigate("/dashboard/utm-builder/create")}
-                className="bg-primary text-primary-foreground"
-              >
-                <Plus className="w-4 h-4 me-2" />
-                {t("Create UTM Link", "إنشاء رابط UTM")}
-              </Button>
+              {canEdit && (
+                <Button
+                  onClick={() => navigate("/dashboard/utm-builder/create")}
+                  className="bg-primary text-primary-foreground"
+                >
+                  <Plus className="w-4 h-4 me-2" />
+                  {t("Create UTM Link", "إنشاء رابط UTM")}
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -283,31 +291,35 @@ const UTMBuilder = () => {
                     </Button>
                   </a>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShorten(link)}
-                    disabled={isShortening || !!shorteningId}
-                    className="h-8 text-xs gap-1.5"
-                  >
-                    {isShortening ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Link2 className="w-3 h-3" />
-                    )}
-                    {t("Shorten", "اختصر")}
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleShorten(link)}
+                      disabled={isShortening || !!shorteningId}
+                      className="h-8 text-xs gap-1.5"
+                    >
+                      {isShortening ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Link2 className="w-3 h-3" />
+                      )}
+                      {t("Shorten", "اختصر")}
+                    </Button>
+                  )}
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(link.id)}
-                    disabled={isShortening}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    title={t("Delete", "حذف")}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(link.id)}
+                      disabled={isShortening}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      title={t("Delete", "حذف")}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
                 </div>
               </div>
             );

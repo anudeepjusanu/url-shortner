@@ -1,16 +1,17 @@
-const User = require('../models/User');
-const Plan = require('../models/Plan');
+const User = require("../models/User");
+const Plan = require("../models/Plan");
+const logger = require("../config/logger");
 
 // Fallback plan used when the plans collection hasn't been seeded yet
 const DEFAULT_FREE_PLAN = {
   features: {
     urlsPerMonth: 500,
     customDomains: 0,
-    analytics: 'basic',
+    analytics: "basic",
     apiAccess: false,
     bulkOperations: false,
     passwordProtection: false,
-  }
+  },
 };
 
 class UsageTracker {
@@ -19,7 +20,7 @@ class UsageTracker {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        return { allowed: false, reason: 'User not found' };
+        return { allowed: false, reason: "User not found" };
       }
 
       // Reset monthly usage if needed
@@ -29,57 +30,61 @@ class UsageTracker {
 
       // Check specific action limits
       switch (action) {
-        case 'createUrl':
+        case "createUrl":
           if (plan.features.urlsPerMonth === -1) {
             return { allowed: true };
           }
 
-          const canCreate = (user.usage.urlsCreatedThisMonth + amount) <= plan.features.urlsPerMonth;
+          const canCreate =
+            user.usage.urlsCreatedThisMonth + amount <=
+            plan.features.urlsPerMonth;
           if (!canCreate) {
             return {
               allowed: false,
               reason: `Monthly URL limit reached (${plan.features.urlsPerMonth})`,
               limit: plan.features.urlsPerMonth,
-              current: user.usage.urlsCreatedThisMonth
+              current: user.usage.urlsCreatedThisMonth,
             };
           }
           return { allowed: true };
 
-        case 'addCustomDomain':
-          const canAddDomain = (user.usage.customDomainsCount + amount) <= plan.features.customDomains;
+        case "addCustomDomain":
+          const canAddDomain =
+            user.usage.customDomainsCount + amount <=
+            plan.features.customDomains;
           if (!canAddDomain) {
             return {
               allowed: false,
               reason: `Custom domain limit reached (${plan.features.customDomains})`,
               limit: plan.features.customDomains,
-              current: user.usage.customDomainsCount
+              current: user.usage.customDomainsCount,
             };
           }
           return { allowed: true };
 
-        case 'apiCall':
+        case "apiCall":
           if (!plan.features.apiAccess) {
             return {
               allowed: false,
-              reason: 'API access not available in your plan'
+              reason: "API access not available in your plan",
             };
           }
           return { allowed: true };
 
-        case 'bulkOperation':
+        case "bulkOperation":
           if (!plan.features.bulkOperations) {
             return {
               allowed: false,
-              reason: 'Bulk operations not available in your plan'
+              reason: "Bulk operations not available in your plan",
             };
           }
           return { allowed: true };
 
-        case 'passwordProtection':
+        case "passwordProtection":
           if (!plan.features.passwordProtection) {
             return {
               allowed: false,
-              reason: 'Password protection not available in your plan'
+              reason: "Password protection not available in your plan",
             };
           }
           return { allowed: true };
@@ -88,8 +93,8 @@ class UsageTracker {
           return { allowed: true };
       }
     } catch (error) {
-      console.error('Usage check error:', error);
-      return { allowed: false, reason: 'Usage check failed' };
+      logger.error("Usage check error:", error);
+      return { allowed: false, reason: "Usage check failed" };
     }
   }
 
@@ -104,21 +109,28 @@ class UsageTracker {
       const updateFields = {};
 
       switch (action) {
-        case 'createUrl':
-          updateFields['usage.urlsCreatedThisMonth'] = user.usage.urlsCreatedThisMonth + amount;
-          updateFields['usage.urlsCreatedTotal'] = user.usage.urlsCreatedTotal + amount;
+        case "createUrl":
+          updateFields["usage.urlsCreatedThisMonth"] =
+            user.usage.urlsCreatedThisMonth + amount;
+          updateFields["usage.urlsCreatedTotal"] =
+            user.usage.urlsCreatedTotal + amount;
           break;
 
-        case 'addCustomDomain':
-          updateFields['usage.customDomainsCount'] = user.usage.customDomainsCount + amount;
+        case "addCustomDomain":
+          updateFields["usage.customDomainsCount"] =
+            user.usage.customDomainsCount + amount;
           break;
 
-        case 'removeCustomDomain':
-          updateFields['usage.customDomainsCount'] = Math.max(0, user.usage.customDomainsCount - amount);
+        case "removeCustomDomain":
+          updateFields["usage.customDomainsCount"] = Math.max(
+            0,
+            user.usage.customDomainsCount - amount,
+          );
           break;
 
-        case 'apiCall':
-          updateFields['usage.apiCallsThisMonth'] = user.usage.apiCallsThisMonth + amount;
+        case "apiCall":
+          updateFields["usage.apiCallsThisMonth"] =
+            user.usage.apiCallsThisMonth + amount;
           break;
       }
 
@@ -131,7 +143,7 @@ class UsageTracker {
 
       return true;
     } catch (error) {
-      console.error('Usage tracking error:', error);
+      logger.error("Usage tracking error:", error);
       return false;
     }
   }
@@ -142,15 +154,16 @@ class UsageTracker {
     const lastReset = new Date(user.usage.lastResetDate);
 
     // Check if it's a new month
-    if (now.getFullYear() !== lastReset.getFullYear() ||
-        now.getMonth() !== lastReset.getMonth()) {
-
+    if (
+      now.getFullYear() !== lastReset.getFullYear() ||
+      now.getMonth() !== lastReset.getMonth()
+    ) {
       await User.findByIdAndUpdate(user._id, {
         $set: {
-          'usage.urlsCreatedThisMonth': 0,
-          'usage.apiCallsThisMonth': 0,
-          'usage.lastResetDate': now
-        }
+          "usage.urlsCreatedThisMonth": 0,
+          "usage.apiCallsThisMonth": 0,
+          "usage.lastResetDate": now,
+        },
       });
     }
   }
@@ -163,15 +176,19 @@ class UsageTracker {
 
       if (!plan || plan.features.urlsPerMonth === -1) return;
 
-      const usagePercentage = (user.usage.urlsCreatedThisMonth / plan.features.urlsPerMonth) * 100;
+      const usagePercentage =
+        (user.usage.urlsCreatedThisMonth / plan.features.urlsPerMonth) * 100;
 
       // Send warning at 80% and 95%
       if (usagePercentage >= 80 && usagePercentage < 95) {
-        const emailService = require('../services/emailService');
-        await emailService.sendUsageLimitWarning(user, Math.round(usagePercentage));
+        const emailService = require("../services/emailService");
+        await emailService.sendUsageLimitWarning(
+          user,
+          Math.round(usagePercentage),
+        );
       }
     } catch (error) {
-      console.error('Usage warning check error:', error);
+      logger.error("Usage warning check error:", error);
     }
   }
 
@@ -189,18 +206,21 @@ class UsageTracker {
         plan: {
           name: plan.name,
           displayName: plan.displayName,
-          features: plan.features
+          features: plan.features,
         },
         usage: user.usage,
         limits: {
           urlsPerMonth: plan.features.urlsPerMonth,
           customDomains: plan.features.customDomains,
-          urlsPercentage: plan.features.urlsPerMonth === -1 ? 0 :
-            (user.usage.urlsCreatedThisMonth / plan.features.urlsPerMonth) * 100
-        }
+          urlsPercentage:
+            plan.features.urlsPerMonth === -1
+              ? 0
+              : (user.usage.urlsCreatedThisMonth / plan.features.urlsPerMonth) *
+                100,
+        },
       };
     } catch (error) {
-      console.error('Get usage error:', error);
+      logger.error("Get usage error:", error);
       return null;
     }
   }
@@ -216,18 +236,18 @@ const checkUsageLimit = (action) => {
         return res.status(403).json({
           success: false,
           message: check.reason,
-          code: 'USAGE_LIMIT_EXCEEDED',
+          code: "USAGE_LIMIT_EXCEEDED",
           data: {
             limit: check.limit,
             current: check.current,
-            action: action
-          }
+            action: action,
+          },
         });
       }
 
       next();
     } catch (error) {
-      console.error('Usage limit check error:', error);
+      logger.error("Usage limit check error:", error);
       next(error);
     }
   };
@@ -235,5 +255,5 @@ const checkUsageLimit = (action) => {
 
 module.exports = {
   UsageTracker,
-  checkUsageLimit
+  checkUsageLimit,
 };

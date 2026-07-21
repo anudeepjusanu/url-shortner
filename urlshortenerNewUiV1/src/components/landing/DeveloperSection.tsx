@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Copy, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { motion } from "framer-motion";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
-const codeExample = `// Shorten a URL with one API call
-const response = await axios.post('https://snip.sa/api/urls', {
+const getDeveloperCodeExample = (
+  brandDomain: string,
+) => `// Shorten a URL with one API call
+const response = await axios.post('https://${brandDomain}/api/urls', {
   originalUrl: 'https://example.com/very-long-url',
   customCode: 'mylink',
   title: 'My Custom Link',
@@ -17,13 +20,20 @@ const response = await axios.post('https://snip.sa/api/urls', {
     'Content-Type': 'application/json',
     'X-API-Key': 'your_api_key_here'
   }
-});`;
+});
+`;
+
+// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
+// docs site isn't live yet.
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
 
 const DeveloperSection = () => {
   const [copied, setCopied] = useState(false);
   const { t } = useLanguage();
+  const brand = useBrand();
   const navigate = useNavigate();
   const { isAuthenticated } = useSmartLink();
+  const codeExample = getDeveloperCodeExample(brand.domain);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(codeExample);
@@ -72,21 +82,33 @@ const DeveloperSection = () => {
             className="order-1 lg:order-2"
           >
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tight leading-[1.1] text-[hsl(var(--navy))]">
-              {t("Build faster with our API", "ابنِ مشاريعك بشكل أسرع باستخدام API")}
+              {t(
+                "Build faster with our API",
+                "ابنِ مشاريعك بشكل أسرع باستخدام API",
+              )}
             </h2>
             <p className="font-body text-lg mb-8 leading-relaxed text-[hsl(var(--navy))]/65">
               {t(
                 "Whether you're developing an ecommerce platform, mobile app, or marketing tool, our API lets you create and manage short links, QR codes, and analytics programmatically.",
-                "سواء كنت تطوّر منصة تجارة إلكترونية، تطبيقًا للهواتف، أو أداة تسويق، تتيح لك واجهة البرمجة لدينا إنشاء وإدارة الروابط المختصرة، رموز QR، وتحليلات الأداء بشكل برمجي."
+                "سواء كنت تطوّر منصة تجارة إلكترونية، تطبيقًا للهواتف، أو أداة تسويق، تتيح لك واجهة البرمجة لدينا إنشاء وإدارة الروابط المختصرة، رموز QR، وتحليلات الأداء بشكل برمجي.",
               )}
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Button onClick={() => window.open("https://docs.snip.sa", "_blank")} className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6">
+              <Button
+                onClick={() => window.open(MINTLIFY_DOCS_URL, "_blank")}
+                className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full hover:brightness-110 transition-all text-base px-8 py-6"
+              >
                 {t("Read API Documentation", "شوف الـ API Docs")}
                 <ArrowRight size={14} className="ms-1.5 rtl:rotate-180" />
               </Button>
-              <Button onClick={() => navigate(isAuthenticated ? "/dashboard/api" : "/signup")} variant="outline" className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] hover:bg-[hsl(var(--sky))] bg-transparent py-6 px-8">
+              <Button
+                onClick={() =>
+                  navigate(isAuthenticated ? "/dashboard/api" : "/signup")
+                }
+                variant="outline"
+                className="font-body font-medium rounded-full border-2 border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] hover:bg-[hsl(var(--sky))] bg-transparent py-6 px-8"
+              >
                 {t("Get Your API Key", "احصل على مفتاح API")}
               </Button>
             </div>

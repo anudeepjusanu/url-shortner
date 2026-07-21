@@ -1,21 +1,29 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { authAPI, urlsAPI, domainsAPI, analyticsAPI } from "@/services/api";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 /**
  * API Test Page
- * 
+ *
  * This page is for testing the API connection.
  * Navigate to /api-test to use it.
- * 
+ *
  * To add this route to your app, add this to App.tsx:
  * <Route path="/api-test" element={<ApiTest />} />
  */
 const ApiTest = () => {
+  useBrandMetaTags();
   const { toast } = useToast();
   const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password123");
@@ -26,13 +34,19 @@ const ApiTest = () => {
     setLoading(name);
     try {
       const result = await fn();
-      setResults((prev: any) => ({ ...prev, [name]: { success: true, data: result } }));
+      setResults((prev: any) => ({
+        ...prev,
+        [name]: { success: true, data: result },
+      }));
       toast({
         title: "Success",
         description: `${name} test passed`,
       });
     } catch (error: any) {
-      setResults((prev: any) => ({ ...prev, [name]: { success: false, error: error.message } }));
+      setResults((prev: any) => ({
+        ...prev,
+        [name]: { success: false, error: error.message },
+      }));
       toast({
         title: "Error",
         description: `${name} test failed: ${error.message}`,
@@ -56,7 +70,9 @@ const ApiTest = () => {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Authentication Tests</CardTitle>
-          <CardDescription>Test login, register, and profile endpoints</CardDescription>
+          <CardDescription>
+            Test login, register, and profile endpoints
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -82,14 +98,20 @@ const ApiTest = () => {
 
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={() => testEndpoint("Login", () => authAPI.login({ email, password }))}
+              onClick={() =>
+                testEndpoint("Login", () => authAPI.login({ email, password }))
+              }
               disabled={loading === "Login"}
             >
               {loading === "Login" ? "Testing..." : "Test Login"}
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Register", () => authAPI.register({ email, password, name: "Test User" }))}
+              onClick={() =>
+                testEndpoint("Register", () =>
+                  authAPI.register({ email, password, name: "Test User" }),
+                )
+              }
               disabled={loading === "Register"}
               variant="outline"
             >
@@ -97,7 +119,9 @@ const ApiTest = () => {
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Get Profile", () => authAPI.getProfile())}
+              onClick={() =>
+                testEndpoint("Get Profile", () => authAPI.getProfile())
+              }
               disabled={loading === "Get Profile"}
               variant="outline"
             >
@@ -114,7 +138,9 @@ const ApiTest = () => {
           </div>
 
           {results.Login && (
-            <div className={`p-4 rounded-lg ${results.Login.success ? "bg-green-50" : "bg-red-50"}`}>
+            <div
+              className={`p-4 rounded-lg ${results.Login.success ? "bg-green-50" : "bg-red-50"}`}
+            >
               <p className="font-semibold mb-2">Login Result:</p>
               <pre className="text-xs overflow-auto">
                 {JSON.stringify(results.Login, null, 2)}
@@ -128,23 +154,33 @@ const ApiTest = () => {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>URL Management Tests</CardTitle>
-          <CardDescription>Test URL creation, listing, and management</CardDescription>
+          <CardDescription>
+            Test URL creation, listing, and management
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={() => testEndpoint("List URLs", () => urlsAPI.list({ page: 1, limit: 10 }))}
+              onClick={() =>
+                testEndpoint("List URLs", () =>
+                  urlsAPI.list({ page: 1, limit: 10 }),
+                )
+              }
               disabled={loading === "List URLs"}
             >
               {loading === "List URLs" ? "Testing..." : "Test List URLs"}
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Create URL", () => urlsAPI.create({
-                originalUrl: "https://example.com",
-                customCode: `test${Date.now()}`,
-                title: "Test Link"
-              }))}
+              onClick={() =>
+                testEndpoint("Create URL", () =>
+                  urlsAPI.create({
+                    originalUrl: "https://example.com",
+                    customCode: `test${Date.now()}`,
+                    title: "Test Link",
+                  }),
+                )
+              }
               disabled={loading === "Create URL"}
               variant="outline"
             >
@@ -152,7 +188,9 @@ const ApiTest = () => {
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Get Stats", () => urlsAPI.getStats())}
+              onClick={() =>
+                testEndpoint("Get Stats", () => urlsAPI.getStats())
+              }
               disabled={loading === "Get Stats"}
               variant="outline"
             >
@@ -160,16 +198,24 @@ const ApiTest = () => {
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Available Domains", () => urlsAPI.getAvailableDomains())}
+              onClick={() =>
+                testEndpoint("Available Domains", () =>
+                  urlsAPI.getAvailableDomains(),
+                )
+              }
               disabled={loading === "Available Domains"}
               variant="outline"
             >
-              {loading === "Available Domains" ? "Testing..." : "Test Available Domains"}
+              {loading === "Available Domains"
+                ? "Testing..."
+                : "Test Available Domains"}
             </Button>
           </div>
 
           {results["List URLs"] && (
-            <div className={`p-4 rounded-lg ${results["List URLs"].success ? "bg-green-50" : "bg-red-50"}`}>
+            <div
+              className={`p-4 rounded-lg ${results["List URLs"].success ? "bg-green-50" : "bg-red-50"}`}
+            >
               <p className="font-semibold mb-2">List URLs Result:</p>
               <pre className="text-xs overflow-auto max-h-64">
                 {JSON.stringify(results["List URLs"], null, 2)}
@@ -188,14 +234,18 @@ const ApiTest = () => {
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={() => testEndpoint("List Domains", () => domainsAPI.getDomains())}
+              onClick={() =>
+                testEndpoint("List Domains", () => domainsAPI.getDomains())
+              }
               disabled={loading === "List Domains"}
             >
               {loading === "List Domains" ? "Testing..." : "Test List Domains"}
             </Button>
 
             <Button
-              onClick={() => testEndpoint("Domain Stats", () => domainsAPI.getDomainStats())}
+              onClick={() =>
+                testEndpoint("Domain Stats", () => domainsAPI.getDomainStats())
+              }
               disabled={loading === "Domain Stats"}
               variant="outline"
             >
@@ -204,7 +254,9 @@ const ApiTest = () => {
           </div>
 
           {results["List Domains"] && (
-            <div className={`p-4 rounded-lg ${results["List Domains"].success ? "bg-green-50" : "bg-red-50"}`}>
+            <div
+              className={`p-4 rounded-lg ${results["List Domains"].success ? "bg-green-50" : "bg-red-50"}`}
+            >
               <p className="font-semibold mb-2">List Domains Result:</p>
               <pre className="text-xs overflow-auto max-h-64">
                 {JSON.stringify(results["List Domains"], null, 2)}
@@ -223,15 +275,23 @@ const ApiTest = () => {
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={() => testEndpoint("Analytics Dashboard", () => analyticsAPI.getDashboard())}
+              onClick={() =>
+                testEndpoint("Analytics Dashboard", () =>
+                  analyticsAPI.getDashboard(),
+                )
+              }
               disabled={loading === "Analytics Dashboard"}
             >
-              {loading === "Analytics Dashboard" ? "Testing..." : "Test Analytics Dashboard"}
+              {loading === "Analytics Dashboard"
+                ? "Testing..."
+                : "Test Analytics Dashboard"}
             </Button>
           </div>
 
           {results["Analytics Dashboard"] && (
-            <div className={`p-4 rounded-lg ${results["Analytics Dashboard"].success ? "bg-green-50" : "bg-red-50"}`}>
+            <div
+              className={`p-4 rounded-lg ${results["Analytics Dashboard"].success ? "bg-green-50" : "bg-red-50"}`}
+            >
               <p className="font-semibold mb-2">Analytics Dashboard Result:</p>
               <pre className="text-xs overflow-auto max-h-64">
                 {JSON.stringify(results["Analytics Dashboard"], null, 2)}

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUTM } from "@/contexts/UTMContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Copy, Check, Tag, Link2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
 
 const buildTaggedUrl = (
   dest: string,
@@ -51,8 +53,10 @@ const isValidUrl = (value: string): boolean => {
 };
 
 const CreateUTMLink = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  useRequireEditAccess("/dashboard/utm-builder");
   const { addUTMLink } = useUTM();
   const createUrl = useCreateUrl();
   const { data: domainsData } = useAvailableDomains();

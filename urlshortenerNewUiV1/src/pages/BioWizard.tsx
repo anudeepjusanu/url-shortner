@@ -15,20 +15,26 @@ import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fireConversion } from "@/lib/conversion";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
 type Stage = "loading" | "manual" | "publishing" | "published";
 
 const BioWizard = () => {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = !!id;
   const { toast } = useToast();
   const { t } = useLanguage();
+  useRequirePersonalProject("/dashboard");
 
   const [stage, setStage] = useState<Stage>(isEdit ? "loading" : "manual");
   const [draft, setDraft] = useState<BioDraft>({ ...emptyDraft });
   const [publishedUsername, setPublishedUsername] = useState("");
-  const [originalUsername, setOriginalUsername] = useState<string | undefined>(undefined);
+  const [originalUsername, setOriginalUsername] = useState<string | undefined>(
+    undefined,
+  );
   const [bioPageId, setBioPageId] = useState<string | undefined>(undefined);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -38,7 +44,7 @@ const BioWizard = () => {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await bioPageAPI.get(id) as any;
+        const res = (await bioPageAPI.get(id)) as any;
         if (cancelled) return;
         const bioPage = res?.data ?? res;
         const hydrated = hydrateDraftFromBioPage(bioPage);
@@ -48,12 +54,16 @@ const BioWizard = () => {
         setStage("manual");
       } catch (err: any) {
         if (cancelled) return;
-        setLoadError(err?.message || t("Failed to load bio page", "فشل تحميل الصفحة"));
+        setLoadError(
+          err?.message || t("Failed to load bio page", "فشل تحميل الصفحة"),
+        );
         setStage("manual");
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, isEdit, t]);
 
   const updateDraft = (patch: Partial<BioDraft>) =>
@@ -83,7 +93,7 @@ const BioWizard = () => {
       }
       setPublishedUsername(draft.settings.username);
       setStage("published");
-      fireConversion('bio_published');
+      fireConversion("bio_published");
     } catch (err: any) {
       toast({
         variant: "destructive",

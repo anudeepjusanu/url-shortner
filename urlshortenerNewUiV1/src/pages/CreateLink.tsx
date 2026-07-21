@@ -1,21 +1,38 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, ArrowRight, QrCode, Pencil, Plus, Globe, Loader2, Tag, Copy, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  QrCode,
+  Pencil,
+  Plus,
+  Globe,
+  Loader2,
+  Tag,
+  Copy,
+  Check,
+} from "lucide-react";
 import { useCreateUrl, useAvailableDomains } from "@/hooks/useApi";
 import { useToast } from "@/hooks/use-toast";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 
 const CreateLink = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
   const [originalUrl, setOriginalUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [title, setTitle] = useState("");
@@ -34,7 +51,11 @@ const CreateLink = () => {
   const [utmContent, setUtmContent] = useState("");
 
   // Fetch available domains from API
-  const { data: domainsData, isLoading: domainsLoading, isError: domainsError } = useAvailableDomains();
+  const {
+    data: domainsData,
+    isLoading: domainsLoading,
+    isError: domainsError,
+  } = useAvailableDomains();
   const createUrl = useCreateUrl();
 
   // Extract domains array from response — memoized so the reference stays stable
@@ -44,7 +65,7 @@ const CreateLink = () => {
       Array.isArray(domainsData?.data?.domains)
         ? domainsData.data.domains.filter((d: any) => d && d.id && d.fullDomain)
         : [],
-    [domainsData]
+    [domainsData],
   );
 
   // Set default domain when domains are loaded
@@ -64,7 +85,10 @@ const CreateLink = () => {
     if (domainsError) {
       toast({
         title: t("Warning", "تحذير"),
-        description: t("Failed to load domains. You can still create links.", "فشل تحميل النطاقات. يمكنك إنشاء الروابط."),
+        description: t(
+          "Failed to load domains. You can still create links.",
+          "فشل تحميل النطاقات. يمكنك إنشاء الروابط.",
+        ),
         variant: "destructive",
       });
     }
@@ -73,7 +97,12 @@ const CreateLink = () => {
   // Build live destination URL preview with UTM params appended
   const utmPreviewUrl = useMemo(() => {
     if (!utmEnabled || !originalUrl.trim()) return null;
-    const hasAnyUtm = utmSource.trim() || utmMedium.trim() || utmCampaign.trim() || utmTerm.trim() || utmContent.trim();
+    const hasAnyUtm =
+      utmSource.trim() ||
+      utmMedium.trim() ||
+      utmCampaign.trim() ||
+      utmTerm.trim() ||
+      utmContent.trim();
     if (!hasAnyUtm) return null;
     try {
       const url = new URL(originalUrl.trim());
@@ -87,7 +116,15 @@ const CreateLink = () => {
     } catch {
       return null;
     }
-  }, [utmEnabled, originalUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent]);
+  }, [
+    utmEnabled,
+    originalUrl,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmTerm,
+    utmContent,
+  ]);
 
   const handleSubmit = async () => {
     if (!originalUrl.trim()) {
@@ -117,6 +154,12 @@ const CreateLink = () => {
         originalUrl: originalUrl.trim(),
         source: "dashboard",
       };
+
+      // Enterprise RBAC: which project this link is created in. Undefined
+      // for solo accounts, where the backend doesn't require it.
+      if (activeProject?.id) {
+        payload.projectId = activeProject.id;
+      }
 
       if (customAlias.trim()) {
         payload.customCode = customAlias.trim();
@@ -156,12 +199,12 @@ const CreateLink = () => {
             hasPassword: false,
             hasExpiry: false,
             hasUtmParams: utmEnabled && !!payload.utm,
-            linkType: generateQR ? 'qr' : 'standard',
+            linkType: generateQR ? "qr" : "standard",
           });
         } catch (trackError) {
-          console.error('Analytics error:', trackError);
+          console.error("Analytics error:", trackError);
         }
-        fireConversion('mylinks_shorten');
+        fireConversion("mylinks_shorten");
         toast({
           title: t("Success", "نجح"),
           description: t("Link created successfully", "تم إنشاء الرابط بنجاح"),
@@ -171,7 +214,8 @@ const CreateLink = () => {
     } catch (error: any) {
       toast({
         title: t("Error", "خطأ"),
-        description: error.message || t("Failed to create link", "فشل إنشاء الرابط"),
+        description:
+          error.message || t("Failed to create link", "فشل إنشاء الرابط"),
         variant: "destructive",
       });
     } finally {
@@ -195,7 +239,10 @@ const CreateLink = () => {
           {t("Create Short Link", "أنشئ رابط قصير")}
         </h1>
         <p className="text-muted-foreground font-body mb-8">
-          {t("Convert your long URL into a short, shareable link", "حوّل رابطك الطويل إلى رابط قصير قابل للمشاركة")}
+          {t(
+            "Convert your long URL into a short, shareable link",
+            "حوّل رابطك الطويل إلى رابط قصير قابل للمشاركة",
+          )}
         </p>
 
         <div className="space-y-6">
@@ -213,7 +260,10 @@ const CreateLink = () => {
               disabled={isSubmitting}
             />
             <p className="text-xs text-muted-foreground font-body">
-              {t("Enter the long URL you want to shorten", "أدخل الرابط الطويل اللي تبي تختصره")}
+              {t(
+                "Enter the long URL you want to shorten",
+                "أدخل الرابط الطويل اللي تبي تختصره",
+              )}
             </p>
           </div>
 
@@ -231,7 +281,10 @@ const CreateLink = () => {
               disabled={isSubmitting}
             />
             <p className="text-xs text-muted-foreground font-body">
-              {t("Give your link a memorable name", "أعط رابطك اسماً يسهل تذكره")}
+              {t(
+                "Give your link a memorable name",
+                "أعط رابطك اسماً يسهل تذكره",
+              )}
             </p>
           </div>
 
@@ -254,7 +307,8 @@ const CreateLink = () => {
               >
                 {availableDomains.map((domain: any) => (
                   <option key={domain.id} value={domain.id}>
-                    {domain.fullDomain} {domain.isDefault ? `(${t("Default", "افتراضي")})` : ''}
+                    {domain.fullDomain}{" "}
+                    {domain.isDefault ? `(${t("Default", "افتراضي")})` : ""}
                   </option>
                 ))}
               </select>
@@ -271,16 +325,21 @@ const CreateLink = () => {
               {t("Your Short Link:", "رابطك القصير:")}{" "}
               <span className="text-primary">
                 {selectedDomainId
-                  ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.shortUrl || 'https://...'}/${customAlias || "your-code"}`
-                  : `https://.../${customAlias || "your-code"}`
-                }
+                  ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.shortUrl || "https://..."}/${customAlias || "your-code"}`
+                  : `https://.../${customAlias || "your-code"}`}
               </span>
             </p>
             <div className="flex items-center gap-2 mt-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
               <Globe className="w-4 h-4 text-primary shrink-0" />
               <p className="text-xs font-body text-foreground/70">
-                {t("Want to use your own brand domain?", "تبي تستخدم دومين علامتك التجارية؟")}{" "}
-                <Link to="/dashboard/domains" className="text-primary font-semibold hover:underline">
+                {t(
+                  "Want to use your own brand domain?",
+                  "تبي تستخدم دومين علامتك التجارية؟",
+                )}{" "}
+                <Link
+                  to="/dashboard/domains"
+                  className="text-primary font-semibold hover:underline"
+                >
                   {t("Add a custom domain", "أضف دومين مخصص")}
                 </Link>
               </p>
@@ -296,8 +355,8 @@ const CreateLink = () => {
             <div className="flex">
               <div className="flex items-center px-3 bg-muted border border-e-0 border-border rounded-s-md text-sm text-muted-foreground font-body">
                 {selectedDomainId
-                  ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.fullDomain || '...'}/`
-                  : '.../'}
+                  ? `${availableDomains.find((d: any) => d.id === selectedDomainId)?.fullDomain || "..."}/`
+                  : ".../"}
               </div>
               <Input
                 placeholder={t("mycustomlink", "رابطي_المخصص")}
@@ -308,7 +367,10 @@ const CreateLink = () => {
               />
             </div>
             <p className="text-xs text-muted-foreground font-body">
-              {t("Leave empty for auto generated code", "اتركه فاضي لكود تلقائي")}
+              {t(
+                "Leave empty for auto generated code",
+                "اتركه فاضي لكود تلقائي",
+              )}
             </p>
           </div>
 
@@ -344,7 +406,10 @@ const CreateLink = () => {
                     {t("Add UTM Parameters", "إضافة معاملات UTM")}
                   </p>
                   <p className="text-xs text-muted-foreground font-body">
-                    {t("Track campaign performance in analytics", "تتبع أداء الحملة في التحليلات")}
+                    {t(
+                      "Track campaign performance in analytics",
+                      "تتبع أداء الحملة في التحليلات",
+                    )}
                   </p>
                 </div>
               </div>
@@ -363,10 +428,15 @@ const CreateLink = () => {
                   <div className="space-y-1.5">
                     <Label className="text-sm text-foreground font-body">
                       {t("Source", "المصدر")}{" "}
-                      <span className="text-muted-foreground text-xs font-mono">utm_source</span>
+                      <span className="text-muted-foreground text-xs font-mono">
+                        utm_source
+                      </span>
                     </Label>
                     <Input
-                      placeholder={t("google, newsletter, twitter", "google, newsletter, twitter")}
+                      placeholder={t(
+                        "google, newsletter, twitter",
+                        "google, newsletter, twitter",
+                      )}
                       value={utmSource}
                       onChange={(e) => setUtmSource(e.target.value)}
                       disabled={isSubmitting}
@@ -377,10 +447,15 @@ const CreateLink = () => {
                   <div className="space-y-1.5">
                     <Label className="text-sm text-foreground font-body">
                       {t("Medium", "الوسيلة")}{" "}
-                      <span className="text-muted-foreground text-xs font-mono">utm_medium</span>
+                      <span className="text-muted-foreground text-xs font-mono">
+                        utm_medium
+                      </span>
                     </Label>
                     <Input
-                      placeholder={t("cpc, email, social", "cpc, email, social")}
+                      placeholder={t(
+                        "cpc, email, social",
+                        "cpc, email, social",
+                      )}
                       value={utmMedium}
                       onChange={(e) => setUtmMedium(e.target.value)}
                       disabled={isSubmitting}
@@ -391,10 +466,15 @@ const CreateLink = () => {
                   <div className="space-y-1.5">
                     <Label className="text-sm text-foreground font-body">
                       {t("Campaign", "الحملة")}{" "}
-                      <span className="text-muted-foreground text-xs font-mono">utm_campaign</span>
+                      <span className="text-muted-foreground text-xs font-mono">
+                        utm_campaign
+                      </span>
                     </Label>
                     <Input
-                      placeholder={t("spring_sale, product_launch", "spring_sale, product_launch")}
+                      placeholder={t(
+                        "spring_sale, product_launch",
+                        "spring_sale, product_launch",
+                      )}
                       value={utmCampaign}
                       onChange={(e) => setUtmCampaign(e.target.value)}
                       disabled={isSubmitting}
@@ -405,10 +485,15 @@ const CreateLink = () => {
                   <div className="space-y-1.5">
                     <Label className="text-sm text-foreground font-body">
                       {t("Term", "الكلمة المفتاحية")}{" "}
-                      <span className="text-muted-foreground text-xs font-mono">utm_term</span>
+                      <span className="text-muted-foreground text-xs font-mono">
+                        utm_term
+                      </span>
                     </Label>
                     <Input
-                      placeholder={t("running+shoes, seo+keyword", "running+shoes, seo+keyword")}
+                      placeholder={t(
+                        "running+shoes, seo+keyword",
+                        "running+shoes, seo+keyword",
+                      )}
                       value={utmTerm}
                       onChange={(e) => setUtmTerm(e.target.value)}
                       disabled={isSubmitting}
@@ -420,10 +505,15 @@ const CreateLink = () => {
                 <div className="space-y-1.5">
                   <Label className="text-sm text-foreground font-body">
                     {t("Content", "المحتوى")}{" "}
-                    <span className="text-muted-foreground text-xs font-mono">utm_content</span>
+                    <span className="text-muted-foreground text-xs font-mono">
+                      utm_content
+                    </span>
                   </Label>
                   <Input
-                    placeholder={t("logolink, textlink, banner_top", "logolink, textlink, banner_top")}
+                    placeholder={t(
+                      "logolink, textlink, banner_top",
+                      "logolink, textlink, banner_top",
+                    )}
                     value={utmContent}
                     onChange={(e) => setUtmContent(e.target.value)}
                     disabled={isSubmitting}
@@ -469,7 +559,7 @@ const CreateLink = () => {
                 <p className="text-xs text-muted-foreground font-body">
                   {t(
                     "UTM parameters will be appended to the destination URL when the link is visited.",
-                    "ستضاف معاملات UTM إلى رابط الوجهة عند زيارة الرابط."
+                    "ستضاف معاملات UTM إلى رابط الوجهة عند زيارة الرابط.",
                   )}
                 </p>
               </div>

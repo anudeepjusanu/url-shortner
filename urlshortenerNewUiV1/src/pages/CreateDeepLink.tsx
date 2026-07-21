@@ -24,6 +24,7 @@ import {
 import { urlsAPI, appRegistrationAPI, deepLinkAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 interface AppRegistration {
   _id: string;
@@ -31,7 +32,11 @@ interface AppRegistration {
   bundleId?: string;
   packageName?: string;
   webFallbackUrl: string;
-  screenMappings: Array<{ name: string; path: string; params?: Array<{ key: string }> }>;
+  screenMappings: Array<{
+    name: string;
+    path: string;
+    params?: Array<{ key: string }>;
+  }>;
 }
 
 interface ShortUrl {
@@ -55,6 +60,7 @@ interface ParamEntry {
 }
 
 export default function CreateDeepLink() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const { urlId } = useParams<{ urlId?: string }>();
   const isEdit = !!urlId;
@@ -88,7 +94,9 @@ export default function CreateDeepLink() {
   });
 
   const createUrls: ShortUrl[] = (urlsData as any)?.data?.urls ?? [];
-  const editUrl: ShortUrl | null = isEdit ? ((editUrlData as any)?.data?.url ?? null) : null;
+  const editUrl: ShortUrl | null = isEdit
+    ? ((editUrlData as any)?.data?.url ?? null)
+    : null;
   const urls: ShortUrl[] = isEdit ? (editUrl ? [editUrl] : []) : createUrls;
 
   // Load app registrations
@@ -103,13 +111,23 @@ export default function CreateDeepLink() {
   useEffect(() => {
     if (!isEdit || !editUrl?.deepLink?.enabled) return;
     setSelectedUrlId(urlId!);
-    setSelectedAppId((editUrl.deepLink.appRegistration as any)?._id ?? editUrl.deepLink.appRegistration ?? "");
+    setSelectedAppId(
+      (editUrl.deepLink.appRegistration as any)?._id ??
+        editUrl.deepLink.appRegistration ??
+        "",
+    );
     // Map null/undefined screen back to empty string for the Select control
     setSelectedScreen(editUrl.deepLink.screen ?? "");
     setWebFallbackOverride(editUrl.deepLink.webFallbackUrl ?? "");
-    if (editUrl.deepLink.params && Object.keys(editUrl.deepLink.params).length > 0) {
+    if (
+      editUrl.deepLink.params &&
+      Object.keys(editUrl.deepLink.params).length > 0
+    ) {
       setParams(
-        Object.entries(editUrl.deepLink.params).map(([key, value]) => ({ key, value: String(value) }))
+        Object.entries(editUrl.deepLink.params).map(([key, value]) => ({
+          key,
+          value: String(value),
+        })),
       );
     }
   }, [editUrl, urlId, isEdit]);
@@ -148,7 +166,12 @@ export default function CreateDeepLink() {
     setFormError("");
 
     if (!selectedUrlId) {
-      setFormError(t("Select a short URL to attach the deep link to", "اختر رابطاً مختصراً لإرفاق الرابط العميق به"));
+      setFormError(
+        t(
+          "Select a short URL to attach the deep link to",
+          "اختر رابطاً مختصراً لإرفاق الرابط العميق به",
+        ),
+      );
       return;
     }
     if (!selectedAppId) {
@@ -160,7 +183,12 @@ export default function CreateDeepLink() {
       try {
         new URL(webFallbackOverride);
       } catch {
-        setFormError(t("Web fallback override must be a valid URL", "يجب أن يكون رابط الاحتياطي صالحاً"));
+        setFormError(
+          t(
+            "Web fallback override must be a valid URL",
+            "يجب أن يكون رابط الاحتياطي صالحاً",
+          ),
+        );
         return;
       }
     }
@@ -176,7 +204,8 @@ export default function CreateDeepLink() {
         enabled: true,
         appRegistration: selectedAppId,
         // "_home" is a UI sentinel meaning "open home screen" — translate to null before saving
-        screen: (selectedScreen && selectedScreen !== "_home") ? selectedScreen : null,
+        screen:
+          selectedScreen && selectedScreen !== "_home" ? selectedScreen : null,
         params: Object.keys(paramsRecord).length > 0 ? paramsRecord : null,
         webFallbackUrl: webFallbackOverride.trim() || null,
       },
@@ -184,13 +213,18 @@ export default function CreateDeepLink() {
   };
 
   const addParam = () => setParams((prev) => [...prev, { key: "", value: "" }]);
-  const removeParam = (i: number) => setParams((prev) => prev.filter((_, idx) => idx !== i));
+  const removeParam = (i: number) =>
+    setParams((prev) => prev.filter((_, idx) => idx !== i));
   const updateParam = (i: number, field: "key" | "value", val: string) =>
-    setParams((prev) => prev.map((p, idx) => (idx === i ? { ...p, [field]: val } : p)));
+    setParams((prev) =>
+      prev.map((p, idx) => (idx === i ? { ...p, [field]: val } : p)),
+    );
 
   const getUrlLabel = (url: ShortUrl) => {
     const code = url.customCode || url.shortCode;
-    return url.title ? `${url.title} (/${code})` : `/${code} — ${url.originalUrl.slice(0, 50)}`;
+    return url.title
+      ? `${url.title} (/${code})`
+      : `/${code} — ${url.originalUrl.slice(0, 50)}`;
   };
 
   const isLoading = (isEdit ? editUrlLoading : urlsLoading) || appsLoading;
@@ -205,7 +239,11 @@ export default function CreateDeepLink() {
             size="icon"
             onClick={() => navigate("/dashboard/deep-links")}
           >
-            {isAr ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {isAr ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">
@@ -216,7 +254,7 @@ export default function CreateDeepLink() {
             <p className="text-sm text-muted-foreground mt-0.5">
               {t(
                 "Attach deep link routing to an existing short URL",
-                "أرفق توجيه الرابط العميق برابط مختصر موجود"
+                "أرفق توجيه الرابط العميق برابط مختصر موجود",
               )}
             </p>
           </div>
@@ -230,7 +268,7 @@ export default function CreateDeepLink() {
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {t(
                   "You need to register an app first before creating a deep link.",
-                  "تحتاج إلى تسجيل تطبيق أولاً قبل إنشاء رابط عميق."
+                  "تحتاج إلى تسجيل تطبيق أولاً قبل إنشاء رابط عميق.",
                 )}
               </p>
               <Button
@@ -261,7 +299,10 @@ export default function CreateDeepLink() {
                 <Select value={selectedUrlId} onValueChange={setSelectedUrlId}>
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={t("Select a short URL…", "اختر رابطاً مختصراً…")}
+                      placeholder={t(
+                        "Select a short URL…",
+                        "اختر رابطاً مختصراً…",
+                      )}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -276,7 +317,7 @@ export default function CreateDeepLink() {
               <p className="text-xs text-muted-foreground">
                 {t(
                   "The deep link will be accessible at /dl/{shortCode}",
-                  "سيكون الرابط العميق متاحاً على /dl/{shortCode}"
+                  "سيكون الرابط العميق متاحاً على /dl/{shortCode}",
                 )}
               </p>
             </div>
@@ -330,16 +371,23 @@ export default function CreateDeepLink() {
                   >
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={t("Home screen (default)", "الشاشة الرئيسية (افتراضي)")}
+                        placeholder={t(
+                          "Home screen (default)",
+                          "الشاشة الرئيسية (افتراضي)",
+                        )}
                       />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_home">
-                        {t("Home screen (default)", "الشاشة الرئيسية (افتراضي)")}
+                        {t(
+                          "Home screen (default)",
+                          "الشاشة الرئيسية (افتراضي)",
+                        )}
                       </SelectItem>
                       {screenOptions.map((s) => (
                         <SelectItem key={s.name} value={s.name}>
-                          {s.name} — <span className="font-mono text-xs">{s.path}</span>
+                          {s.name} —{" "}
+                          <span className="font-mono text-xs">{s.path}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -348,7 +396,7 @@ export default function CreateDeepLink() {
                   <div className="text-xs text-muted-foreground border rounded-lg px-3 py-2">
                     {t(
                       "No screens configured for this app. The app will open to its home screen.",
-                      "لا توجد شاشات مهيأة لهذا التطبيق. سيفتح التطبيق على شاشته الرئيسية."
+                      "لا توجد شاشات مهيأة لهذا التطبيق. سيفتح التطبيق على شاشته الرئيسية.",
                     )}
                   </div>
                 )}
@@ -403,7 +451,7 @@ export default function CreateDeepLink() {
               <p className="text-xs text-muted-foreground">
                 {t(
                   "Passed to the app after deferred link matching or Universal Link resolution",
-                  "يتم تمريرها إلى التطبيق بعد مطابقة الرابط المؤجل أو حل Universal Link"
+                  "يتم تمريرها إلى التطبيق بعد مطابقة الرابط المؤجل أو حل Universal Link",
                 )}
               </p>
             </div>
@@ -429,11 +477,11 @@ export default function CreateDeepLink() {
                 {selectedApp
                   ? t(
                       `Leave empty to use the app's default: ${selectedApp.webFallbackUrl}`,
-                      `اتركه فارغاً لاستخدام الافتراضي للتطبيق: ${selectedApp.webFallbackUrl}`
+                      `اتركه فارغاً لاستخدام الافتراضي للتطبيق: ${selectedApp.webFallbackUrl}`,
                     )
                   : t(
                       "Override the app-level web fallback URL for this specific deep link",
-                      "تجاوز رابط الصفحة الاحتياطية على مستوى التطبيق لهذا الرابط العميق تحديداً"
+                      "تجاوز رابط الصفحة الاحتياطية على مستوى التطبيق لهذا الرابط العميق تحديداً",
                     )}
               </p>
             </div>
@@ -446,7 +494,10 @@ export default function CreateDeepLink() {
         {/* Actions */}
         {!isLoading && (
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => navigate("/dashboard/deep-links")}>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard/deep-links")}
+            >
               {t("Cancel", "إلغاء")}
             </Button>
             <Button
@@ -456,7 +507,9 @@ export default function CreateDeepLink() {
               {saveMutation.isPending && (
                 <Loader2 className="w-4 h-4 animate-spin me-2" />
               )}
-              {isEdit ? t("Save changes", "حفظ التغييرات") : t("Create Deep Link", "إنشاء رابط عميق")}
+              {isEdit
+                ? t("Save changes", "حفظ التغييرات")
+                : t("Create Deep Link", "إنشاء رابط عميق")}
             </Button>
           </div>
         )}

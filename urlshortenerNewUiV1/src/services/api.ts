@@ -84,6 +84,14 @@ const endpoints = {
     browsers: "/google-analytics/browsers",
     dashboard: "/google-analytics/dashboard",
   },
+  projects: {
+    list: "/projects",
+    create: "/projects",
+  },
+  account: {
+    members: "/account/members",
+    invitations: "/account/invitations",
+  },
 } as const;
 
 // HTTP client class
@@ -348,7 +356,9 @@ export const authAPI = {
 
       if (!res.ok) {
         throw new Error(
-          response.message || `HTTP ${res.status}: ${res.statusText}`,
+          response.message ||
+            response.error ||
+            `HTTP ${res.status}: ${res.statusText}`,
         );
       }
 
@@ -395,7 +405,9 @@ export const authAPI = {
 
       if (!res.ok) {
         throw new Error(
-          response.message || `HTTP ${res.status}: ${res.statusText}`,
+          response.message ||
+            response.error ||
+            `HTTP ${res.status}: ${res.statusText}`,
         );
       }
 
@@ -751,6 +763,46 @@ export const googleAnalyticsAPI = {
     apiClient.get(endpoints.googleAnalytics.dashboard, params),
 };
 
+// Enterprise RBAC: projects API methods
+export const projectsAPI = {
+  list: () => apiClient.get(endpoints.projects.list),
+  create: (name: string) => apiClient.post(endpoints.projects.create, { name }),
+  get: (projectId: string) =>
+    apiClient.get(`${endpoints.projects.list}/${projectId}`),
+  listMembers: (projectId: string) =>
+    apiClient.get(`${endpoints.projects.list}/${projectId}/members`),
+  addExistingUser: (projectId: string, userId: string, role: string) =>
+    apiClient.post(`${endpoints.projects.list}/${projectId}/members`, {
+      userId,
+      role,
+    }),
+  changeMemberRole: (projectId: string, userId: string, role: string) =>
+    apiClient.put(`${endpoints.projects.list}/${projectId}/members/${userId}`, {
+      role,
+    }),
+  removeMember: (projectId: string, userId: string) =>
+    apiClient.delete(
+      `${endpoints.projects.list}/${projectId}/members/${userId}`,
+    ),
+};
+
+// Enterprise RBAC: account-wide member/invitation API methods
+export const accountMembersAPI = {
+  getOverview: () => apiClient.get(endpoints.account.members),
+  getMemberDetail: (userId: string) =>
+    apiClient.get(`${endpoints.account.members}/${userId}`),
+  removeFromAccount: (userId: string) =>
+    apiClient.delete(`${endpoints.account.members}/${userId}`),
+  invite: (
+    email: string,
+    projectRoles: { projectId: string; role: string }[],
+  ) => apiClient.post(endpoints.account.invitations, { email, projectRoles }),
+  cancelInvitation: (invitationId: string) =>
+    apiClient.delete(`${endpoints.account.invitations}/${invitationId}`),
+  acceptInvitation: (token: string) =>
+    apiClient.post(`${endpoints.account.invitations}/${token}/accept`),
+};
+
 // Bio Pages API methods
 export const bioPageAPI = {
   // CRUD (authenticated)
@@ -814,13 +866,20 @@ export const deepLinkAPI = {
 };
 
 export const dynamicQRCodeAPI = {
-  list: (params?: { page?: number; limit?: number; search?: string }) =>
-    apiClient.get("/dynamic-qr", params),
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    /** Enterprise RBAC: scopes the list to one project. Omit only as the Account Owner viewing "All projects". */
+    projectId?: string;
+  }) => apiClient.get("/dynamic-qr", params),
   get: (id: string) => apiClient.get(`/dynamic-qr/${id}`),
   create: (data: {
     name: string;
     destinationUrl: string;
     customization?: Record<string, unknown>;
+    /** Enterprise RBAC: the project this code is created in. Required for enterprise accounts. */
+    projectId?: string;
   }) => apiClient.post("/dynamic-qr", data),
   update: (
     id: string,

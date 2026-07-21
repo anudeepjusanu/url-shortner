@@ -1,25 +1,26 @@
-const dns = require('dns').promises;
-const Domain = require('../models/Domain');
-const sslProvisioningService = require('./sslProvisioningService');
+const dns = require("dns").promises;
+const Domain = require("../models/Domain");
+const sslProvisioningService = require("./sslProvisioningService");
+const logger = require("../config/logger");
 
 class DomainService {
   constructor() {
-    this.cnameTarget = process.env.CNAME_TARGET || 'laghhu.link';
+    this.cnameTarget = process.env.CNAME_TARGET || "laghhu.link";
     this.verificationTimeout = 10000; // 10 seconds timeout for DNS queries
   }
 
-  async verifyDNSRecord(domain, recordType = 'CNAME', expectedValue = null) {
+  async verifyDNSRecord(domain, recordType = "CNAME", expectedValue = null) {
     try {
       const options = { timeout: this.verificationTimeout };
       const fullDomain = domain.toLowerCase().trim();
       const targetValue = expectedValue || this.cnameTarget;
 
       switch (recordType.toUpperCase()) {
-        case 'CNAME':
+        case "CNAME":
           return await this.verifyCNAME(fullDomain, targetValue, options);
-        case 'A':
+        case "A":
           return await this.verifyARecord(fullDomain, targetValue, options);
-        case 'TXT':
+        case "TXT":
           return await this.verifyTXTRecord(fullDomain, targetValue, options);
         default:
           throw new Error(`Unsupported DNS record type: ${recordType}`);
@@ -28,7 +29,7 @@ class DomainService {
       return {
         verified: false,
         error: error.message,
-        details: null
+        details: null,
       };
     }
   }
@@ -36,37 +37,39 @@ class DomainService {
   async verifyCNAME(domain, targetValue, options = {}) {
     try {
       const records = await dns.resolveCname(domain);
-      
+
       // Normalize target value by removing trailing dots and converting to lowercase
-      const normalizedTarget = targetValue.toLowerCase().replace(/\.$/, '');
-      
+      const normalizedTarget = targetValue.toLowerCase().replace(/\.$/, "");
+
       // Check if any record matches the target
-      const verified = records.some(record => {
+      const verified = records.some((record) => {
         // Normalize record by removing trailing dots and converting to lowercase
-        const normalizedRecord = record.toLowerCase().replace(/\.$/, '');
-        
+        const normalizedRecord = record.toLowerCase().replace(/\.$/, "");
+
         // Check for exact match
         if (normalizedRecord === normalizedTarget) {
           return true;
         }
-        
+
         // Check if record ends with target (handles subdomains)
         // e.g., "www.laghhu.link" should match "laghhu.link"
         if (normalizedRecord.endsWith(`.${normalizedTarget}`)) {
           return true;
         }
-        
+
         // Check if target ends with record (reverse case)
         if (normalizedTarget.endsWith(`.${normalizedRecord}`)) {
           return true;
         }
-        
+
         // Check if either contains the other (original logic, kept for compatibility)
-        if (normalizedRecord.includes(normalizedTarget) || 
-            normalizedTarget.includes(normalizedRecord)) {
+        if (
+          normalizedRecord.includes(normalizedTarget) ||
+          normalizedTarget.includes(normalizedRecord)
+        ) {
           return true;
         }
-        
+
         return false;
       });
 
@@ -74,16 +77,16 @@ class DomainService {
         verified,
         records,
         expected: targetValue,
-        recordType: 'CNAME'
+        recordType: "CNAME",
       };
     } catch (error) {
-      if (error.code === 'ENODATA') {
+      if (error.code === "ENODATA") {
         return {
           verified: false,
-          error: 'No CNAME record found',
+          error: "No CNAME record found",
           records: [],
           expected: targetValue,
-          recordType: 'CNAME'
+          recordType: "CNAME",
         };
       }
       throw error;
@@ -99,16 +102,16 @@ class DomainService {
         verified,
         records,
         expected: targetValue,
-        recordType: 'A'
+        recordType: "A",
       };
     } catch (error) {
-      if (error.code === 'ENODATA') {
+      if (error.code === "ENODATA") {
         return {
           verified: false,
-          error: 'No A record found',
+          error: "No A record found",
           records: [],
           expected: targetValue,
-          recordType: 'A'
+          recordType: "A",
         };
       }
       throw error;
@@ -119,22 +122,24 @@ class DomainService {
     try {
       const records = await dns.resolveTxt(domain);
       const flatRecords = records.flat();
-      const verified = flatRecords.some(record => record.includes(targetValue));
+      const verified = flatRecords.some((record) =>
+        record.includes(targetValue),
+      );
 
       return {
         verified,
         records: flatRecords,
         expected: targetValue,
-        recordType: 'TXT'
+        recordType: "TXT",
       };
     } catch (error) {
-      if (error.code === 'ENODATA') {
+      if (error.code === "ENODATA") {
         return {
           verified: false,
-          error: 'No TXT record found',
+          error: "No TXT record found",
           records: [],
           expected: targetValue,
-          recordType: 'TXT'
+          recordType: "TXT",
         };
       }
       throw error;
@@ -145,73 +150,84 @@ class DomainService {
     try {
       const domain = await Domain.findById(domainId);
       if (!domain) {
-        throw new Error('Domain not found');
+        throw new Error("Domain not found");
       }
 
-      console.log('🔍 Verifying domain:', {
+      logger.info("🔍 Verifying domain:", {
         domainId,
         fullDomain: domain.fullDomain,
         expectedTarget: domain.verificationRecord.value,
-        recordType: domain.verificationRecord.type
+        recordType: domain.verificationRecord.type,
       });
 
       const verification = await this.verifyDNSRecord(
         domain.fullDomain,
         domain.verificationRecord.type,
-        domain.verificationRecord.value
+        domain.verificationRecord.value,
       );
 
-      console.log('📋 DNS Verification result:', {
+      logger.info("📋 DNS Verification result:", {
         verified: verification.verified,
         records: verification.records,
         expected: verification.expected,
-        error: verification.error
+        error: verification.error,
       });
 
       domain.verificationRecord.lastChecked = new Date();
 
       if (verification.verified) {
         await domain.markAsVerified();
-        console.log('✅ Domain verified successfully:', domain.fullDomain);
+        logger.info("✅ Domain verified successfully:", domain.fullDomain);
 
         // Delay SSL provisioning by 2 minutes after DNS verification.
         // Let's Encrypt uses different DNS resolvers than our verification check —
         // the delay ensures DNS has fully propagated to their resolvers before certbot runs,
         // preventing NXDOMAIN failures even when our check passed.
-        setTimeout(() => {
-          sslProvisioningService.provision(domain._id.toString()).catch(err => {
-            console.error(`[SSL] Auto-provisioning failed for ${domain.fullDomain}:`, err.message);
-          });
-        }, 2 * 60 * 1000);
+        setTimeout(
+          () => {
+            sslProvisioningService
+              .provision(domain._id.toString())
+              .catch((err) => {
+                logger.error(
+                  `[SSL] Auto-provisioning failed for ${domain.fullDomain}:`,
+                  err.message,
+                );
+              });
+          },
+          2 * 60 * 1000,
+        );
 
         return {
           success: true,
           verified: true,
           domain: domain.fullDomain,
-          message: 'Domain verification successful. SSL provisioning started automatically.'
+          message:
+            "Domain verification successful. SSL provisioning started automatically.",
         };
       } else {
-        await domain.markVerificationFailed(verification.error || 'DNS verification failed');
-        console.log('❌ Domain verification failed:', {
+        await domain.markVerificationFailed(
+          verification.error || "DNS verification failed",
+        );
+        logger.info("❌ Domain verification failed:", {
           domain: domain.fullDomain,
           error: verification.error,
           records: verification.records,
-          expected: verification.expected
+          expected: verification.expected,
         });
         return {
           success: false,
           verified: false,
           domain: domain.fullDomain,
-          error: verification.error || 'DNS verification failed',
-          details: verification
+          error: verification.error || "DNS verification failed",
+          details: verification,
         };
       }
     } catch (error) {
-      console.error('❌ Domain verification error:', error);
+      logger.error("❌ Domain verification error:", error);
       return {
         success: false,
         verified: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -219,11 +235,11 @@ class DomainService {
   async bulkVerifyDomains() {
     try {
       const pendingDomains = await Domain.find({
-        verificationStatus: { $in: ['pending', 'failed'] },
+        verificationStatus: { $in: ["pending", "failed"] },
         $or: [
-          { 'verificationRecord.nextCheck': { $lte: new Date() } },
-          { 'verificationRecord.nextCheck': { $exists: false } }
-        ]
+          { "verificationRecord.nextCheck": { $lte: new Date() } },
+          { "verificationRecord.nextCheck": { $exists: false } },
+        ],
       });
 
       const results = [];
@@ -233,42 +249,43 @@ class DomainService {
         results.push({
           domainId: domain._id,
           domain: domain.fullDomain,
-          ...result
+          ...result,
         });
 
         // Rate limiting to avoid overwhelming DNS servers
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       return {
         success: true,
         totalChecked: results.length,
-        verified: results.filter(r => r.verified).length,
-        failed: results.filter(r => !r.verified).length,
-        results
+        verified: results.filter((r) => r.verified).length,
+        failed: results.filter((r) => !r.verified).length,
+        results,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
 
-  async generateCNAMERecord(domain, subdomain = null) {
+  async generateCNAMERecord(domain, subdomain = null, cnameTarget = null) {
     const fullDomain = subdomain ? `${subdomain}.${domain}` : domain;
+    const target = cnameTarget || this.cnameTarget;
 
     return {
-      type: 'CNAME',
+      type: "CNAME",
       name: fullDomain,
-      value: this.cnameTarget,
-      description: `Point ${fullDomain} to ${this.cnameTarget}`,
+      value: target,
+      description: `Point ${fullDomain} to ${target}`,
       instructions: {
-        type: 'CNAME',
-        host: subdomain || '@',
-        value: this.cnameTarget,
-        ttl: 300
-      }
+        type: "CNAME",
+        host: subdomain || "@",
+        value: target,
+        ttl: 300,
+      },
     };
   }
 
@@ -278,22 +295,22 @@ class DomainService {
         dns.resolveCname(domain).catch(() => []),
         dns.resolve4(domain).catch(() => []),
         dns.resolveTxt(domain).catch(() => []),
-        dns.resolveMx(domain).catch(() => [])
+        dns.resolveMx(domain).catch(() => []),
       ]);
 
       return {
         domain,
-        cname: results[0].status === 'fulfilled' ? results[0].value : [],
-        a: results[1].status === 'fulfilled' ? results[1].value : [],
-        txt: results[2].status === 'fulfilled' ? results[2].value.flat() : [],
-        mx: results[3].status === 'fulfilled' ? results[3].value : [],
-        lastChecked: new Date()
+        cname: results[0].status === "fulfilled" ? results[0].value : [],
+        a: results[1].status === "fulfilled" ? results[1].value : [],
+        txt: results[2].status === "fulfilled" ? results[2].value.flat() : [],
+        mx: results[3].status === "fulfilled" ? results[3].value : [],
+        lastChecked: new Date(),
       };
     } catch (error) {
       return {
         domain,
         error: error.message,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       };
     }
   }
@@ -305,12 +322,12 @@ class DomainService {
 
       // Common DNS provider patterns
       const providerPatterns = {
-        'cloudflare': /cloudflare/i,
-        'namecheap': /namecheap/i,
-        'godaddy': /godaddy/i,
-        'amazon': /amazon|aws/i,
-        'google': /google/i,
-        'digitalocean': /digitalocean/i
+        cloudflare: /cloudflare/i,
+        namecheap: /namecheap/i,
+        godaddy: /godaddy/i,
+        amazon: /amazon|aws/i,
+        google: /google/i,
+        digitalocean: /digitalocean/i,
       };
 
       for (const ns of nsRecords) {
@@ -319,7 +336,7 @@ class DomainService {
             providers.push({
               name: provider,
               nameserver: ns,
-              detected: true
+              detected: true,
             });
           }
         }
@@ -327,54 +344,57 @@ class DomainService {
 
       if (providers.length === 0) {
         providers.push({
-          name: 'unknown',
-          nameserver: nsRecords[0] || 'unknown',
-          detected: false
+          name: "unknown",
+          nameserver: nsRecords[0] || "unknown",
+          detected: false,
         });
       }
 
       return providers;
     } catch (error) {
-      return [{
-        name: 'unknown',
-        error: error.message,
-        detected: false
-      }];
+      return [
+        {
+          name: "unknown",
+          error: error.message,
+          detected: false,
+        },
+      ];
     }
   }
 
-  getSetupInstructions(domain, recordType = 'CNAME') {
+  getSetupInstructions(domain, recordType = "CNAME", cnameTarget = null) {
+    const target = cnameTarget || this.cnameTarget;
     const instructions = {
       CNAME: {
-        title: 'Add CNAME Record',
+        title: "Add CNAME Record",
         steps: [
-          'Log into your domain registrar or DNS provider',
+          "Log into your domain registrar or DNS provider",
           `Find the DNS settings for ${domain}`,
-          'Add a new CNAME record with these values:',
+          "Add a new CNAME record with these values:",
           `  - Type: CNAME`,
           `  - Name: ${domain}`,
-          `  - Value: ${this.cnameTarget}`,
+          `  - Value: ${target}`,
           `  - TTL: 300 (or leave default)`,
-          'Save the changes',
-          'Wait for DNS propagation (up to 24 hours)',
-          'Click "Verify DNS" to check the configuration'
-        ]
+          "Save the changes",
+          "Wait for DNS propagation (up to 24 hours)",
+          'Click "Verify DNS" to check the configuration',
+        ],
       },
       A: {
-        title: 'Add A Record',
+        title: "Add A Record",
         steps: [
-          'Log into your domain registrar or DNS provider',
+          "Log into your domain registrar or DNS provider",
           `Find the DNS settings for ${domain}`,
-          'Add a new A record with these values:',
+          "Add a new A record with these values:",
           `  - Type: A`,
           `  - Name: ${domain}`,
           `  - Value: [Your server IP]`,
           `  - TTL: 300 (or leave default)`,
-          'Save the changes',
-          'Wait for DNS propagation (up to 24 hours)',
-          'Click "Verify DNS" to check the configuration'
-        ]
-      }
+          "Save the changes",
+          "Wait for DNS propagation (up to 24 hours)",
+          'Click "Verify DNS" to check the configuration',
+        ],
+      },
     };
 
     return instructions[recordType] || instructions.CNAME;

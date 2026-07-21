@@ -5,84 +5,111 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { useToast } from "@/hooks/use-toast";
 import { useMetaTags } from "@/hooks/useMetaTags";
-import { Eye, EyeOff, Zap, BarChart3, QrCode, Loader2, CheckCircle2, Circle, Globe } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Zap,
+  BarChart3,
+  QrCode,
+  Loader2,
+  CheckCircle2,
+  Circle,
+  Globe,
+} from "lucide-react";
 import logoIcon from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import amplitudeService from "@/services/amplitude";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 import MobileVerificationPopup from "@/components/MobileVerificationPopup";
 
-
 const COUNTRY_OPTIONS = [
-  { dialCode: "+966", flag: "🇸🇦", label: "SA", maxDigits: 9,  placeholder: "5XXXXXXXX"  },
+  {
+    dialCode: "+966",
+    flag: "🇸🇦",
+    label: "SA",
+    maxDigits: 9,
+    placeholder: "5XXXXXXXX",
+  },
   // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
 ];
 
 // Password strength rules matching backend validateRegistration
 const passwordRules = [
-  { key: "length",    test: (p: string) => p.length >= 8 },
-  { key: "lower",     test: (p: string) => /[a-z]/.test(p) },
-  { key: "upper",     test: (p: string) => /[A-Z]/.test(p) },
-  { key: "number",    test: (p: string) => /\d/.test(p) },
+  { key: "length", test: (p: string) => p.length >= 8 },
+  { key: "lower", test: (p: string) => /[a-z]/.test(p) },
+  { key: "upper", test: (p: string) => /[A-Z]/.test(p) },
+  { key: "number", test: (p: string) => /\d/.test(p) },
 ];
 
 const Signup = () => {
   const { t, isAr, lang, setLang } = useLanguage();
+  const brand = useBrand();
   const navigate = useNavigate();
-  const { register , googleLogin  } = useAuth();
+  const { register, googleLogin } = useAuth();
   const { toast } = useToast();
 
-  const [fullName, setFullName]   = useState("");
-  const [email, setEmail]         = useState("");
-  const [phone, setPhone]         = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(COUNTRY_OPTIONS[0]);
-  const [countryOpen, setCountryOpen]         = useState(false);
-  const [password, setPassword]   = useState("");
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword]       = useState(false);
-  const [showConfirm, setShowConfirm]         = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // OTP verification step
   const [otpStep, setOtpStep] = useState(false);
-  const [otp, setOtp]         = useState("");
+  const [otp, setOtp] = useState("");
 
   // Google SSO state (commented out)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(null);
+  const [googleSessionToken, setGoogleSessionToken] = useState<string | null>(
+    null,
+  );
   const [showMobileVerification, setShowMobileVerification] = useState(false);
 
   useEffect(() => {
-    amplitudeService.trackRegistrationStarted('direct');
+    amplitudeService.trackRegistrationStarted("direct");
   }, []);
 
   // Set meta tags based on language
+  const capitalizedBrand =
+    brand.name.charAt(0).toUpperCase() + brand.name.slice(1);
   useMetaTags({
-    title: lang === "ar"
-      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
-      : "Short Link Generator | Create Free Snip Account Today",
-    description: lang === "ar"
-      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
-      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
-    keywords: "short link generator, create account, free signup, URL shortener, UTM links, QR codes, link analytics, snip, تقصير الروابط, إنشاء حساب مجاني, اختصار الروابط",
-    ogTitle: lang === "ar"
-      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
-      : "Short Link Generator | Create Free Snip Account Today",
-    ogDescription: lang === "ar"
-      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
-      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
-    ogUrl: "https://snip.sa/signup",
-    ogImage: "https://snip.sa/og-image.png",
-    twitterTitle: lang === "ar"
-      ? "تقصير الروابط | إنشاء حساب مجاني في منصة Snip اليوم"
-      : "Short Link Generator | Create Free Snip Account Today",
-    twitterDescription: lang === "ar"
-      ? "أنشئ حسابك المجاني في Snip وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة."
-      : "Create your free account on Snip and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.",
-    twitterImage: "https://snip.sa/og-image.png",
-    canonical: "https://snip.sa/signup",
+    title:
+      lang === "ar"
+        ? `تقصير الروابط | إنشاء حساب مجاني في منصة ${capitalizedBrand} اليوم`
+        : `Short Link Generator | Create Free ${capitalizedBrand} Account Today`,
+    description:
+      lang === "ar"
+        ? `أنشئ حسابك المجاني في ${capitalizedBrand} وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.`
+        : `Create your free account on ${capitalizedBrand} and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.`,
+    keywords: `short link generator, create account, free signup, URL shortener, UTM links, QR codes, link analytics, ${brand.name}, تقصير الروابط, إنشاء حساب مجاني, اختصار الروابط`,
+    ogTitle:
+      lang === "ar"
+        ? `تقصير الروابط | إنشاء حساب مجاني في منصة ${capitalizedBrand} اليوم`
+        : `Short Link Generator | Create Free ${capitalizedBrand} Account Today`,
+    ogDescription:
+      lang === "ar"
+        ? `أنشئ حسابك المجاني في ${capitalizedBrand} وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.`
+        : `Create your free account on ${capitalizedBrand} and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.`,
+    ogUrl: `https://${brand.domain}/signup`,
+    ogImage: `https://${brand.domain}/og-image.png`,
+    twitterTitle:
+      lang === "ar"
+        ? `تقصير الروابط | إنشاء حساب مجاني في منصة ${capitalizedBrand} اليوم`
+        : `Short Link Generator | Create Free ${capitalizedBrand} Account Today`,
+    twitterDescription:
+      lang === "ar"
+        ? `أنشئ حسابك المجاني في ${capitalizedBrand} وابدأ تقصير الروابط، إنشاء روابط UTM وQR Code، وتتبع الإحصاءات لتحسين حملاتك التسويقية بسهولة.`
+        : `Create your free account on ${capitalizedBrand} and start using a short link generator, UTM links, QR codes, and analytics to improve your marketing campaigns.`,
+    twitterImage: `https://${brand.domain}/og-image.png`,
+    canonical: `https://${brand.domain}/signup`,
   });
 
   // ── Derived ──
@@ -100,13 +127,18 @@ const Signup = () => {
   // ── Validate before first submit ──
   const validate = (): string | null => {
     if (!fullName.trim() || fullName.trim().length < 2)
-      return t("Full name must be at least 2 characters", "الاسم الكامل يجب أن يكون حرفين على الأقل");
-    if (!email.trim())
-      return t("Email is required", "البريد الإلكتروني مطلوب");
+      return t(
+        "Full name must be at least 2 characters",
+        "الاسم الكامل يجب أن يكون حرفين على الأقل",
+      );
+    if (!email.trim()) return t("Email is required", "البريد الإلكتروني مطلوب");
     if (!phone.trim() || phone.trim().length < selectedCountry.maxDigits)
       return t("Phone number is required", "رقم الجوال مطلوب");
     if (!allRulesMet)
-      return t("Password does not meet requirements", "كلمة المرور لا تستوفي المتطلبات");
+      return t(
+        "Password does not meet requirements",
+        "كلمة المرور لا تستوفي المتطلبات",
+      );
     if (!passwordsMatch)
       return t("Passwords do not match", "كلمتا المرور غير متطابقتين");
     return null;
@@ -117,7 +149,11 @@ const Signup = () => {
     e.preventDefault();
     const err = validate();
     if (err) {
-      toast({ title: t("Validation Error", "خطأ في التحقق"), description: err, variant: "destructive" });
+      toast({
+        title: t("Validation Error", "خطأ في التحقق"),
+        description: err,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -138,12 +174,12 @@ const Signup = () => {
           title: t("OTP Sent", "تم إرسال رمز التحقق"),
           description: t(
             "Please check your mobile number for the 4-digit code",
-            "تحقق من رقم جوالك للحصول على الرمز المكون من 4 أرقام"
+            "تحقق من رقم جوالك للحصول على الرمز المكون من 4 أرقام",
           ),
         });
       } else {
         // Direct registration (no OTP required)
-        amplitudeService.track('Sign Up');
+        amplitudeService.track("Sign Up");
         toast({
           title: t("Registration Successful", "تم التسجيل بنجاح"),
           description: t("Welcome!", "مرحباً بك!"),
@@ -153,7 +189,12 @@ const Signup = () => {
     } catch (error: any) {
       toast({
         title: t("Registration Failed", "فشل التسجيل"),
-        description: error.message || t("Failed to create account. Please try again.", "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى."),
+        description:
+          error.message ||
+          t(
+            "Failed to create account. Please try again.",
+            "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+          ),
         variant: "destructive",
       });
     } finally {
@@ -179,7 +220,7 @@ const Signup = () => {
       const response = await register(payload);
 
       if (response?.success) {
-        amplitudeService.track('Sign Up');
+        amplitudeService.track("Sign Up");
         toast({
           title: t("Registration Successful", "تم التسجيل بنجاح"),
           description: t("Welcome!", "مرحباً بك!"),
@@ -189,7 +230,12 @@ const Signup = () => {
     } catch (error: any) {
       toast({
         title: t("Verification Failed", "فشل التحقق"),
-        description: error.message || t("Invalid or expired verification code", "رمز التحقق غير صحيح أو منتهي الصلاحية"),
+        description:
+          error.message ||
+          t(
+            "Invalid or expired verification code",
+            "رمز التحقق غير صحيح أو منتهي الصلاحية",
+          ),
         variant: "destructive",
       });
     } finally {
@@ -209,7 +255,10 @@ const Signup = () => {
           amplitudeService.track("login");
           toast({
             title: t("Login Successful", "تم تسجيل الدخول بنجاح"),
-            description: t("Welcome back! Your account already exists.", "مرحباً بعودتك! حسابك موجود مسبقاً."),
+            description: t(
+              "Welcome back! Your account already exists.",
+              "مرحباً بعودتك! حسابك موجود مسبقاً.",
+            ),
           });
           navigate("/dashboard");
         } else if (response.data.requiresPhoneVerification) {
@@ -221,7 +270,9 @@ const Signup = () => {
     } catch (error: any) {
       toast({
         title: t("Google Sign-Up Failed", "فشل التسجيل بحساب قوقل"),
-        description: error.message || t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
+        description:
+          error.message ||
+          t("Could not authenticate with Google", "تعذر المصادقة عبر قوقل"),
         variant: "destructive",
       });
     } finally {
@@ -248,7 +299,7 @@ const Signup = () => {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12 bg-muted/30">
         <div className="relative z-10 text-center max-w-md">
           <div className="flex items-center justify-center mb-10">
-            <img src={logoIcon} alt="snip.sa" className="h-20" />
+            <img src={logoIcon} alt={brand.domain} className="h-20" />
           </div>
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">
             {t("Start for free today", "ابدأ مجاناً اليوم")}
@@ -256,20 +307,31 @@ const Signup = () => {
           <p className="text-muted-foreground font-body text-lg mb-10">
             {t(
               "Create your account and start shortening links, generating QR codes, and tracking analytics.",
-              "أنشئ حسابك وابدأ باختصار الروابط وإنشاء أكواد QR وتتبع التحليلات."
+              "أنشئ حسابك وابدأ باختصار الروابط وإنشاء أكواد QR وتتبع التحليلات.",
             )}
           </p>
           <div className="space-y-4 text-start">
             {[
-              { icon: Zap,      label: t("Real-time analytics", "تحليلات لحظية") },
-              { icon: QrCode,   label: t("QR code generation", "إنشاء أكواد QR") },
-              { icon: BarChart3, label: t("Campaign tracking", "تتبع الحملات") },
+              { icon: Zap, label: t("Real-time analytics", "تحليلات لحظية") },
+              {
+                icon: QrCode,
+                label: t("QR code generation", "إنشاء أكواد QR"),
+              },
+              {
+                icon: BarChart3,
+                label: t("Campaign tracking", "تتبع الحملات"),
+              },
             ].map((f) => (
-              <div key={f.label} className="flex items-center gap-3 px-4 py-3 bg-background border border-border rounded-lg">
+              <div
+                key={f.label}
+                className="flex items-center gap-3 px-4 py-3 bg-background border border-border rounded-lg"
+              >
                 <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                   <f.icon className="w-4 h-4 text-primary" />
                 </div>
-                <span className="text-sm font-body text-foreground">{f.label}</span>
+                <span className="text-sm font-body text-foreground">
+                  {f.label}
+                </span>
               </div>
             ))}
           </div>
@@ -288,7 +350,7 @@ const Signup = () => {
 
         <div className="w-full max-w-md space-y-6">
           <div className="lg:hidden flex items-center justify-center mb-2">
-            <img src={logoIcon} alt="snip.sa" className="h-12" />
+            <img src={logoIcon} alt={brand.domain} className="h-12" />
           </div>
 
           <div className="text-center">
@@ -299,8 +361,14 @@ const Signup = () => {
             </h2>
             <p className="text-muted-foreground font-body mt-1 text-sm">
               {otpStep
-                ? t(`Code sent to ${selectedCountry.dialCode}${phone}`, `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phone}`)
-                : t("Get started for free — no credit card required", "ابدأ مجاناً — لا تحتاج إلى بطاقة ائتمان")}
+                ? t(
+                    `Code sent to ${selectedCountry.dialCode}${phone}`,
+                    `تم إرسال الرمز إلى ${selectedCountry.dialCode}${phone}`,
+                  )
+                : t(
+                    "Get started for free — no credit card required",
+                    "ابدأ مجاناً — لا تحتاج إلى بطاقة ائتمان",
+                  )}
             </p>
           </div>
 
@@ -324,7 +392,7 @@ const Signup = () => {
                 </div>
               </div>
             </div>
-          )} 
+          )}
 
           {/* ── OTP step ── */}
           {otpStep ? (
@@ -339,7 +407,9 @@ const Signup = () => {
                   inputMode="numeric"
                   placeholder="0000"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))
+                  }
                   className="h-12 text-center text-xl tracking-[0.6em] font-display"
                   dir="ltr"
                   maxLength={4}
@@ -354,7 +424,10 @@ const Signup = () => {
                 disabled={otp.length < 4 || isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Verifying...", "جاري التحقق...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Verifying...", "جاري التحقق...")}
+                  </>
                 ) : (
                   t("Verify & Create Account", "تحقق وأنشئ الحساب")
                 )}
@@ -362,7 +435,10 @@ const Signup = () => {
 
               <button
                 type="button"
-                onClick={() => { setOtpStep(false); setOtp(""); }}
+                onClick={() => {
+                  setOtpStep(false);
+                  setOtp("");
+                }}
                 className="w-full text-sm text-primary hover:underline font-body"
                 disabled={isLoading}
               >
@@ -420,9 +496,21 @@ const Signup = () => {
                       className="flex items-center gap-1.5 h-11 px-3 rounded-md border border-input bg-muted/50 text-sm font-body text-foreground hover:bg-muted transition-colors"
                     >
                       <span>{selectedCountry.flag}</span>
-                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
-                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <span className="text-muted-foreground">
+                        {selectedCountry.dialCode}
+                      </span>
+                      <svg
+                        className="w-3 h-3 text-muted-foreground"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {countryOpen && (
@@ -438,11 +526,14 @@ const Signup = () => {
                             }}
                             className={cn(
                               "w-full flex items-center gap-2 px-3 py-2 text-sm font-body hover:bg-muted transition-colors text-start",
-                              selectedCountry.dialCode === c.dialCode && "bg-muted"
+                              selectedCountry.dialCode === c.dialCode &&
+                                "bg-muted",
                             )}
                           >
                             <span>{c.flag}</span>
-                            <span className="text-muted-foreground">{c.dialCode}</span>
+                            <span className="text-muted-foreground">
+                              {c.dialCode}
+                            </span>
                             <span className="text-foreground">{c.label}</span>
                           </button>
                         ))}
@@ -454,7 +545,13 @@ const Signup = () => {
                     type="tel"
                     placeholder={selectedCountry.placeholder}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxDigits))}
+                    onChange={(e) =>
+                      setPhone(
+                        e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, selectedCountry.maxDigits),
+                      )
+                    }
                     className={cn("h-11", isAr && "text-right")}
                     maxLength={selectedCountry.maxDigits}
                     dir="ltr"
@@ -483,7 +580,11 @@ const Signup = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {showPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
 
@@ -492,10 +593,14 @@ const Signup = () => {
                   <div className="grid grid-cols-2 gap-1 pt-1">
                     {passwordRules.map((_, i) => (
                       <div key={i} className="flex items-center gap-1.5">
-                        {pwRulesMet[i]
-                          ? <CheckCircle2 className="w-3 h-3 text-green-600 shrink-0" />
-                          : <Circle className="w-3 h-3 text-muted-foreground shrink-0" />}
-                        <span className={`text-[10px] font-body ${pwRulesMet[i] ? "text-green-700" : "text-muted-foreground"}`}>
+                        {pwRulesMet[i] ? (
+                          <CheckCircle2 className="w-3 h-3 text-green-600 shrink-0" />
+                        ) : (
+                          <Circle className="w-3 h-3 text-muted-foreground shrink-0" />
+                        )}
+                        <span
+                          className={`text-[10px] font-body ${pwRulesMet[i] ? "text-green-700" : "text-muted-foreground"}`}
+                        >
                           {ruleLabels[i]}
                         </span>
                       </div>
@@ -506,7 +611,10 @@ const Signup = () => {
 
               {/* Confirm Password */}
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" className="text-foreground text-sm">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-foreground text-sm"
+                >
                   {t("Confirm Password", "تأكيد كلمة المرور")} *
                 </Label>
                 <div className="relative" dir="ltr">
@@ -516,8 +624,12 @@ const Signup = () => {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={cn(`h-11 pe-10`, isAr && "text-right",
-                      confirmPassword.length > 0 && !passwordsMatch ? "border-destructive" : ""
+                    className={cn(
+                      `h-11 pe-10`,
+                      isAr && "text-right",
+                      confirmPassword.length > 0 && !passwordsMatch
+                        ? "border-destructive"
+                        : "",
                     )}
                     required
                     dir="ltr"
@@ -527,7 +639,11 @@ const Signup = () => {
                     onClick={() => setShowConfirm(!showConfirm)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showConfirm ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {showConfirm ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {confirmPassword.length > 0 && !passwordsMatch && (
@@ -543,7 +659,10 @@ const Signup = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 me-2 animate-spin" />{t("Creating Account...", "جاري إنشاء الحساب...")}</>
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t("Creating Account...", "جاري إنشاء الحساب...")}
+                  </>
                 ) : (
                   t("Create Account", "إنشاء حساب")
                 )}
@@ -552,7 +671,7 @@ const Signup = () => {
               <p className="text-center text-xs text-muted-foreground font-body">
                 {t(
                   "By creating an account, you agree to our Terms & Conditions and Privacy Policy.",
-                  "بإنشاء حساب، فإنك توافق على الشروط والأحكام وسياسة الخصوصية."
+                  "بإنشاء حساب، فإنك توافق على الشروط والأحكام وسياسة الخصوصية.",
                 )}
               </p>
             </form>
@@ -560,7 +679,10 @@ const Signup = () => {
 
           <p className="text-center text-sm text-muted-foreground font-body">
             {t("Already have an account?", "عندك حساب؟")}{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
+            <Link
+              to="/login"
+              className="text-primary font-medium hover:underline"
+            >
               {t("Sign in", "سجل دخول")}
             </Link>
           </p>

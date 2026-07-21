@@ -1,17 +1,23 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const utmLinkSchema = new mongoose.Schema(
   {
     creator: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
     organization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Organization',
+      ref: "Organization",
       default: null,
+    },
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      default: null,
+      index: true,
     },
     name: { type: String, trim: true, default: null },
     destinationUrl: { type: String, required: true, trim: true },
@@ -27,4 +33,4 @@ const utmLinkSchema = new mongoose.Schema(
 
 utmLinkSchema.index({ creator: 1, createdAt: -1 });
 
-module.exports = mongoose.model('UtmLink', utmLinkSchema);
+module.exports = mongoose.model("UtmLink", utmLinkSchema);

@@ -1,13 +1,17 @@
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 const destinationHistorySchema = new mongoose.Schema(
   {
     url: { type: String, required: true, maxlength: 2048 },
     changedAt: { type: Date, default: Date.now },
-    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+    changedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const dynamicQRCodeSchema = new mongoose.Schema(
@@ -20,60 +24,78 @@ const dynamicQRCodeSchema = new mongoose.Schema(
       index: true,
       trim: true,
       minlength: 6,
-      maxlength: 20
+      maxlength: 20,
     },
     name: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 100
+      maxlength: 100,
     },
     // The URL scans are redirected to — this is what "dynamic" means
     destinationUrl: {
       type: String,
       required: true,
-      maxlength: 2048
+      maxlength: 2048,
+    },
+    // System domain this code's scanUrl was created under (e.g. qa.snip.sa
+    // vs qa.4r.sa) — pinned at creation so the displayed scanUrl doesn't
+    // drift if a second main domain is introduced later. Null for legacy
+    // codes created before this field existed.
+    domain: {
+      type: String,
+      default: null,
+      trim: true,
+      lowercase: true,
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     organization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Organization',
-      default: null
+      ref: "Organization",
+      default: null,
+    },
+    // Enterprise RBAC: which Project this dynamic QR code belongs to. Only
+    // set when `organization` is set. See
+    // claude-implementation-docs/Architecture/rbac-enterprise-project-roles.md
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      default: null,
     },
     isActive: {
       type: Boolean,
       default: true,
-      index: true
+      index: true,
     },
     customization: {
       size: { type: Number, default: 300, min: 100, max: 2000 },
       format: {
         type: String,
-        enum: ['png', 'jpeg', 'jpg', 'gif', 'webp', 'svg', 'pdf'],
-        default: 'png'
+        enum: ["png", "jpeg", "jpg", "gif", "webp", "svg", "pdf"],
+        default: "png",
       },
       errorCorrection: {
         type: String,
-        enum: ['L', 'M', 'Q', 'H'],
-        default: 'M'
+        enum: ["L", "M", "Q", "H"],
+        default: "M",
       },
       foregroundColor: {
         type: String,
-        default: '#000000',
-        match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+        default: "#000000",
+        match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
       },
       backgroundColor: {
         type: String,
-        default: '#FFFFFF',
-        match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+        default: "#FFFFFF",
+        match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
       },
       includeMargin: { type: Boolean, default: true },
-      logo: { type: String, default: null }
+      logo: { type: String, default: null },
     },
     scanCount: { type: Number, default: 0 },
     uniqueScanCount: { type: Number, default: 0 },
@@ -81,26 +103,27 @@ const dynamicQRCodeSchema = new mongoose.Schema(
     // Audit trail of destination changes
     destinationHistory: {
       type: [destinationHistorySchema],
-      default: []
+      default: [],
     },
     // Cached QR image as data URL; regenerated when customization changes
-    qrCodeData: { type: String, default: null }
+    qrCodeData: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 dynamicQRCodeSchema.index({ creator: 1, createdAt: -1 });
 dynamicQRCodeSchema.index({ organization: 1 });
+dynamicQRCodeSchema.index({ project: 1 });
 dynamicQRCodeSchema.index({ scanCount: -1 });
 
 // Generate a unique 8-char alphanumeric code using crypto
 dynamicQRCodeSchema.statics.generateUniqueCode = async function () {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const length = 8;
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const bytes = crypto.randomBytes(length);
-    let code = '';
+    let code = "";
     for (let i = 0; i < length; i++) {
       code += chars[bytes[i] % chars.length];
     }
@@ -109,7 +132,7 @@ dynamicQRCodeSchema.statics.generateUniqueCode = async function () {
     if (!exists) return code;
   }
 
-  throw new Error('Failed to generate a unique code after 10 attempts');
+  throw new Error("Failed to generate a unique code after 10 attempts");
 };
 
 dynamicQRCodeSchema.methods.incrementScan = async function (isUnique = false) {
@@ -118,4 +141,4 @@ dynamicQRCodeSchema.methods.incrementScan = async function (isUnique = false) {
   return this.updateOne({ $inc: inc, $set: { lastScannedAt: new Date() } });
 };
 
-module.exports = mongoose.model('DynamicQRCode', dynamicQRCodeSchema);
+module.exports = mongoose.model("DynamicQRCode", dynamicQRCodeSchema);

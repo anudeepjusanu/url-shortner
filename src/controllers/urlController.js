@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Url = require("../models/Url");
 const User = require("../models/User");
 const Domain = require("../models/Domain");
+const projectAccessService = require("../services/projectAccessService");
 const {
   generateShortCode,
   validateShortCode,
@@ -13,6 +14,18 @@ const config = require("../config/environment");
 const safeBrowsingService = require("../services/safeBrowsingService");
 const { triggerUrlScan } = require("../services/urlScanner/scanTrigger");
 const redirectService = require("../services/redirectService");
+const logger = require("../config/logger");
+const { resolvePublicDomain } = require("../utils/domainResolver");
+
+// Enterprise RBAC: projectAccessService throws ForbiddenError/NotFoundError/
+// ValidationError (each carrying a .statusCode) for ProjectId scope checks.
+// Returns true (and has already written the response) if `error` was one of
+// those, so the caller's catch block can just `if (sendIfAccessError(...)) return;`.
+const sendIfAccessError = (error, res) => {
+  if (!error.statusCode) return false;
+  res.status(error.statusCode).json({ success: false, message: error.message });
+  return true;
+};
 
 // Single source of truth for the public short-link base URL.
 // When the request came in on a recognized main domain (e.g. qa.snip.sa or
@@ -30,19 +43,7 @@ const getPublicBaseUrl = (req) => {
 
 // Derives the bare hostname from the canonical base URL so that both
 // fullDomain and shortUrl in responses are always consistent with each other.
-const getPublicBaseDomain = (req) => {
-  const requestHost = req?.get?.("host");
-  if (requestHost && redirectService.isMainDomain(requestHost)) {
-    return requestHost;
-  }
-  if (process.env.BASE_DOMAIN) return process.env.BASE_DOMAIN;
-  if (process.env.BASE_URL) {
-    try {
-      return new URL(process.env.BASE_URL).hostname;
-    } catch {}
-  }
-  return "snip.sa";
-};
+const getPublicBaseDomain = (req) => resolvePublicDomain(req);
 
 // Shared URL reachability check used by createUrl, updateUrl, and bulkCreate.
 // Returns { allowed: true } when the URL should be accepted, or
@@ -104,7 +105,7 @@ const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
   // For all other errors (timeout, connection reset, bad response, etc.)
   // Allow the URL since these could be temporary network issues or strict server configs
   // The URL format is already validated, so we trust it exists
-  console.log(
+  logger.info(
     `URL accessibility check inconclusive for ${cleanUrl}: ${errorMsg}. Allowing URL.`,
   );
   return { allowed: true };
@@ -280,7 +281,15 @@ const createUrl = async (req, res) => {
       domainId,
       generateQRCode = false, // Option to auto-generate QR code
       source: bodySource,
+      projectId,
     } = req.body;
+
+    // Enterprise RBAC: resolves to null for solo accounts; for enterprise
+    // accounts, requires projectId + a write-capable role and 403s Viewers.
+    const resolvedProjectId = await projectAccessService.resolveWriteProject(
+      req.user,
+      projectId,
+    );
 
     // Check usage limits before creating URL
     const usageCheck = await UsageTracker.canPerformAction(
@@ -308,17 +317,30 @@ const createUrl = async (req, res) => {
       });
     }
 
-    // Content safety is judged asynchronously by the url-scanner pipeline
-    // (triggerUrlScan below) — creation is never gated on it, so the short
-    // link is always returned instantly. A malicious verdict lands the link
-    // in moderationStatus 'suspicious' pending admin review; only an admin's
-    // explicit Block action (moderationStatus 'blocked') stops the redirect.
+    // Check URL safety with Google Safe Browsing API
+    const safetyCheck = await safeBrowsingService.checkUrl(
+      urlValidation.cleanUrl,
+    );
+    if (!safetyCheck.isSafe) {
+      logger.info(
+        "🚨 Blocked unsafe URL creation attempt:",
+        urlValidation.cleanUrl,
+      );
+      return res.status(400).json({
+        success: false,
+        message:
+          safetyCheck.message ||
+          "The link provided has been flagged by Google Safe Browsing as unsafe. Please use a different link.",
+        code: "UNSAFE_URL",
+        threats: safetyCheck.threats,
+      });
+    }
 
     // Check if the URL actually exists and is accessible
     const reachabilityCheck = await checkUrlReachability(
       urlValidation.cleanUrl,
     );
-    console.log("Accessibility check result:", reachabilityCheck);
+    logger.info("Accessibility check result:", reachabilityCheck);
     if (!reachabilityCheck.allowed) {
       return res
         .status(400)
@@ -333,7 +355,7 @@ const createUrl = async (req, res) => {
       // Check if user selected the base/system domain
       if (domainId === "base") {
         useBaseDomain = true;
-        console.log("Using base domain for URL creation");
+        logger.info("Using base domain for URL creation");
       } else {
         selectedDomain = await Domain.findById(domainId);
         if (!selectedDomain) {
@@ -374,7 +396,7 @@ const createUrl = async (req, res) => {
       // If no default domain is set, use base domain
       if (!selectedDomain) {
         useBaseDomain = true;
-        console.log("No default domain found, using base domain");
+        logger.info("No default domain found, using base domain");
       }
     }
 
@@ -439,8 +461,9 @@ const createUrl = async (req, res) => {
       description,
       creator: req.user.id,
       organization: req.user.organization,
+      project: resolvedProjectId,
       domain: useBaseDomain
-        ? null
+        ? resolvePublicDomain(req)
         : selectedDomain
           ? selectedDomain.fullDomain
           : null,
@@ -525,9 +548,9 @@ const createUrl = async (req, res) => {
         };
         await populatedUrl.save();
 
-        console.log("✅ QR code auto-generated for URL:", shortCode);
+        logger.info("✅ QR code auto-generated for URL:", shortCode);
       } catch (qrError) {
-        console.error("⚠️ Failed to auto-generate QR code:", qrError.message);
+        logger.error("⚠️ Failed to auto-generate QR code:", qrError.message);
         // Continue without QR code - don't fail the URL creation
       }
     }
@@ -567,7 +590,8 @@ const createUrl = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create URL error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Create URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create URL",
@@ -587,19 +611,21 @@ const getUrls = async (req, res) => {
       sortOrder = "desc",
       isActive,
       deepLinkEnabled,
+      projectId,
     } = req.query;
 
     const skip = (page - 1) * limit;
 
-    const filter = {
-      creator: req.user.id,
-    };
-
-    if (req.user.organization) {
-      filter.$or = [
-        { creator: req.user.id },
-        { organization: req.user.organization },
-      ];
+    // Enterprise RBAC: {} for solo accounts (unchanged below), { project }
+    // for a specific project, or { organization } for the Account Owner's
+    // "All projects" aggregate. 403/400s if the caller lacks access.
+    const scope = await projectAccessService.resolveReadScope(
+      req.user,
+      projectId,
+    );
+    const filter = { ...scope };
+    if (!req.user.organization) {
+      filter.creator = req.user.id;
     }
 
     if (deepLinkEnabled !== undefined) {
@@ -630,6 +656,7 @@ const getUrls = async (req, res) => {
       Url.find(filter)
         .populate("creator", "firstName lastName email")
         .populate("organization", "name slug")
+        .populate("project", "name")
         .populate("deepLink.appRegistration", "name bundleId packageName")
         .sort(sortOptions)
         .skip(skip)
@@ -650,7 +677,8 @@ const getUrls = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get URLs error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Get URLs error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URLs",
@@ -673,23 +701,21 @@ const getUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator._id.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?._id.toString() !== req.user.organization.toString())
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
+    // Solo accounts: unchanged, creator-only. Enterprise accounts: governed
+    // entirely by the link's own project + the caller's current role there
+    // (assertCanViewResource is a no-op for solo, since it has no project).
+    if (!req.user.organization && url.creator._id.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
+    await projectAccessService.assertCanViewResource(req.user, url);
 
     res.json({
       success: true,
       data: { url },
     });
   } catch (error) {
-    console.error("Get URL error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Get URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URL",
@@ -723,16 +749,13 @@ const updateUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     // Validate and check accessibility of new originalUrl if provided
     let destinationChanged = false;
@@ -751,7 +774,7 @@ const updateUrl = async (req, res) => {
         urlValidation.cleanUrl,
       );
       if (!safetyCheck.isSafe) {
-        console.log(
+        logger.info(
           "🚨 Blocked unsafe URL update attempt:",
           urlValidation.cleanUrl,
         );
@@ -769,7 +792,7 @@ const updateUrl = async (req, res) => {
       const reachabilityCheck = await checkUrlReachability(
         urlValidation.cleanUrl,
       );
-      console.log("Update URL accessibility check result:", reachabilityCheck);
+      logger.info("Update URL accessibility check result:", reachabilityCheck);
       if (!reachabilityCheck.allowed) {
         return res
           .status(400)
@@ -917,7 +940,8 @@ const updateUrl = async (req, res) => {
       data: { url: updatedUrl },
     });
   } catch (error) {
-    console.error("Update URL error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Update URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update URL",
@@ -938,16 +962,13 @@ const deleteUrl = async (req, res) => {
       });
     }
 
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
       });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     await Url.findByIdAndDelete(id);
     await cacheDel(`url:${url.shortCode.toLowerCase()}`);
@@ -960,7 +981,8 @@ const deleteUrl = async (req, res) => {
       message: "URL deleted successfully",
     });
   } catch (error) {
-    console.error("Delete URL error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Delete URL error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete URL",
@@ -996,6 +1018,15 @@ const bulkDelete = async (req, res) => {
       });
     }
 
+    // Enterprise RBAC: each url's own project + the caller's current role
+    // there governs edit access — a broad organization match above isn't
+    // enough on its own. Solo accounts already required creator match above.
+    for (const url of urls) {
+      if (req.user.organization) {
+        await projectAccessService.assertCanEditResource(req.user, url);
+      }
+    }
+
     const shortCodes = urls.map((url) => url.shortCode);
     const customCodes = urls
       .filter((url) => url.customCode)
@@ -1015,7 +1046,8 @@ const bulkDelete = async (req, res) => {
       message: `${urls.length} URLs deleted successfully`,
     });
   } catch (error) {
-    console.error("Bulk delete error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Bulk delete error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete URLs",
@@ -1141,7 +1173,7 @@ const getUrlStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get URL stats error:", error);
+    logger.error("Get URL stats error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch URL statistics",
@@ -1151,7 +1183,7 @@ const getUrlStats = async (req, res) => {
 
 const bulkCreate = async (req, res) => {
   try {
-    const { urls } = req.body;
+    const { urls, projectId } = req.body;
 
     if (!Array.isArray(urls) || urls.length === 0) {
       return res
@@ -1163,6 +1195,12 @@ const bulkCreate = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Maximum 1000 URLs per batch" });
     }
+
+    // The whole batch is created in a single project.
+    const resolvedProjectId = await projectAccessService.resolveWriteProject(
+      req.user,
+      projectId,
+    );
 
     const today = new Date();
     const bulkTag =
@@ -1346,6 +1384,8 @@ const bulkCreate = async (req, res) => {
           title: entry.title || "",
           creator: req.user.id,
           organization: req.user.organization,
+          project: resolvedProjectId,
+          domain: resolvePublicDomain(req),
           tags,
           utm: hasUtm ? utm : {},
           bulkImportId,
@@ -1394,7 +1434,8 @@ const bulkCreate = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Bulk create error:", error);
+    if (sendIfAccessError(error, res)) return;
+    logger.error("Bulk create error:", error);
     res
       .status(500)
       .json({ success: false, message: "Failed to process bulk creation" });
@@ -1495,7 +1536,7 @@ const getAvailableDomains = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get available domains error:", error);
+    logger.error("Get available domains error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch available domains",
@@ -1550,7 +1591,7 @@ const checkUrlSafety = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("checkUrlSafety error:", error);
+    logger.error("checkUrlSafety error:", error);
     // Fail open — never block the user on infrastructure errors
     return res.json({
       success: true,
@@ -1575,13 +1616,10 @@ const updateDeepLink = async (req, res) => {
     if (!url) {
       return res.status(404).json({ success: false, message: "URL not found" });
     }
-    if (
-      url.creator.toString() !== req.user.id &&
-      (!req.user.organization ||
-        url.organization?.toString() !== req.user.organization.toString())
-    ) {
+    if (!req.user.organization && url.creator.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
+    await projectAccessService.assertCanEditResource(req.user, url);
 
     const isEnabling = enabled === true || enabled === "true";
     const isDisabling = enabled === false || enabled === "false";
@@ -1634,7 +1672,8 @@ const updateDeepLink = async (req, res) => {
 
     return res.json({ success: true, data: url });
   } catch (err) {
-    console.error("[updateDeepLink] error:", err.message);
+    if (sendIfAccessError(err, res)) return;
+    logger.error("[updateDeepLink] error:", err.message);
     return res.status(500).json({
       success: false,
       message: "Failed to update deep link configuration",

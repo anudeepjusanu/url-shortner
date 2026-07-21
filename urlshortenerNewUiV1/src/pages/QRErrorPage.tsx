@@ -1,6 +1,8 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { QrCode, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 
@@ -13,7 +15,7 @@ const STRINGS = {
     tryAgain: "Try Again",
     code: "Code",
     dir: "ltr" as const,
-    fontClass: ""
+    fontClass: "",
   },
   ar: {
     title: "كود QR غير متاح",
@@ -23,8 +25,8 @@ const STRINGS = {
     tryAgain: "حاول مجدداً",
     code: "الكود",
     dir: "rtl" as const,
-    fontClass: "font-arabic"
-  }
+    fontClass: "font-arabic",
+  },
 } as const;
 
 type SupportedLang = keyof typeof STRINGS;
@@ -32,8 +34,10 @@ type SupportedLang = keyof typeof STRINGS;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function QRErrorPage() {
+  useBrandMetaTags();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const brand = useBrand();
 
   // Backend passes ?lang=ar or ?lang=en; fall back to browser preference
   const rawLang = searchParams.get("lang") ?? "";
@@ -41,8 +45,8 @@ export default function QRErrorPage() {
     rawLang === "ar" || rawLang === "en"
       ? rawLang
       : navigator.language.startsWith("ar")
-      ? "ar"
-      : "en";
+        ? "ar"
+        : "en";
 
   const s = STRINGS[lang];
   const code = searchParams.get("code");
@@ -64,8 +68,12 @@ export default function QRErrorPage() {
         {/* Text */}
         <div className="space-y-3">
           <h1 className="text-2xl font-bold text-foreground">{s.title}</h1>
-          <p className="text-base font-medium text-muted-foreground">{s.subtitle}</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
+          <p className="text-base font-medium text-muted-foreground">
+            {s.subtitle}
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {s.body}
+          </p>
         </div>
 
         {/* Code reference (helps user report the issue) */}
@@ -73,14 +81,20 @@ export default function QRErrorPage() {
           <div className="bg-muted rounded-lg px-4 py-3 inline-block">
             <p className="text-xs text-muted-foreground">
               {s.code}:{" "}
-              <span className="font-mono font-semibold text-foreground">{code}</span>
+              <span className="font-mono font-semibold text-foreground">
+                {code}
+              </span>
             </p>
           </div>
         )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row justify-center gap-3">
-          <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
             <Home className="w-4 h-4" />
             {s.goHome}
           </Button>
@@ -91,7 +105,7 @@ export default function QRErrorPage() {
         </div>
 
         {/* Branding */}
-        <p className="text-xs text-muted-foreground/50">snip.sa</p>
+        <p className="text-xs text-muted-foreground/50">{brand.domain}</p>
       </div>
     </div>
   );

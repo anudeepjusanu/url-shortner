@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const amplitudeMiddleware = require("./middleware/amplitudeMiddleware");
+const logger = require("./config/logger");
 require("dotenv").config();
 
 const app = express();
@@ -162,7 +163,7 @@ app.get("/health", (req, res) => {
 
 // Simple test endpoint without middleware
 app.post("/test-register", async (req, res) => {
-  console.log("Test register hit:", req.body);
+  logger.info("Test register hit:", req.body);
   res.json({ success: true, message: "Test endpoint working" });
 });
 
@@ -174,11 +175,11 @@ if (process.env.NODE_ENV === "production") {
   cron.schedule(
     "0 3 1 * *",
     async () => {
-      console.log("[SSL] Monthly renewal cron triggered");
+      logger.info("[SSL] Monthly renewal cron triggered");
       try {
         await sslProvisioningService.renewAll();
       } catch (err) {
-        console.error("[SSL] Monthly renewal cron failed:", err.message);
+        logger.error("[SSL] Monthly renewal cron failed:", err.message);
       }
     },
     { timezone: "UTC" },
@@ -206,14 +207,25 @@ app.use("/api/utm-links", require("./routes/utmLinks"));
 app.use("/api/dynamic-qr", require("./routes/dynamicQRCodes"));
 app.use("/api/v1/app-registrations", require("./routes/appRegistrations"));
 app.use("/api/v1", require("./routes/deepLinks"));
+app.use("/api/projects", require("./routes/projects"));
+app.use("/api/account", require("./routes/accountMembers"));
 
 // SEO routes - sitemap.xml and robots.txt (MUST come before catch-all routes)
 app.use("/", require("./routes/sitemapRoutes"));
 
-// Bio page clean-URL redirect: /bio/:username → frontend HashRouter route
-const frontendUrl = process.env.BASE_URL || "http://localhost:5173";
+// Bio page clean-URL redirect: /bio/:username → frontend HashRouter route.
+// Redirect target follows whichever system domain the request came in on
+// (e.g. qa.snip.sa vs qa.4r.sa) rather than a single static BASE_URL, so the
+// brand shown on the public bio page matches wherever the visitor actually
+// landed instead of always falling back to the default brand.
+const redirectService = require("./services/redirectService");
 app.get("/bio/:username", (req, res) => {
-  res.redirect(`${frontendUrl}/bio/${req.params.username}`);
+  const requestHost = req.get("host");
+  const targetOrigin =
+    requestHost && redirectService.isMainDomain(requestHost)
+      ? `${req.protocol}://${requestHost}`
+      : process.env.BASE_URL || "http://localhost:5173";
+  res.redirect(`${targetOrigin}/bio/${req.params.username}`);
 });
 
 // Redirect route - must be after API routes but before 404 handler
@@ -259,7 +271,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error("Error:", {
+  logger.error("Error:", {
     message: err.message,
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     url: req.url,

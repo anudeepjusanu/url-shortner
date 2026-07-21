@@ -2,6 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +39,7 @@ import { myLinksService } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import { fireConversion } from "@/lib/conversion";
 import { cn } from "@/lib/utils";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 1000;
@@ -233,9 +236,12 @@ function isValidUrl(url: string) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const BulkShorten = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
 
   const [rows, setRows] = useState<BulkRow[]>([
     makeRow(),
@@ -397,6 +403,7 @@ const BulkShorten = () => {
         const body: Parameters<typeof myLinksService.create>[0] = {
           originalUrl: row.originalUrl.trim(),
         };
+        if (activeProject?.id) body.projectId = activeProject.id;
         if (row.customAlias.trim()) body.customCode = row.customAlias.trim();
         if (row.domainId) body.domainId = row.domainId;
         if (

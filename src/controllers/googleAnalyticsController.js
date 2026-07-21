@@ -4,8 +4,9 @@
  * All endpoints are restricted to super_admin only
  */
 
-const googleAnalyticsService = require('../services/googleAnalyticsService');
-const { isConfigured } = require('../config/googleAnalytics');
+const googleAnalyticsService = require("../services/googleAnalyticsService");
+const { isConfigured } = require("../config/googleAnalytics");
+const logger = require("../config/logger");
 
 /**
  * Check if GA is configured
@@ -15,14 +16,14 @@ const checkConfiguration = async (req, res) => {
     res.json({
       success: true,
       data: {
-        configured: isConfigured()
-      }
+        configured: isConfigured(),
+      },
     });
   } catch (error) {
-    console.error('Error checking GA configuration:', error);
+    logger.error("Error checking GA configuration:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to check Google Analytics configuration'
+      message: "Failed to check Google Analytics configuration",
     });
   }
 };
@@ -35,20 +36,20 @@ const getRealtime = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
     const data = await googleAnalyticsService.getRealtimeData();
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching realtime data:', error);
+    logger.error("Error fetching realtime data:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch realtime data'
+      message: error.message || "Failed to fetch realtime data",
     });
   }
 };
@@ -61,22 +62,22 @@ const getOverview = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
     const data = await googleAnalyticsService.getOverview(startDate, endDate);
-    
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching overview:', error);
+    logger.error("Error fetching overview:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch overview data'
+      message: error.message || "Failed to fetch overview data",
     });
   }
 };
@@ -89,22 +90,25 @@ const getTrafficOverTime = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
-    const data = await googleAnalyticsService.getTrafficOverTime(startDate, endDate);
-    
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
+    const data = await googleAnalyticsService.getTrafficOverTime(
+      startDate,
+      endDate,
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching traffic over time:', error);
+    logger.error("Error fetching traffic over time:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch traffic data'
+      message: error.message || "Failed to fetch traffic data",
     });
   }
 };
@@ -117,22 +121,25 @@ const getTrafficSources = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
-    const data = await googleAnalyticsService.getTrafficSources(startDate, endDate);
-    
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
+    const data = await googleAnalyticsService.getTrafficSources(
+      startDate,
+      endDate,
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching traffic sources:', error);
+    logger.error("Error fetching traffic sources:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch traffic sources'
+      message: error.message || "Failed to fetch traffic sources",
     });
   }
 };
@@ -145,22 +152,30 @@ const getTopPages = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today', limit = 10 } = req.query;
-    const data = await googleAnalyticsService.getTopPages(startDate, endDate, parseInt(limit, 10));
-    
+    const {
+      startDate = "30daysAgo",
+      endDate = "today",
+      limit = 10,
+    } = req.query;
+    const data = await googleAnalyticsService.getTopPages(
+      startDate,
+      endDate,
+      parseInt(limit, 10),
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching top pages:', error);
+    logger.error("Error fetching top pages:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch top pages'
+      message: error.message || "Failed to fetch top pages",
     });
   }
 };
@@ -173,22 +188,25 @@ const getGeographic = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
-    const data = await googleAnalyticsService.getGeographicData(startDate, endDate);
-    
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
+    const data = await googleAnalyticsService.getGeographicData(
+      startDate,
+      endDate,
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching geographic data:', error);
+    logger.error("Error fetching geographic data:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch geographic data'
+      message: error.message || "Failed to fetch geographic data",
     });
   }
 };
@@ -201,22 +219,22 @@ const getDevices = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
     const data = await googleAnalyticsService.getDeviceData(startDate, endDate);
-    
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching device data:', error);
+    logger.error("Error fetching device data:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch device data'
+      message: error.message || "Failed to fetch device data",
     });
   }
 };
@@ -229,22 +247,25 @@ const getBrowsers = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
-    const data = await googleAnalyticsService.getBrowserData(startDate, endDate);
-    
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
+    const data = await googleAnalyticsService.getBrowserData(
+      startDate,
+      endDate,
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching browser data:', error);
+    logger.error("Error fetching browser data:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch browser data'
+      message: error.message || "Failed to fetch browser data",
     });
   }
 };
@@ -257,22 +278,25 @@ const getDashboard = async (req, res) => {
     if (!isConfigured()) {
       return res.status(503).json({
         success: false,
-        message: 'Google Analytics is not configured'
+        message: "Google Analytics is not configured",
       });
     }
 
-    const { startDate = '30daysAgo', endDate = 'today' } = req.query;
-    const data = await googleAnalyticsService.getDashboardData(startDate, endDate);
-    
+    const { startDate = "30daysAgo", endDate = "today" } = req.query;
+    const data = await googleAnalyticsService.getDashboardData(
+      startDate,
+      endDate,
+    );
+
     res.json({
       success: true,
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    logger.error("Error fetching dashboard data:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch dashboard data'
+      message: error.message || "Failed to fetch dashboard data",
     });
   }
 };
@@ -287,5 +311,5 @@ module.exports = {
   getGeographic,
   getDevices,
   getBrowsers,
-  getDashboard
+  getDashboard,
 };

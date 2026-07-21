@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { domainToASCII } = require("../utils/punycode");
+const logger = require("../config/logger");
 
 const urlSchema = new mongoose.Schema(
   {
@@ -47,6 +48,14 @@ const urlSchema = new mongoose.Schema(
     organization: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
+      default: null,
+    },
+    // Enterprise RBAC: which Project this link belongs to. Only set when
+    // `organization` is set — solo (non-enterprise) accounts never set this.
+    // See claude-implementation-docs/Architecture/rbac-enterprise-project-roles.md
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
       default: null,
     },
     domain: {
@@ -292,7 +301,7 @@ urlSchema.pre("save", function (next) {
     try {
       this.domain = domainToASCII(this.domain.toLowerCase());
     } catch (error) {
-      console.error("Error converting domain to ASCII:", error);
+      logger.error("Error converting domain to ASCII:", error);
     }
   }
 
@@ -392,6 +401,7 @@ urlSchema.index(
 );
 urlSchema.index({ creator: 1 });
 urlSchema.index({ organization: 1 });
+urlSchema.index({ project: 1 });
 urlSchema.index({ isActive: 1 });
 urlSchema.index({ expiresAt: 1 });
 urlSchema.index({ createdAt: -1 });

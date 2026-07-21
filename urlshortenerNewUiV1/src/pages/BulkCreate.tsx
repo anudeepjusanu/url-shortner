@@ -4,13 +4,25 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useRequireEditAccess } from "@/hooks/useRequireEditAccess";
+import { useProject } from "@/contexts/ProjectContext";
 import { myLinksService, BulkCreateEntry } from "@/services/jwtService";
 import amplitudeService from "@/services/amplitude";
 import {
-  Upload, Download, FileText, CheckCircle2, XCircle,
-  AlertCircle, Loader2, X, Eye, EyeOff, RotateCcw,
+  Upload,
+  Download,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Loader2,
+  X,
+  Eye,
+  EyeOff,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,9 +57,11 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3015/api";
 
 // ─── CSV / XLSX parser ────────────────────────────────────────────────────────
 
-
 function normalizeHeader(h: string) {
-  return h.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+  return h
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .trim();
 }
 
 function parseSheetRows(rows: string[][]): ParsedRow[] {
@@ -75,14 +89,21 @@ function parseSheetRows(rows: string[][]): ParsedRow[] {
     if (!originalUrl) continue; // skip blank rows
 
     const tagsRaw = col.tags >= 0 ? String(row[col.tags] || "").trim() : "";
-    const tags = tagsRaw ? tagsRaw.split(/[,;|]/).map((t) => t.trim()).filter(Boolean) : [];
+    const tags = tagsRaw
+      ? tagsRaw
+          .split(/[,;|]/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
 
     const utm = {
       source: col.utmSource >= 0 ? String(row[col.utmSource] || "").trim() : "",
       medium: col.utmMedium >= 0 ? String(row[col.utmMedium] || "").trim() : "",
-      campaign: col.utmCampaign >= 0 ? String(row[col.utmCampaign] || "").trim() : "",
+      campaign:
+        col.utmCampaign >= 0 ? String(row[col.utmCampaign] || "").trim() : "",
       term: col.utmTerm >= 0 ? String(row[col.utmTerm] || "").trim() : "",
-      content: col.utmContent >= 0 ? String(row[col.utmContent] || "").trim() : "",
+      content:
+        col.utmContent >= 0 ? String(row[col.utmContent] || "").trim() : "",
     };
     const hasUtm = Object.values(utm).some(Boolean);
 
@@ -96,8 +117,14 @@ function parseSheetRows(rows: string[][]): ParsedRow[] {
     parsed.push({
       _rowNum: r + 1,
       originalUrl,
-      customCode: col.alias >= 0 ? String(row[col.alias] || "").trim() || undefined : undefined,
-      title: col.title >= 0 ? String(row[col.title] || "").trim() || undefined : undefined,
+      customCode:
+        col.alias >= 0
+          ? String(row[col.alias] || "").trim() || undefined
+          : undefined,
+      title:
+        col.title >= 0
+          ? String(row[col.title] || "").trim() || undefined
+          : undefined,
       tags: tags.length > 0 ? tags : undefined,
       utm: hasUtm ? utm : undefined,
       _validationError,
@@ -121,7 +148,10 @@ async function parseFile(file: File): Promise<ParsedRow[]> {
           sheetRows: MAX_ROWS + 1, // parse only as many rows as we need
         });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        const rows: string[][] = XLSX.utils.sheet_to_json(ws, {
+          header: 1,
+          defval: "",
+        });
         resolve(parseSheetRows(rows));
       } catch (err: any) {
         reject(new Error("Failed to parse file: " + err.message));
@@ -139,7 +169,9 @@ function escapeCSV(val: string) {
 }
 
 function downloadCSV(filename: string, headers: string[], rows: string[][]) {
-  const csv = [headers, ...rows].map((r) => r.map(escapeCSV).join(",")).join("\n");
+  const csv = [headers, ...rows]
+    .map((r) => r.map(escapeCSV).join(","))
+    .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -152,6 +184,9 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const BulkCreate = () => {
+  useBrandMetaTags();
+  useRequireEditAccess("/dashboard/links");
+  const { activeProject } = useProject();
   const { toast } = useToast();
   const dropRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -173,50 +208,79 @@ const BulkCreate = () => {
 
   // ─── File handling ──────────────────────────────────────────────────────────
 
-  const handleFile = useCallback(async (file: File) => {
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    if (ext !== "csv" && ext !== "xlsx" && ext !== "xls") {
-      toast({ variant: "destructive", title: "Unsupported file", description: "Please upload a .csv or .xlsx file." });
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast({ variant: "destructive", title: "File too large", description: "Maximum file size is 5 MB." });
-      return;
-    }
-    try {
-      const parsed = await parseFile(file);
-      if (parsed.length === 0) {
-        toast({ variant: "destructive", title: "Empty file", description: "No data rows found in the file." });
+  const handleFile = useCallback(
+    async (file: File) => {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext !== "csv" && ext !== "xlsx" && ext !== "xls") {
+        toast({
+          variant: "destructive",
+          title: "Unsupported file",
+          description: "Please upload a .csv or .xlsx file.",
+        });
         return;
       }
-      if (parsed.length > MAX_ROWS) {
-        toast({ variant: "destructive", title: "Too many rows", description: `Maximum ${MAX_ROWS} URLs per batch. File has ${parsed.length} rows.` });
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Maximum file size is 5 MB.",
+        });
         return;
       }
-      setFileName(file.name);
-      setRows(parsed);
-      setState("parsed");
-      setShowPreview(true);
-      setSuccessful([]);
-      setFailed([]);
-      setProgress(0);
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Parse error", description: err.message });
-    }
-  }, [toast]);
+      try {
+        const parsed = await parseFile(file);
+        if (parsed.length === 0) {
+          toast({
+            variant: "destructive",
+            title: "Empty file",
+            description: "No data rows found in the file.",
+          });
+          return;
+        }
+        if (parsed.length > MAX_ROWS) {
+          toast({
+            variant: "destructive",
+            title: "Too many rows",
+            description: `Maximum ${MAX_ROWS} URLs per batch. File has ${parsed.length} rows.`,
+          });
+          return;
+        }
+        setFileName(file.name);
+        setRows(parsed);
+        setState("parsed");
+        setShowPreview(true);
+        setSuccessful([]);
+        setFailed([]);
+        setProgress(0);
+      } catch (err: any) {
+        toast({
+          variant: "destructive",
+          title: "Parse error",
+          description: err.message,
+        });
+      }
+    },
+    [toast],
+  );
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile],
+  );
 
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-    e.target.value = "";
-  }, [handleFile]);
+  const onFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+      e.target.value = "";
+    },
+    [handleFile],
+  );
 
   const resetAll = () => {
     setFileName(null);
@@ -242,7 +306,11 @@ const BulkCreate = () => {
 
   const startProcessing = async () => {
     if (validRows.length === 0) {
-      toast({ variant: "destructive", title: "No valid rows", description: "Fix all errors before processing." });
+      toast({
+        variant: "destructive",
+        title: "No valid rows",
+        description: "Fix all errors before processing.",
+      });
       return;
     }
 
@@ -266,7 +334,9 @@ const BulkCreate = () => {
     const chunks: BulkCreateEntry[][] = [];
     for (let i = 0; i < validRows.length; i += CHUNK_SIZE) {
       chunks.push(
-        validRows.slice(i, i + CHUNK_SIZE).map(({ _rowNum: _r, _validationError: _e, ...entry }) => entry)
+        validRows
+          .slice(i, i + CHUNK_SIZE)
+          .map(({ _rowNum: _r, _validationError: _e, ...entry }) => entry),
       );
     }
 
@@ -276,12 +346,16 @@ const BulkCreate = () => {
       setProgressLabel(`Processing chunk ${c + 1} of ${chunks.length}…`);
 
       try {
-        const res: any = await myLinksService.bulkCreate(chunks[c]);
+        const res: any = await myLinksService.bulkCreate(
+          chunks[c],
+          activeProject?.id,
+        );
         const data = res?.data;
         if (data?.successful) allSuccessful.push(...data.successful);
         if (data?.failed) allFailed.push(...data.failed);
       } catch (err: any) {
-        const vErrors: Array<{ field: string; message: string }> = err.validationErrors || [];
+        const vErrors: Array<{ field: string; message: string }> =
+          err.validationErrors || [];
 
         if (vErrors.length) {
           // Map each validation error back to the specific row using the field path e.g. "urls[2].customCode"
@@ -307,7 +381,7 @@ const BulkCreate = () => {
               originalUrl: entry.originalUrl,
               customCode: entry.customCode || "",
               title: entry.title || "",
-              error: msgs ? msgs.join('; ') : err.message || "Request failed",
+              error: msgs ? msgs.join("; ") : err.message || "Request failed",
             });
           });
         } else {
@@ -339,7 +413,10 @@ const BulkCreate = () => {
     }
 
     if (cancelRef.current) {
-      toast({ title: "Cancelled", description: `${allSuccessful.length} links were saved before cancellation.` });
+      toast({
+        title: "Cancelled",
+        description: `${allSuccessful.length} links were saved before cancellation.`,
+      });
     } else {
       toast({
         title: "Batch complete",
@@ -359,15 +436,35 @@ const BulkCreate = () => {
     downloadCSV(
       "bulk-error-report.csv",
       ["Row", "Destination URL", "Custom Alias", "Title", "Error Reason"],
-      failed.map((f) => [String(f.row), f.originalUrl, f.customCode, f.title, f.error])
+      failed.map((f) => [
+        String(f.row),
+        f.originalUrl,
+        f.customCode,
+        f.title,
+        f.error,
+      ]),
     );
   };
 
   const downloadSuccessReport = () => {
     downloadCSV(
       "bulk-success-report.csv",
-      ["Row", "Original URL", "Short URL", "Short Code", "Custom Alias", "Title"],
-      successful.map((s) => [String(s.row), s.originalUrl, s.shortUrl, s.shortCode, s.customCode || "", s.title])
+      [
+        "Row",
+        "Original URL",
+        "Short URL",
+        "Short Code",
+        "Custom Alias",
+        "Title",
+      ],
+      successful.map((s) => [
+        String(s.row),
+        s.originalUrl,
+        s.shortUrl,
+        s.shortCode,
+        s.customCode || "",
+        s.title,
+      ]),
     );
   };
 
@@ -376,16 +473,23 @@ const BulkCreate = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-6">
-
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">Bulk Link Creation</h1>
+            <h1 className="text-2xl font-display font-bold text-foreground">
+              Bulk Link Creation
+            </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Upload a CSV or XLSX file to generate multiple branded short links in one batch.
+              Upload a CSV or XLSX file to generate multiple branded short links
+              in one batch.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={downloadTemplate}
+            className="gap-2"
+          >
             <Download className="w-4 h-4" />
             Download Template
           </Button>
@@ -398,26 +502,46 @@ const BulkCreate = () => {
             role="button"
             tabIndex={0}
             aria-label="Upload CSV or XLSX file — drag and drop or press Enter to browse"
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
             className={cn(
               "border-2 border-dashed rounded-xl p-12 flex flex-col items-center gap-4 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-              dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/60 hover:bg-muted/40"
+              dragOver
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/60 hover:bg-muted/40",
             )}
           >
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
               <Upload className="w-7 h-7 text-primary" />
             </div>
             <div className="text-center">
-              <p className="font-medium text-foreground">Drag & drop your file here</p>
+              <p className="font-medium text-foreground">
+                Drag & drop your file here
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Supports <strong>.csv</strong> and <strong>.xlsx</strong> — up to {MAX_ROWS.toLocaleString()} rows
+                Supports <strong>.csv</strong> and <strong>.xlsx</strong> — up
+                to {MAX_ROWS.toLocaleString()} rows
               </p>
             </div>
-            <Button variant="secondary" size="sm" className="pointer-events-none" aria-hidden="true">Browse files</Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="pointer-events-none"
+              aria-hidden="true"
+            >
+              Browse files
+            </Button>
             {/* Visually hidden but focusable — allows assistive technologies to also reach the input directly */}
             <input
               ref={fileInputRef}
@@ -425,7 +549,17 @@ const BulkCreate = () => {
               accept=".csv,.xlsx,.xls"
               onChange={onFileChange}
               aria-label="Upload file"
-              style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                padding: 0,
+                margin: -1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+                whiteSpace: "nowrap",
+                border: 0,
+              }}
             />
           </div>
         )}
@@ -434,10 +568,19 @@ const BulkCreate = () => {
         {state !== "idle" && (
           <div className="flex items-center gap-3 p-3 bg-muted/60 rounded-lg border border-border flex-wrap">
             <FileText className="w-5 h-5 text-primary shrink-0" />
-            <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">{fileName}</span>
-            <span className="text-xs text-muted-foreground">{rows.length} rows parsed</span>
+            <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">
+              {fileName}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {rows.length} rows parsed
+            </span>
             {state === "parsed" && (
-              <Button variant="ghost" size="sm" onClick={resetAll} className="gap-1 text-muted-foreground h-7">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetAll}
+                className="gap-1 text-muted-foreground h-7"
+              >
                 <RotateCcw className="w-3.5 h-3.5" /> Reset
               </Button>
             )}
@@ -449,12 +592,17 @@ const BulkCreate = () => {
           <div className="flex gap-3 flex-wrap">
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-sm">
               <CheckCircle2 className="w-4 h-4" />
-              <span><strong>{validRows.length}</strong> valid</span>
+              <span>
+                <strong>{validRows.length}</strong> valid
+              </span>
             </div>
             {invalidRows.length > 0 && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
                 <XCircle className="w-4 h-4" />
-                <span><strong>{invalidRows.length}</strong> invalid (will be skipped)</span>
+                <span>
+                  <strong>{invalidRows.length}</strong> invalid (will be
+                  skipped)
+                </span>
               </div>
             )}
           </div>
@@ -465,8 +613,17 @@ const BulkCreate = () => {
           <div className="border border-border rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-b border-border">
               <p className="text-sm font-medium text-foreground">Preview</p>
-              <Button variant="ghost" size="sm" onClick={() => setShowPreview((v) => !v)} className="gap-1.5 text-muted-foreground h-7">
-                {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPreview((v) => !v)}
+                className="gap-1.5 text-muted-foreground h-7"
+              >
+                {showPreview ? (
+                  <EyeOff className="w-3.5 h-3.5" />
+                ) : (
+                  <Eye className="w-3.5 h-3.5" />
+                )}
                 {showPreview ? "Hide" : "Show"}
               </Button>
             </div>
@@ -475,11 +632,21 @@ const BulkCreate = () => {
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 bg-muted/80">
                     <tr>
-                      <th className="px-3 py-2 text-left text-muted-foreground font-medium w-10">#</th>
-                      <th className="px-3 py-2 text-left text-muted-foreground font-medium min-w-[200px]">Destination URL</th>
-                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">Alias</th>
-                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">Title</th>
-                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">Tags</th>
+                      <th className="px-3 py-2 text-left text-muted-foreground font-medium w-10">
+                        #
+                      </th>
+                      <th className="px-3 py-2 text-left text-muted-foreground font-medium min-w-[200px]">
+                        Destination URL
+                      </th>
+                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">
+                        Alias
+                      </th>
+                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">
+                        Title
+                      </th>
+                      <th className="px-3 py-2 text-left text-muted-foreground font-medium">
+                        Tags
+                      </th>
                       <th className="px-3 py-2 text-left text-muted-foreground font-medium w-8"></th>
                     </tr>
                   </thead>
@@ -489,18 +656,30 @@ const BulkCreate = () => {
                         key={row._rowNum}
                         className={cn(
                           "border-t border-border",
-                          row._validationError ? "bg-red-50/60 dark:bg-red-950/20" : "hover:bg-muted/30"
+                          row._validationError
+                            ? "bg-red-50/60 dark:bg-red-950/20"
+                            : "hover:bg-muted/30",
                         )}
                       >
-                        <td className="px-3 py-2 text-muted-foreground">{row._rowNum}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {row._rowNum}
+                        </td>
                         <td className="px-3 py-2 max-w-[280px]">
-                          <span className="block truncate text-foreground">{row.originalUrl}</span>
+                          <span className="block truncate text-foreground">
+                            {row.originalUrl}
+                          </span>
                         </td>
-                        <td className="px-3 py-2 text-foreground">{row.customCode || "—"}</td>
+                        <td className="px-3 py-2 text-foreground">
+                          {row.customCode || "—"}
+                        </td>
                         <td className="px-3 py-2 max-w-[160px]">
-                          <span className="block truncate text-foreground">{row.title || "—"}</span>
+                          <span className="block truncate text-foreground">
+                            {row.title || "—"}
+                          </span>
                         </td>
-                        <td className="px-3 py-2 text-foreground">{row.tags?.join(", ") || "—"}</td>
+                        <td className="px-3 py-2 text-foreground">
+                          {row.tags?.join(", ") || "—"}
+                        </td>
                         <td className="px-3 py-2">
                           {row._validationError ? (
                             <span title={row._validationError}>
@@ -522,7 +701,11 @@ const BulkCreate = () => {
         {/* Action bar — parsed state */}
         {state === "parsed" && (
           <div className="flex gap-3 flex-wrap items-center">
-            <Button onClick={startProcessing} disabled={validRows.length === 0} className="gap-2">
+            <Button
+              onClick={startProcessing}
+              disabled={validRows.length === 0}
+              className="gap-2"
+            >
               <Upload className="w-4 h-4" />
               Create {validRows.length} Link{validRows.length !== 1 ? "s" : ""}
             </Button>
@@ -543,7 +726,9 @@ const BulkCreate = () => {
           <div className="space-y-3 p-5 border border-border rounded-xl bg-muted/20">
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-              <p className="text-sm font-medium text-foreground">{progressLabel}</p>
+              <p className="text-sm font-medium text-foreground">
+                {progressLabel}
+              </p>
             </div>
             <Progress value={progress} className="h-2.5" />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -566,37 +751,80 @@ const BulkCreate = () => {
             {/* Summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="rounded-xl border border-border p-4 bg-background">
-                <p className="text-xs text-muted-foreground mb-1">Total Processed</p>
-                <p className="text-2xl font-bold text-foreground">{rows.length}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Total Processed
+                </p>
+                <p className="text-2xl font-bold text-foreground">
+                  {rows.length}
+                </p>
               </div>
               <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 p-4 bg-emerald-50 dark:bg-emerald-950/30">
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Created</p>
-                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{successful.length}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">
+                  Created
+                </p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {successful.length}
+                </p>
               </div>
-              <div className={cn(
-                "rounded-xl border p-4",
-                failed.length > 0
-                  ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30"
-                  : "border-border bg-background"
-              )}>
-                <p className={cn("text-xs mb-1", failed.length > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground")}>Failed</p>
-                <p className={cn("text-2xl font-bold", failed.length > 0 ? "text-red-700 dark:text-red-300" : "text-foreground")}>{failed.length}</p>
+              <div
+                className={cn(
+                  "rounded-xl border p-4",
+                  failed.length > 0
+                    ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30"
+                    : "border-border bg-background",
+                )}
+              >
+                <p
+                  className={cn(
+                    "text-xs mb-1",
+                    failed.length > 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  Failed
+                </p>
+                <p
+                  className={cn(
+                    "text-2xl font-bold",
+                    failed.length > 0
+                      ? "text-red-700 dark:text-red-300"
+                      : "text-foreground",
+                  )}
+                >
+                  {failed.length}
+                </p>
               </div>
             </div>
 
             {/* Action buttons */}
             <div className="flex gap-3 flex-wrap">
               {successful.length > 0 && (
-                <Button variant="outline" size="sm" onClick={downloadSuccessReport} className="gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadSuccessReport}
+                  className="gap-2"
+                >
                   <Download className="w-4 h-4" /> Download Success Report
                 </Button>
               )}
               {failed.length > 0 && (
-                <Button variant="outline" size="sm" onClick={downloadErrorReport} className="gap-2 text-red-600 border-red-300 hover:bg-red-50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadErrorReport}
+                  className="gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                >
                   <Download className="w-4 h-4" /> Download Error Report
                 </Button>
               )}
-              <Button variant="secondary" size="sm" onClick={resetAll} className="gap-2 ms-auto">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={resetAll}
+                className="gap-2 ms-auto"
+              >
                 <RotateCcw className="w-4 h-4" /> New Batch
               </Button>
             </div>
@@ -606,31 +834,55 @@ const BulkCreate = () => {
               <div className="border border-border rounded-xl overflow-hidden">
                 <div className="px-4 py-3 bg-muted/40 border-b border-border flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <p className="text-sm font-medium text-foreground">Created Links</p>
+                  <p className="text-sm font-medium text-foreground">
+                    Created Links
+                  </p>
                 </div>
                 <div className="overflow-x-auto max-h-64 overflow-y-auto">
                   <table className="w-full text-xs">
                     <thead className="sticky top-0 bg-muted/80">
                       <tr>
-                        <th className="px-3 py-2 text-left text-muted-foreground font-medium w-10">#</th>
-                        <th className="px-3 py-2 text-left text-muted-foreground font-medium">Short URL</th>
-                        <th className="px-3 py-2 text-left text-muted-foreground font-medium min-w-[200px]">Destination</th>
-                        <th className="px-3 py-2 text-left text-muted-foreground font-medium">Title</th>
+                        <th className="px-3 py-2 text-left text-muted-foreground font-medium w-10">
+                          #
+                        </th>
+                        <th className="px-3 py-2 text-left text-muted-foreground font-medium">
+                          Short URL
+                        </th>
+                        <th className="px-3 py-2 text-left text-muted-foreground font-medium min-w-[200px]">
+                          Destination
+                        </th>
+                        <th className="px-3 py-2 text-left text-muted-foreground font-medium">
+                          Title
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {successful.map((s) => (
-                        <tr key={s.row} className="border-t border-border hover:bg-muted/20">
-                          <td className="px-3 py-2 text-muted-foreground">{s.row}</td>
+                        <tr
+                          key={s.row}
+                          className="border-t border-border hover:bg-muted/20"
+                        >
+                          <td className="px-3 py-2 text-muted-foreground">
+                            {s.row}
+                          </td>
                           <td className="px-3 py-2">
-                            <a href={s.shortUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                            <a
+                              href={s.shortUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline font-medium"
+                            >
                               {s.shortUrl}
                             </a>
                           </td>
                           <td className="px-3 py-2 max-w-[240px]">
-                            <span className="block truncate text-muted-foreground">{s.originalUrl}</span>
+                            <span className="block truncate text-muted-foreground">
+                              {s.originalUrl}
+                            </span>
                           </td>
-                          <td className="px-3 py-2 text-foreground">{s.title || "—"}</td>
+                          <td className="px-3 py-2 text-foreground">
+                            {s.title || "—"}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -644,27 +896,48 @@ const BulkCreate = () => {
               <div className="border border-red-200 dark:border-red-800 rounded-xl overflow-hidden">
                 <div className="px-4 py-3 bg-red-50/60 dark:bg-red-950/20 border-b border-red-200 dark:border-red-800 flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-sm font-medium text-red-700 dark:text-red-400">Failed Rows</p>
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                    Failed Rows
+                  </p>
                 </div>
                 <div className="overflow-x-auto max-h-56 overflow-y-auto">
                   <table className="w-full text-xs">
                     <thead className="sticky top-0 bg-red-50/80 dark:bg-red-950/30">
                       <tr>
-                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium w-10">#</th>
-                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium min-w-[200px]">Destination URL</th>
-                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium">Alias</th>
-                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium">Error Reason</th>
+                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium w-10">
+                          #
+                        </th>
+                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium min-w-[200px]">
+                          Destination URL
+                        </th>
+                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium">
+                          Alias
+                        </th>
+                        <th className="px-3 py-2 text-left text-red-600 dark:text-red-400 font-medium">
+                          Error Reason
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {failed.map((f, i) => (
-                        <tr key={i} className="border-t border-red-100 dark:border-red-900/40">
-                          <td className="px-3 py-2 text-muted-foreground">{f.row}</td>
-                          <td className="px-3 py-2 max-w-[240px]">
-                            <span className="block truncate text-foreground">{f.originalUrl || "—"}</span>
+                        <tr
+                          key={i}
+                          className="border-t border-red-100 dark:border-red-900/40"
+                        >
+                          <td className="px-3 py-2 text-muted-foreground">
+                            {f.row}
                           </td>
-                          <td className="px-3 py-2 text-foreground">{f.customCode || "—"}</td>
-                          <td className="px-3 py-2 text-red-600 dark:text-red-400">{f.error}</td>
+                          <td className="px-3 py-2 max-w-[240px]">
+                            <span className="block truncate text-foreground">
+                              {f.originalUrl || "—"}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-foreground">
+                            {f.customCode || "—"}
+                          </td>
+                          <td className="px-3 py-2 text-red-600 dark:text-red-400">
+                            {f.error}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

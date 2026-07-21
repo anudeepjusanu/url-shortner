@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,8 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Layout,
   FileText,
   Globe,
@@ -135,6 +138,7 @@ const getUrlLink = (item: ContentItem) => {
 };
 
 const UrlManagement = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1587,6 +1591,7 @@ const UrlManagement = () => {
                   label={t("Reason", "السبب")}
                   value={String(reviewItem.moderationVerdict?.reason ?? "—")}
                   truncate
+                  expandable
                 />
               </Section>
               {reviewItem.moderationVerdict?.pipelineTrace && (
@@ -1675,20 +1680,48 @@ const Row = ({
   label,
   value,
   truncate,
+  expandable,
 }: {
   label: string;
   value: string;
   truncate?: boolean;
-}) => (
-  <div className="flex items-center justify-between gap-4">
-    <span className="text-muted-foreground shrink-0">{label}</span>
-    <span
-      className={`text-foreground font-medium text-right ${truncate ? "truncate max-w-[220px]" : ""}`}
+  expandable?: boolean;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  const isTruncated = truncate && !expanded;
+
+  return (
+    <div
+      className={`flex gap-4 ${expanded ? "items-start" : "items-center"} justify-between`}
     >
-      {value}
-    </span>
-  </div>
-);
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      {expandable ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className={`flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer text-foreground font-medium text-right hover:text-primary ${
+            isTruncated ? "truncate max-w-[220px]" : "max-w-[220px] text-left"
+          }`}
+        >
+          <span className={isTruncated ? "truncate" : "whitespace-normal"}>
+            {value}
+          </span>
+          {expanded ? (
+            <ChevronUp className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+      ) : (
+        <span
+          className={`text-foreground font-medium text-right ${truncate ? "truncate max-w-[220px]" : ""}`}
+        >
+          {value}
+        </span>
+      )}
+    </div>
+  );
+};
 
 const MODERATION_LABELS: Record<
   ModerationStatus,

@@ -1,11 +1,17 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-dark.png";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
+// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
+// docs site isn't live yet.
+const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+
 const Footer = () => {
   const { t } = useLanguage();
+  const brand = useBrand();
   const { isAuthenticated } = useSmartLink();
 
   return (
@@ -13,52 +19,189 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <div className="mb-3 flex items-center gap-2">
-            <img src={logo} alt="snip.sa" className="h-16" />
+            <img src={logo} alt={brand.domain} className="h-16" />
           </div>
           <p className="text-[hsl(var(--cream))]/40 text-sm font-body max-w-sm">
-            {t("Shorten your links. Track your campaigns.", "اختصار روابطك، تتبع حملاتك.")}
+            {t(
+              "Shorten your links. Track your campaigns.",
+              "اختصار روابطك، تتبع حملاتك.",
+            )}
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Product", "المنتج")}</h4>
+            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">
+              {t("Product", "المنتج")}
+            </h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><Link to="/features/url-shortening" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("URL Shortening", "اختصار الروابط")}</Link></li>
-              <li><Link to="/features/qr-codes" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("QR Codes", "أكواد QR")}</Link></li>
-              <li><Link to="/features/link-in-bio" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Link in Bio", "رابط البايو")}</Link></li>
-              <li><Link to="/features/utm-tracking" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("UTM Tracking", "تتبع UTM")}</Link></li>
-              <li><Link to="/features/custom-domains" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Custom Domains", "النطاقات المخصصة")}</Link></li>
-              <li><a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Documentation", "وثائق الـ API")}</a></li>
+              <li>
+                <Link
+                  to="/features/url-shortening"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("URL Shortening", "اختصار الروابط")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/features/qr-codes"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("QR Codes", "أكواد QR")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/features/link-in-bio"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Link in Bio", "رابط البايو")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/features/utm-tracking"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("UTM Tracking", "تتبع UTM")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/features/custom-domains"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Custom Domains", "النطاقات المخصصة")}
+                </Link>
+              </li>
+              <li>
+                <a
+                  href={MINTLIFY_DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("API Documentation", "وثائق الـ API")}
+                </a>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("For Developers", "للمطورين")}</h4>
+            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">
+              {t("For Developers", "للمطورين")}
+            </h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Documentation", "وثائق الـ API")}</a></li>
-              <li><a href="#developers" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Code Examples", "أمثلة بالأكواد")}</a></li>
-              <li><a href="#developers" className="hover:text-[hsl(var(--cream))]/80 transition-colors">SDKs (Node, Python, PHP)</a></li>
-              <li><a href="#developers" className="hover:text-[hsl(var(--cream))]/80 transition-colors">Webhooks</a></li>
-              <li><a href="#developers" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("API Status", "حالة النظام")}</a></li>
+              <li>
+                <a
+                  href={MINTLIFY_DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("API Documentation", "وثائق الـ API")}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#developers"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Code Examples", "أمثلة بالأكواد")}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#developers"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  SDKs (Node, Python, PHP)
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#developers"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  Webhooks
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#developers"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("API Status", "حالة النظام")}
+                </a>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Resources", "الموارد")}</h4>
+            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">
+              {t("Resources", "الموارد")}
+            </h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><a href="https://docs.snip.sa" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Help Center", "مركز المساعدة")}</a></li>
-              <li><Link to="/blog" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Blog", "المدونة")}</Link></li>
-              <li><Link to="/" state={{ scrollTo: "faq" }} className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("FAQ", "أسئلة شائعة")}</Link></li>
+              <li>
+                <a
+                  href={MINTLIFY_DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Help Center", "مركز المساعدة")}
+                </a>
+              </li>
+              <li>
+                <Link
+                  to="/blog"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Blog", "المدونة")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/"
+                  state={{ scrollTo: "faq" }}
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("FAQ", "أسئلة شائعة")}
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">{t("Company", "الشركة")}</h4>
+            <h4 className="font-display font-bold text-sm mb-4 text-[hsl(var(--cream))]">
+              {t("Company", "الشركة")}
+            </h4>
             <ul className="space-y-2.5 text-sm font-body text-[hsl(var(--cream))]/40">
-              <li><Link to="/privacy-policy" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Privacy Policy", "الخصوصية")}</Link></li>
-              <li><Link to="/terms" className="hover:text-[hsl(var(--cream))]/80 transition-colors">{t("Terms of Service", "شروط الاستخدام")}</Link></li>
-              <li><a href="mailto:support@snip.sa" className="hover:text-[hsl(var(--cream))]/80 transition-colors">support@snip.sa</a></li>
+              <li>
+                <Link
+                  to="/privacy-policy"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Privacy Policy", "الخصوصية")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  {t("Terms of Service", "شروط الاستخدام")}
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="mailto:support@snip.sa"
+                  className="hover:text-[hsl(var(--cream))]/80 transition-colors"
+                >
+                  support@snip.sa
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -66,16 +209,30 @@ const Footer = () => {
         <div className="border-t border-[hsl(var(--cream))]/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
-              <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110" asChild>
-                <Link to="/dashboard">{t("Go to Dashboard", "لوحة التحكم")}</Link>
+              <Button
+                className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110"
+                asChild
+              >
+                <Link to="/dashboard">
+                  {t("Go to Dashboard", "لوحة التحكم")}
+                </Link>
               </Button>
             ) : (
               <>
-                <Button variant="ghost" className="text-[hsl(var(--cream))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--cream))]/20 hover:bg-[hsl(var(--cream))]/10" asChild>
+                <Button
+                  variant="ghost"
+                  className="text-[hsl(var(--cream))] font-body font-semibold rounded-full px-5 border border-[hsl(var(--cream))]/20 hover:bg-[hsl(var(--cream))]/10"
+                  asChild
+                >
                   <Link to="/login">{t("Log in", "تسجيل الدخول")}</Link>
                 </Button>
-                <Button className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110" asChild>
-                  <Link to="/signup">{t("Get started for free", "ابدأ مجاناً")}</Link>
+                <Button
+                  className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-full px-6 hover:brightness-110"
+                  asChild
+                >
+                  <Link to="/signup">
+                    {t("Get started for free", "ابدأ مجاناً")}
+                  </Link>
                 </Button>
               </>
             )}
@@ -83,11 +240,10 @@ const Footer = () => {
 
           <p className="text-[hsl(var(--cream))]/30 text-sm font-body text-center md:text-end max-w-md">
             {t(
-              "© 2025 snip.sa Saudi link management platform. Hosted inside Saudi Arabia. PDPL compliant.",
-              "© 2025 snip.sa منصة سعودية لإدارة الروابط. مستضاف داخل المملكة العربية السعودية. ممتثل لنظام PDPL."
+              `© 2025 ${brand.domain} Saudi link management platform. Hosted inside Saudi Arabia. PDPL compliant.`,
+              `© 2025 ${brand.domain} منصة سعودية لإدارة الروابط. مستضاف داخل المملكة العربية السعودية. ممتثل لنظام PDPL.`,
             )}
           </p>
-
         </div>
       </div>
     </footer>

@@ -3,14 +3,25 @@ import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Link2 } from "lucide-react";
 import ManualWizard from "@/components/bio-wizard/manual/ManualWizard";
-import { BioDraft, DraftLink, emptyDraft, uid, buildBlocksFromDraft, buildThemeFromDraft } from "@/components/bio-wizard/draftTypes";
+import {
+  BioDraft,
+  DraftLink,
+  emptyDraft,
+  uid,
+  buildBlocksFromDraft,
+  buildThemeFromDraft,
+} from "@/components/bio-wizard/draftTypes";
 import { BioBlock } from "@/types/bio";
 import { bioPageAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
+import { useRequirePersonalProject } from "@/hooks/useRequirePersonalProject";
 
-const blocksToDraft = (blocks: BioBlock[]): Pick<BioDraft, "profile" | "links"> => {
+const blocksToDraft = (
+  blocks: BioBlock[],
+): Pick<BioDraft, "profile" | "links"> => {
   let profile = { ...emptyDraft.profile };
   const links: DraftLink[] = [];
 
@@ -76,7 +87,9 @@ const blocksToDraft = (blocks: BioBlock[]): Pick<BioDraft, "profile" | "links"> 
         title: b.data?.text || b.data?.textEn || "",
         titleEn: b.data?.textEn,
         url: "",
-        sectionStyle: b.data?.sectionStyle || (b.data?.variant === "section" ? "text" : "text-line"),
+        sectionStyle:
+          b.data?.sectionStyle ||
+          (b.data?.variant === "section" ? "text" : "text-line"),
         lineColor: b.data?.lineColor,
         textColor: b.data?.textColor,
         fontSize: b.data?.fontSize,
@@ -95,10 +108,12 @@ const blocksToDraft = (blocks: BioBlock[]): Pick<BioDraft, "profile" | "links"> 
 };
 
 const BioBuilder = () => {
+  useBrandMetaTags();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  useRequirePersonalProject("/dashboard");
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -108,12 +123,19 @@ const BioBuilder = () => {
   const [pageId, setPageId] = useState<string>(id || "");
 
   useEffect(() => {
-    if (!id) { setNotFound(true); setLoading(false); return; }
+    if (!id) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
     (async () => {
       try {
-        const res = await bioPageAPI.get(id) as any;
+        const res = (await bioPageAPI.get(id)) as any;
         const page = res?.data;
-        if (!page) { setNotFound(true); return; }
+        if (!page) {
+          setNotFound(true);
+          return;
+        }
 
         const fromBlocks = page.blocks?.length
           ? blocksToDraft(page.blocks)
@@ -124,7 +146,10 @@ const BioBuilder = () => {
           profile: {
             ...fromBlocks.profile,
             displayName: fromBlocks.profile.displayName || page.title || "",
-            photo: fromBlocks.profile.photo || page.avatarUrl || emptyDraft.profile.photo,
+            photo:
+              fromBlocks.profile.photo ||
+              page.avatarUrl ||
+              emptyDraft.profile.photo,
           },
           links: fromBlocks.links,
           settings: {
@@ -168,14 +193,20 @@ const BioBuilder = () => {
       await bioPageAPI.update(pageId, payload);
       toast({
         title: t("Changes saved", "تم حفظ التغييرات"),
-        description: t("Your bio page has been updated.", "تم تحديث صفحة البايو الخاصة بك."),
+        description: t(
+          "Your bio page has been updated.",
+          "تم تحديث صفحة البايو الخاصة بك.",
+        ),
       });
       navigate("/dashboard/bio-pages");
     } catch (err: any) {
       toast({
         variant: "destructive",
         title: t("Save failed", "فشل الحفظ"),
-        description: err?.response?.data?.message || err?.message || "Something went wrong",
+        description:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Something went wrong",
       });
     } finally {
       setSaving(false);
@@ -204,7 +235,10 @@ const BioBuilder = () => {
       toast({
         variant: "destructive",
         title: t("Save failed", "فشل الحفظ"),
-        description: err?.response?.data?.message || err?.message || "Something went wrong",
+        description:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Something went wrong",
       });
     } finally {
       setSaving(false);
@@ -240,7 +274,11 @@ const BioBuilder = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
+      >
         <ManualWizard
           draft={draft}
           onUpdate={updateDraft}

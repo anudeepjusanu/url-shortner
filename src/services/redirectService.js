@@ -3,11 +3,12 @@ const analyticsService = require("./analyticsService");
 const securityService = require("./securityService");
 const { cacheGet, cacheSet } = require("../config/redis");
 const config = require("../config/environment");
+const logger = require("../config/logger");
 
 class RedirectService {
   async handleRedirect(shortCode, requestData) {
     try {
-      console.log("\n========== REDIRECT SERVICE START ==========");
+      logger.info("\n========== REDIRECT SERVICE START ==========");
       const {
         ipAddress,
         userAgent,
@@ -19,7 +20,7 @@ class RedirectService {
         clickSource,
       } = requestData;
 
-      console.log("🔄 Redirect Service - handleRedirect:", {
+      logger.info("🔄 Redirect Service - handleRedirect:", {
         shortCode,
         shortCodeType: typeof shortCode,
         shortCodeLength: shortCode?.length,
@@ -31,30 +32,30 @@ class RedirectService {
 
       const blocked = await securityService.isIPBlocked(ipAddress);
       if (blocked.blocked) {
-        console.error("🚫 IP Blocked:", { ipAddress, reason: blocked.reason });
+        logger.error("🚫 IP Blocked:", { ipAddress, reason: blocked.reason });
         throw new Error(`IP blocked: ${blocked.reason}`);
       }
-      console.log("✅ IP not blocked:", ipAddress);
+      logger.info("✅ IP not blocked:", ipAddress);
 
       const url = await this.getUrlByShortCode(shortCode, domain);
       if (!url) {
-        console.error("❌ URL not found for shortCode:", shortCode);
-        console.log(
+        logger.error("❌ URL not found for shortCode:", shortCode);
+        logger.info(
           "========== REDIRECT SERVICE FAILED (URL NOT FOUND) ==========\n",
         );
         throw new Error("URL not found");
       }
-      console.log("✅ URL retrieved successfully");
+      logger.info("✅ URL retrieved successfully");
 
       const validationResult = await this.validateRedirect(url, requestData);
       if (!validationResult.allowed) {
-        console.error("❌ Validation failed:", validationResult.reason);
-        console.log(
+        logger.error("❌ Validation failed:", validationResult.reason);
+        logger.info(
           "========== REDIRECT SERVICE FAILED (VALIDATION) ==========\n",
         );
         throw new Error(validationResult.reason);
       }
-      console.log("✅ Validation passed");
+      logger.info("✅ Validation passed");
 
       const clickData = {
         ipAddress,
@@ -69,12 +70,12 @@ class RedirectService {
       try {
         await analyticsService.recordClick(shortCode, clickData);
       } catch (analyticsError) {
-        console.error("Analytics recording failed:", analyticsError);
+        logger.error("Analytics recording failed:", analyticsError);
       }
 
       const redirectUrl = this.processRedirectUrl(url);
 
-      console.log("🎯 Processing redirect:", {
+      logger.info("🎯 Processing redirect:", {
         originalUrl: url.originalUrl,
         redirectUrl,
         hasUTM: redirectUrl !== url.originalUrl,
@@ -92,12 +93,12 @@ class RedirectService {
         },
       });
 
-      console.log("✅ Redirect successful:", {
+      logger.info("✅ Redirect successful:", {
         shortCode,
         redirectType: url.redirectType || 302,
         redirectUrl,
       });
-      console.log("========== REDIRECT SERVICE SUCCESS ==========\n");
+      logger.info("========== REDIRECT SERVICE SUCCESS ==========\n");
 
       return {
         success: true,
@@ -106,16 +107,16 @@ class RedirectService {
         metadata: this.getRedirectMetadata(url),
       };
     } catch (error) {
-      console.error("❌ REDIRECT SERVICE ERROR:");
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      console.error("ShortCode:", shortCode);
-      console.error("RequestData:", {
+      logger.error("❌ REDIRECT SERVICE ERROR:");
+      logger.error("Error message:", error.message);
+      logger.error("Error stack:", error.stack);
+      logger.error("ShortCode:", shortCode);
+      logger.error("RequestData:", {
         ipAddress: requestData.ipAddress,
         domain: requestData.domain,
         clickSource: requestData.clickSource,
       });
-      console.log("========== REDIRECT SERVICE ERROR ==========\n");
+      logger.info("========== REDIRECT SERVICE ERROR ==========\n");
 
       await securityService.logSecurityEvent({
         type: "REDIRECT_ERROR",
@@ -134,7 +135,7 @@ class RedirectService {
 
   async getUrlByShortCode(shortCode, requestDomain = null) {
     try {
-      console.log("\n===== GET URL BY SHORT CODE START =====");
+      logger.info("\n===== GET URL BY SHORT CODE START =====");
       // Normalize domain to ASCII (Punycode) for consistent database lookup
       const { domainToASCII } = require("../utils/punycode");
       const normalizedDomain = requestDomain
@@ -145,7 +146,7 @@ class RedirectService {
       const originalShortCode = shortCode;
       const lowerShortCode = shortCode.toLowerCase();
 
-      console.log("🔍 Looking up URL:", {
+      logger.info("🔍 Looking up URL:", {
         shortCode: originalShortCode,
         lowerShortCode,
         shortCodeType: typeof shortCode,
@@ -164,7 +165,7 @@ class RedirectService {
       }
 
       if (url) {
-        console.log("💾 Cache HIT:", {
+        logger.info("💾 Cache HIT:", {
           shortCode: originalShortCode,
           cachedIsActive: url.isActive,
           cachedDomain: url.domain,
@@ -179,7 +180,7 @@ class RedirectService {
           : cachedUrlDomain === normalizedDomain; // custom domain requests must match exactly
 
         if (!domainMatches) {
-          console.log(
+          logger.info(
             "⚠️ Cache domain mismatch! Request domain:",
             normalizedDomain,
             "Cached domain:",
@@ -251,7 +252,7 @@ class RedirectService {
           }
         } // closes inner if(url) after domain validation
       } else {
-        console.log("💾 Cache MISS - querying database");
+        logger.info("💾 Cache MISS - querying database");
 
         // Use case-insensitive regex for shortCode and customCode lookup
         const query = {
@@ -264,12 +265,12 @@ class RedirectService {
         // If a custom domain is being used, ensure the URL belongs to that domain
         if (normalizedDomain && !this.isMainDomain(normalizedDomain)) {
           query.domain = normalizedDomain;
-          console.log(
+          logger.info(
             "🌐 Custom domain query (case-insensitive):",
             JSON.stringify(query, null, 2),
           );
         } else {
-          console.log(
+          logger.info(
             "🌐 Main domain query (case-insensitive):",
             JSON.stringify(query, null, 2),
           );
@@ -280,7 +281,7 @@ class RedirectService {
           .populate("organization", "name slug");
 
         if (url) {
-          console.log("✅ URL FOUND in database:", {
+          logger.info("✅ URL FOUND in database:", {
             _id: url._id,
             shortCode: url.shortCode,
             customCode: url.customCode,
@@ -289,8 +290,8 @@ class RedirectService {
             isActive: url.isActive,
           });
         } else {
-          console.log("❌ URL NOT FOUND in database");
-          console.log("Query was:", JSON.stringify(query, null, 2));
+          logger.info("❌ URL NOT FOUND in database");
+          logger.info("Query was:", JSON.stringify(query, null, 2));
         }
 
         if (url && url.isActive) {
@@ -301,25 +302,25 @@ class RedirectService {
               url,
               config.CACHE_TTL.URL_CACHE,
             );
-            console.log("💾 Cached URL:", {
+            logger.info("💾 Cached URL:", {
               shortCode: lowerShortCode,
               ttl: config.CACHE_TTL.URL_CACHE,
             });
           } catch (cacheError) {
-            console.warn("⚠️  Cache set failed:", cacheError.message);
+            logger.warn("⚠️  Cache set failed:", cacheError.message);
             // Continue anyway, just without caching
           }
         }
       }
 
-      console.log("===== GET URL BY SHORT CODE END =====\n");
+      logger.info("===== GET URL BY SHORT CODE END =====\n");
       return url;
     } catch (error) {
-      console.error("❌ ERROR in getUrlByShortCode:");
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      console.error("ShortCode:", shortCode);
-      console.log("===== GET URL BY SHORT CODE FAILED =====\n");
+      logger.error("❌ ERROR in getUrlByShortCode:");
+      logger.error("Error message:", error.message);
+      logger.error("Error stack:", error.stack);
+      logger.error("ShortCode:", shortCode);
+      logger.info("===== GET URL BY SHORT CODE FAILED =====\n");
       return null;
     }
   }
@@ -348,6 +349,8 @@ class RedirectService {
       "snip.sa",
       "www.snip.sa",
       "shortener.snip.sa",
+      "4r.sa",
+      "www.4r.sa",
       "qa.snip.sa",
       "qa.4r.sa",
       "localhost",
@@ -356,14 +359,14 @@ class RedirectService {
     ].filter(Boolean);
 
     const isMain = mainDomains.includes(domain.toLowerCase());
-    console.log("isMainDomain check:", { domain, mainDomains, isMain });
+    logger.info("isMainDomain check:", { domain, mainDomains, isMain });
     return isMain;
   }
 
   async validateRedirect(url, requestData) {
     const { ipAddress, userAgent, password, country, deviceType } = requestData;
 
-    console.log("🔍 validateRedirect check:", {
+    logger.info("🔍 validateRedirect check:", {
       urlId: url._id,
       shortCode: url.shortCode,
       isActive: url.isActive,
@@ -375,13 +378,13 @@ class RedirectService {
       return { allowed: false, reason: "URL not found" };
     }
 
-    // Checked before the generic isActive gate: a moderation block deactivates
-    // the link (see adminController.updateUrlModeration), so without this
-    // ordering every blocked link would report "URL is deactivated" instead
-    // of "CONTENT_BLOCKED" and land on the generic link-not-found page
-    // instead of the dedicated block page.
+    if (!url.isActive) {
+      logger.info("❌ URL is deactivated, blocking redirect");
+      return { allowed: false, reason: "URL is deactivated" };
+    }
+
     if (url.moderationStatus === "blocked") {
-      console.log("❌ URL blocked by content moderation, blocking redirect");
+      logger.info("❌ URL blocked by content moderation, blocking redirect");
       return { allowed: false, reason: "CONTENT_BLOCKED" };
     }
 
@@ -486,7 +489,7 @@ class RedirectService {
 
       return parsedUrl.toString();
     } catch (error) {
-      console.error("Error processing redirect URL:", error);
+      logger.error("Error processing redirect URL:", error);
       return url.originalUrl;
     }
   }
@@ -554,7 +557,7 @@ class RedirectService {
 
       return previewData;
     } catch (error) {
-      console.error("Error generating preview page:", error);
+      logger.error("Error generating preview page:", error);
       throw error;
     }
   }
@@ -643,7 +646,7 @@ class RedirectService {
         riskLevel: "LOW",
       };
     } catch (error) {
-      console.error("Error checking URL safety:", error);
+      logger.error("Error checking URL safety:", error);
       return {
         safe: false,
         reason: "Unable to verify URL safety",
@@ -672,7 +675,7 @@ class RedirectService {
       const encodedShortCode = encodeURIComponent(shortCode);
       const shortUrl = `${config.BASE_URL}/${encodedShortCode}?qr=1`;
 
-      console.log("🔗 Generating QR Code:", {
+      logger.info("🔗 Generating QR Code:", {
         shortCode,
         encodedShortCode,
         shortUrl,
@@ -800,7 +803,7 @@ class RedirectService {
         },
       };
     } catch (error) {
-      console.error("Error generating QR code:", error);
+      logger.error("Error generating QR code:", error);
       throw error;
     }
   }
@@ -826,7 +829,7 @@ class RedirectService {
         expiresAt: url.expiresAt,
       };
     } catch (error) {
-      console.error("Error getting redirect stats:", error);
+      logger.error("Error getting redirect stats:", error);
       throw error;
     }
   }

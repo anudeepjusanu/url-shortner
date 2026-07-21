@@ -2,6 +2,8 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import CTASection from "@/components/landing/CTASection";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +39,9 @@ const isValidUrl = (value: string) => {
 };
 
 const FeatureUrlShortening = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
+  const brand = useBrand();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [inputUrl, setInputUrl] = useState("");
@@ -111,8 +115,8 @@ const FeatureUrlShortening = () => {
       icon: Globe,
       title: t("Custom domains", "نطاقات مخصصة"),
       desc: t(
-        "Use your own brand domain instead of snip.sa. Like go.yourshop.sa/offer. Free SSL included.",
-        "استخدم نطاق علامتك التجارية بدلاً من snip.sa. مثل go.متجرك.sa/عرض. SSL مجاني.",
+        `Use your own brand domain instead of ${brand.domain}. Like go.yourshop.sa/offer. Free SSL included.`,
+        `استخدم نطاق علامتك التجارية بدلاً من ${brand.domain}. مثل go.متجرك.sa/عرض. SSL مجاني.`,
       ),
       num: "04",
     },
@@ -120,8 +124,8 @@ const FeatureUrlShortening = () => {
       icon: MousePointerClick,
       title: t("Custom aliases", "أسماء مخصصة"),
       desc: t(
-        "Choose memorable link names like snip.sa/ramadan instead of random codes.",
-        "اختر أسماء روابط سهلة الحفظ مثل snip.sa/رمضان بدلاً من أكواد عشوائية.",
+        `Choose memorable link names like ${brand.domain}/ramadan instead of random codes.`,
+        `اختر أسماء روابط سهلة الحفظ مثل ${brand.domain}/رمضان بدلاً من أكواد عشوائية.`,
       ),
       num: "05",
     },
@@ -375,7 +379,7 @@ const FeatureUrlShortening = () => {
                   className="bg-[hsl(var(--sky))]/5 rounded-lg px-3 py-2.5 flex items-center justify-between"
                 >
                   <span className="font-mono text-[11px] text-[hsl(var(--sky))] font-bold">
-                    snip.sa/store
+                    {brand.domain}/store
                   </span>
                   <span className="text-[8px] px-1.5 py-0.5 rounded bg-green-100 text-green-600 font-bold">
                     {t("READY", "جاهز")}
@@ -509,20 +513,22 @@ const FeatureUrlShortening = () => {
                 )}
               </p>
               <div className="mt-auto pt-4 flex gap-2">
-                {["snip.sa/sale", "snip.sa/menu"].map((alias, i) => (
-                  <motion.div
-                    key={alias}
-                    initial={{ opacity: 0, x: -6 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="flex-1 bg-[hsl(var(--sky))]/5 rounded-lg py-2 text-center"
-                  >
-                    <span className="font-mono text-[10px] text-[hsl(var(--sky))] font-bold">
-                      {alias}
-                    </span>
-                  </motion.div>
-                ))}
+                {[`${brand.domain}/sale`, `${brand.domain}/menu`].map(
+                  (alias, i) => (
+                    <motion.div
+                      key={alias}
+                      initial={{ opacity: 0, x: -6 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className="flex-1 bg-[hsl(var(--sky))]/5 rounded-lg py-2 text-center"
+                    >
+                      <span className="font-mono text-[10px] text-[hsl(var(--sky))] font-bold">
+                        {alias}
+                      </span>
+                    </motion.div>
+                  ),
+                )}
               </div>
             </motion.div>
           </div>
@@ -596,7 +602,7 @@ const FeatureUrlShortening = () => {
               viewport={{ once: true }}
             >
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--sky))]/10 text-[hsl(var(--sky))] text-xs font-bold font-body mb-4">
-                {t("WHY snip.sa", "ليش snip.sa")}
+                {t(`WHY ${brand.domain}`, `ليش ${brand.domain}`)}
               </span>
               <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-[hsl(var(--navy))] mb-6">
                 {t(
@@ -606,8 +612,8 @@ const FeatureUrlShortening = () => {
               </h2>
               <p className="font-body text-base text-[hsl(var(--navy))]/50 leading-relaxed">
                 {t(
-                  "While others charge monthly fees and host your data overseas, snip.sa gives you everything for free with your data staying in Saudi Arabia.",
-                  "بينما غيرنا يفرضون رسوم شهرية ويستضيفون بياناتك برا، snip.sa يعطيك كل شيء مجاناً مع بقاء بياناتك في السعودية.",
+                  `While others charge monthly fees and host your data overseas, ${brand.domain} gives you everything for free with your data staying in Saudi Arabia.`,
+                  `بينما غيرنا يفرضون رسوم شهرية ويستضيفون بياناتك برا، ${brand.domain} يعطيك كل شيء مجاناً مع بقاء بياناتك في السعودية.`,
                 )}
               </p>
             </motion.div>

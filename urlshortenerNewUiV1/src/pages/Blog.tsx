@@ -1,46 +1,51 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBrand } from "@/contexts/BrandContext";
 import { blogPosts } from "@/data/blogPosts";
+import { brandifyBlogPost } from "@/lib/brandifyBlogPost";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useMetaTags } from "@/hooks/useMetaTags";
 
 const Blog = () => {
   const { t, lang } = useLanguage();
+  const brand = useBrand();
+  const capitalizedBrand =
+    brand.name.charAt(0).toUpperCase() + brand.name.slice(1);
+  const posts = blogPosts.map((post) => brandifyBlogPost(post, brand));
 
   // Set meta tags based on language
   useMetaTags({
     title:
       lang === "ar"
-        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        ? `اختصار الروابط | مدونة ${capitalizedBrand} لأفضل أدوات الروابط القصيرة`
         : "Shortlink Blog | Tips & Tools for Smart Link Management",
     description:
       lang === "ar"
-        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
-    keywords:
-      "shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, snip, مدونة اختصار الروابط, نصائح الروابط القصيرة",
+        ? `اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة ${capitalizedBrand}.`
+        : `Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with ${capitalizedBrand}.`,
+    keywords: `shortlink blog, URL shortener tips, link management, QR codes, link tracking, digital marketing, ${brand.name}, مدونة اختصار الروابط, نصائح الروابط القصيرة`,
     ogTitle:
       lang === "ar"
-        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        ? `اختصار الروابط | مدونة ${capitalizedBrand} لأفضل أدوات الروابط القصيرة`
         : "Shortlink Blog | Tips & Tools for Smart Link Management",
     ogDescription:
       lang === "ar"
-        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
-    ogUrl: "https://snip.sa/blog",
-    ogImage: "https://snip.sa/og-image.png",
+        ? `اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة ${capitalizedBrand}.`
+        : `Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with ${capitalizedBrand}.`,
+    ogUrl: `https://${brand.domain}/blog`,
+    ogImage: `https://${brand.domain}/og-image.png`,
     twitterTitle:
       lang === "ar"
-        ? "اختصار الروابط | مدونة Snip لأفضل أدوات الروابط القصيرة"
+        ? `اختصار الروابط | مدونة ${capitalizedBrand} لأفضل أدوات الروابط القصيرة`
         : "Shortlink Blog | Tips & Tools for Smart Link Management",
     twitterDescription:
       lang === "ar"
-        ? "اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة Snip."
-        : "Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with Snip.",
-    twitterImage: "https://snip.sa/og-image.png",
-    canonical: "https://snip.sa/blog",
+        ? `اكتشف أحدث المقالات والنصائح حول اختصار الروابط، إنشاء روابط قصيرة احترافية، تتبع النقرات، وتحسين التسويق الرقمي عبر منصة ${capitalizedBrand}.`
+        : `Explore expert tips, tools, and guides about shortlink creation, link tracking, QR codes, analytics, and smarter digital marketing with ${capitalizedBrand}.`,
+    twitterImage: `https://${brand.domain}/og-image.png`,
+    canonical: `https://${brand.domain}/blog`,
   });
 
   return (
@@ -63,7 +68,7 @@ const Blog = () => {
 
           {/* Posts grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.map((post, i) => (
+            {posts.map((post, i) => (
               <Link
                 to={`/blog/${post.slug}`}
                 key={post.slug}

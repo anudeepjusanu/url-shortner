@@ -39,7 +39,9 @@ import { cn } from "@/lib/utils";
 import { useUrlAnalytics, useAnalyticsDashboard } from "@/hooks/useApi";
 import { analyticsService } from "@/services/jwtService";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import amplitudeService from "@/services/amplitude";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 
 // ─── Constants ───
 const HOUR = 3600_000;
@@ -296,9 +298,15 @@ function buildStatList(items: { name: string; value: number }[]) {
 }
 
 const AnalyticsPage = () => {
+  useBrandMetaTags();
   const { t } = useLanguage();
   const { toast } = useToast();
   const { linkId } = useParams<{ linkId?: string }>();
+  const {
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
   // chartEl is stored in state so that the event-listener effects re-run the
   // first time the chart container actually appears in the DOM (it is inside a
   // {!isLoading && ...} block, so chartContainerRef.current is null on mount).
@@ -408,9 +416,19 @@ const AnalyticsPage = () => {
     };
   }, [dateFilter, customFrom, customTo]);
 
-  // Fetch URL-specific or dashboard analytics
+  // Fetch URL-specific or dashboard analytics. Enterprise RBAC: the
+  // dashboard (org-wide) query is scoped to the active project — omitted
+  // only in the Account Owner's "All projects" aggregate view. The
+  // per-link query derives its scope from the link's own project, so it
+  // needs no projectId here.
   const urlAnalyticsQuery = useUrlAnalytics(linkId || "", apiParams);
-  const dashboardQuery = useAnalyticsDashboard(apiParams);
+  const dashboardQuery = useAnalyticsDashboard(
+    {
+      ...apiParams,
+      projectId: isAllProjectsView ? undefined : activeProject?.id,
+    },
+    { enabled: !isProjectLoading },
+  );
 
   const isLoading = linkId
     ? urlAnalyticsQuery.isLoading

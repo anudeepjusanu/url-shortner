@@ -1,5 +1,6 @@
-const UtmLink = require('../models/UtmLink');
-const { validateUrl } = require('../utils/urlValidator');
+const UtmLink = require("../models/UtmLink");
+const { validateUrl } = require("../utils/urlValidator");
+const projectAccessService = require("./projectAccessService");
 
 const makeError = (message, statusCode = 500) => {
   const err = new Error(message);
@@ -25,14 +26,22 @@ const buildTaggedUrl = (destinationUrl, params) => {
 };
 
 const utmLinkService = {
-  async createUtmLink(userId, organizationId, data) {
-    const { name, destinationUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent } = data;
+  async createUtmLink(userId, organizationId, projectId, data) {
+    const {
+      name,
+      destinationUrl,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent,
+    } = data;
 
-    if (!destinationUrl) throw makeError('Destination URL is required', 400);
+    if (!destinationUrl) throw makeError("Destination URL is required", 400);
 
     const urlValidation = validateUrl(destinationUrl);
     if (!urlValidation.isValid) {
-      throw makeError(urlValidation.message || 'Invalid destination URL', 400);
+      throw makeError(urlValidation.message || "Invalid destination URL", 400);
     }
 
     const params = {
@@ -46,6 +55,7 @@ const utmLinkService = {
     const utmLink = new UtmLink({
       creator: userId,
       organization: organizationId || null,
+      project: projectId || null,
       name: name?.trim() || null,
       destinationUrl: urlValidation.cleanUrl,
       ...params,
@@ -56,13 +66,25 @@ const utmLinkService = {
     return utmLink;
   },
 
-  async getUserUtmLinks(userId) {
-    return UtmLink.find({ creator: userId }).sort({ createdAt: -1 });
+  async getUtmLinks(filter) {
+    return UtmLink.find(filter).sort({ createdAt: -1 });
   },
 
-  async deleteUtmLink(id, userId) {
-    const utmLink = await UtmLink.findOne({ _id: id, creator: userId });
-    if (!utmLink) throw makeError('UTM link not found', 404);
+  // Enterprise RBAC: the caller's edit access is derived from the UTM
+  // link's own `project` field (via assertCanEditResource), never from a
+  // client-supplied projectId — same rule as urlController/domainController.
+  async deleteUtmLink(id, user) {
+    const utmLink = await UtmLink.findById(id);
+    if (!utmLink) throw makeError("UTM link not found", 404);
+
+    if (!user.organization) {
+      if (utmLink.creator.toString() !== user.id.toString()) {
+        throw makeError("UTM link not found", 404);
+      }
+    } else {
+      await projectAccessService.assertCanEditResource(user, utmLink);
+    }
+
     await utmLink.deleteOne();
   },
 };

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBrandMetaTags } from "@/hooks/useBrandMetaTags";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ import {
 import { dynamicQRCodeAPI } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -78,10 +80,16 @@ const DOWNLOAD_FORMATS = ["png", "jpeg", "webp", "svg", "pdf"] as const;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function DynamicQRCodes() {
+  useBrandMetaTags();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, isAr } = useLanguage();
   const { toast } = useToast();
+  const {
+    activeProject,
+    isAllProjectsView,
+    isLoading: isProjectLoading,
+  } = useProject();
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -96,7 +104,9 @@ export default function DynamicQRCodes() {
   const [deleteTarget, setDeleteTarget] = useState<DynamicQR | null>(null);
 
   // Analytics dialog
-  const [analyticsTarget, setAnalyticsTarget] = useState<DynamicQR | null>(null);
+  const [analyticsTarget, setAnalyticsTarget] = useState<DynamicQR | null>(
+    null,
+  );
 
   // Download format
   const [downloadFormat, setDownloadFormat] = useState<string>("png");
@@ -109,23 +119,30 @@ export default function DynamicQRCodes() {
   const [destAcknowledged, setDestAcknowledged] = useState(false);
 
   // ── Debounced search ─────────────────────────────────────────────────────
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value);
-      clearTimeout((handleSearchChange as any)._timer);
-      (handleSearchChange as any)._timer = setTimeout(() => {
-        setDebouncedSearch(value);
-        setPage(1);
-      }, 400);
-    },
-    []
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    clearTimeout((handleSearchChange as any)._timer);
+    (handleSearchChange as any)._timer = setTimeout(() => {
+      setDebouncedSearch(value);
+      setPage(1);
+    }, 400);
+  }, []);
 
   // ── Data fetching ────────────────────────────────────────────────────────
+  // Enterprise RBAC: scope the list to the active project. Omitted only in
+  // the Account Owner's "All projects" aggregate view.
+  const projectId = isAllProjectsView ? undefined : activeProject?.id;
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["dynamic-qr", page, debouncedSearch],
-    queryFn: () => dynamicQRCodeAPI.list({ page, limit: 12, search: debouncedSearch || undefined }),
+    queryKey: ["dynamic-qr", page, debouncedSearch, projectId],
+    queryFn: () =>
+      dynamicQRCodeAPI.list({
+        page,
+        limit: 12,
+        search: debouncedSearch || undefined,
+        projectId,
+      }),
     staleTime: 30_000,
+    enabled: !isProjectLoading,
   });
 
   const items: DynamicQR[] = (data as any)?.data ?? [];
@@ -153,7 +170,8 @@ export default function DynamicQRCodes() {
       toast({
         variant: "destructive",
         title: t("Update failed", "فشل التحديث"),
-        description: err?.message ?? t("Please try again", "يرجى المحاولة مرة أخرى"),
+        description:
+          err?.message ?? t("Please try again", "يرجى المحاولة مرة أخرى"),
       });
     },
   });
@@ -161,9 +179,13 @@ export default function DynamicQRCodes() {
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       dynamicQRCodeAPI.update(id, { isActive }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dynamic-qr"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["dynamic-qr"] }),
     onError: () =>
-      toast({ variant: "destructive", title: t("Action failed", "فشل الإجراء") }),
+      toast({
+        variant: "destructive",
+        title: t("Action failed", "فشل الإجراء"),
+      }),
   });
 
   const deleteMutation = useMutation({
@@ -198,7 +220,10 @@ export default function DynamicQRCodes() {
     const url = newDestination.trim();
     if (!validateUrl(url)) {
       setDestinationError(
-        t("Enter a valid http/https URL", "أدخل رابطاً صحيحاً يبدأ بـ http أو https")
+        t(
+          "Enter a valid http/https URL",
+          "أدخل رابطاً صحيحاً يبدأ بـ http أو https",
+        ),
       );
       return;
     }
@@ -220,7 +245,10 @@ export default function DynamicQRCodes() {
     try {
       await dynamicQRCodeAPI.download(item._id, item.name, downloadFormat);
     } catch {
-      toast({ variant: "destructive", title: t("Download failed", "فشل التحميل") });
+      toast({
+        variant: "destructive",
+        title: t("Download failed", "فشل التحميل"),
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -239,11 +267,14 @@ export default function DynamicQRCodes() {
             <p className="text-sm text-muted-foreground mt-1">
               {t(
                 "Update the destination of a QR code anytime without reprinting",
-                "حدّث وجهة كود QR في أي وقت دون إعادة طباعته"
+                "حدّث وجهة كود QR في أي وقت دون إعادة طباعته",
               )}
             </p>
           </div>
-          <Button onClick={() => navigate("/dashboard/dynamic-qr/create")} className="shrink-0">
+          <Button
+            onClick={() => navigate("/dashboard/dynamic-qr/create")}
+            className="shrink-0"
+          >
             <Plus className="w-4 h-4 me-2" />
             {t("New Dynamic QR", "إنشاء QR ديناميكي")}
           </Button>
@@ -256,7 +287,10 @@ export default function DynamicQRCodes() {
             <Input
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={t("Search by name, URL or code…", "ابحث بالاسم أو الرابط أو الكود…")}
+              placeholder={t(
+                "Search by name, URL or code…",
+                "ابحث بالاسم أو الرابط أو الكود…",
+              )}
               className="ps-9"
             />
           </div>
@@ -284,7 +318,10 @@ export default function DynamicQRCodes() {
         {/* Error */}
         {isError && (
           <div className="text-center py-20 text-muted-foreground">
-            {t("Failed to load dynamic QR codes", "فشل تحميل أكواد QR الديناميكية")}
+            {t(
+              "Failed to load dynamic QR codes",
+              "فشل تحميل أكواد QR الديناميكية",
+            )}
           </div>
         )}
 
@@ -295,7 +332,10 @@ export default function DynamicQRCodes() {
             <p className="text-muted-foreground">
               {debouncedSearch
                 ? t("No results found", "لا توجد نتائج")
-                : t("No dynamic QR codes yet", "لا توجد أكواد QR ديناميكية بعد")}
+                : t(
+                    "No dynamic QR codes yet",
+                    "لا توجد أكواد QR ديناميكية بعد",
+                  )}
             </p>
             {!debouncedSearch && (
               <Button onClick={() => navigate("/dashboard/dynamic-qr/create")}>
@@ -314,7 +354,7 @@ export default function DynamicQRCodes() {
                 key={item._id}
                 className={cn(
                   "border rounded-xl p-4 space-y-3 bg-card shadow-sm",
-                  !item.isActive && "opacity-60"
+                  !item.isActive && "opacity-60",
                 )}
               >
                 {/* QR preview + name */}
@@ -332,9 +372,16 @@ export default function DynamicQRCodes() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-sm truncate">{item.name}</p>
-                      <Badge variant={item.isActive ? "default" : "secondary"} className="text-[10px] shrink-0">
-                        {item.isActive ? t("Active", "نشط") : t("Inactive", "معطّل")}
+                      <p className="font-semibold text-sm truncate">
+                        {item.name}
+                      </p>
+                      <Badge
+                        variant={item.isActive ? "default" : "secondary"}
+                        className="text-[10px] shrink-0"
+                      >
+                        {item.isActive
+                          ? t("Active", "نشط")
+                          : t("Inactive", "معطّل")}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground font-mono mt-0.5">
@@ -345,9 +392,14 @@ export default function DynamicQRCodes() {
 
                 {/* Destination URL */}
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">{t("Destination", "الوجهة")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Destination", "الوجهة")}
+                  </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs truncate flex-1 text-foreground" title={item.destinationUrl}>
+                    <p
+                      className="text-xs truncate flex-1 text-foreground"
+                      title={item.destinationUrl}
+                    >
                       {item.destinationUrl}
                     </p>
                     <a
@@ -364,11 +416,15 @@ export default function DynamicQRCodes() {
                 {/* Stats */}
                 <div className="flex gap-4 text-xs text-muted-foreground">
                   <span>
-                    <span className="font-semibold text-foreground">{item.scanCount}</span>{" "}
+                    <span className="font-semibold text-foreground">
+                      {item.scanCount}
+                    </span>{" "}
                     {t("scans", "مسح")}
                   </span>
                   <span>
-                    <span className="font-semibold text-foreground">{item.uniqueScanCount}</span>{" "}
+                    <span className="font-semibold text-foreground">
+                      {item.uniqueScanCount}
+                    </span>{" "}
                     {t("unique", "فريد")}
                   </span>
                 </div>
@@ -432,12 +488,17 @@ export default function DynamicQRCodes() {
                     size="sm"
                     variant="ghost"
                     onClick={() =>
-                      toggleActiveMutation.mutate({ id: item._id, isActive: !item.isActive })
+                      toggleActiveMutation.mutate({
+                        id: item._id,
+                        isActive: !item.isActive,
+                      })
                     }
                     className="flex-1 text-xs h-8"
                   >
                     <Edit2 className="w-3.5 h-3.5 me-1" />
-                    {item.isActive ? t("Disable", "تعطيل") : t("Enable", "تفعيل")}
+                    {item.isActive
+                      ? t("Disable", "تعطيل")
+                      : t("Enable", "تفعيل")}
                   </Button>
 
                   <Button
@@ -472,7 +533,9 @@ export default function DynamicQRCodes() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+              onClick={() =>
+                setPage((p) => Math.min(pagination.totalPages, p + 1))
+              }
               disabled={page === pagination.totalPages}
             >
               {t("Next", "التالي")}
@@ -482,10 +545,15 @@ export default function DynamicQRCodes() {
       </div>
 
       {/* ── Update Destination Dialog ─────────────────────────────────────── */}
-      <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+      <Dialog
+        open={!!editTarget}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("Update Destination URL", "تحديث رابط الوجهة")}</DialogTitle>
+            <DialogTitle>
+              {t("Update Destination URL", "تحديث رابط الوجهة")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             {/* Prominent warning */}
@@ -494,7 +562,7 @@ export default function DynamicQRCodes() {
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {t(
                   "Changing the destination will immediately redirect all future scans to the new URL. Anyone who scans this QR code — including from already-printed materials — will be sent to the new destination.",
-                  "تغيير الوجهة سيعيد توجيه جميع عمليات المسح القادمة فوراً إلى الرابط الجديد. سيُوجَّه أي شخص يمسح هذا الكود — بما في ذلك من المواد المطبوعة مسبقاً — إلى الوجهة الجديدة."
+                  "تغيير الوجهة سيعيد توجيه جميع عمليات المسح القادمة فوراً إلى الرابط الجديد. سيُوجَّه أي شخص يمسح هذا الكود — بما في ذلك من المواد المطبوعة مسبقاً — إلى الوجهة الجديدة.",
                 )}
               </p>
             </div>
@@ -525,7 +593,7 @@ export default function DynamicQRCodes() {
               <span className="text-sm text-foreground">
                 {t(
                   "I understand that this change takes effect immediately for all future scans",
-                  "أفهم أن هذا التغيير يسري فوراً على جميع عمليات المسح القادمة"
+                  "أفهم أن هذا التغيير يسري فوراً على جميع عمليات المسح القادمة",
                 )}
               </span>
             </label>
@@ -548,7 +616,10 @@ export default function DynamicQRCodes() {
       </Dialog>
 
       {/* ── Analytics Dialog ──────────────────────────────────────────────── */}
-      <Dialog open={!!analyticsTarget} onOpenChange={(open) => !open && setAnalyticsTarget(null)}>
+      <Dialog
+        open={!!analyticsTarget}
+        onOpenChange={(open) => !open && setAnalyticsTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
@@ -563,20 +634,26 @@ export default function DynamicQRCodes() {
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: t("Total Scans", "إجمالي عمليات المسح"), value: analytics.scanCount },
-                  { label: t("Unique Scans", "عمليات مسح فريدة"), value: analytics.uniqueScanCount },
+                  {
+                    label: t("Total Scans", "إجمالي عمليات المسح"),
+                    value: analytics.scanCount,
+                  },
+                  {
+                    label: t("Unique Scans", "عمليات مسح فريدة"),
+                    value: analytics.uniqueScanCount,
+                  },
                   {
                     label: t("Destination Changes", "تغييرات الوجهة"),
-                    value: analytics.destinationChanges
+                    value: analytics.destinationChanges,
                   },
                   {
                     label: t("Last Scanned", "آخر مسح"),
                     value: analytics.lastScannedAt
                       ? new Date(analytics.lastScannedAt).toLocaleDateString(
-                          isAr ? "ar-SA" : "en-US"
+                          isAr ? "ar-SA" : "en-US",
                         )
-                      : t("Never", "لم يُمسح بعد")
-                  }
+                      : t("Never", "لم يُمسح بعد"),
+                  },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-muted rounded-lg p-3">
                     <p className="text-xs text-muted-foreground">{label}</p>
@@ -585,12 +662,20 @@ export default function DynamicQRCodes() {
                 ))}
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">{t("Current Destination", "الوجهة الحالية")}</p>
-                <p className="text-sm truncate font-mono">{analytics.destinationUrl}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("Current Destination", "الوجهة الحالية")}
+                </p>
+                <p className="text-sm truncate font-mono">
+                  {analytics.destinationUrl}
+                </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">{t("Scan URL (permanent)", "رابط المسح (دائم)")}</p>
-                <p className="text-sm truncate font-mono text-primary">{analytics.scanUrl}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("Scan URL (permanent)", "رابط المسح (دائم)")}
+                </p>
+                <p className="text-sm truncate font-mono text-primary">
+                  {analytics.scanUrl}
+                </p>
               </div>
             </div>
           ) : null}
@@ -603,21 +688,28 @@ export default function DynamicQRCodes() {
       </Dialog>
 
       {/* ── Delete Confirm ────────────────────────────────────────────────── */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete Dynamic QR Code?", "حذف كود QR الديناميكي؟")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("Delete Dynamic QR Code?", "حذف كود QR الديناميكي؟")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 "This cannot be undone. Existing printed QR codes will stop working.",
-                "لا يمكن التراجع عن هذا الإجراء. ستتوقف أكواد QR المطبوعة عن العمل."
+                "لا يمكن التراجع عن هذا الإجراء. ستتوقف أكواد QR المطبوعة عن العمل.",
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("Cancel", "إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget._id)}
+              onClick={() =>
+                deleteTarget && deleteMutation.mutate(deleteTarget._id)
+              }
               className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {deleteMutation.isPending ? (

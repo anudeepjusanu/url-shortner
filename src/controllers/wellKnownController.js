@@ -1,4 +1,5 @@
-const AppRegistration = require('../models/AppRegistration');
+const AppRegistration = require("../models/AppRegistration");
+const logger = require("../config/logger");
 
 /**
  * GET /.well-known/apple-app-site-association
@@ -11,30 +12,32 @@ const serveAASA = async (req, res) => {
   try {
     const apps = await AppRegistration.find({
       isActive: true,
-      bundleId: { $ne: null }
-    }).select('bundleId teamId').lean();
+      bundleId: { $ne: null },
+    })
+      .select("bundleId teamId")
+      .lean();
 
-    const details = apps.map(app => ({
+    const details = apps.map((app) => ({
       appID: app.teamId ? `${app.teamId}.${app.bundleId}` : app.bundleId,
-      paths: ['/dl/*']
+      paths: ["/dl/*"],
     }));
 
     const aasa = {
       applinks: {
         apps: [],
-        details
-      }
+        details,
+      },
     };
 
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "public, max-age=3600");
     return res.json(aasa);
   } catch (err) {
-    console.error('[wellKnown] AASA error:', err.message);
+    logger.error("[wellKnown] AASA error:", err.message);
     // 503 with no-store: a transient DB error must never be cached as "no apps"
     // because iOS CDN/device caches could break Universal Links for up to an hour.
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-store");
     return res.status(503).json({ applinks: { apps: [], details: [] } });
   }
 };
@@ -51,25 +54,27 @@ const serveAssetLinks = async (req, res) => {
     const apps = await AppRegistration.find({
       isActive: true,
       packageName: { $ne: null },
-      sha256Fingerprint: { $ne: null }
-    }).select('packageName sha256Fingerprint').lean();
+      sha256Fingerprint: { $ne: null },
+    })
+      .select("packageName sha256Fingerprint")
+      .lean();
 
-    const assetLinks = apps.map(app => ({
-      relation: ['delegate_permission/common.handle_all_urls'],
+    const assetLinks = apps.map((app) => ({
+      relation: ["delegate_permission/common.handle_all_urls"],
       target: {
-        namespace: 'android_app',
+        namespace: "android_app",
         package_name: app.packageName,
-        sha256_cert_fingerprints: [app.sha256Fingerprint]
-      }
+        sha256_cert_fingerprints: [app.sha256Fingerprint],
+      },
     }));
 
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "public, max-age=3600");
     return res.json(assetLinks);
   } catch (err) {
-    console.error('[wellKnown] assetlinks error:', err.message);
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-store');
+    logger.error("[wellKnown] assetlinks error:", err.message);
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-store");
     return res.status(503).json([]);
   }
 };
