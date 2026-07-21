@@ -1,5 +1,6 @@
 const ProjectMembership = require("../models/ProjectMembership");
 const projectAccessService = require("../services/projectAccessService");
+const { cacheDel } = require("../config/redis");
 const logger = require("../config/logger");
 
 const serializeProject = (project, role) => ({
@@ -13,52 +14,32 @@ const serializeProject = (project, role) => ({
 // GET /api/projects — the top-bar project switcher's data source.
 const listProjects = async (req, res) => {
   try {
-    if (!req.user.organization) {
-      return res.json({
-        success: true,
-        data: {
-          isAccountOwner: false,
-          sharedProjects: [],
-          personalProject: null,
-        },
-      });
+    // Every account is entitled to a default (personal) project and its own
+    // organization, self-serve — no plan/subscription required. Idempotent:
+    // an existing organization/projects are reused as-is, so this only
+    // fills the gap for accounts that had none yet.
+    const { organization, organizationCreated } =
+      await projectAccessService.promoteToAccountOwner(req.user.id);
+    if (organizationCreated) {
+      // req.user (and any cached copy) was loaded before this organization
+      // existed — invalidate so the very next request sees it.
+      await cacheDel(`user:${req.user.id}`);
     }
+    const organizationId = organization._id;
 
     const isOwner = await projectAccessService.isAccountOwner(
       req.user.id,
-      req.user.organization,
+      organizationId,
     );
-
-    // Lazily bootstrap a brand-new enterprise account the first time its
-    // Owner loads the switcher, rather than depending on a separate
-    // org-creation flow to have set this up already.
-    if (isOwner) {
-      const Project = require("../models/Project");
-      const hasSharedProject = await Project.exists({
-        organization: req.user.organization,
-        isPersonal: false,
-      });
-      if (!hasSharedProject) {
-        await projectAccessService.createProject(
-          req.user.id,
-          req.user.organization,
-          "Main",
-        );
-      }
-      await projectAccessService.createPersonalProject(
-        req.user.id,
-        req.user.organization,
-      );
-    }
 
     const sharedProjectDocs =
       await projectAccessService.listSharedProjectsForUser(
         req.user.id,
-        req.user.organization,
+        organizationId,
       );
     const personalProjectDoc = await projectAccessService.getPersonalProject(
       req.user.id,
-      req.user.organization,
+      organizationId,
     );
 
     const sharedProjects = await Promise.all(
@@ -161,12 +142,10 @@ const addExistingUserToProject = async (req, res) => {
       req.project._id,
     );
     if (!assignable.includes(role)) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You are not allowed to assign this role",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to assign this role",
+      });
     }
 
     const membership = await ProjectMembership.findOneAndUpdate(

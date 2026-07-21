@@ -10,9 +10,20 @@ For current build status / known gaps, see [`RBAC_IMPLEMENTATION_TRACKER.md`](./
 - **Admin** — per-project. Full Editor powers on projects they administer, plus can invite/manage Viewer and Editor members there. Can never assign or modify the Admin role itself.
 - **Editor** — per-project. Full CRUD on the resources in scope (links, QR codes, domains, API keys), view+export on analytics/UTM. No user management.
 - **Viewer** — per-project. View-only everywhere except analytics/UTM export, which every role can do.
-- **Personal project** (`isPersonal: true`) — not a role. One per account member, auto-created on invite acceptance, visible only to its `personalOwnerUser` (not even the Account Owner can see it).
+- **Personal project** (`isPersonal: true`) — not a role. One per account member, visible only to its `personalOwnerUser` (not even the Account Owner can see it).
 
 Do not call the Account Owner role "Super Admin" — that term is reserved for Snip's unrelated internal staff role (`User.role === 'super_admin'`).
+
+## Every account is entitled to a default (personal) project — self-serve, no plan required
+
+`projectAccessService.promoteToAccountOwner(userId, organizationName?)` is no longer just the one-time manual staff action it started out as (still exposed at `POST /api/super-admin/promote-to-account-owner` for that purpose). `GET /api/projects` — the project switcher's data source, loaded by `ProjectContext` on every authenticated session — now calls it unconditionally for every caller:
+
+- If the user already has an `organization` (a real enterprise account, whether Owner or a plain Admin/Editor/Viewer member), that organization is reused as-is and nothing about their setup changes.
+- If they have none — today's plain solo signup — one is created for them (name derived from their first name/email, unique slug), they become its Account Owner, and a default shared `"Main"` project plus their own personal project are created. This is how "every account always has a personal project, shown and selected by default" is satisfied even for accounts that never touched Projects/Teams: it's the same bootstrap path a pre-existing enterprise Owner already went through, just triggered self-serve instead of only via the manual staff endpoint.
+- Being the Account Owner of this (possibly one-person) organization is what unlocks real, self-serve "invite people" for every individual account — the existing `/api/account/invitations` flow, Team pages, and role assignment all just work, with zero changes to the invite/membership model itself.
+- The very first time a user's personal project is created this way, `backfillOwnResourcesToProject` retroactively tags any of their own pre-existing, fully-untagged (`organization: null, project: null`) links/domains/QR codes into it — otherwise project-scoped list queries would make that pre-existing data disappear from view the moment they're no longer a "solo, organization-less" account per `resolveReadScope`/`assertCanViewResource`/etc. The same backfill runs on `acceptInvitation` when a personal project is newly created there too (covers a previously-solo user who later gets invited to a real enterprise org).
+- `removeUserFromAccount` (full removal from an enterprise account) deliberately leaves `user.organization` pointing at that org afterward instead of nulling it — their personal project lives there, and per user story 9 it must remain their reachable default, not become orphaned.
+- `acceptInvitation`'s cross-organization guard now allows switching organizations when the invitee's current one is a "trivial solo organization" (`isTrivialSoloOrganization`: they own it and nobody else has ever been added to it) — since every account now gets one of these by default, without this relaxation almost every invite acceptance would otherwise hit "this account already belongs to a different enterprise account".
 
 ## Data model
 
