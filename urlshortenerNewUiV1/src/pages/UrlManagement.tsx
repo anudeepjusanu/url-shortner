@@ -80,6 +80,7 @@ interface ContentItem {
   originalUrl?: string;
   title?: string;
   domain?: string;
+  publicUrl?: string;
   clickCount: number;
   isActive: boolean;
   isPublished?: boolean;
@@ -120,6 +121,9 @@ const getPublicBaseUrl = () => {
 const getUrlLink = (item: ContentItem) => {
   if (item.type === "utm") {
     return item.fullTaggedUrl || item.originalUrl || "";
+  }
+  if (item.publicUrl) {
+    return item.publicUrl;
   }
   if (item.type === "bio") {
     const base = getPublicBaseUrl();
@@ -353,6 +357,7 @@ const UrlManagement = () => {
         originalUrl: string;
         title?: string;
         domain?: string;
+        shortUrl?: string;
         clickCount: number;
         isActive: boolean;
         createdAt: string;
@@ -376,6 +381,7 @@ const UrlManagement = () => {
         _id: string;
         username: string;
         title?: string;
+        publicUrl?: string;
         totalViews: number;
         isActive: boolean;
         isPublished?: boolean;
@@ -422,6 +428,7 @@ const UrlManagement = () => {
         originalUrl: u.originalUrl,
         title: u.title,
         domain: u.domain,
+        publicUrl: u.shortUrl,
         clickCount: u.clickCount,
         isActive: u.isActive,
         createdAt: u.createdAt,
@@ -439,6 +446,7 @@ const UrlManagement = () => {
         type: "bio",
         identifier: b.username,
         title: b.title,
+        publicUrl: b.publicUrl,
         clickCount: b.totalViews,
         isActive: b.isActive,
         isPublished: b.isPublished,
