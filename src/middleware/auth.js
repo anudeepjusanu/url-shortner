@@ -217,6 +217,10 @@ const apiKeyAuth = async (req, res, next) => {
       role: user.role,
       organization: orgId,
       apiKey: true,
+      // Enterprise keys are project-scoped (see ApiKey.js) — surface that
+      // project so write endpoints can default to it instead of demanding
+      // a redundant projectId in every request body. null for solo keys.
+      apiKeyProjectId: apiKeyDoc.project ? apiKeyDoc.project.toString() : null,
       isActive: user.isActive,
     };
 
