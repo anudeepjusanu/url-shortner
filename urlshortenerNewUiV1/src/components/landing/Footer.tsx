@@ -5,9 +5,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-dark.png";
 import { useSmartLink } from "@/hooks/useSmartLink";
 
-// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
-// docs site isn't live yet.
-const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+const MINTLIFY_DOCS_URL = "https://docs.4r.sa";
 
 const Footer = () => {
   const { t } = useLanguage();
