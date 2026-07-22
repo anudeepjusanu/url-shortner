@@ -7,7 +7,7 @@ const logger = require("../config/logger");
  */
 exports.generateSitemap = async (req, res) => {
   try {
-    const baseUrl = process.env.BASE_URL || "https://snip.sa";
+    const baseUrl = process.env.BASE_URL || "https://4r.sa";
 
     // Define static pages
     const staticPages = [
