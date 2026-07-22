@@ -23,9 +23,7 @@ const response = await axios.post('https://${brandDomain}/api/urls', {
 });
 `;
 
-// Hardcoded to snip.sa for now, regardless of brand/environment — the 4r
-// docs site isn't live yet.
-const MINTLIFY_DOCS_URL = "https://docs.snip.sa";
+const MINTLIFY_DOCS_URL = "https://docs.4r.sa";
 
 const DeveloperSection = () => {
   const [copied, setCopied] = useState(false);
