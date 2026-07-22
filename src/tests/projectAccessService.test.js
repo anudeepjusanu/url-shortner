@@ -314,6 +314,46 @@ describe("projectAccessService.resolveWriteProject", () => {
       service.resolveWriteProject(viewerUser, PROJECT_ID),
     ).rejects.toThrow(service.ForbiddenError);
   });
+
+  test("a project-scoped API key falls back to its own project when the body omits projectId", async () => {
+    const apiKeyEditorUser = {
+      id: EDITOR_ID,
+      organization: ORG_ID,
+      apiKeyProjectId: PROJECT_ID,
+    };
+    Project.findOne.mockResolvedValue({
+      _id: PROJECT_ID,
+      isPersonal: false,
+      organization: ORG_ID,
+    });
+    mockOrgSelect(OWNER_ID);
+    ProjectMembership.findOne.mockResolvedValue({ role: "editor" });
+    await expect(
+      service.resolveWriteProject(apiKeyEditorUser, undefined),
+    ).resolves.toBe(PROJECT_ID);
+  });
+
+  test("an explicit body projectId still wins over the API key's own project", async () => {
+    const OTHER_PROJECT_ID = "000000000000000000000002";
+    const apiKeyEditorUser = {
+      id: EDITOR_ID,
+      organization: ORG_ID,
+      apiKeyProjectId: PROJECT_ID,
+    };
+    Project.findOne.mockResolvedValue({
+      _id: OTHER_PROJECT_ID,
+      isPersonal: false,
+      organization: ORG_ID,
+    });
+    mockOrgSelect(OWNER_ID);
+    ProjectMembership.findOne.mockResolvedValue({ role: "editor" });
+    await expect(
+      service.resolveWriteProject(apiKeyEditorUser, OTHER_PROJECT_ID),
+    ).resolves.toBe(OTHER_PROJECT_ID);
+    expect(Project.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: OTHER_PROJECT_ID }),
+    );
+  });
 });
 
 describe("projectAccessService.assertCanViewResource / assertCanEditResource", () => {
