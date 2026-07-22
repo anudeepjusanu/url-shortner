@@ -740,14 +740,20 @@ const resolveReadScope = async (user, requestedProjectId) => {
  * domain) should be created in. A no-op for solo accounts (returns null).
  * For enterprise accounts, requires a projectId and a write-capable role
  * (owner/admin/editor/personal-owner) on it — Viewers are rejected here.
+ *
+ * A project-scoped API key (see auth.js#apiKeyAuth) already identifies
+ * exactly one project, so an omitted requestedProjectId falls back to
+ * user.apiKeyProjectId before failing — only Bearer/session callers (who
+ * may belong to several projects) still need to pass it explicitly.
  */
 const resolveWriteProject = async (user, requestedProjectId) => {
   if (!user.organization) return null;
 
-  if (!requestedProjectId) {
+  const projectId = requestedProjectId || user.apiKeyProjectId;
+  if (!projectId) {
     throw new ValidationError("projectId is required");
   }
-  const project = await loadOwnProject(user, requestedProjectId);
+  const project = await loadOwnProject(user, projectId);
   const role = await getEffectiveRole(user.id, project);
   if (!["owner", "admin", "editor", "personal-owner"].includes(role)) {
     throw new ForbiddenError("You do not have edit access to this project");
