@@ -118,8 +118,17 @@ const MyLinks = () => {
     }
   }, [activeProject?.id, isAllProjectsView]);
 
+  // ProjectContext resolves `personalProject`/`isLoading` in one render, but
+  // only picks a default `activeProject` in the render after that — so right
+  // after isProjectLoading flips to false, activeProject can still briefly be
+  // null. Wait for it to actually resolve (or for the all-projects view,
+  // which has no per-project scope) instead of firing a request with an
+  // ambiguous omitted projectId that the backend would read as "exclude my
+  // personal project."
+  const hasResolvedScope = isAllProjectsView || !!activeProject;
+
   useEffect(() => {
-    if (isProjectLoading) return;
+    if (isProjectLoading || !hasResolvedScope) return;
     fetchUrls();
     myLinksService
       .getAvailableDomains()
@@ -127,7 +136,7 @@ const MyLinks = () => {
         setAvailableDomains(res?.data?.domains ?? []);
       })
       .catch(() => {});
-  }, [fetchUrls, isProjectLoading]);
+  }, [fetchUrls, isProjectLoading, hasResolvedScope]);
 
   // Refetch when tab becomes visible again
   useEffect(() => {

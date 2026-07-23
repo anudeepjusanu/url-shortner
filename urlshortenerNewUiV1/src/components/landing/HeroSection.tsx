@@ -6,6 +6,7 @@ import {
   Link2,
   Check,
   Copy,
+  Loader2,
   MousePointerClick,
   QrCode,
   Eye,
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBrand } from "@/contexts/BrandContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { urlsAPI } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import qrImage from "@/assets/qr-1.png";
 
@@ -41,11 +43,12 @@ const HeroSection = () => {
   const { user } = useAuth();
   const [shortened, setShortened] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const navigate = useNavigate();
 
-  const handleShorten = () => {
+  const handleShorten = async () => {
     const trimmed = url.trim();
     if (!trimmed) {
       setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
@@ -61,10 +64,35 @@ const HeroSection = () => {
       return;
     }
     setUrlError("");
-    if (user) {
-      navigate("/dashboard", { state: { prefillUrl: trimmed } });
-    } else {
+
+    if (!user) {
       navigate("/shorten", { state: { url: trimmed } });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const response = await urlsAPI.createUrl({
+        originalUrl: trimmed,
+        source: "landing",
+      });
+      if (!response.success) {
+        throw new Error(
+          response.message ||
+            t("Failed to create short link", "فشل إنشاء الرابط المختصر"),
+        );
+      }
+      navigate("/dashboard");
+    } catch (error: any) {
+      setUrlError(
+        error.message ||
+          t(
+            "Failed to create short link. Please try a different URL.",
+            "فشل إنشاء الرابط المختصر. جرب رابطاً مختلفاً.",
+          ),
+      );
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -173,16 +201,25 @@ const HeroSection = () => {
                       setUrl(e.target.value);
                       if (urlError) setUrlError("");
                     }}
-                    onKeyDown={(e) => e.key === "Enter" && handleShorten()}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && !isCreating && handleShorten()
+                    }
                     className="w-full bg-transparent text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/40 outline-none py-5 font-body text-base"
                   />
                 </div>
                 <Button
                   onClick={handleShorten}
-                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base"
+                  disabled={isCreating}
+                  className="bg-[hsl(var(--navy))] text-white font-body font-bold px-9 py-6 h-auto shrink-0 rounded-full hover:opacity-90 transition-all text-base disabled:opacity-70"
                 >
-                  {t("Shorten it now Free", "اختصره الآن مجاناً")}
-                  <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+                  {isCreating ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      {t("Shorten it now Free", "اختصره الآن مجاناً")}
+                      <ArrowRight size={16} className="ms-1.5 rtl:rotate-180" />
+                    </>
+                  )}
                 </Button>
               </div>
               {urlError && (

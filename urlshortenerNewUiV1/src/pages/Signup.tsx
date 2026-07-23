@@ -33,7 +33,7 @@ const COUNTRY_OPTIONS = [
     maxDigits: 9,
     placeholder: "5XXXXXXXX",
   },
-  // { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
+  { dialCode: "+91",  flag: "🇮🇳", label: "IN", maxDigits: 10, placeholder: "XXXXXXXXXX" },
 ];
 
 // Password strength rules matching backend validateRegistration

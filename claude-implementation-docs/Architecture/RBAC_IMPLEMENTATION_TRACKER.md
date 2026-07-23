@@ -219,12 +219,38 @@ Legend: ✅ Done · 🟡 Partial · ❌ Not started
 
 ---
 
+## 13. Round 4 — shared-project capability is Enterprise-plan-gated, not universal (2026-07-22)
+
+**Regression:** Round 3 made every organization-less account become the Account Owner of an auto-created organization *with* a shared `"Main"` project, unconditionally. Reported live: a Free-plan account (`venkatasairahuln@gmail.com`) saw a "SHARED PROJECTS" section (`All projects` + `Main`) and could create new projects — this must be Enterprise-plan-only, matching how it worked before Round 3. The personal-project part of Round 3 (always shown, selected by default) was correct and stayed; only the shared-project half was wrong.
+
+**Fix — `src/services/projectAccessService.js`:**
+- Split the old `promoteToAccountOwner` into two composable pieces: `ensureOrganizationHome(userId, organizationName?)` (organization + personal project + legacy-resource backfill — plan-agnostic, unconditional) and `ensureMainProject(organizationId)` (just the shared `"Main"` project, called only when shared-project capability is unlocked). `promoteToAccountOwner` is now `ensureOrganizationHome` + `ensureMainProject` composed together, kept for the manual staff-only super-admin action, which is an explicit grant not gated on the caller's own plan.
+- Added `hasUnlockedSharedProjects(user, organizationId)`: true if `user.plan === "enterprise"`, **or** the organization isn't just the user's own trivial solo setup (reuses `isTrivialSoloOrganization` from Round 3's `acceptInvitation` fix) — so a genuine invited Editor/Viewer/Admin on someone else's real org keeps their access regardless of their own personal plan; only a plain self-serve solo account is gated.
+
+**Fix — `src/controllers/projectController.js`:** `listProjects` now calls `ensureOrganizationHome` unconditionally (personal project, any plan), but only calls `ensureMainProject` / reports `isAccountOwner: true` / populates `sharedProjects` when `hasUnlockedSharedProjects` passes. Response now includes an explicit `isEnterpriseAccount` boolean — the frontend must read this directly rather than inferring "enterprise" from array lengths (see below).
+
+**Fix — `src/middleware/projectAccess.js`:** `requireAccountOwner` (`POST /api/projects`) and `requireOwnerOrAnyProjectAdmin` (`/api/account/invitations`, `/api/account/members`, etc.) both now also call `hasUnlockedSharedProjects` before allowing an Account-Owner-only action through — closes the direct-API-call bypass (a Free-plan solo user hitting these routes directly with their own org id, skipping the UI).
+
+**Fix — `src/middleware/auth.js`:** `req.user.plan` is now populated in `authenticate`, `optionalAuth`, and `apiKeyAuth`. It wasn't before — a pre-existing gap, since `middleware/roleCheck.js:23` and `middleware/rateLimiter.js:24` already referenced `req.user.plan === "enterprise"` and were silently always-false. Needed here for `hasUnlockedSharedProjects` to actually work; fixing it also fixes those two pre-existing dead checks as a side effect.
+
+**Fix — `urlshortenerNewUiV1/src/contexts/ProjectContext.tsx`:**
+- `isEnterpriseAccount` is now read directly from the backend's `isEnterpriseAccount` field instead of `!!isAccountOwner || sharedProjects.length > 0 || !!personalProject` — that formula is permanently broken once every account has a `personalProject` regardless of plan (`!!personal` would always be true).
+- The "pick a sensible default active project" effect no longer early-returns on `!isEnterpriseAccount`. It must run for every account that has *something* to select (a personal project counts) — the backend enforces real project-scoped queries for any account with an `organization` at all, not just Enterprise ones, so a Free-plan account whose `activeProject` never resolved to their personal project would hit `resolveWriteProject`'s "projectId is required" error the moment they tried to create a link.
+
+**Not changed:** the Round 3 personal-project guarantee (unconditional, any plan, default-selected) and the `acceptInvitation` trivial-solo-org override both stay exactly as built — this round only re-adds the plan gate around shared-project capability, it doesn't touch personal projects.
+
+**Verification:** `npx jest` — 232/236 passing (same 4 pre-existing failures as Round 3, confirmed identical error/location; 4 new tests added for `hasUnlockedSharedProjects` covering: Enterprise-plan user always unlocked, Free-plan trivial-solo owner locked, Free-plan owner-with-real-team unlocked, Free-plan invited-member-of-another-org unlocked). All four edited backend files load cleanly (`require()` sanity check).
+
+**Residual, self-healing note:** any organization/`"Main"` project already created for a Free-plan user during the Round 3 regression window is left in the database rather than cleaned up — since `hasUnlockedSharedProjects` now correctly evaluates to `false` for them, that stray `Main` project is simply never surfaced via `sharedProjects` or `isAccountOwner`, with the same effect as if it didn't exist. No migration/cleanup script was written for this; flag if a data cleanup is wanted separately.
+
+---
+
 ## Appendix: file inventory
 
 **Backend**
 - `src/models/Project.js`, `ProjectMembership.js`, `ProjectInvitation.js`, `Url.js`, `Domain.js`, `QRCode.js`, `DynamicQRCode.js`
 - `src/services/projectAccessService.js`, `src/services/emailService.js` (invite email)
-- `src/middleware/projectAccess.js`
+- `src/middleware/projectAccess.js`, `src/middleware/auth.js`
 - `src/controllers/projectController.js`, `accountMemberController.js`, `urlController.js`, `domainController.js`, `qrCodeController.js`, `dynamicQRCodeController.js`, `analyticsController.js`, `authController.js`
 - `src/routes/projects.js`, `src/routes/accountMembers.js`
 - `src/tests/projectAccessService.test.js`
