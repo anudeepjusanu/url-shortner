@@ -281,7 +281,11 @@ const urlSchema = new mongoose.Schema(
 
 urlSchema.virtual("shortUrl").get(function () {
   const baseUrl = process.env.BASE_URL || "http://localhost:3000";
-  const domain = this.domain || baseUrl;
+  let domain = this.domain || baseUrl;
+  if (!/^https?:\/\//i.test(domain)) {
+    const isLocal = domain.includes("localhost") || domain.startsWith("127.");
+    domain = `${isLocal ? "http" : "https"}://${domain}`;
+  }
   return `${domain}/${this.customCode || this.shortCode}`;
 });
 
