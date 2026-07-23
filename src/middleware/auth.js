@@ -59,6 +59,7 @@ const authenticate = async (req, res, next) => {
       id: userId,
       email: user.email,
       role: user.role,
+      plan: user.plan,
       organization: orgId,
       isActive: user.isActive,
     };
@@ -120,6 +121,7 @@ const optionalAuth = async (req, res, next) => {
         id: user._id || user.id,
         email: user.email,
         role: user.role,
+        plan: user.plan,
         organization: user.organization?._id || user.organization,
       };
     } else {
@@ -215,6 +217,7 @@ const apiKeyAuth = async (req, res, next) => {
       id: userId,
       email: user.email,
       role: user.role,
+      plan: user.plan,
       organization: orgId,
       apiKey: true,
       // Enterprise keys are project-scoped (see ApiKey.js) — surface that

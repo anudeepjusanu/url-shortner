@@ -13,6 +13,7 @@ jest.mock("../models/ProjectMembership", () => ({
   findOne: jest.fn(),
   findOneAndUpdate: jest.fn(),
   find: jest.fn(),
+  exists: jest.fn(),
   deleteOne: jest.fn(),
   deleteMany: jest.fn(),
 }));
@@ -23,6 +24,18 @@ jest.mock("../models/ProjectInvitation", () => ({
 jest.mock("../models/User", () => ({
   findById: jest.fn(),
 }));
+jest.mock("../models/Url", () => ({
+  updateMany: jest.fn().mockResolvedValue({}),
+}));
+jest.mock("../models/Domain", () => ({
+  updateMany: jest.fn().mockResolvedValue({}),
+}));
+jest.mock("../models/QRCode", () => ({
+  updateMany: jest.fn().mockResolvedValue({}),
+}));
+jest.mock("../models/DynamicQRCode", () => ({
+  updateMany: jest.fn().mockResolvedValue({}),
+}));
 jest.mock("../services/emailService", () => ({
   sendInvitationEmail: jest.fn().mockResolvedValue(undefined),
 }));
@@ -30,6 +43,8 @@ jest.mock("../services/emailService", () => ({
 const Organization = require("../models/Organization");
 const Project = require("../models/Project");
 const ProjectMembership = require("../models/ProjectMembership");
+const User = require("../models/User");
+const Url = require("../models/Url");
 const service = require("../services/projectAccessService");
 
 const OWNER_ID = "owner-user-id";
@@ -283,10 +298,24 @@ describe("projectAccessService.resolveWriteProject", () => {
     ).resolves.toBeNull();
   });
 
-  test("an enterprise account must supply a projectId", async () => {
+  test("an enterprise account with no personal project must supply a projectId", async () => {
+    Project.findOne.mockResolvedValue(null);
     await expect(
       service.resolveWriteProject(editorUser, undefined),
     ).rejects.toThrow(service.ValidationError);
+  });
+
+  test("an enterprise account omitting projectId falls back to their own personal project", async () => {
+    const personalProject = {
+      _id: PROJECT_ID,
+      isPersonal: true,
+      personalOwnerUser: { toString: () => EDITOR_ID },
+      organization: ORG_ID,
+    };
+    Project.findOne.mockResolvedValue(personalProject);
+    await expect(
+      service.resolveWriteProject(editorUser, undefined),
+    ).resolves.toBe(PROJECT_ID);
   });
 
   test("an Editor can create resources in a project they can edit", async () => {
@@ -352,6 +381,38 @@ describe("projectAccessService.resolveWriteProject", () => {
     ).resolves.toBe(OTHER_PROJECT_ID);
     expect(Project.findOne).toHaveBeenCalledWith(
       expect.objectContaining({ _id: OTHER_PROJECT_ID }),
+    );
+  });
+});
+
+describe("projectAccessService.ensureOrganizationHome", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  test("sweeps orphaned resources into the personal project every call, not just the first", async () => {
+    // A personal project already exists — this is NOT the user's first call
+    // (e.g. their organization/project were provisioned moments ago by a
+    // concurrent request). A resource created in that race window can still
+    // be sitting untagged, so the backfill sweep must run again regardless.
+    User.findById.mockResolvedValue({
+      _id: OWNER_ID,
+      organization: ORG_ID,
+      firstName: "Owner",
+      email: "owner@example.com",
+      save: jest.fn(),
+    });
+    Organization.findById.mockResolvedValue({ _id: ORG_ID });
+    Project.findOne.mockResolvedValue({
+      _id: PROJECT_ID,
+      isPersonal: true,
+      personalOwnerUser: OWNER_ID,
+      organization: ORG_ID,
+    });
+
+    await service.ensureOrganizationHome(OWNER_ID);
+
+    expect(Url.updateMany).toHaveBeenCalledWith(
+      { organization: null, project: null, creator: OWNER_ID },
+      { $set: { organization: ORG_ID, project: PROJECT_ID } },
     );
   });
 });
@@ -484,5 +545,44 @@ describe("projectAccessService.assertAccountLevelEditAccess", () => {
     await expect(
       service.assertAccountLevelEditAccess(viewerUser, PROJECT_ID),
     ).rejects.toThrow(service.ForbiddenError);
+  });
+});
+
+describe("projectAccessService.hasUnlockedSharedProjects", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  test("an Enterprise-plan user is always unlocked, regardless of org state", async () => {
+    const enterpriseUser = { id: OWNER_ID, plan: "enterprise" };
+    await expect(
+      service.hasUnlockedSharedProjects(enterpriseUser, ORG_ID),
+    ).resolves.toBe(true);
+    expect(Organization.findById).not.toHaveBeenCalled();
+  });
+
+  test("a Free-plan user who owns a trivial solo org (no other members) is locked out", async () => {
+    const soloUser = { id: OWNER_ID, plan: "free" };
+    mockOrgSelect(OWNER_ID);
+    ProjectMembership.exists.mockResolvedValue(false);
+    await expect(
+      service.hasUnlockedSharedProjects(soloUser, ORG_ID),
+    ).resolves.toBe(false);
+  });
+
+  test("a Free-plan user who owns an org with real other members stays unlocked", async () => {
+    const ownerWithTeam = { id: OWNER_ID, plan: "free" };
+    mockOrgSelect(OWNER_ID);
+    ProjectMembership.exists.mockResolvedValue(true);
+    await expect(
+      service.hasUnlockedSharedProjects(ownerWithTeam, ORG_ID),
+    ).resolves.toBe(true);
+  });
+
+  test("a Free-plan invited member of someone else's org stays unlocked", async () => {
+    const invitedMember = { id: OTHER_ID, plan: "free" };
+    mockOrgSelect(OWNER_ID);
+    await expect(
+      service.hasUnlockedSharedProjects(invitedMember, ORG_ID),
+    ).resolves.toBe(true);
+    expect(ProjectMembership.exists).not.toHaveBeenCalled();
   });
 });

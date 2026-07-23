@@ -16,10 +16,10 @@ const listProjects = async (req, res) => {
   try {
     // Every account is entitled to a default (personal) project and its own
     // organization, self-serve — no plan/subscription required. Idempotent:
-    // an existing organization/projects are reused as-is, so this only
-    // fills the gap for accounts that had none yet.
+    // an existing organization is reused as-is, so this only fills the gap
+    // for accounts that had none yet.
     const { organization, organizationCreated } =
-      await projectAccessService.promoteToAccountOwner(req.user.id);
+      await projectAccessService.ensureOrganizationHome(req.user.id);
     if (organizationCreated) {
       // req.user (and any cached copy) was loaded before this organization
       // existed — invalidate so the very next request sees it.
@@ -27,16 +27,36 @@ const listProjects = async (req, res) => {
     }
     const organizationId = organization._id;
 
-    const isOwner = await projectAccessService.isAccountOwner(
+    const isRealOwner = await projectAccessService.isAccountOwner(
       req.user.id,
       organizationId,
     );
 
-    const sharedProjectDocs =
-      await projectAccessService.listSharedProjectsForUser(
-        req.user.id,
+    // Shared projects ("Main", "All projects", creating new projects,
+    // inviting people) are an Enterprise-plan feature. A user who already
+    // belongs to a real, multi-person organization (they own it and it has
+    // other real members, or they're an invited member of someone else's
+    // org) keeps seeing it regardless of their own plan — this only stops a
+    // plain solo account from self-serving its way into shared-project
+    // capability just by having a personal project.
+    const showSharedProjects =
+      !isRealOwner ||
+      (await projectAccessService.hasUnlockedSharedProjects(
+        req.user,
         organizationId,
-      );
+      ));
+
+    if (showSharedProjects && isRealOwner) {
+      await projectAccessService.ensureMainProject(organizationId);
+    }
+
+    const isOwner = showSharedProjects && isRealOwner;
+    const sharedProjectDocs = showSharedProjects
+      ? await projectAccessService.listSharedProjectsForUser(
+          req.user.id,
+          organizationId,
+        )
+      : [];
     const personalProjectDoc = await projectAccessService.getPersonalProject(
       req.user.id,
       organizationId,
@@ -54,6 +74,7 @@ const listProjects = async (req, res) => {
     res.json({
       success: true,
       data: {
+        isEnterpriseAccount: showSharedProjects,
         isAccountOwner: isOwner,
         sharedProjects,
         personalProject: personalProjectDoc

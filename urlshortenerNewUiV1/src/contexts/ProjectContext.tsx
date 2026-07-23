@@ -65,9 +65,12 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({
     null,
   );
   const [isAccountOwner, setIsAccountOwner] = useState(false);
-  // Not known from the AuthContext user object (which doesn't reliably carry
-  // organization membership across every login path) — derived instead from
-  // whether /api/projects actually returned any projects.
+  // Enterprise-plan gate for shared-project capability (Main project, "All
+  // projects", creating projects, inviting people) — read directly from the
+  // backend (projectController.listProjects' hasUnlockedSharedProjects),
+  // not inferred from array lengths: every account now has a personalProject
+  // regardless of plan, so "do I have a personal project" is no longer a
+  // valid proxy for "am I enterprise".
   const [isEnterpriseAccount, setIsEnterpriseAccount] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeProjectId, setActiveProjectIdState] = useState<string | null>(
@@ -93,9 +96,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({
         setSharedProjects(shared);
         setPersonalProject(personal);
         setIsAccountOwner(!!response.data.isAccountOwner);
-        setIsEnterpriseAccount(
-          !!response.data.isAccountOwner || shared.length > 0 || !!personal,
-        );
+        setIsEnterpriseAccount(!!response.data.isEnterpriseAccount);
       }
     } catch (error) {
       console.error("Failed to load projects:", error);
@@ -109,10 +110,15 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({
   }, [load]);
 
   // Pick a sensible default once projects are loaded: the personal project
-  // (pinned first) if nothing valid is already selected.
+  // (pinned first) if nothing valid is already selected. Every account has a
+  // personal project regardless of plan, so this must run for non-enterprise
+  // accounts too — gating it on isEnterpriseAccount would leave activeProject
+  // stuck at null forever for them, and the backend now actually enforces
+  // project-scoped queries once an account has an organization at all.
   useEffect(() => {
-    if (isLoading || !isEnterpriseAccount) return;
-    if (activeProjectId === ALL_PROJECTS_ID) return;
+    if (isLoading) return;
+    if (!personalProject && sharedProjects.length === 0) return;
+    if (isEnterpriseAccount && activeProjectId === ALL_PROJECTS_ID) return;
 
     const knownIds = [
       personalProject?.id,

@@ -240,12 +240,20 @@ const uniqueOrgSlug = async (base) => {
 };
 
 /**
- * The moment a user gets a personal project for the first time, retroactively
- * assigns any of their own pre-existing, fully-untagged resources (created
- * before they ever had an organization) into it — otherwise project-scoped
- * list queries would make those links/domains/QR codes disappear from view.
- * Scoped strictly to resources this exact user created; never touches
- * anyone else's data.
+ * Retroactively assigns any of this user's own fully-untagged resources
+ * (organization: null, project: null) into their personal project —
+ * otherwise project-scoped list queries would make those links/domains/QR
+ * codes disappear from view. Scoped strictly to resources this exact user
+ * created; never touches anyone else's data.
+ *
+ * Deliberately safe to call repeatedly (matches nothing once nothing is left
+ * untagged), not just once: a resource can be created by a concurrent
+ * request in the brief window between this organization/project being
+ * provisioned and that other request's own project-resolution step reading
+ * it (e.g. a URL create that reads req.user before a slow safe-browsing/
+ * reachability check, racing this user's first-ever /api/projects load) —
+ * so the sweep has to be repeatable, not one-shot, or that resource is
+ * orphaned forever.
  */
 const backfillOwnResourcesToProject = async (
   userId,
@@ -264,15 +272,15 @@ const backfillOwnResourcesToProject = async (
 
 /**
  * Ensures this user has an Organization (creating a personal one if they
- * don't already belong to any — every account is entitled to a default
- * project and the ability to invite people, no plan or subscription
- * required) and is set up as its Account Owner, with a default shared
- * "Main" project and their own personal project. Idempotent at every step —
- * whatever already exists is reused as-is — so this is safe to call on
- * every `/api/projects` load, not just as the one-time manual staff action
- * it started out as (see routes/superAdmin.js).
+ * don't already belong to any) and their own personal project in it.
+ * Idempotent at every step — whatever already exists is reused as-is — so
+ * it's safe to call on every `/api/projects` load. Deliberately does NOT
+ * touch shared/"Main" projects or Account Owner status: every account is
+ * entitled to a default personal project regardless of plan, but shared-
+ * project capability is gated separately (see hasUnlockedSharedProjects) —
+ * this is the plan-agnostic half of that split.
  */
-const promoteToAccountOwner = async (userId, organizationName) => {
+const ensureOrganizationHome = async (userId, organizationName) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new NotFoundError("User not found");
@@ -299,18 +307,6 @@ const promoteToAccountOwner = async (userId, organizationName) => {
     await user.save();
   }
 
-  let mainProject = await Project.findOne({
-    organization: organization._id,
-    isPersonal: false,
-  });
-  if (!mainProject) {
-    mainProject = await Project.create({
-      organization: organization._id,
-      name: "Main",
-      isPersonal: false,
-    });
-  }
-
   const existingPersonalProject = await getPersonalProject(
     user._id,
     organization._id,
@@ -319,15 +315,64 @@ const promoteToAccountOwner = async (userId, organizationName) => {
     existingPersonalProject ||
     (await createPersonalProject(user._id, organization._id));
 
-  if (!existingPersonalProject) {
-    await backfillOwnResourcesToProject(
-      user._id,
-      organization._id,
-      personalProject._id,
-    );
-  }
+  await backfillOwnResourcesToProject(
+    user._id,
+    organization._id,
+    personalProject._id,
+  );
 
+  return { organization, personalProject, organizationCreated };
+};
+
+/**
+ * Ensures this organization has a default shared "Main" project. Split out
+ * from ensureOrganizationHome so callers can decide *whether* to grant
+ * shared-project capability (an Enterprise-plan feature) separately from
+ * the plan-agnostic "give everyone a personal project" guarantee.
+ */
+const ensureMainProject = async (organizationId) => {
+  let mainProject = await Project.findOne({
+    organization: organizationId,
+    isPersonal: false,
+  });
+  if (!mainProject) {
+    mainProject = await Project.create({
+      organization: organizationId,
+      name: "Main",
+      isPersonal: false,
+    });
+  }
+  return mainProject;
+};
+
+/**
+ * Promotes an existing user into the full Account Owner of a brand-new (or
+ * already-existing) Organization: a personal project, plus a default shared
+ * "Main" project, unconditionally — no plan check. Used by the manual
+ * staff-only action (see routes/superAdmin.js) and internally whenever the
+ * caller has already decided shared-project capability applies (see
+ * projectController.listProjects). Idempotent at every step.
+ */
+const promoteToAccountOwner = async (userId, organizationName) => {
+  const { organization, personalProject, organizationCreated } =
+    await ensureOrganizationHome(userId, organizationName);
+  const mainProject = await ensureMainProject(organization._id);
   return { organization, mainProject, personalProject, organizationCreated };
+};
+
+/**
+ * Whether this user's shared-project capability — the "Main" project, "All
+ * projects", creating new projects, inviting people — is actually unlocked
+ * on `organizationId`. True if they're on an Enterprise plan themselves, OR
+ * their organization already has real other members (so it isn't just
+ * their own self-serve solo setup — e.g. an Editor invited into someone
+ * else's paying team keeps access regardless of their own plan). This is
+ * what stops a plain Free/Pro solo account from self-serving its way into
+ * shared-project UI the moment it gets a personal project.
+ */
+const hasUnlockedSharedProjects = async (user, organizationId) => {
+  if (user.plan === "enterprise") return true;
+  return !(await isTrivialSoloOrganization(organizationId, user.id));
 };
 
 const generateToken = () => crypto.randomBytes(32).toString("hex");
@@ -654,13 +699,11 @@ const acceptInvitation = async ({ token, acceptingUser }) => {
     existingPersonalProject ||
     (await createPersonalProject(user._id, invitation.organization));
 
-  if (!existingPersonalProject) {
-    await backfillOwnResourcesToProject(
-      user._id,
-      invitation.organization,
-      personalProject._id,
-    );
-  }
+  await backfillOwnResourcesToProject(
+    user._id,
+    invitation.organization,
+    personalProject._id,
+  );
 
   return { memberships, personalProject };
 };
@@ -738,20 +781,31 @@ const resolveReadScope = async (user, requestedProjectId) => {
 /**
  * Validates + resolves the project a brand-new resource (link, QR code,
  * domain) should be created in. A no-op for solo accounts (returns null).
- * For enterprise accounts, requires a projectId and a write-capable role
- * (owner/admin/editor/personal-owner) on it — Viewers are rejected here.
  *
- * A project-scoped API key (see auth.js#apiKeyAuth) already identifies
- * exactly one project, so an omitted requestedProjectId falls back to
- * user.apiKeyProjectId before failing — only Bearer/session callers (who
- * may belong to several projects) still need to pass it explicitly.
+ * For enterprise accounts, an explicit requestedProjectId (or, for a
+ * project-scoped API key — see auth.js#apiKeyAuth — user.apiKeyProjectId)
+ * is validated against a write-capable role (owner/admin/editor/
+ * personal-owner) on it — Viewers are rejected here.
+ *
+ * If neither is given (e.g. a caller that predates project-scoping, like the
+ * public landing-page shorten flow), falls back to the caller's own personal
+ * project rather than failing — every account has one regardless of plan,
+ * so it's always a safe, unambiguous default target. Only fails if even that
+ * is missing, which should not happen for a real user.
  */
 const resolveWriteProject = async (user, requestedProjectId) => {
   if (!user.organization) return null;
 
-  const projectId = requestedProjectId || user.apiKeyProjectId;
+  let projectId = requestedProjectId || user.apiKeyProjectId;
   if (!projectId) {
-    throw new ValidationError("projectId is required");
+    const personalProject = await getPersonalProject(
+      user.id,
+      user.organization,
+    );
+    if (!personalProject) {
+      throw new ValidationError("projectId is required");
+    }
+    projectId = personalProject._id;
   }
   const project = await loadOwnProject(user, projectId);
   const role = await getEffectiveRole(user.id, project);
@@ -840,7 +894,10 @@ module.exports = {
   getPersonalProject,
   createPersonalProject,
   createProject,
+  ensureOrganizationHome,
+  ensureMainProject,
   promoteToAccountOwner,
+  hasUnlockedSharedProjects,
   inviteUser,
   cancelInvitation,
   changeMemberRole,

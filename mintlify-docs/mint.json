@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Snip API Documentation",
+  "name": "4r API Documentation",
   "logo": {
     "dark": "/logo/logo.png",
     "light": "/logo/logo.png"
@@ -23,7 +23,7 @@
   ],
   "topbarCtaButton": {
     "name": "Dashboard",
-    "url": "https://snip.sa"
+    "url": "https://4r.sa"
   },
   "tabs": [
     {
@@ -39,7 +39,7 @@
     {
       "name": "Website",
       "icon": "globe",
-      "url": "https://snip.sa"
+      "url": "https://4r.sa"
     },
     {
       "name": "Community",
@@ -126,7 +126,7 @@
     "linkedin": "https://www.linkedin.com/company/nawah"
   },
   "api": {
-    "baseUrl": "https://snip.sa/api",
+    "baseUrl": "https://4r.sa/api",
     "auth": {
       "method": "key",
       "name": "X-API-Key"

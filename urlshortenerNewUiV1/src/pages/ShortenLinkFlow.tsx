@@ -37,7 +37,7 @@ const COUNTRY_OPTIONS = [
     maxDigits: 9,
     placeholder: "5XXXXXXXX",
   },
-  // { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
+  { dialCode: '+91',  flag: '🇮🇳', label: 'IN', maxDigits: 10, placeholder: '9XXXXXXXXX' },
 ];
 // ============================================================================
 const RESEND_COOLDOWN = 60;
