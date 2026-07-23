@@ -28,6 +28,7 @@ import { UTMPreview } from "@/components/landing/UTMPreviewMockup";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { urlsAPI } from "@/services/api";
 
 const isValidUrl = (value: string) => {
   try {
@@ -47,8 +48,9 @@ const FeatureUrlShortening = () => {
   const [inputUrl, setInputUrl] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [urlError, setUrlError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleShorten = () => {
+  const handleShorten = async () => {
     const trimmed = inputUrl.trim();
     if (!trimmed) {
       setUrlError(t("Please add a link first", "الرجاء إضافة رابط أولاً"));
@@ -64,10 +66,35 @@ const FeatureUrlShortening = () => {
       return;
     }
     setUrlError("");
-    if (user) {
-      navigate("/dashboard", { state: { prefillUrl: trimmed } });
-    } else {
+
+    if (!user) {
       navigate("/shorten", { state: { url: trimmed } });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const response = await urlsAPI.createUrl({
+        originalUrl: trimmed,
+        source: "landing",
+      });
+      if (!response.success) {
+        throw new Error(
+          response.message ||
+            t("Failed to create short link", "فشل إنشاء الرابط المختصر"),
+        );
+      }
+      navigate("/dashboard");
+    } catch (error: any) {
+      setUrlError(
+        error.message ||
+          t(
+            "Failed to create short link. Please try a different URL.",
+            "فشل إنشاء الرابط المختصر. جرب رابطاً مختلفاً.",
+          ),
+      );
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -226,13 +253,18 @@ const FeatureUrlShortening = () => {
                       "الصق رابطك الطويل هنا...",
                     )}
                     className={`flex-1 bg-[hsl(var(--navy))]/4 rounded-xl px-4 py-3 text-sm font-body text-[hsl(var(--navy))] placeholder:text-[hsl(var(--navy))]/30 outline-none focus:ring-2 transition-all ${urlError ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-[hsl(var(--sky))]/30"}`}
-                    onKeyDown={(e) => e.key === "Enter" && handleShorten()}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && !isCreating && handleShorten()
+                    }
                   />
                   <Button
                     onClick={handleShorten}
-                    className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-xl px-6 py-3 text-sm hover:brightness-110 transition-all shadow-md shadow-[hsl(var(--sky))]/20 shrink-0"
+                    disabled={isCreating}
+                    className="bg-[hsl(var(--sky))] text-white font-body font-bold rounded-xl px-6 py-3 text-sm hover:brightness-110 transition-all shadow-md shadow-[hsl(var(--sky))]/20 shrink-0 disabled:opacity-70"
                   >
-                    {t("Shorten", "اختصر")}
+                    {isCreating
+                      ? t("Shortening...", "جارٍ الاختصار...")
+                      : t("Shorten", "اختصر")}
                   </Button>
                 </div>
                 {urlError && (
