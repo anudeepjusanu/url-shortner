@@ -14,10 +14,9 @@ const config = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || undefined,
   REDIS_DB: process.env.REDIS_DB || 0,
 
-  JWT_SECRET: process.env.JWT_SECRET || "your-secret-key",
+  JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRE: process.env.JWT_EXPIRE || "7d",
-  JWT_REFRESH_SECRET:
-    process.env.JWT_REFRESH_SECRET || "your-refresh-secret-key",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE || "30d",
 
   BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS) || 12,
@@ -58,7 +57,7 @@ const config = {
 
   ADMIN: {
     DEFAULT_ADMIN_EMAIL: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",
-    DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD || "admin123",
+    DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD,
   },
 
   GOOGLE_AUTH: {
@@ -78,6 +77,12 @@ const config = {
 
 const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET", "JWT_REFRESH_SECRET"];
 
+// JWT_SECRET/JWT_REFRESH_SECRET no longer have insecure hardcoded fallbacks,
+// so a missing value must fail startup in every environment, not just
+// production — otherwise the app would either run unauthenticatable or (if a
+// fallback existed) sign tokens with a guessable secret.
+const requiredSecrets = ["JWT_SECRET", "JWT_REFRESH_SECRET"];
+
 const validateConfig = () => {
   const missing = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
@@ -85,20 +90,14 @@ const validateConfig = () => {
     logger.error("❌ Missing required environment variables:");
     missing.forEach((envVar) => logger.error(`   - ${envVar}`));
 
-    if (config.NODE_ENV === "production") {
+    const missingSecrets = missing.filter((envVar) =>
+      requiredSecrets.includes(envVar),
+    );
+
+    if (config.NODE_ENV === "production" || missingSecrets.length > 0) {
       process.exit(1);
     } else {
       logger.warn("⚠️ Running in development mode with default values");
-    }
-  }
-
-  if (config.NODE_ENV === "production") {
-    if (
-      config.JWT_SECRET === "your-secret-key" ||
-      config.JWT_REFRESH_SECRET === "your-refresh-secret-key"
-    ) {
-      logger.error("❌ Default JWT secrets detected in production!");
-      process.exit(1);
     }
   }
 };

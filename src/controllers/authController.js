@@ -46,14 +46,18 @@ const maskPhone = (phone) => {
   return `${phone.slice(0, 4)}****${phone.slice(-3)}`;
 };
 
-const generateTokens = (userId) => {
-  const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
+const generateTokens = (userId, tokenVersion = 0) => {
+  const accessToken = jwt.sign({ userId, tokenVersion }, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRE,
   });
 
-  const refreshToken = jwt.sign({ userId }, config.JWT_REFRESH_SECRET, {
-    expiresIn: config.JWT_REFRESH_EXPIRE,
-  });
+  const refreshToken = jwt.sign(
+    { userId, tokenVersion },
+    config.JWT_REFRESH_SECRET,
+    {
+      expiresIn: config.JWT_REFRESH_EXPIRE,
+    },
+  );
 
   return { accessToken, refreshToken };
 };
@@ -228,7 +232,10 @@ const register = async (req, res) => {
         await emailService.sendAdminNotification(user);
       } catch (_) {}
 
-      const { accessToken, refreshToken } = generateTokens(user._id);
+      const { accessToken, refreshToken } = generateTokens(
+        user._id,
+        user.tokenVersion,
+      );
       return res.status(201).json({
         success: true,
         message: "User registered successfully",
@@ -406,7 +413,10 @@ const register = async (req, res) => {
         await emailService.sendAdminNotification(user);
       } catch (emailError) {}
 
-      const { accessToken, refreshToken } = generateTokens(user._id);
+      const { accessToken, refreshToken } = generateTokens(
+        user._id,
+        user.tokenVersion,
+      );
 
       res.status(201).json({
         success: true,
@@ -568,7 +578,10 @@ const login = async (req, res) => {
 
     await user.save();
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(
+      user._id,
+      user.tokenVersion,
+    );
 
     await cacheSet(
       `user:${user._id}`,
@@ -576,7 +589,10 @@ const login = async (req, res) => {
         id: user._id,
         email: user.email,
         role: user.role,
+        plan: user.plan,
         organization: user.organization,
+        isActive: user.isActive,
+        tokenVersion: user.tokenVersion,
       },
       config.CACHE_TTL.USER_CACHE,
     );
@@ -630,8 +646,19 @@ const refreshToken = async (req, res) => {
       });
     }
 
+    // Tokens issued before tokenVersion existed carry no claim — treat that
+    // as version 0 so already-issued sessions keep working until the first
+    // logout/password-change/deactivation actually bumps the version.
+    if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+      });
+    }
+
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(
       user._id,
+      user.tokenVersion,
     );
 
     res.json({
@@ -653,6 +680,10 @@ const logout = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Bump tokenVersion so the access/refresh token pair this session was
+    // using can no longer be replayed — without this, logout only cleared a
+    // cache entry and the JWT itself stayed valid until it expired.
+    await User.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
     await cacheDel(`user:${userId}`);
 
     res.json({
@@ -804,7 +835,12 @@ const changePassword = async (req, res) => {
     }
 
     user.password = newPassword;
+    // Invalidate every existing access/refresh token for this account — a
+    // password change is a reasonable signal the old credential may have
+    // been compromised, so old tokens shouldn't keep working.
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
+    await cacheDel(`user:${user._id}`);
 
     res.json({
       success: true,
@@ -875,8 +911,10 @@ const resetPassword = async (req, res) => {
     user.password = newPassword;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
 
     await user.save();
+    await cacheDel(`user:${user._id}`);
 
     res.json({
       success: true,
@@ -1026,7 +1064,9 @@ const resetPasswordWithOTP = async (req, res) => {
 
     // Update password
     user.password = newPassword;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
+    await cacheDel(`user:${user._id}`);
 
     // Clear verified flag from cache
     await cacheDel(verifiedKey);
@@ -1144,7 +1184,10 @@ const loginWithPhoneOtp = async (req, res) => {
 
     await user.save();
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(
+      user._id,
+      user.tokenVersion,
+    );
 
     await cacheSet(
       `user:${user._id}`,
@@ -1152,7 +1195,10 @@ const loginWithPhoneOtp = async (req, res) => {
         id: user._id,
         email: user.email,
         role: user.role,
+        plan: user.plan,
         organization: user.organization,
+        isActive: user.isActive,
+        tokenVersion: user.tokenVersion,
       },
       config.CACHE_TTL.USER_CACHE,
     );

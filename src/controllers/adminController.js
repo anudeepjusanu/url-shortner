@@ -240,9 +240,23 @@ const updateUser = async (req, res) => {
       );
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+    let updatedUser = await User.findByIdAndUpdate(id, updateData, {
       new: true,
     }).populate("organization", "name slug");
+
+    if (isActive !== undefined) {
+      // Deactivating (or reactivating) an account should invalidate any
+      // JWTs already issued to it rather than leaving them usable until
+      // they naturally expire. Kept as a separate update so it can't be
+      // mixed into the plain-field $set above (Mongo update docs must be
+      // either all operators or none).
+      updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $inc: { tokenVersion: 1 } },
+        { new: true },
+      ).populate("organization", "name slug");
+      await cacheDel(`user:${id}`);
+    }
 
     res.json({
       success: true,

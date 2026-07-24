@@ -4,6 +4,7 @@ const Coupon = require("../models/Coupon");
 const PaymentMethod = require("../models/PaymentMethod");
 const emailService = require("./emailService");
 const logger = require("../config/logger");
+const { cacheExists, cacheSet } = require("../config/redis");
 
 // Initialize Stripe only if API key is provided
 let stripe = null;
@@ -243,30 +244,41 @@ class PaymentService {
 
   // Handle webhook events
   async handleWebhook(event) {
-    try {
-      switch (event.type) {
-        case "invoice.payment_succeeded":
-          await this.handlePaymentSucceeded(event.data.object);
-          break;
-
-        case "invoice.payment_failed":
-          await this.handlePaymentFailed(event.data.object);
-          break;
-
-        case "customer.subscription.updated":
-          await this.handleSubscriptionUpdated(event.data.object);
-          break;
-
-        case "customer.subscription.deleted":
-          await this.handleSubscriptionDeleted(event.data.object);
-          break;
-
-        default:
-          logger.info(`Unhandled event type: ${event.type}`);
-      }
-    } catch (error) {
-      logger.error("Webhook handling error:", error);
+    // Stripe redelivers events on retry/replay; skip one we've already
+    // applied so a duplicate delivery can't double-apply a mutation (e.g.
+    // reactivating a subscription that was since cancelled).
+    const idempotencyKey = `stripe_event_processed:${event.id}`;
+    if (await cacheExists(idempotencyKey)) {
+      logger.info(`Skipping already-processed Stripe event: ${event.id}`);
+      return;
     }
+
+    switch (event.type) {
+      case "invoice.payment_succeeded":
+        await this.handlePaymentSucceeded(event.data.object);
+        break;
+
+      case "invoice.payment_failed":
+        await this.handlePaymentFailed(event.data.object);
+        break;
+
+      case "customer.subscription.updated":
+        await this.handleSubscriptionUpdated(event.data.object);
+        break;
+
+      case "customer.subscription.deleted":
+        await this.handleSubscriptionDeleted(event.data.object);
+        break;
+
+      default:
+        logger.info(`Unhandled event type: ${event.type}`);
+    }
+
+    // Only mark as processed once handling succeeds — if it throws, the
+    // controller returns a 5xx and Stripe retries instead of the failure
+    // being silently swallowed (previously caught and logged here, letting
+    // the controller respond 200 regardless of outcome).
+    await cacheSet(idempotencyKey, true, 7 * 24 * 60 * 60);
   }
 
   async handlePaymentSucceeded(invoice) {

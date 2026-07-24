@@ -1,5 +1,68 @@
 const url = require("url");
 const logger = require("../config/logger");
+const { checkHostnameForSsrf } = require("./ssrfGuard");
+
+// axios's own `maxRedirects` follows a redirect chain without re-checking
+// each hop's destination, so a URL that's public on the first request could
+// still 30x to an internal address. This drives the chain manually
+// (maxRedirects: 0 per hop) and re-runs the SSRF guard before every hop,
+// including the first — reusing the same headers/timeout/stream options the
+// caller would have passed to axios.head/axios.get directly.
+async function requestFollowingSafeRedirects(
+  axios,
+  method,
+  initialUrl,
+  axiosConfig,
+  maxHops = 5,
+) {
+  let currentUrl = initialUrl;
+
+  for (let hop = 0; hop <= maxHops; hop++) {
+    let hostname;
+    try {
+      hostname = new URL(currentUrl).hostname;
+    } catch {
+      hostname = null;
+    }
+
+    if (hostname) {
+      const ssrfCheck = await checkHostnameForSsrf(hostname);
+      if (ssrfCheck.blocked) {
+        const err = new Error(
+          `Blocked redirect to restricted address ${ssrfCheck.address}`,
+        );
+        err.code = "SSRF_BLOCKED_PRIVATE_ADDRESS";
+        throw err;
+      }
+    }
+
+    const response = await axios.request({
+      ...axiosConfig,
+      url: currentUrl,
+      method,
+      maxRedirects: 0,
+      validateStatus: () => true,
+    });
+
+    const location = response.headers?.location;
+    const isRedirect =
+      response.status >= 300 && response.status < 400 && location;
+
+    if (!isRedirect) {
+      return { response, finalUrl: currentUrl };
+    }
+
+    // Same "we only need headers, not body" early-destroy the existing code
+    // applied to the final response — apply it to intermediate hops too.
+    if (response.data && typeof response.data.destroy === "function") {
+      response.data.destroy();
+    }
+
+    currentUrl = new URL(location, currentUrl).toString();
+  }
+
+  throw new Error("Too many redirects");
+}
 
 class UrlValidator {
   constructor() {
@@ -432,23 +495,43 @@ class UrlValidator {
         // Use axios for more reliable HTTP requests in Node.js
         const axios = require("axios");
 
+        const headConfig = {
+          timeout,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept: "*/*",
+            "Accept-Encoding": "gzip, deflate, br",
+            Connection: "keep-alive",
+          },
+        };
+        const getConfig = {
+          timeout,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            Connection: "keep-alive",
+          },
+          // Only fetch headers and minimal body
+          maxContentLength: 2048, // Limit to 2KB
+          responseType: "stream", // Stream to avoid loading entire response
+        };
+
         // First try HEAD request (faster, less bandwidth)
         let response;
+        let finalUrl;
         let method = "HEAD";
 
         try {
-          response = await axios.head(url, {
-            timeout: timeout,
-            maxRedirects: 5,
-            validateStatus: () => true, // Don't throw on any status code
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-              Accept: "*/*",
-              "Accept-Encoding": "gzip, deflate, br",
-              Connection: "keep-alive",
-            },
-          });
+          ({ response, finalUrl } = await requestFollowingSafeRedirects(
+            axios,
+            "head",
+            url,
+            headConfig,
+          ));
 
           // If HEAD returns 405 (Method Not Allowed) or 501 (Not Implemented), try GET instead
           if (response.status === 405 || response.status === 501) {
@@ -456,22 +539,12 @@ class UrlValidator {
               `HEAD request returned ${response.status} for ${url}, trying GET...`,
             );
             method = "GET";
-            response = await axios.get(url, {
-              timeout: timeout,
-              maxRedirects: 5,
-              validateStatus: () => true,
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                Accept:
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Encoding": "gzip, deflate, br",
-                Connection: "keep-alive",
-              },
-              // Only fetch headers and minimal body
-              maxContentLength: 2048, // Limit to 2KB
-              responseType: "stream", // Stream to avoid loading entire response
-            });
+            ({ response, finalUrl } = await requestFollowingSafeRedirects(
+              axios,
+              "get",
+              url,
+              getConfig,
+            ));
 
             // Destroy the stream immediately to stop downloading
             if (response.data && response.data.destroy) {
@@ -479,6 +552,12 @@ class UrlValidator {
             }
           }
         } catch (headError) {
+          // An SSRF block is definitive — retrying with GET would just hit
+          // the same restricted address again.
+          if (headError.code === "SSRF_BLOCKED_PRIVATE_ADDRESS") {
+            throw headError;
+          }
+
           // If HEAD fails, try GET
           logger.info(
             `${method} request failed for ${url} with ${headError.code || headError.message}, trying GET...`,
@@ -486,21 +565,12 @@ class UrlValidator {
 
           try {
             method = "GET";
-            response = await axios.get(url, {
-              timeout: timeout,
-              maxRedirects: 5,
-              validateStatus: () => true,
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                Accept:
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Encoding": "gzip, deflate, br",
-                Connection: "keep-alive",
-              },
-              maxContentLength: 2048,
-              responseType: "stream",
-            });
+            ({ response, finalUrl } = await requestFollowingSafeRedirects(
+              axios,
+              "get",
+              url,
+              getConfig,
+            ));
 
             // Destroy the stream immediately
             if (response.data && response.data.destroy) {
@@ -520,8 +590,8 @@ class UrlValidator {
           accessible: response.status >= 200 && response.status < 400,
           status: response.status,
           statusText: response.statusText,
-          redirected: response.request?.res?.responseUrl !== url,
-          finalUrl: response.request?.res?.responseUrl || url,
+          redirected: finalUrl !== url,
+          finalUrl: finalUrl || url,
           method: method,
         });
       } catch (error) {

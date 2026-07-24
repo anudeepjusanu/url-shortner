@@ -21,13 +21,17 @@ const googleClient = new OAuth2Client({
   clientSecret: config.GOOGLE_AUTH.CLIENT_SECRET,
 });
 
-const generateTokens = (userId) => {
-  const accessToken = jwt.sign({ userId }, config.JWT_SECRET, {
+const generateTokens = (userId, tokenVersion = 0) => {
+  const accessToken = jwt.sign({ userId, tokenVersion }, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRE,
   });
-  const refreshToken = jwt.sign({ userId }, config.JWT_REFRESH_SECRET, {
-    expiresIn: config.JWT_REFRESH_EXPIRE,
-  });
+  const refreshToken = jwt.sign(
+    { userId, tokenVersion },
+    config.JWT_REFRESH_SECRET,
+    {
+      expiresIn: config.JWT_REFRESH_EXPIRE,
+    },
+  );
   return { accessToken, refreshToken };
 };
 
@@ -60,7 +64,10 @@ const setUserCache = async (user) => {
       id: user._id,
       email: user.email,
       role: user.role,
+      plan: user.plan,
       organization: user.organization,
+      isActive: user.isActive,
+      tokenVersion: user.tokenVersion,
     },
     config.CACHE_TTL.USER_CACHE,
   );
@@ -193,7 +200,10 @@ const googleAuthenticate = async (req, res) => {
       await existingUser.save();
       await setUserCache(existingUser);
 
-      const { accessToken, refreshToken } = generateTokens(existingUser._id);
+      const { accessToken, refreshToken } = generateTokens(
+        existingUser._id,
+        existingUser.tokenVersion,
+      );
 
       return res.json({
         success: true,
@@ -550,7 +560,10 @@ const verifyGoogleSignupOTP = async (req, res) => {
 
     await setUserCache(user);
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(
+      user._id,
+      user.tokenVersion,
+    );
 
     return res.status(201).json({
       success: true,

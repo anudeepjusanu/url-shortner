@@ -55,6 +55,16 @@ const checkUrlReachability = async (cleanUrl, timeout = 10000) => {
   const errorMsg = result.error || "";
   const status = result.status;
 
+  // Resolves to a private/loopback/link-local/reserved address — never
+  // allow the app server to connect to it on the user's behalf (SSRF).
+  if (errorMsg === "SSRF_BLOCKED_PRIVATE_ADDRESS") {
+    return {
+      allowed: false,
+      message:
+        "URL is not accessible. It resolves to a restricted network address.",
+    };
+  }
+
   // DNS resolution failures - domain doesn't exist
   if (
     errorMsg.includes("ENOTFOUND") ||

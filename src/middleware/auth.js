@@ -34,20 +34,22 @@ const authenticate = async (req, res, next) => {
         });
       }
     }
-    logger.info("Authenticated user:", user);
-    logger.info("User isActive status:", user.isActive);
-    logger.info(
-      "User from cache?",
-      !!(await cacheGet(`user:${decoded.userId}`)),
-    );
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account deactivated",
+      });
+    }
 
-    // Temporarily disabled for debugging
-    // if (!user.isActive) {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: 'Account deactivated'
-    //   });
-    // }
+    // Tokens issued before tokenVersion existed carry no claim — treat that
+    // as version 0 so already-issued sessions keep working until the first
+    // logout/password-change/deactivation actually bumps the version.
+    if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired",
+      });
+    }
 
     // Ensure consistent user ID format
     const userId = user._id ? user._id.toString() : user.id?.toString();
@@ -116,7 +118,10 @@ const optionalAuth = async (req, res, next) => {
         .select("-password -passwordResetToken -emailVerificationToken");
     }
 
-    if (user && user.isActive) {
+    const tokenVersionMatches =
+      (decoded.tokenVersion ?? 0) === (user?.tokenVersion ?? 0);
+
+    if (user && user.isActive && tokenVersionMatches) {
       req.user = {
         id: user._id || user.id,
         email: user.email,

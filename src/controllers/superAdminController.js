@@ -3,6 +3,7 @@ const Url = require("../models/Url");
 const Domain = require("../models/Domain");
 const logger = require("../config/logger");
 const projectAccessService = require("../services/projectAccessService");
+const { cacheDel } = require("../config/redis");
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -177,7 +178,7 @@ const updateUserStatus = async (req, res) => {
     if (typeof isActive === "boolean") updateData.isActive = isActive;
     if (plan) updateData.plan = plan;
 
-    const user = await User.findByIdAndUpdate(userId, updateData, {
+    let user = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
     }).select("-password -passwordResetToken -emailVerificationToken");
 
@@ -186,6 +187,19 @@ const updateUserStatus = async (req, res) => {
         success: false,
         message: "User not found",
       });
+    }
+
+    if (typeof isActive === "boolean") {
+      // Deactivating (or reactivating) an account should invalidate any
+      // JWTs already issued to it. Kept as a separate update so it can't be
+      // mixed into the plain-field $set above (Mongo update docs must be
+      // either all operators or none).
+      user = await User.findByIdAndUpdate(
+        userId,
+        { $inc: { tokenVersion: 1 } },
+        { new: true },
+      ).select("-password -passwordResetToken -emailVerificationToken");
+      await cacheDel(`user:${userId}`);
     }
 
     res.json({

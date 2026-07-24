@@ -1,6 +1,15 @@
 const fs = require("fs");
 const path = require("path");
 const { logger } = require("./logger");
+const { safeFetch } = require("../../utils/ssrfGuard");
+
+// The functions below fetch a user-submitted URL directly from our own
+// server (unlike the Firecrawl/Safebrowz calls elsewhere in this module,
+// which fetch on our behalf) — they use safeFetch instead of the global
+// fetch so a link that resolves (directly, or via a redirect hop) to an
+// internal/private address is never connected to. safeFetch throws on a
+// block, which each call site's existing catch already handles the same way
+// it handles any other fetch failure.
 
 // Shared across urlModeration.js (text) and imageModeration.js (vision) so
 // the model version only needs updating in one place.
@@ -102,10 +111,9 @@ async function checkContentTypeIsImage(url) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5_000);
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       method: "HEAD",
       signal: controller.signal,
-      redirect: "follow",
     });
     clearTimeout(timer);
     return (res.headers.get("content-type") ?? "").startsWith("image/");
@@ -125,9 +133,8 @@ async function fetchImageBase64(url) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       signal: controller.signal,
-      redirect: "follow",
     });
     clearTimeout(timer);
 
@@ -175,9 +182,8 @@ async function extractPrimaryImageUrl(pageUrl) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
-    const res = await fetch(pageUrl, {
+    const res = await safeFetch(pageUrl, {
       signal: controller.signal,
-      redirect: "follow",
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; Snip-moderation/1.0)",
       },
